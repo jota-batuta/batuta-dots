@@ -1,15 +1,16 @@
 # Batuta AI Agent Ecosystem
 
-> **Single Source of Truth** — This file is the master for all AI assistants.
-> Run `./skills/setup.sh` to sync to Claude, Gemini, Copilot, and Codex formats.
+> **Single Source of Truth** — This file is the master for Claude Code.
+> Run `./skills/setup.sh` to sync skills and generate CLAUDE.md.
+> To replicate to other platforms (Gemini, Copilot, Codex): `./skills/replicate-platform.sh --all`
 
 Batuta is an AI agent ecosystem for a software factory. It provides unified skills,
-workflows, and development methodology across all AI coding assistants.
+workflows, and development methodology for Claude Code.
 Designed for diverse project types: web apps, automation, AI agents, infrastructure, data pipelines.
 
 ## Quick Start
 
-When working on any project with Batuta installed, AI assistants automatically load relevant skills based on context.
+When working on any project with Batuta installed, Claude Code automatically loads relevant skills based on context.
 For manual loading, read the SKILL.md file directly.
 
 ## Available Skills
@@ -19,6 +20,7 @@ For manual loading, read the SKILL.md file directly.
 | Skill | Description | File |
 |-------|-------------|------|
 | `ecosystem-creator` | Create new skills, agents, sub-agents, and workflows | [SKILL.md](BatutaClaude/skills/ecosystem-creator/SKILL.md) |
+| `scope-rule` | Enforce scope-based file organization: feature / shared / core | [SKILL.md](BatutaClaude/skills/scope-rule/SKILL.md) |
 | `sdd-init` | Initialize SDD project context and persistence mode | [SKILL.md](BatutaClaude/skills/sdd-init/SKILL.md) |
 | `sdd-explore` | Explore codebase and approaches before proposing change | [SKILL.md](BatutaClaude/skills/sdd-explore/SKILL.md) |
 | `sdd-propose` | Create change proposal with scope, risks, and success criteria | [SKILL.md](BatutaClaude/skills/sdd-propose/SKILL.md) |
@@ -70,6 +72,22 @@ For manual loading, read the SKILL.md file directly.
 | `python-batuta` | Python project conventions, uv/ruff, typing, async patterns, monorepo structure | planned |
 | `directive-generator` | CTO directive templates, structured prompts for Claude Code sub-agent delegation | planned |
 
+## Scope Rule (MANDATORY for all file creation)
+
+Before creating ANY file, component, service, or module, determine its scope:
+
+| Who uses it? | Scope | Path pattern |
+|---|---|---|
+| 1 feature only | Feature | `features/{feature}/{type}/{name}` |
+| 2+ features | Shared | `features/shared/{type}/{name}` |
+| Entire app (singleton) | Core | `core/{type}/{name}` |
+
+**Key rules**:
+- NEVER create root-level `utils/`, `helpers/`, `lib/`, or `components/` folders
+- Start feature-scoped, promote to shared ONLY when a second consumer appears
+- Core is for true singletons only (auth, database, logging, app config)
+- Full details: load the `scope-rule` skill
+
 ## Skill Gap Detection
 
 Before implementing code with any technology, the AI MUST check if an active skill exists.
@@ -94,6 +112,7 @@ When performing these actions, **ALWAYS** invoke the corresponding skill FIRST:
 | Action | Invoke First | Why |
 |--------|--------------|-----|
 | Creating new skill, agent, or workflow | `ecosystem-creator` | Structure, naming, registration |
+| Creating any file, component, or module | `scope-rule` | Correct location based on scope |
 | Starting any SDD workflow | `sdd-init` | Project context, persistence setup |
 | Creating new skill for detected stack | `ecosystem-creator` | Ensures consistent structure |
 | Technology without active skill detected | `ecosystem-creator` (auto-discover) | Research + create before implementing |
@@ -101,10 +120,11 @@ When performing these actions, **ALWAYS** invoke the corresponding skill FIRST:
 ## How Skills Work
 
 1. **Gap detection**: Before coding, AI checks if the technology has an active skill
-2. **Auto-detection**: The AI reads CLAUDE.md / AGENTS.md which contains skill triggers
-3. **Context matching**: When editing code in a specific stack, the relevant skill loads
-4. **Pattern application**: AI follows the exact patterns from the skill
-5. **First-time-correct**: No trial and error — skills provide exact conventions
+2. **Scope check**: Before creating files, AI runs the Scope Rule decision tree
+3. **Auto-detection**: The AI reads CLAUDE.md / AGENTS.md which contains skill triggers
+4. **Context matching**: When editing code in a specific stack, the relevant skill loads
+5. **Pattern application**: AI follows the exact patterns from the skill
+6. **First-time-correct**: No trial and error — skills provide exact conventions
 
 ## Skill Structure
 
@@ -113,11 +133,13 @@ BatutaClaude/skills/              # User-installable skills
 ├── ecosystem-creator/
 │   ├── SKILL.md                  # Main skill file
 │   └── assets/                   # Templates, schemas
+├── scope-rule/SKILL.md           # File organization rules
 ├── sdd-init/SKILL.md
 └── ...
 
 skills/                           # Repo-level scripts
-├── setup.sh                      # Sync script
+├── setup.sh                      # Claude Code sync script
+├── replicate-platform.sh         # Multi-platform replication (future)
 └── setup_test.sh                 # Verification tests
 ```
 
@@ -127,15 +149,92 @@ skills/                           # Repo-level scripts
 1. Run `/create:skill <name>` — the ecosystem-creator guides you
 2. Or manually: create `BatutaClaude/skills/<name>/SKILL.md`
 3. Register in this file under "Project Skills"
-4. Run `./skills/setup.sh --all && ./skills/setup.sh --sync-all`
+4. Run `./skills/setup.sh --sync`
 
-### Adding a New Agent
-1. Run `/create:agent <name>` — adds to opencode.json
-2. Register in this file if it needs skill references
+### Adding a New Sub-Agent
+1. Run `/create:sub-agent <name>` — creates SDD-style sub-agent
+2. Register in this file under "Infrastructure Skills"
 
 ### Adding a New Workflow Command
 1. Run `/create:workflow <name>` — creates command + skill mapping
 2. Add to "SDD Commands" section below
+
+### Replicating to Other Platforms
+When ready to extend beyond Claude Code:
+```bash
+./skills/replicate-platform.sh --all    # Generate GEMINI.md, CODEX.md, copilot-instructions.md
+```
+
+---
+
+## Ecosystem Auto-Update SPO (Standard Operating Procedure)
+
+When new skills or sub-agents are created in ANY project using the Batuta ecosystem,
+they should flow back to batuta-dots so other projects benefit.
+
+### When to Propagate Back
+
+| Trigger | Action |
+|---------|--------|
+| New skill created with `/create:skill` that is marked **global** | Propagate to batuta-dots |
+| New sub-agent created with `/create:sub-agent` | Propagate to batuta-dots |
+| Existing skill significantly improved in a project | Propose update to batuta-dots |
+| New workflow command created | Propagate to batuta-dots |
+| Project-specific skill that could benefit other projects | Propose generalization |
+
+### Propagation Process
+
+```
+New component created in Project X
+│
+├── 1. EVALUATE — Is this project-specific or reusable?
+│     Project-specific: stays in the project only
+│     Reusable: proceed to step 2
+│
+├── 2. GENERALIZE — Remove project-specific references
+│     Strip hardcoded paths, project names, specific API keys
+│     Keep patterns, conventions, decision trees
+│     Ensure it follows batuta-dots skill template
+│
+├── 3. COPY TO BATUTA-DOTS
+│     Copy SKILL.md to batuta-dots/BatutaClaude/skills/{name}/
+│     Copy assets/ if any
+│
+├── 4. REGISTER — Update AGENTS.md
+│     Add to appropriate skills table
+│     Update status from planned to active (if in roadmap)
+│     Add to CLAUDE.md auto-load table
+│
+├── 5. SYNC — Run setup.sh
+│     ./skills/setup.sh --claude --sync
+│     Verify with: ./skills/setup.sh --verify
+│
+└── 6. COMMIT — Push to batuta-dots repo
+      Conventional commit: feat: add {skill-name} skill
+      Push to origin/master
+```
+
+### Auto-Update Prompt
+
+When finishing a project that created new reusable skills, Claude should ask:
+
+> "Durante este proyecto creamos los siguientes skills nuevos:
+> - {skill-1}: {description}
+> - {skill-2}: {description}
+>
+> Algunos de estos podrían beneficiar a otros proyectos.
+> ¿Quieres que los propague al repositorio batuta-dots como skills globales?"
+
+### What Gets Propagated
+
+| Component | Propagated? | Notes |
+|-----------|-------------|-------|
+| Skills (global) | Yes | Strip project-specific references first |
+| Skills (project-specific) | Ask user | May need generalization |
+| Sub-agents | Yes | Pipeline extensions benefit everyone |
+| Workflows | Yes | New commands benefit everyone |
+| Asset templates | Yes | Templates are always reusable |
+| Project configs | No | These are project-specific by nature |
 
 ---
 
@@ -176,7 +275,6 @@ You are the ORCHESTRATOR for Spec-Driven Development. You coordinate the SDD wor
 
 ### Batuta Ecosystem Commands
 - `/create:skill <name>` — Create a new skill (technology, workflow, or project-type)
-- `/create:agent <name>` — Create a new agent definition for OpenCode
 - `/create:sub-agent <name>` — Create a new SDD-style sub-agent skill
 - `/create:workflow <name>` — Create a new workflow command with skill mapping
 
@@ -186,11 +284,10 @@ You are the ORCHESTRATOR for Spec-Driven Development. You coordinate the SDD wor
 - `/sdd:new` -> `sdd-explore` then `sdd-propose`
 - `/sdd:continue` -> next needed from `sdd-spec`, `sdd-design`, `sdd-tasks`
 - `/sdd:ff` -> `sdd-propose` -> `sdd-spec` -> `sdd-design` -> `sdd-tasks`
-- `/sdd:apply` -> `sdd-apply`
+- `/sdd:apply` -> `sdd-apply` (invokes `scope-rule` for file placement)
 - `/sdd:verify` -> `sdd-verify`
 - `/sdd:archive` -> `sdd-archive`
 - `/create:skill` -> `ecosystem-creator` (mode: skill)
-- `/create:agent` -> `ecosystem-creator` (mode: agent)
 - `/create:sub-agent` -> `ecosystem-creator` (mode: sub-agent)
 - `/create:workflow` -> `ecosystem-creator` (mode: workflow)
 
