@@ -1,0 +1,33 @@
+# Generated files (created by setup.sh from AGENTS.md)
+/CLAUDE.md
+/GEMINI.md
+/CODEX.md
+/.github/copilot-instructions.md
+
+# Environment and secrets
+.env
+.env.*
+.env.local
+.env.production
+.env.development
+secrets/
+credentials.json
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.venv/

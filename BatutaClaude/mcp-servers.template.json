@@ -1,0 +1,61 @@
+{
+  "mcpServers": {
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "sequential-thinking": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "memory": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "env": {
+        "MEMORY_FILE_PATH": "YOUR_MEMORY_PATH_HERE"
+      }
+    },
+    "filesystem": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "YOUR_ALLOWED_DIRS_HERE"]
+    },
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_TOKEN_HERE"
+      }
+    },
+    "postgres": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["postgres-mcp", "--access-mode=unrestricted"],
+      "env": {
+        "DATABASE_URI": "YOUR_DATABASE_URI_HERE"
+      }
+    },
+    "coolify": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@masonator/coolify-mcp"],
+      "env": {
+        "COOLIFY_ACCESS_TOKEN": "YOUR_TOKEN_HERE",
+        "COOLIFY_BASE_URL": "YOUR_COOLIFY_URL_HERE"
+      }
+    },
+    "n8n-mcp": {
+      "type": "stdio",
+      "command": "supergateway",
+      "args": ["--streamableHttp", "YOUR_N8N_MCP_URL_HERE"]
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    }
+  }
+}
