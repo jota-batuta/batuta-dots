@@ -108,7 +108,19 @@ Ese `>` es donde le escribes tus instrucciones.
 
 **Que vamos a hacer**: Darle a Claude las "recetas" (skills) que necesita para trabajar al estilo Batuta.
 
-**Copia y pega este prompt**:
+**Opcion A — Si ya tienes los commands de Batuta instalados** (recomendado):
+
+Simplemente escribe:
+
+```
+/batuta-init batuta-app
+```
+
+Y listo. Claude configura todo automaticamente.
+
+**Opcion B — Si es la primera vez y no tienes los commands:**
+
+Copia y pega este prompt:
 
 ```
 Necesito configurar este proyecto con el ecosistema Batuta.
@@ -121,6 +133,9 @@ Haz lo siguiente:
 5. Inicializa git en esta carpeta si no existe
 6. Confirma cuando todo este listo
 ```
+
+> Despues de esta primera vez, los commands `/batuta-init` y `/batuta-update` quedan
+> instalados y ya no necesitas copiar el prompt largo nunca mas.
 
 **Que esperar**: Claude va a descargar el ecosistema y configurar todo. Puede tomar 1-2 minutos. Cuando termine, te dira que archivos creo.
 

@@ -154,6 +154,25 @@ sync_claude() {
     else
         log_success "Synced $count skills to ~/.claude/skills/"
     fi
+
+    # Sync commands (slash commands)
+    local commands_src="$REPO_ROOT/BatutaClaude/commands"
+    local commands_dir="$HOME_DIR/.claude/commands"
+
+    if [[ -d "$commands_src" ]]; then
+        mkdir -p "$commands_dir"
+        local cmd_count=0
+        for cmd_file in "$commands_src"/*.md; do
+            [[ ! -f "$cmd_file" ]] && continue
+            local cmd_name=$(basename "$cmd_file")
+            cp -f "$cmd_file" "$commands_dir/$cmd_name"
+            log_info "  -> Command: $cmd_name"
+            cmd_count=$((cmd_count + 1))
+        done
+        if [[ $cmd_count -gt 0 ]]; then
+            log_success "Synced $cmd_count commands to ~/.claude/commands/"
+        fi
+    fi
 }
 
 # ============================================================================
