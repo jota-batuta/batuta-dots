@@ -364,7 +364,7 @@ Use the template from [assets/workflow-template.md](assets/workflow-template.md)
 {What the user sees when the workflow completes}
 
 ### Registration
-Add to AGENTS.md under "Command -> Skill Mapping":
+Add to CLAUDE.md under "Command -> Skill Mapping":
 `/{domain}:{action}` -> `{skill-1}` then `{skill-2}`
 ```
 
@@ -378,7 +378,7 @@ After creating ANY component, you MUST register it. This is the most commonly fo
 
 - [ ] Skill directory created: `BatutaClaude/skills/{skill-name}/SKILL.md`
 - [ ] SKILL.md has complete frontmatter (name, description with triggers, license, metadata)
-- [ ] Added to **AGENTS.md** under the appropriate skills table:
+- [ ] Added to **CLAUDE.md** under the appropriate skills table:
   ```markdown
   | `{skill-name}` | {Description} | [SKILL.md](BatutaClaude/skills/{skill-name}/SKILL.md) |
   ```
@@ -390,13 +390,13 @@ After creating ANY component, you MUST register it. This is the most commonly fo
   ```
   - Infrastructure skills go under "Infrastructure Skills (always available)"
   - Project skills go under "Project Skills (added via ecosystem-creator)"
-- [ ] If the skill was in the planned roadmap (AGENTS.md "Project Skills"), update status from `planned` to `active`
+- [ ] If the skill was in the planned roadmap (CLAUDE.md "Project Skills"), update status from `planned` to `active`
 - [ ] If the skill has assets/, verify templates are present
 
 ### Agent Registration Checklist
 
 - [ ] Agent definition added to `opencode.json` (or equivalent agent config)
-- [ ] Agent entry added to **AGENTS.md** if it references skills
+- [ ] Agent entry added to **CLAUDE.md** if it references skills
 - [ ] System prompt references relevant skills by path
 - [ ] Agent has proper model, tools, and maxTokens configuration
 - [ ] Agent metadata includes category and skill references
@@ -406,19 +406,19 @@ After creating ANY component, you MUST register it. This is the most commonly fo
 - [ ] Sub-agent skill file created: `BatutaClaude/skills/{sub-agent-name}/SKILL.md`
 - [ ] SKILL.md has complete frontmatter with triggers
 - [ ] Output contract section is present and follows the envelope format
-- [ ] Added to **AGENTS.md** under "Infrastructure Skills (Bootstrapped)"
+- [ ] Added to **CLAUDE.md** under "Infrastructure Skills (Bootstrapped)"
 - [ ] Added to **CLAUDE.md** under "Infrastructure Skills (always available)"
-- [ ] If it extends the SDD pipeline, added to the Dependency Graph in AGENTS.md
-- [ ] Orchestrator rules in AGENTS.md updated if new delegation pattern is needed
+- [ ] If it extends the SDD pipeline, added to the Dependency Graph in CLAUDE.md
+- [ ] Orchestrator rules in CLAUDE.md updated if new delegation pattern is needed
 
 ### Workflow Registration Checklist
 
-- [ ] Workflow command documented in **AGENTS.md** under the appropriate commands section
-- [ ] Command -> Skill Mapping added to AGENTS.md:
+- [ ] Workflow command documented in **CLAUDE.md** under the appropriate commands section
+- [ ] Command -> Skill Mapping added to CLAUDE.md:
   ```markdown
   - `/{domain}:{action}` -> `{skill-name}` (mode: {mode if applicable})
   ```
-- [ ] If the workflow introduces new slash commands, added to the "Commands" section in AGENTS.md
+- [ ] If the workflow introduces new slash commands, added to the "Commands" section in CLAUDE.md
 - [ ] Any new skills referenced by the workflow are themselves registered
 
 ---
@@ -439,12 +439,12 @@ Link to local project docs? -> references/ (with local path)
 
 ## Planned Skills Roadmap
 
-The full roadmap of planned skills is maintained in **AGENTS.md** under the "Project Skills (Created via ecosystem-creator)" section. Before creating a new skill, check if it already exists in the roadmap. If it does:
+The full roadmap of planned skills is maintained in **CLAUDE.md** under the "Project Skills (Created via ecosystem-creator)" section. Before creating a new skill, check if it already exists in the roadmap. If it does:
 1. Use the name and description from the roadmap
 2. After creation, update the status from `planned` to `active`
 3. Add the File column link
 
-If the skill is NOT in the roadmap, add it to the appropriate category in AGENTS.md during registration.
+If the skill is NOT in the roadmap, add it to the appropriate category in CLAUDE.md during registration.
 
 ---
 
@@ -487,7 +487,7 @@ Skill Gap Detected: "{technology}" has no active skill
 │     ASK: "¿Apruebas este skill o quieres ajustar algo?"
 │
 └─ 6. REGISTER — Follow full Registration Checklist
-      Update: AGENTS.md (change status from planned to active, or add new entry)
+      Update: CLAUDE.md (change status from planned to active, or add new entry)
       Update: CLAUDE.md (add to auto-load table)
       Sync: Run setup.sh --sync-all (suggest to user)
 ```
@@ -533,7 +533,7 @@ If ambiguous, ASK the user. Do not guess.
 
 ```
 Search BatutaClaude/skills/ for existing skills with similar names.
-Search AGENTS.md for existing entries.
+Search CLAUDE.md for existing entries.
 Search CLAUDE.md for existing context entries.
 ```
 
@@ -585,7 +585,7 @@ Follow the Registration Checklist for the component type. This step is MANDATORY
 ### 6. Verify Registration
 
 After registering, verify:
-- [ ] The component appears in AGENTS.md
+- [ ] The component appears in CLAUDE.md
 - [ ] The component appears in CLAUDE.md (for skills and sub-agents)
 - [ ] The file structure matches the expected layout
 - [ ] The frontmatter is complete and valid
@@ -619,7 +619,7 @@ Return a summary:
 ## Checklist Before Creating Any Component
 
 - [ ] Component type identified (Skill / Agent / Sub-Agent / Workflow)
-- [ ] Component does not already exist (checked `skills/`, AGENTS.md, CLAUDE.md)
+- [ ] Component does not already exist (checked `skills/`, CLAUDE.md, CLAUDE.md)
 - [ ] Name follows naming conventions for its type
 - [ ] Requirements are clear (or clarification has been requested)
 - [ ] Appropriate template is being used
@@ -647,5 +647,5 @@ Return a summary:
   - [agent-template.json](assets/agent-template.json) -- Agent definition template
   - [sub-agent-template.md](assets/sub-agent-template.md) -- Sub-agent SKILL.md template
   - [workflow-template.md](assets/workflow-template.md) -- Workflow definition template
-- **Registration targets**: AGENTS.md (master registry), CLAUDE.md (auto-load table)
-- **Planned roadmap**: AGENTS.md under "Project Skills" section
+- **Registration targets**: CLAUDE.md (master registry), CLAUDE.md (auto-load table)
+- **Planned roadmap**: CLAUDE.md under "Project Skills" section

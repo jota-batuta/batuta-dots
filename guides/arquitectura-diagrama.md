@@ -4,12 +4,8 @@
 
 ```mermaid
 flowchart TB
-    subgraph FUENTE["FUENTE UNICA DE VERDAD"]
-        AGENTS["AGENTS.md<br/>Skills, SDD, Scope Rule,<br/>Gap Detection, Auto-Update SPO"]
-    end
-
-    subgraph PERSONALIDAD["PERSONALIDAD"]
-        CLAUDE_SRC["BatutaClaude/CLAUDE.md<br/>CTO/Mentor, reglas, tono,<br/>gap detection, scope rule"]
+    subgraph FUENTE["PUNTO DE ENTRADA UNICO"]
+        CLAUDE_SRC["BatutaClaude/CLAUDE.md<br/>Personalidad, reglas, Scope Rule,<br/>Gap Detection, routing de skills"]
     end
 
     subgraph SETUP["SCRIPTS"]
@@ -18,7 +14,7 @@ flowchart TB
     end
 
     subgraph GENERADO["ARCHIVOS GENERADOS (gitignored)"]
-        CLAUDE_GEN["CLAUDE.md<br/>(personalidad + AGENTS.md)"]
+        CLAUDE_GEN["CLAUDE.md (raiz)<br/>(copia directa)"]
     end
 
     subgraph SKILLS_LOCAL["~/.claude/skills/ (usuario)"]
@@ -33,15 +29,13 @@ flowchart TB
         CMD_UPDATE["/batuta-update"]
     end
 
-    AGENTS --> SETUP_SH
     CLAUDE_SRC --> SETUP_SH
     SETUP_SH -->|"--claude"| CLAUDE_GEN
     SETUP_SH -->|"--sync"| SKILLS_LOCAL
     SETUP_SH -->|"--sync"| COMMANDS_LOCAL
-    AGENTS --> REPLICATE
+    CLAUDE_SRC --> REPLICATE
 
     style FUENTE fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
-    style PERSONALIDAD fill:#2d2d2d,stroke:#C4A882,color:#F5EDE4
     style GENERADO fill:#1a1a1a,stroke:#666,color:#999,stroke-dasharray: 5 5
     style SKILLS_LOCAL fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
     style COMMANDS_LOCAL fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
@@ -109,6 +103,31 @@ graph LR
 ```
 
 > **spec** y **design** pueden ejecutarse en paralelo. Ambos deben completarse antes de **tasks**.
+
+---
+
+## Carga Lazy de Skills
+
+```mermaid
+flowchart TD
+    START["Claude inicia conversacion"]
+    READ["Lee CLAUDE.md<br/>(~170 lineas: personalidad,<br/>reglas, routing table)"]
+    TASK["Usuario pide tarea"]
+    MATCH{"Coincide con<br/>algun contexto<br/>de la routing table?"}
+    LOAD["Carga SKILL.md<br/>correspondiente"]
+    NOLOAD["Trabaja con<br/>conocimiento general"]
+    WORK["Ejecuta la tarea<br/>con el skill cargado"]
+
+    START --> READ --> TASK --> MATCH
+    MATCH -->|"Si"| LOAD --> WORK
+    MATCH -->|"No"| NOLOAD --> WORK
+
+    style READ fill:#D4956A,color:#fff
+    style LOAD fill:#8BB87A,color:#fff
+    style NOLOAD fill:#666,color:#fff
+```
+
+> Claude solo lee ~170 lineas al iniciar. Los skills (~200-500 lineas cada uno) se cargan SOLO cuando se necesitan.
 
 ---
 
@@ -192,7 +211,7 @@ flowchart TD
     STAYS["Se queda solo<br/>en Proyecto X"]
     GENERALIZE["Generalizar:<br/>quitar referencias<br/>especificas del proyecto"]
     COPY["Copiar a<br/>batuta-dots/BatutaClaude/skills/"]
-    REGISTER["Registrar en<br/>AGENTS.md + CLAUDE.md"]
+    REGISTER["Registrar en<br/>CLAUDE.md"]
     SYNC["Ejecutar<br/>setup.sh --all"]
     PUSH["Commit + push<br/>a batuta-dots"]
     BENEFIT["Todos los proyectos<br/>futuros se benefician"]
@@ -250,4 +269,4 @@ flowchart TD
 Estos diagramas usan **Mermaid**, un formato que se renderiza automaticamente en:
 - **GitHub**: Abre este archivo en github.com y los diagramas se ven como imagenes
 - **VS Code**: Instala la extension "Markdown Preview Mermaid Support"
-- **Mermaid Live Editor**: Copia el codigo entre \`\`\`mermaid y \`\`\` en [mermaid.live](https://mermaid.live)
+- **Mermaid Live Editor**: Copia el codigo entre ```mermaid y ``` en [mermaid.live](https://mermaid.live)

@@ -88,8 +88,8 @@ When the workflow completes, the user sees:
 
 After creating this workflow, update these files:
 
-- [ ] **AGENTS.md** -- Add to the appropriate commands section (SDD Commands or Batuta Ecosystem Commands)
-- [ ] **AGENTS.md** -- Add to "Command -> Skill Mapping" section:
+- [ ] **CLAUDE.md** -- Add to the appropriate commands section (SDD Commands or Batuta Ecosystem Commands)
+- [ ] **CLAUDE.md** -- Add to "Command -> Skill Mapping" section:
   ```markdown
   - `/{domain}:{action}` -> `{skill-1}` then `{skill-2}`
   ```

@@ -23,17 +23,18 @@ siempre cocina igual, siempre bien.
 
 ---
 
-## El Libro de Recetas (AGENTS.md)
+## Las Instrucciones del Chef (CLAUDE.md)
 
-**AGENTS.md** es el libro de recetas maestro del restaurante. Contiene:
+**CLAUDE.md** es la hoja de instrucciones que el chef lee cada vez que empieza a trabajar. Contiene:
 
-- Que platos sabe hacer el restaurante
-- Como se prepara cada uno
-- Que ingredientes usar
-- Que NO hacer nunca
+- Que personalidad tiene (CTO/Mentor: paciente, educador)
+- Que reglas seguir siempre
+- Donde encontrar cada receta (skill)
+- Como organizar la cocina (Scope Rule)
+- Que hacer cuando no tiene una receta (Skill Gap Detection)
 
-> **Regla importante**: Solo hay UN libro de recetas. Si quieres cambiar algo,
-> cambias el libro y todas las sucursales (proyectos) se actualizan.
+> **Regla importante**: Solo hay UN archivo de instrucciones. Si quieres cambiar algo,
+> cambias CLAUDE.md y todas las sucursales (proyectos) se actualizan.
 
 ---
 
@@ -50,6 +51,10 @@ Cada **skill** es una receta especifica. Por ejemplo:
 
 El chef tiene **12 recetas basicas** que siempre estan disponibles, y puede **aprender
 recetas nuevas** cuando las necesita.
+
+**Detalle importante**: Las recetas NO se leen todas al empezar. El chef solo abre la
+receta que necesita para el plato que esta preparando. Esto se llama "carga bajo demanda"
+y hace que el chef sea mas rapido y eficiente.
 
 ---
 
@@ -204,8 +209,9 @@ pedidos en el restaurante:
 | **Dueno del restaurante** | Tu (JNMZ) | Decides que platos ofrecer, apruebas propuestas |
 | **Chef principal** | Claude Code | Coordina, planea, delega. Nunca cocina directamente. |
 | **Sub-chefs** | Sub-agentes SDD | Hacen el trabajo pesado: investigar, disenar, cocinar, verificar |
-| **Libro de recetas** | AGENTS.md + Skills | Las instrucciones que el chef sigue |
-| **Organisacion de cocina** | Scope Rule | Donde va cada cosa |
+| **Hoja de instrucciones** | CLAUDE.md | Las instrucciones que el chef lee al empezar + donde encontrar recetas |
+| **Recetas** | Skills (SKILL.md) | Instrucciones detalladas para cada plato/tecnologia |
+| **Organizacion de cocina** | Scope Rule | Donde va cada cosa |
 | **Control de calidad** | sdd-verify + O.R.T.A. | Verifican que todo salga bien |
 | **Aprendiz que investiga** | ecosystem-creator | Cuando falta una receta, investiga y la crea |
 

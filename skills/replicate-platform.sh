@@ -3,7 +3,7 @@
 # Batuta.Dots — Platform Replication Script
 # ============================================================================
 # This script generates instruction files for OTHER AI coding assistants
-# from AGENTS.md. Use this when you want to extend batuta-dots beyond
+# from CLAUDE.md. Use this when you want to extend batuta-dots beyond
 # Claude Code to Gemini, Copilot, Codex, or OpenCode.
 #
 # The main setup.sh is Claude-only. This script is the bridge to
@@ -75,20 +75,20 @@ log_header() {
 # ============================================================================
 
 generate_gemini() {
-    local agents_file="$REPO_ROOT/AGENTS.md"
+    local agents_file="$REPO_ROOT/CLAUDE.md"
     local output_file="$REPO_ROOT/GEMINI.md"
 
-    log_info "Generating GEMINI.md from AGENTS.md"
+    log_info "Generating GEMINI.md from CLAUDE.md"
 
     if [[ ! -f "$agents_file" ]]; then
-        log_error "AGENTS.md not found at $agents_file"
+        log_error "CLAUDE.md not found at $agents_file"
         return 1
     fi
 
     cat > "$output_file" << 'HEADER'
 # Gemini CLI Instructions
 
-> **Auto-generated from AGENTS.md** - Do not edit directly.
+> **Auto-generated from CLAUDE.md** - Do not edit directly.
 > Run `./skills/replicate-platform.sh --gemini` to regenerate.
 
 HEADER
@@ -98,20 +98,20 @@ HEADER
 }
 
 generate_codex() {
-    local agents_file="$REPO_ROOT/AGENTS.md"
+    local agents_file="$REPO_ROOT/CLAUDE.md"
     local output_file="$REPO_ROOT/CODEX.md"
 
-    log_info "Generating CODEX.md from AGENTS.md"
+    log_info "Generating CODEX.md from CLAUDE.md"
 
     if [[ ! -f "$agents_file" ]]; then
-        log_error "AGENTS.md not found at $agents_file"
+        log_error "CLAUDE.md not found at $agents_file"
         return 1
     fi
 
     cat > "$output_file" << 'HEADER'
 # OpenAI Codex Instructions
 
-> **Auto-generated from AGENTS.md** - Do not edit directly.
+> **Auto-generated from CLAUDE.md** - Do not edit directly.
 > Run `./skills/replicate-platform.sh --codex` to regenerate.
 
 HEADER
@@ -121,14 +121,14 @@ HEADER
 }
 
 generate_copilot() {
-    local agents_file="$REPO_ROOT/AGENTS.md"
+    local agents_file="$REPO_ROOT/CLAUDE.md"
     local copilot_dir="$REPO_ROOT/.github"
     local output_file="$copilot_dir/copilot-instructions.md"
 
-    log_info "Generating .github/copilot-instructions.md from AGENTS.md"
+    log_info "Generating .github/copilot-instructions.md from CLAUDE.md"
 
     if [[ ! -f "$agents_file" ]]; then
-        log_error "AGENTS.md not found at $agents_file"
+        log_error "CLAUDE.md not found at $agents_file"
         return 1
     fi
 
@@ -137,7 +137,7 @@ generate_copilot() {
     cat > "$output_file" << 'HEADER'
 # GitHub Copilot Instructions
 
-> **Auto-generated from AGENTS.md** - Do not edit directly.
+> **Auto-generated from CLAUDE.md** - Do not edit directly.
 > Run `./skills/replicate-platform.sh --copilot` to regenerate.
 
 HEADER
@@ -161,10 +161,10 @@ sync_opencode() {
     mkdir -p "$opencode_user_dir"
     mkdir -p "$opencode_repo_dir"
 
-    if [[ -f "$REPO_ROOT/AGENTS.md" ]]; then
-        cp "$REPO_ROOT/AGENTS.md" "$opencode_user_dir/AGENTS.md"
-        cp "$REPO_ROOT/AGENTS.md" "$opencode_repo_dir/AGENTS.md"
-        log_info "  -> Copied AGENTS.md to OpenCode (user + repo)"
+    if [[ -f "$REPO_ROOT/CLAUDE.md" ]]; then
+        cp "$REPO_ROOT/CLAUDE.md" "$opencode_user_dir/CLAUDE.md"
+        cp "$REPO_ROOT/CLAUDE.md" "$opencode_repo_dir/CLAUDE.md"
+        log_info "  -> Copied CLAUDE.md to OpenCode (user + repo)"
     fi
 
     local count=0
@@ -217,15 +217,15 @@ show_help() {
 Batuta.Dots — Platform Replication Script
 ==========================================
 
-Replicates AGENTS.md and skills to non-Claude AI coding assistants.
+Replicates CLAUDE.md and skills to non-Claude AI coding assistants.
 The main setup.sh is Claude-only. Use this script to extend to other platforms.
 
 Usage: ./skills/replicate-platform.sh [OPTIONS]
 
 Generation Options:
-  --gemini      Generate GEMINI.md from AGENTS.md
-  --copilot     Generate .github/copilot-instructions.md from AGENTS.md
-  --codex       Generate CODEX.md from AGENTS.md
+  --gemini      Generate GEMINI.md from CLAUDE.md
+  --copilot     Generate .github/copilot-instructions.md from CLAUDE.md
+  --codex       Generate CODEX.md from CLAUDE.md
   --opencode    Sync skills to OpenCode config (BatutaOpenCode/ + ~/.config/opencode/)
   --all         Generate all of the above at once
   --help, -h    Show this help message

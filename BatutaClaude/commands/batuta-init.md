@@ -2,7 +2,7 @@
 name: batuta-init
 description: >
   Import the Batuta AI ecosystem into the current project.
-  Sets up CLAUDE.md, AGENTS.md, skills, and git initialization.
+  Sets up CLAUDE.md, skills, and git initialization.
   Use this when starting a new project with Batuta conventions.
 disable-model-invocation: true
 argument-hint: "[project-name]"
@@ -17,18 +17,17 @@ Initialize this project with the Batuta AI ecosystem. Follow these steps exactly
 
 Check if batuta-dots exists locally:
 
-1. First check: `E:/BATUTA PROJECTS/claude/batuta-dots/AGENTS.md`
-2. If not found, check: `~/batuta-dots/AGENTS.md`
+1. First check: `E:/BATUTA PROJECTS/claude/batuta-dots/BatutaClaude/CLAUDE.md`
+2. If not found, check: `~/batuta-dots/BatutaClaude/CLAUDE.md`
 3. If not found, clone it: `git clone https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-dots`
 
 Store the path you found as `BATUTA_DOTS_PATH`.
 
-### Step 2: Copy ecosystem files
+### Step 2: Copy CLAUDE.md
 
-Copy these files from `BATUTA_DOTS_PATH` to the current project root:
+Copy from `BATUTA_DOTS_PATH`:
 
-1. `AGENTS.md` → `./AGENTS.md`
-2. `BatutaClaude/CLAUDE.md` → `./CLAUDE.md`
+1. `BatutaClaude/CLAUDE.md` → `./CLAUDE.md`
 
 Do NOT copy settings.json, mcp-servers.template.json, or other config files — those stay in batuta-dots.
 
@@ -70,8 +69,7 @@ Report to the user:
 Ecosistema Batuta instalado en este proyecto.
 
 Archivos creados:
-- CLAUDE.md (personalidad + reglas)
-- AGENTS.md (fuente unica de verdad)
+- CLAUDE.md (personalidad + reglas + routing de skills)
 
 Skills sincronizados a ~/.claude/skills/ (X skills)
 

@@ -2,18 +2,18 @@
 # ============================================================================
 # Batuta.Dots — Claude Code Setup Script
 # ============================================================================
-# This script manages AGENTS.md → CLAUDE.md generation and skill syncing
-# for Claude Code. This is the ONLY AI tool managed by this script.
+# CLAUDE.md is the single entry point. Skills are lazy-loaded.
+# This script copies CLAUDE.md to the project root and syncs skills.
 #
 # For other platforms (Gemini, Copilot, Codex, OpenCode), use:
 #   ./skills/replicate-platform.sh --all
 #
 # Usage:
 #   ./skills/setup.sh              # Interactive menu
-#   ./skills/setup.sh --claude     # Generate CLAUDE.md
+#   ./skills/setup.sh --claude     # Copy CLAUDE.md to project root
 #   ./skills/setup.sh --sync       # Sync skills to ~/.claude/skills/
-#   ./skills/setup.sh --all        # Generate + Sync
-#   ./skills/setup.sh --verify     # Verify generated files
+#   ./skills/setup.sh --all        # Copy + Sync
+#   ./skills/setup.sh --verify     # Verify setup
 #   ./skills/setup.sh --help       # Show this help
 #
 # Platform: Windows (Git Bash / MSYS2 / MINGW) and native Unix
@@ -71,40 +71,23 @@ log_header() {
 }
 
 # ============================================================================
-# Generate CLAUDE.md
+# Copy CLAUDE.md to project root
 # ============================================================================
 
 generate_claude() {
-    local agents_file="$REPO_ROOT/AGENTS.md"
-    local personality_file="$REPO_ROOT/BatutaClaude/CLAUDE.md"
+    local source_file="$REPO_ROOT/BatutaClaude/CLAUDE.md"
     local output_file="$REPO_ROOT/CLAUDE.md"
 
-    log_info "Generating CLAUDE.md from BatutaClaude/CLAUDE.md + AGENTS.md"
+    log_info "Copying BatutaClaude/CLAUDE.md to project root"
 
-    if [[ ! -f "$agents_file" ]]; then
-        log_error "AGENTS.md not found at $agents_file"
+    if [[ ! -f "$source_file" ]]; then
+        log_error "BatutaClaude/CLAUDE.md not found at $source_file"
         return 1
     fi
 
-    cat > "$output_file" << 'HEADER'
-# Claude Code Instructions
+    cp -f "$source_file" "$output_file"
 
-> **Auto-generated from AGENTS.md** - Do not edit directly.
-> Run `./skills/setup.sh --claude` to regenerate.
-
-HEADER
-
-    if [[ -f "$personality_file" ]]; then
-        cat "$personality_file" >> "$output_file"
-        printf "\n\n---\n\n" >> "$output_file"
-        log_info "  Included BatutaClaude/CLAUDE.md personality"
-    else
-        log_warning "  BatutaClaude/CLAUDE.md not found, skipping personality header"
-    fi
-
-    cat "$agents_file" >> "$output_file"
-
-    log_success "Created $output_file"
+    log_success "Created $output_file (direct copy from BatutaClaude/CLAUDE.md)"
 }
 
 # ============================================================================
@@ -176,7 +159,7 @@ sync_claude() {
 }
 
 # ============================================================================
-# All: Generate + Sync
+# All: Copy + Sync
 # ============================================================================
 
 do_all() {
@@ -197,42 +180,52 @@ do_all() {
 verify() {
     log_header "Verifying Claude Code Setup"
 
-    local agents_file="$REPO_ROOT/AGENTS.md"
     local errors=0
 
-    if [[ ! -f "$agents_file" ]]; then
-        log_error "AGENTS.md not found - cannot verify"
-        return 1
-    fi
-
-    local check_string="Single Source of Truth"
-    local claude_file="$REPO_ROOT/CLAUDE.md"
-
-    # Check CLAUDE.md
-    if [[ ! -f "$claude_file" ]]; then
-        log_warning "CLAUDE.md does not exist (run --claude or --all first)"
+    # Check BatutaClaude/CLAUDE.md (source)
+    local source_file="$REPO_ROOT/BatutaClaude/CLAUDE.md"
+    if [[ ! -f "$source_file" ]]; then
+        log_error "BatutaClaude/CLAUDE.md not found — this is the source file"
         errors=$((errors + 1))
     else
-        if grep -q "Auto-generated from AGENTS.md" "$claude_file" 2>/dev/null; then
-            log_success "CLAUDE.md has auto-generation header"
-        else
-            log_error "CLAUDE.md is missing auto-generation header"
-            errors=$((errors + 1))
-        fi
+        log_success "BatutaClaude/CLAUDE.md exists (source)"
+    fi
 
-        if grep -q "$check_string" "$claude_file" 2>/dev/null; then
-            log_success "CLAUDE.md contains AGENTS.md content"
-        else
-            log_error "CLAUDE.md does not contain AGENTS.md content"
-            errors=$((errors + 1))
-        fi
+    # Check root CLAUDE.md (copy)
+    local claude_file="$REPO_ROOT/CLAUDE.md"
+    if [[ ! -f "$claude_file" ]]; then
+        log_warning "CLAUDE.md does not exist at root (run --claude or --all first)"
+        errors=$((errors + 1))
+    else
+        log_success "CLAUDE.md exists at root"
 
-        if grep -q "Personality" "$claude_file" 2>/dev/null || \
-           grep -q "Rules" "$claude_file" 2>/dev/null; then
+        if grep -q "Personality" "$claude_file" 2>/dev/null; then
             log_success "CLAUDE.md includes personality content"
         else
-            log_warning "CLAUDE.md may be missing personality content"
+            log_error "CLAUDE.md is missing personality content"
+            errors=$((errors + 1))
         fi
+
+        if grep -q "Scope Rule" "$claude_file" 2>/dev/null; then
+            log_success "CLAUDE.md includes Scope Rule"
+        else
+            log_error "CLAUDE.md is missing Scope Rule"
+            errors=$((errors + 1))
+        fi
+
+        if grep -q "Skill Gap Detection" "$claude_file" 2>/dev/null; then
+            log_success "CLAUDE.md includes Skill Gap Detection"
+        else
+            log_error "CLAUDE.md is missing Skill Gap Detection"
+            errors=$((errors + 1))
+        fi
+    fi
+
+    # Check AGENTS.md is gone
+    if [[ -f "$REPO_ROOT/AGENTS.md" ]]; then
+        log_warning "AGENTS.md still exists — it should have been removed (v3 refactor)"
+    else
+        log_success "AGENTS.md removed (CLAUDE.md is the single entry point)"
     fi
 
     # Check skills sync
@@ -276,11 +269,11 @@ show_menu() {
     log_header "Batuta.Dots — Claude Code Setup"
 
     echo "This script configures Claude Code with the Batuta ecosystem."
-    echo "AGENTS.md is the single source of truth."
+    echo "CLAUDE.md is the single entry point. Skills are lazy-loaded."
     echo ""
-    printf "  ${CYAN}1)${NC} Generate CLAUDE.md (personality + AGENTS.md)\n"
+    printf "  ${CYAN}1)${NC} Copy CLAUDE.md to project root\n"
     printf "  ${CYAN}2)${NC} Sync skills to ~/.claude/skills/\n"
-    printf "  ${CYAN}3)${NC} Both (generate + sync)\n"
+    printf "  ${CYAN}3)${NC} Both (copy + sync)\n"
     printf "  ${CYAN}4)${NC} Verify setup\n"
     printf "  ${CYAN}5)${NC} Help\n"
     printf "  ${CYAN}0)${NC} Exit\n"
@@ -318,18 +311,18 @@ Batuta.Dots — Claude Code Setup
 =================================
 
 Configures Claude Code with the Batuta AI ecosystem.
-AGENTS.md is the single source of truth.
+CLAUDE.md is the single entry point. Skills are lazy-loaded on demand.
 
 Usage: ./skills/setup.sh [OPTIONS]
 
 Options:
-  --claude      Generate CLAUDE.md
-                  Combines BatutaClaude/CLAUDE.md personality header
-                  with AGENTS.md content into a single root CLAUDE.md
+  --claude      Copy BatutaClaude/CLAUDE.md to project root
+                  This is the file Claude Code reads automatically.
+                  It contains personality, rules, and skill routing.
   --sync        Sync skills to ~/.claude/skills/
                   Copies all SKILL.md files and assets so Claude Code
-                  can auto-load them based on context detection
-  --all         Generate CLAUDE.md + sync skills (recommended)
+                  can load them when it detects the right context.
+  --all         Copy CLAUDE.md + sync skills (recommended)
   --verify      Check that CLAUDE.md and skills are properly configured
   --help, -h    Show this help message
 

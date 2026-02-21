@@ -5,12 +5,13 @@
 # Run:  ./skills/setup_test.sh
 #
 # Tests verify:
-#   - AGENTS.md exists and is not empty
+#   - BatutaClaude/CLAUDE.md exists and is not empty
+#   - AGENTS.md has been removed (v3 refactor)
 #   - setup.sh is executable
 #   - SKILL.md files have valid YAML frontmatter
 #   - scope-rule skill exists
 #   - .gitignore excludes generated files
-#   - Generated CLAUDE.md contains AGENTS.md content and personality
+#   - Copied CLAUDE.md contains expected content
 #   - Skills sync creates correct directories
 #   - Idempotency and error handling
 #   - replicate-platform.sh exists for future use
@@ -56,14 +57,28 @@ assert_file_contains() {
     grep -q "$pattern" "$file" 2>/dev/null && log_pass "Contains '$label': $(basename "$file")" || log_fail "Missing '$label': $(basename "$file")"
 }
 
+assert_file_not_contains() {
+    local file="$1" pattern="$2" label="${3:-$2}"
+    ! grep -q "$pattern" "$file" 2>/dev/null && log_pass "Does not contain '$label': $(basename "$file")" || log_fail "Should not contain '$label': $(basename "$file")"
+}
+
 # ============================================================================
-# 1. Prerequisite Tests
+# 1. Source File Tests
 # ============================================================================
 
-test_agents_md_exists_and_not_empty() {
-    log_test "AGENTS.md exists and is not empty"
-    assert_file_exists "$REPO_ROOT/AGENTS.md"
-    assert_file_not_empty "$REPO_ROOT/AGENTS.md"
+test_claude_md_source_exists() {
+    log_test "BatutaClaude/CLAUDE.md exists and is not empty"
+    assert_file_exists "$REPO_ROOT/BatutaClaude/CLAUDE.md"
+    assert_file_not_empty "$REPO_ROOT/BatutaClaude/CLAUDE.md"
+}
+
+test_agents_md_removed() {
+    log_test "AGENTS.md has been removed (v3 refactor)"
+    if [[ -f "$REPO_ROOT/AGENTS.md" ]]; then
+        log_fail "AGENTS.md still exists — should have been removed in v3 refactor"
+    else
+        log_pass "AGENTS.md correctly removed"
+    fi
 }
 
 test_setup_script_is_executable() {
@@ -142,11 +157,11 @@ test_gitignore_excludes_generated() {
 }
 
 # ============================================================================
-# 5. Claude Code Generation Tests
+# 5. Claude Code Copy Tests
 # ============================================================================
 
-test_generate_claude_creates_file() {
-    log_test "setup.sh --claude generates CLAUDE.md"
+test_copy_claude_creates_file() {
+    log_test "setup.sh --claude copies CLAUDE.md to root"
     rm -f "$REPO_ROOT/CLAUDE.md"
 
     if bash "$SETUP_SCRIPT" --claude >/dev/null 2>&1; then
@@ -159,22 +174,33 @@ test_generate_claude_creates_file() {
     assert_file_exists "$REPO_ROOT/CLAUDE.md"
 }
 
-test_claude_md_contains_agents_content() {
-    log_test "CLAUDE.md contains AGENTS.md content"
-    [[ ! -f "$REPO_ROOT/CLAUDE.md" ]] && bash "$SETUP_SCRIPT" --claude >/dev/null 2>&1
-
-    assert_file_contains "$REPO_ROOT/CLAUDE.md" "Single Source of Truth"
-    assert_file_contains "$REPO_ROOT/CLAUDE.md" "Batuta"
-    assert_file_contains "$REPO_ROOT/CLAUDE.md" "Auto-generated from AGENTS.md" "auto-gen header"
-}
-
-test_claude_md_includes_personality() {
-    log_test "CLAUDE.md includes personality content"
+test_claude_md_contains_expected_content() {
+    log_test "CLAUDE.md contains expected content"
     [[ ! -f "$REPO_ROOT/CLAUDE.md" ]] && bash "$SETUP_SCRIPT" --claude >/dev/null 2>&1
 
     assert_file_contains "$REPO_ROOT/CLAUDE.md" "Personality" "personality section"
     assert_file_contains "$REPO_ROOT/CLAUDE.md" "Scope Rule" "scope rule section"
     assert_file_contains "$REPO_ROOT/CLAUDE.md" "Skill Gap Detection" "gap detection"
+    assert_file_contains "$REPO_ROOT/CLAUDE.md" "Auto-invoke table" "skill routing"
+    assert_file_contains "$REPO_ROOT/CLAUDE.md" "SDD Commands" "SDD commands table"
+}
+
+test_claude_md_is_direct_copy() {
+    log_test "CLAUDE.md is a direct copy of BatutaClaude/CLAUDE.md"
+    [[ ! -f "$REPO_ROOT/CLAUDE.md" ]] && bash "$SETUP_SCRIPT" --claude >/dev/null 2>&1
+
+    if diff -q "$REPO_ROOT/BatutaClaude/CLAUDE.md" "$REPO_ROOT/CLAUDE.md" >/dev/null 2>&1; then
+        log_pass "CLAUDE.md is identical to BatutaClaude/CLAUDE.md"
+    else
+        log_fail "CLAUDE.md differs from BatutaClaude/CLAUDE.md (should be direct copy)"
+    fi
+}
+
+test_claude_md_no_agents_reference() {
+    log_test "CLAUDE.md does not reference AGENTS.md"
+    [[ ! -f "$REPO_ROOT/CLAUDE.md" ]] && bash "$SETUP_SCRIPT" --claude >/dev/null 2>&1
+
+    assert_file_not_contains "$REPO_ROOT/CLAUDE.md" "AGENTS.md" "AGENTS.md reference"
 }
 
 # ============================================================================
@@ -270,14 +296,16 @@ printf "\n${CYAN}${BOLD}========================================================
 printf "${CYAN}${BOLD}  Batuta.Dots — Test Suite (Claude Code)${NC}\n"
 printf "${CYAN}${BOLD}================================================================${NC}\n"
 
-test_agents_md_exists_and_not_empty
+test_claude_md_source_exists
+test_agents_md_removed
 test_setup_script_is_executable
 test_skill_files_have_valid_frontmatter
 test_scope_rule_skill_exists
 test_gitignore_excludes_generated
-test_generate_claude_creates_file
-test_claude_md_contains_agents_content
-test_claude_md_includes_personality
+test_copy_claude_creates_file
+test_claude_md_contains_expected_content
+test_claude_md_is_direct_copy
+test_claude_md_no_agents_reference
 test_sync_claude_creates_directories
 test_help_flag_works
 test_legacy_flags_redirect
