@@ -121,7 +121,7 @@ IMPORTANT: When you detect any of these contexts, route to the appropriate scope
 4. Apply ALL patterns and rules from the skill
 5. Multiple skills can apply simultaneously (e.g., scope-rule + sdd-apply)
 
-### Planned project skills (17)
+### Planned project skills (16)
 Backend: temporal-worker, multi-tenant-postgres, n8n-workflows, coolify-deploy, secrets-sops, redis-cache, webhook-universal
 AI: ai-agents, llm-optimization, langfuse-observability, pii-presidio
 Frontend: nextjs-portal

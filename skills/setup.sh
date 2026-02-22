@@ -468,7 +468,7 @@ EOF
 parse_args() {
     case "$1" in
         --claude)   generate_claude ;;
-        --sync)     sync_claude ;;
+        --sync)     sync_claude; sync_agents ;;
         --all)      do_all ;;
         --verify)   verify ;;
         --help|-h)  show_help; exit 0 ;;

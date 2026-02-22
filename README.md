@@ -16,7 +16,7 @@ Inspired by [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.
 - **CTO/Mentor personality** that educates and documents for non-technical stakeholders.
 - **Scope Rule** that organizes files by who uses them, not by type.
 - **Skill Gap Detection** with automatic research via Context7.
-- **Lazy skill loading** — Claude reads ~195 lines at startup, skills load on demand.
+- **Lazy skill loading** — Claude reads ~216 lines at startup, skills load on demand.
 - **Mix-of-Experts routing** — principal agent delegates to specialized scope agents.
 - **Execution Gate** — mandatory pre-validation before any code change.
 - **Skill-Sync** — routing tables auto-generated from skill frontmatters.
@@ -79,13 +79,19 @@ batuta-dots/
 │       │   └── assets/session-template.md
 │       └── skill-sync/               # Automatic routing table generation
 │           ├── SKILL.md
-│           └── assets/sync.sh
-├── guides/                            # Step-by-step guides (Spanish)
-│   ├── guia-batuta-app.md             # Dashboard app — full lifecycle guide
-│   ├── guia-temporal-io-app.md        # Temporal.io workflows — full lifecycle guide
-│   ├── guia-langchain-gmail-agent.md  # LangChain + Gmail agent — full lifecycle guide
+│           └── assets/
+│               ├── sync.sh
+│               └── sync_test.sh
+├── about/                             # Architecture and design documentation
 │   ├── arquitectura-diagrama.md       # Mermaid architecture diagrams (9 diagrams)
 │   └── arquitectura-para-no-tecnicos.md  # Non-technical architecture guide (restaurant analogy)
+├── guides/                            # Step-by-step execution guides (Spanish)
+│   ├── guia-batuta-app.md             # Dashboard app — full lifecycle guide
+│   ├── guia-temporal-io-app.md        # Temporal.io workflows — full lifecycle guide
+│   └── guia-langchain-gmail-agent.md  # LangChain + Gmail agent — full lifecycle guide
+├── qa/                                # Quality assurance reports
+│   ├── BatutaTestCalidadV5.md         # Quality test v5 report
+│   └── LogCorrecciones-V5.md         # Corrections log v5
 ├── CHANGELOG-refactor.md              # Refactoring trace document (v1-v5)
 └── skills/                            # Repository-level scripts
     ├── setup.sh                       # Claude Code setup (primary)
@@ -99,10 +105,10 @@ batuta-dots/
 
 1. **CLAUDE.md** is the single entry point. It acts as a pure router using Mix-of-Experts: it classifies each request's scope and delegates to specialized scope agents.
 2. **setup.sh --all** syncs skills and agents, runs skill-sync to regenerate routing tables, then copies the updated CLAUDE.md to root.
-3. **Claude Code** reads CLAUDE.md at conversation start (~195 lines), then uses 3-level lazy loading: principal agent → scope agent → skill.
+3. **Claude Code** reads CLAUDE.md at conversation start (~216 lines), then uses 3-level lazy loading: principal agent → scope agent → skill.
 
 ```
-CLAUDE.md (router — ~195 lines)
+CLAUDE.md (router — ~216 lines)
     │
     ├──> Execution Gate (validate → classify → route → log)
     │
@@ -152,7 +158,7 @@ The principal agent acts as a pure router. It classifies the scope of each reque
 | `infra-agent` | File organization, ecosystem | scope-rule, ecosystem-creator, skill-sync |
 | `observability-agent` | Quality tracking | prompt-tracker |
 
-This keeps the principal agent lightweight (~195 lines) and each scope agent focused on its domain.
+This keeps the principal agent lightweight (~216 lines) and each scope agent focused on its domain.
 
 ### Execution Gate
 
@@ -175,7 +181,7 @@ Before writing code with any technology, Claude checks if an active skill exists
 
 | Level | What loads | Lines |
 |-------|-----------|-------|
-| 1 | CLAUDE.md (router) | ~195 |
+| 1 | CLAUDE.md (router) | ~216 |
 | 2 | Scope agent | ~80-120 |
 | 3 | Individual skill | ~200-500 |
 
@@ -205,7 +211,7 @@ When new skills are created in a project, Claude proposes propagating them back 
 | `sdd-init` through `sdd-archive` | pipeline | 9-phase SDD pipeline |
 | `prompt-tracker` | observability | Track prompt satisfaction, gate compliance, and analyze patterns |
 
-Plus 17 planned project skills. See CLAUDE.md for the full roadmap.
+Plus 16 planned project skills. See CLAUDE.md for the full roadmap.
 
 ---
 
@@ -245,15 +251,20 @@ The `--all` flag: syncs skills and agents → runs skill-sync to regenerate rout
 
 ## Guides
 
-All guides use a sequential step-by-step format covering the full lifecycle: ecosystem installation → SDD pipeline → build → test → deploy → production → archive.
+Step-by-step execution guides covering the full lifecycle: ecosystem installation → SDD pipeline → build → test → deploy → production → archive.
 
 | Guide | Description |
 |-------|-------------|
 | [Dashboard App](guides/guia-batuta-app.md) | Build a monitoring dashboard (n8n + Google AI tokens) — 15 steps |
 | [Temporal.io Workers](guides/guia-temporal-io-app.md) | Build workflow orchestration with Temporal.io — 14 steps |
 | [LangChain + Gmail Agent](guides/guia-langchain-gmail-agent.md) | Build an AI email classifier agent — 15 steps |
-| [Architecture Diagrams](guides/arquitectura-diagrama.md) | 9 Mermaid diagrams (MoE routing, SDD, lazy loading, etc.) |
-| [Non-Technical Architecture](guides/arquitectura-para-no-tecnicos.md) | Restaurant analogy for non-developers |
+
+## About (Architecture & Design)
+
+| Document | Description |
+|----------|-------------|
+| [Architecture Diagrams](about/arquitectura-diagrama.md) | 9 Mermaid diagrams (MoE routing, SDD, lazy loading, etc.) |
+| [Non-Technical Architecture](about/arquitectura-para-no-tecnicos.md) | Restaurant analogy for non-developers |
 
 ---
 

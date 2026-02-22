@@ -51,7 +51,7 @@ Include: active changes, phase status, recent decisions, discovered conventions.
 - Any work that took 5+ back-and-forth exchanges
 
 ### Freshness Check
-At session START, after reading session.md, check the `last_batuta_update` field in the Meta section.
+At session START, after reading session.md, check the **Last batuta update** field in the Meta section.
 If more than 7 days have passed (or the field is missing), suggest:
 "Han pasado {N} dias desde la ultima actualizacion del ecosistema. Considera ejecutar /batuta-update."
 

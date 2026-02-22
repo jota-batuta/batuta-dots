@@ -20,7 +20,7 @@ Tres gaps identificados en v4, validados por analisis del ecosistema Prowler (pr
 3. **Frontmatter estandarizado**: `scope`, `auto_invoke`, `allowed-tools` en TODOS los 13 skills. El scope es la clave de routing.
 4. **Skill-Sync automatizado**: Script lee frontmatters de TODOS los SKILL.md → genera tablas en CLAUDE.md y scope agents automaticamente. Redundancia sin depender del usuario.
 
-### Archivos nuevos (9)
+### Archivos nuevos (7)
 
 | Archivo | Proposito |
 |---------|-----------|
@@ -36,7 +36,7 @@ Tres gaps identificados en v4, validados por analisis del ecosistema Prowler (pr
 
 | Archivo | Cambio | Razon |
 |---------|--------|-------|
-| `BatutaClaude/CLAUDE.md` | **Reescrito** (~239 → ~195 lineas) | Router MoE: Scope Routing Table + Execution Gate + AUTO-GENERATED skills table. Removido: Follow Questions, auto-invoke manual, contenido movido a scope agents |
+| `BatutaClaude/CLAUDE.md` | **Reescrito** (~239 → ~216 lineas) | Router MoE: Scope Routing Table + Execution Gate + AUTO-GENERATED skills table. Removido: Follow Questions, auto-invoke manual, contenido movido a scope agents |
 | 12 x `BatutaClaude/skills/*/SKILL.md` | **Frontmatter** | Agregados `metadata.scope`, `metadata.auto_invoke`, `allowed-tools` |
 | `BatutaClaude/skills/ecosystem-creator/SKILL.md` | **Actualizado** | Templates con scope/auto_invoke, Registration Checklist con skill-sync |
 | `BatutaClaude/skills/ecosystem-creator/assets/skill-template.md` | **Actualizado** | Campos scope y auto_invoke en metadata |
@@ -86,7 +86,7 @@ git checkout HEAD~1 -- skills/setup.sh guides/ README.md README.es.md
 
 | Metrica | v4 | v5 |
 |---------|----|----|
-| CLAUDE.md lineas | ~239 | ~195 |
+| CLAUDE.md lineas | ~239 | ~216 |
 | Skills con scope | 0 | 13 |
 | Skills con auto_invoke | 0 | 13 |
 | Skills con allowed-tools | 2 | 13 |
