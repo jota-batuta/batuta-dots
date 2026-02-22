@@ -379,6 +379,229 @@ flowchart TD
 
 ---
 
+## Modelo de Ejecucion de 3 Niveles (v7)
+
+```mermaid
+flowchart TD
+    USER["Usuario pide tarea"]
+    GATE["Execution Gate<br/>clasifica complejidad"]
+
+    subgraph NIVEL1["NIVEL 1 — Solo Session"]
+        SOLO["Claude trabaja solo<br/>Bug fix, pregunta, edicion<br/>CLAUDE.md → Gate → skill → ejecutar"]
+    end
+
+    subgraph NIVEL2["NIVEL 2 — Subagents (Task tool)"]
+        SUBAGENT["Fire-and-forget<br/>Investigacion, verificacion<br/>Resultado vuelve al contexto"]
+    end
+
+    subgraph NIVEL3["NIVEL 3 — Agent Teams"]
+        LEAD["Lead (coordinador)"]
+        TM1["Teammate 1<br/>(sesion independiente)"]
+        TM2["Teammate 2<br/>(sesion independiente)"]
+        TM3["Teammate N<br/>(sesion independiente)"]
+        MAILBOX["Mailbox<br/>(comunicacion)"]
+        TASKLIST["Task List compartido<br/>(dependencias)"]
+
+        LEAD --> TM1
+        LEAD --> TM2
+        LEAD --> TM3
+        TM1 <--> MAILBOX
+        TM2 <--> MAILBOX
+        TM3 <--> MAILBOX
+        LEAD <--> TASKLIST
+    end
+
+    USER --> GATE
+    GATE -->|"1 archivo, simple"| NIVEL1
+    GATE -->|"investigacion,<br/>verificacion puntual"| NIVEL2
+    GATE -->|"multi-modulo,<br/>pipeline completo,<br/>debugging complejo"| NIVEL3
+
+    style NIVEL1 fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
+    style NIVEL2 fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style NIVEL3 fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
+    style GATE fill:#E8B84D,color:#000
+    style LEAD fill:#D4956A,color:#fff
+    style MAILBOX fill:#9B7AB8,color:#fff
+    style TASKLIST fill:#7AAFC4,color:#fff
+```
+
+> **Nivel 1** = Developer senior trabajando solo. **Nivel 2** = Developer pide ayuda puntual a un colega. **Nivel 3** = CTO arma un squad dedicado para un sprint. El Execution Gate recomienda el nivel segun la complejidad.
+
+---
+
+## Ciclo de Vida de un Agent Team (v7)
+
+```mermaid
+flowchart LR
+    PLAN["PLAN<br/>Lead evalua complejidad<br/>y decide crear team"]
+    SPAWN["SPAWN<br/>Lead crea teammates<br/>con spawn prompts<br/>(scope agents)"]
+    ASSIGN["ASSIGN<br/>Lead crea task list<br/>con dependencias"]
+    WORK["WORK<br/>Teammates ejecutan<br/>tasks en paralelo"]
+    HOOKGATE["GATE<br/>TaskCompleted hook<br/>valida calidad"]
+    SYNC["SYNC<br/>TeammateIdle hook<br/>centraliza logs"]
+    CLOSE["CLOSE<br/>Lead consolida<br/>resultados"]
+
+    PLAN --> SPAWN --> ASSIGN --> WORK
+    WORK --> HOOKGATE
+    HOOKGATE -->|"OK"| SYNC
+    HOOKGATE -->|"Rechazado<br/>(exit code 2)"| WORK
+    SYNC --> CLOSE
+
+    style PLAN fill:#E8B84D,color:#000
+    style SPAWN fill:#D4956A,color:#fff
+    style ASSIGN fill:#7AAFC4,color:#fff
+    style WORK fill:#8BB87A,color:#fff
+    style HOOKGATE fill:#E8B84D,color:#000
+    style SYNC fill:#9B7AB8,color:#fff
+    style CLOSE fill:#D4956A,color:#fff
+```
+
+> PLAN → SPAWN → ASSIGN → WORK → GATE → SYNC → CLOSE. El hook **TaskCompleted** actua como quality gate (puede rechazar con exit code 2). El hook **TeammateIdle** centraliza el logging en prompt-log.jsonl.
+
+---
+
+## O.R.T.A. Hooks con Agent Teams (v7)
+
+```mermaid
+flowchart TD
+    subgraph TEAM["AGENT TEAM"]
+        LEAD["Lead<br/>(coordinador)"]
+        TM1["Teammate 1"]
+        TM2["Teammate 2"]
+    end
+
+    subgraph HOOKS["HOOKS (bash scripts)"]
+        IDLE["TeammateIdle<br/>hooks/teammate-idle.sh"]
+        COMPLETED["TaskCompleted<br/>hooks/task-completed.sh"]
+    end
+
+    subgraph ORTA["O.R.T.A. INTEGRATION"]
+        LOG["prompt-log.jsonl<br/>(escritura centralizada<br/>SOLO el lead escribe)"]
+        SCOPE["Scope Rule Check<br/>(archivos en lugar correcto?)"]
+        SDD_CHECK["SDD Artifacts Check<br/>(spec? design? tests?)"]
+    end
+
+    TM1 -->|"termina task"| COMPLETED
+    TM2 -->|"termina task"| COMPLETED
+    TM1 -->|"queda idle"| IDLE
+    TM2 -->|"queda idle"| IDLE
+
+    COMPLETED --> SCOPE
+    COMPLETED --> SDD_CHECK
+    SCOPE -->|"OK"| LOG
+    SDD_CHECK -->|"OK"| LOG
+    SCOPE -->|"Falla → exit 2"| TM1
+    SDD_CHECK -->|"Falla → exit 2"| TM2
+
+    IDLE --> LOG
+
+    LEAD -.->|"consolida al final"| LOG
+
+    style TEAM fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
+    style HOOKS fill:#2d2d2d,stroke:#E8B84D,color:#F5EDE4
+    style ORTA fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
+    style LOG fill:#9B7AB8,color:#fff
+    style COMPLETED fill:#E8B84D,color:#000
+    style IDLE fill:#7AAFC4,color:#fff
+```
+
+> Los hooks conectan Agent Teams con O.R.T.A.: **[O]** TeammateIdle → log centralizado. **[R]** Task list con dependencias = mismo orden. **[T]** Cada teammate tiene ID, tasks → artefactos. **[A]** TaskCompleted = quality gate automatico.
+
+---
+
+## SDD Pipeline como Task List Paralelo (v7)
+
+```mermaid
+flowchart TD
+    subgraph TASKS["TASK LIST CON DEPENDENCIAS"]
+        T1["Task 1: explore<br/>(sin deps)"]
+        T2["Task 2: propose<br/>(deps: 1)"]
+        T3["Task 3: spec<br/>(deps: 2)"]
+        T4["Task 4: design<br/>(deps: 2)"]
+        T5["Task 5: tasks<br/>(deps: 3, 4)"]
+        T6["Task 6: apply batch-1<br/>(deps: 5)"]
+        T7["Task 7: apply batch-2<br/>(deps: 5)"]
+        T8["Task 8: verify<br/>(deps: 6, 7)"]
+        T9["Task 9: archive<br/>(deps: 8)"]
+    end
+
+    subgraph TEAMMATES["ASIGNACION DE TEAMMATES"]
+        RESEARCHER["teammate-researcher"]
+        ARCHITECT["teammate-architect"]
+        LEAD_TM["lead (sintetiza)"]
+        IMPL1["teammate-impl-1"]
+        IMPL2["teammate-impl-2"]
+        REVIEWER["teammate-reviewer"]
+    end
+
+    T1 --> T2
+    T2 --> T3
+    T2 --> T4
+    T3 --> T5
+    T4 --> T5
+    T5 --> T6
+    T5 --> T7
+    T6 --> T8
+    T7 --> T8
+    T8 --> T9
+
+    RESEARCHER -.-> T1
+    ARCHITECT -.-> T2
+    ARCHITECT -.-> T3
+    ARCHITECT -.-> T4
+    LEAD_TM -.-> T5
+    IMPL1 -.-> T6
+    IMPL2 -.-> T7
+    REVIEWER -.-> T8
+    LEAD_TM -.-> T9
+
+    style TASKS fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style TEAMMATES fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
+    style T3 fill:#7AAFC4,color:#fff
+    style T4 fill:#7AAFC4,color:#fff
+    style T6 fill:#8BB87A,color:#fff
+    style T7 fill:#8BB87A,color:#fff
+```
+
+> **spec** y **design** corren EN PARALELO (resaltados en azul). **apply batch-1** y **apply batch-2** corren EN PARALELO (resaltados en verde). El lead sintetiza tasks y archiva. Las dependencias garantizan el orden correcto.
+
+---
+
+## Scope Agents: Documentos + Spawn Prompts (v7)
+
+```mermaid
+flowchart TD
+    subgraph AGENT_FILE["scope-agent.md (doble proposito)"]
+        REFERENCE["Seccion de Referencia<br/>(reglas, skills, routing)<br/>Nivel 1-2: se lee como doc"]
+        SPAWN["Seccion Spawn Prompt<br/>(instrucciones optimizadas)<br/>Nivel 3: se usa como prompt"]
+        CONTEXT["Seccion Team Context<br/>(info que el teammate necesita)"]
+    end
+
+    subgraph NIVEL12["NIVELES 1-2 (Solo/Subagent)"]
+        READ_DOC["CLAUDE.md lee el agent.md<br/>como referencia"]
+    end
+
+    subgraph NIVEL3_USE["NIVEL 3 (Agent Team)"]
+        SPAWN_TM["Lead usa Spawn Prompt<br/>para crear teammate"]
+        TM_RESULT["Teammate trabaja con<br/>su propio context window"]
+    end
+
+    REFERENCE --> READ_DOC
+    SPAWN --> SPAWN_TM
+    CONTEXT --> SPAWN_TM
+    SPAWN_TM --> TM_RESULT
+
+    style AGENT_FILE fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
+    style NIVEL12 fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
+    style NIVEL3_USE fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style SPAWN fill:#D4956A,color:#fff
+    style CONTEXT fill:#7AAFC4,color:#fff
+```
+
+> Los scope agents **no desaparecen** — evolucionan. En Nivel 1-2 funcionan como siempre (documentos de referencia). En Nivel 3, sus secciones Spawn Prompt y Team Context se usan para crear teammates con context windows independientes.
+
+---
+
 ## Flujo Completo: Desde Carpeta Vacia hasta App en Internet
 
 ```mermaid

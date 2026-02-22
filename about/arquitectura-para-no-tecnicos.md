@@ -302,6 +302,60 @@ Esto te ayuda a TI a darle mejores instrucciones, y a Claude a mejorar sus regla
 
 ---
 
+## El Equipo Temporal (Agent Teams) — v7
+
+Hasta ahora, el chef principal trabaja con sus sub-chefs uno a la vez: le pide algo a uno, espera la respuesta, y luego le pide algo al siguiente. Funciona bien para el dia a dia.
+
+Pero imagina que llega un pedido ENORME: un banquete para 200 personas, con 5 platos diferentes, postre, y decoracion especial. Un solo chef coordinando sub-chefs uno por uno NO da abasto.
+
+**La solucion**: El chef principal puede armar un **equipo temporal** — como contratar cocineros extra para el banquete.
+
+### Los 3 niveles de trabajo
+
+| Nivel | Analogia | Cuando se usa |
+|-------|----------|---------------|
+| **Solo** | El chef cocina un plato el mismo | Arreglar un error, responder una pregunta, editar algo simple |
+| **Sub-chef** | El chef le pide ayuda puntual a un colega | "Investiga esto y dime que encuentras" — el resultado vuelve al chef |
+| **Equipo temporal** | El chef arma un squad con cocina propia | Cada cocinero tiene su propia estacion, su propio espacio, y se comunican entre ellos |
+
+### Como funciona el equipo temporal
+
+```
+1. PLANEAR    → El chef evalua: "Esto es grande, necesito equipo"
+2. ARMAR      → Elige cocineros segun el menu (uno para carnes, otro para postres)
+3. ASIGNAR    → Reparte las tareas: "Tu haces el pollo, tu el pastel"
+4. COCINAR    → Cada cocinero trabaja EN PARALELO en su estacion
+5. VERIFICAR  → Un inspector revisa cada plato antes de servirlo
+6. CONSOLIDAR → El chef junta todo y presenta el banquete completo
+```
+
+### Las reglas del equipo
+
+- **Cada cocinero tiene su propia cocina**: No se estorban entre ellos
+- **Se comunican por notas**: "Ya termine la salsa, la dejo en el refrigerador"
+- **Hay un inspector automatico**: Cuando alguien termina un plato, el inspector verifica que siga la receta y que los ingredientes esten en su lugar
+- **Solo el chef principal anota en la bitacora**: Para evitar que todos escriban al mismo tiempo y hagan un desorden
+- **El chef puede pedirle al cocinero que PLANEE antes de cocinar**: Como un Execution Gate para cada miembro del equipo
+
+### Ejemplo practico
+
+Imagina que quieres construir una app con tres partes: la pantalla que ve el usuario, los calculos internos, y la conexion con otra app.
+
+**Sin equipo temporal**: El chef hace las tres cosas UNA POR UNA. Primero la pantalla, luego los calculos, luego la conexion. Toma 3x tiempo.
+
+**Con equipo temporal**: El chef arma tres cocineros, cada uno hace una parte AL MISMO TIEMPO. El chef coordina y al final junta todo. Toma ~1x tiempo (con un poco extra de coordinacion).
+
+### Los jefes de area se convierten en "manuales de entrenamiento"
+
+Los jefes de area (pipeline, infra, calidad) ahora tienen un doble rol:
+
+- **Cuando trabaja solo el chef**: Funcionan como siempre — guias de referencia
+- **Cuando hay equipo temporal**: Se convierten en el "manual de entrenamiento" para cada cocinero nuevo. El chef le da el manual al cocinero y este sabe exactamente que hacer
+
+> **Importante**: El equipo temporal es como contratar extras para un banquete — se arma para la tarea grande y cuando termina, cada quien se va. No es permanente. Para tareas normales, el chef sigue trabajando solo o con sus sub-chefs de siempre.
+
+---
+
 ## Los Comandos (Como le hablas al chef)
 
 No necesitas saber programar. Solo necesitas saber estos "comandos" que son como
@@ -339,6 +393,8 @@ pedidos en el restaurante:
 | **Inspector de calidad** | prompt-tracker | Registra silenciosamente cada pedido y correccion para mejorar |
 | **Inventario automatico** | skill-sync | Actualiza el menu y listas de recetas automaticamente |
 | **Aprendiz que investiga** | ecosystem-creator | Cuando falta una receta, investiga y la crea |
+| **Equipo temporal** | Agent Teams (v7) | Cocineros extra para banquetes grandes — trabajan en paralelo, cada uno con su estacion |
+| **Coordinador de equipo** | team-orchestrator (v7) | Decide cuando armar equipo temporal y como repartir las tareas |
 
 ---
 
@@ -403,6 +459,12 @@ R: Son cuatro cosas que toda aplicacion de Batuta debe tener:
 
 **P: Si cierro la terminal, Claude se olvida de todo?**
 R: No. Gracias al cuaderno del turno (`.batuta/session.md`), Claude lee donde quedo la ultima vez y continua sin que tengas que repetirle todo. Es automatico.
+
+**P: Cuando se usa el equipo temporal (Agent Teams)?**
+R: Solo para tareas grandes que tienen muchas partes independientes. Piensa en la diferencia entre cocinar un sandwich (solo) y preparar un banquete (equipo). Para el dia a dia, el chef trabaja solo o con ayuda puntual. El equipo temporal se arma solo cuando vale la pena la coordinacion extra.
+
+**P: El equipo temporal cuesta mas?**
+R: Si. Cada cocinero temporal es como tener otro chef completo trabajando. Si armas un equipo de 3, es como pagar 3 chefs. Por eso solo se usa cuando la tarea es lo suficientemente grande para justificarlo.
 
 **P: Por que el chef principal nunca cocina directamente?**
 R: Porque un CTO (director tecnico) no escribe codigo el mismo. Coordina al equipo, toma decisiones, y se asegura de que todo siga el plan. Si el CTO se pone a cocinar, nadie esta viendo el panorama completo.
