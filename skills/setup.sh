@@ -21,6 +21,12 @@
 
 set -e
 
+cleanup() {
+    rm -f "${REPO_ROOT:-/tmp}/BatutaClaude/CLAUDE.md.tmp" 2>/dev/null
+    rm -f "${REPO_ROOT:-/tmp}/BatutaClaude/agents/"*.tmp 2>/dev/null
+}
+trap cleanup EXIT
+
 # ============================================================================
 # Colors
 # ============================================================================
@@ -202,8 +208,12 @@ run_skill_sync() {
     log_info "Running skill-sync to regenerate routing tables..."
 
     if [[ -f "$sync_script" ]]; then
-        bash "$sync_script" || log_warning "skill-sync had warnings (check output above)"
-        log_success "Routing tables regenerated"
+        if bash "$sync_script"; then
+            log_success "Routing tables regenerated"
+        else
+            log_error "skill-sync failed — aborting. Fix skill frontmatters and retry."
+            return 1
+        fi
     else
         log_warning "skill-sync script not found at $sync_script"
     fi

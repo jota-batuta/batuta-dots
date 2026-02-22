@@ -15,6 +15,12 @@
 
 set -euo pipefail
 
+# --- Bash version check (namerefs require 4.3+) ---
+if [[ "${BASH_VERSINFO[0]}" -lt 4 || ("${BASH_VERSINFO[0]}" -eq 4 && "${BASH_VERSINFO[1]}" -lt 3) ]]; then
+    echo "[ERROR] bash 4.3+ required for namerefs (found ${BASH_VERSION})" >&2
+    exit 1
+fi
+
 # --- Configuration ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DRY_RUN=false
@@ -262,7 +268,9 @@ replace_section() {
         !skip { print }
     ' "$file" > "$tmp_file"
 
+    cp "$file" "${file}.bak" 2>/dev/null || true
     mv "$tmp_file" "$file"
+    rm -f "${file}.bak" 2>/dev/null || true
     return 0
 }
 

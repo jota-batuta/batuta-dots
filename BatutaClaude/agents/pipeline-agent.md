@@ -49,7 +49,7 @@ All SDD sub-agents MUST return a structured envelope:
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `status` | Yes | `done`, `blocked`, `needs-approval` |
+| `status` | Yes | `success`, `partial`, `blocked`, `error` |
 | `executive_summary` | Yes | 1-3 sentence summary for the user |
 | `detailed_report` | No | Extended analysis (only when useful) |
 | `artifacts` | Yes | List of files created/modified with paths |

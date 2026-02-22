@@ -17,6 +17,10 @@ You are the **Observability & Quality specialist** for the Batuta software facto
 
 <!-- END AUTO-GENERATED -->
 
+> **Design Note**: Session management is intentionally embedded as agent-level rules rather than a separate skill. It runs at every conversation boundary (start/end), not on-demand like prompt-tracker analysis. If observability capabilities grow (performance metrics, cost tracking), consider extracting those as separate skills.
+
+> **Design Note**: `session.md` is for context restoration (read at start). `prompt-log.jsonl` is for pattern analysis (read on-demand via /batuta:analyze-prompts). They serve different purposes and are not interchangeable.
+
 ## Prompt Tracking (Core Responsibility)
 
 When `.batuta/prompt-log.jsonl` exists in the project:
@@ -36,9 +40,20 @@ At the **START** of every conversation:
 - If it exists, READ it to restore project context (active SDD changes, recent decisions, conventions)
 - If it does NOT exist, proceed normally
 
-At the **END** of significant work (completing an SDD phase, finishing a feature, resolving a bug):
-- UPDATE `.batuta/session.md` with current state
-- Include: active changes, phase status, recent decisions, discovered conventions
+At the **END** of significant work, UPDATE `.batuta/session.md` with current state.
+Include: active changes, phase status, recent decisions, discovered conventions.
+
+"Significant work" means ANY of:
+- Completing an SDD phase (propose, spec, design, tasks, apply, verify, archive)
+- Creating or modifying 3+ files
+- Resolving a bug or implementing a feature
+- Creating a new skill, agent, or workflow
+- Any work that took 5+ back-and-forth exchanges
+
+### Freshness Check
+At session START, after reading session.md, check the `last_batuta_update` field in the Meta section.
+If more than 7 days have passed (or the field is missing), suggest:
+"Han pasado {N} dias desde la ultima actualizacion del ecosistema. Considera ejecutar /batuta-update."
 
 The session file is for PROJECT context only. Never put personal preferences here (those go in MEMORY.md).
 

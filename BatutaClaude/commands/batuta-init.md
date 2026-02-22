@@ -23,6 +23,11 @@ Check if batuta-dots exists locally:
 
 Store the path you found as `BATUTA_DOTS_PATH`.
 
+If batuta-dots was found locally (not cloned fresh), update it:
+```bash
+git -C "$BATUTA_DOTS_PATH" pull --ff-only 2>/dev/null || echo "Could not update batuta-dots (offline?)"
+```
+
 ### Step 2: Copy CLAUDE.md
 
 Copy from `BATUTA_DOTS_PATH`:
@@ -44,7 +49,9 @@ Copy the session template from batuta-dots:
 cp "$BATUTA_DOTS_PATH/BatutaClaude/skills/prompt-tracker/assets/session-template.md" .batuta/session.md
 ```
 
-Replace `{project-name}` in session.md with the actual project name (from argument or directory name).
+Read the session template and use the Write tool to create `.batuta/session.md`,
+replacing `{project-name}` with the actual project name (from argument or directory name).
+Do not use sed — use Claude Code's native Write tool for cross-platform compatibility.
 
 Create an empty prompt log:
 ```bash
@@ -79,6 +86,8 @@ Create a `.gitignore` if one doesn't exist, with at minimum:
 node_modules/
 __pycache__/
 .venv/
+.batuta/prompt-log.jsonl
+.batuta/analysis-report.md
 ```
 
 ### Step 5: Confirm

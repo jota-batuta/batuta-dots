@@ -288,7 +288,9 @@ Return to the orchestrator the same content you wrote to `verify-report.md`:
 Every response from this skill MUST return a structured envelope with the following fields:
 
 ```yaml
-status: "PASS" | "PASS_WITH_WARNINGS" | "FAIL"
+status: "success" | "partial" | "error"
+# Mapping: PASS → success, PASS_WITH_WARNINGS → partial, FAIL → error
+# The verdict field (PASS/PASS_WITH_WARNINGS/FAIL) remains in the detailed report for readability
 executive_summary: >
   Plain-language summary suitable for non-technical stakeholders.
   Max 3 sentences. Must state: what was verified, the verdict, and the top risk.
