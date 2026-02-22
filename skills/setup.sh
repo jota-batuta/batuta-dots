@@ -13,6 +13,7 @@
 #   ./skills/setup.sh --claude     # Copy CLAUDE.md to project root
 #   ./skills/setup.sh --sync       # Sync skills to ~/.claude/skills/
 #   ./skills/setup.sh --all        # Copy + Sync
+#   ./skills/setup.sh --project <path>  # Setup a target project (CLAUDE.md + .batuta/ + git)
 #   ./skills/setup.sh --verify     # Verify setup
 #   ./skills/setup.sh --help       # Show this help
 #
@@ -94,6 +95,110 @@ generate_claude() {
     cp -f "$source_file" "$output_file"
 
     log_success "Created $output_file (direct copy from BatutaClaude/CLAUDE.md)"
+}
+
+# ============================================================================
+# Setup target project (--project <path>)
+# ============================================================================
+
+setup_project() {
+    local target_dir="$1"
+
+    if [[ -z "$target_dir" ]]; then
+        log_error "--project requires a target directory path"
+        return 1
+    fi
+
+    # Resolve relative paths
+    if [[ ! "$target_dir" = /* && ! "$target_dir" =~ ^[A-Za-z]: ]]; then
+        target_dir="$(pwd)/$target_dir"
+    fi
+
+    if [[ ! -d "$target_dir" ]]; then
+        log_error "Target directory does not exist: $target_dir"
+        return 1
+    fi
+
+    log_header "Batuta.Dots — Project Setup: $target_dir"
+
+    local source_file="$REPO_ROOT/BatutaClaude/CLAUDE.md"
+
+    # 1. Copy CLAUDE.md to target project root
+    if [[ -f "$source_file" ]]; then
+        cp -f "$source_file" "$target_dir/CLAUDE.md"
+        log_success "Copied CLAUDE.md to $target_dir/CLAUDE.md"
+    else
+        log_error "BatutaClaude/CLAUDE.md not found"
+        return 1
+    fi
+
+    # 2. Create .batuta/ directory with session.md and prompt-log.jsonl
+    local batuta_dir="$target_dir/.batuta"
+    mkdir -p "$batuta_dir"
+
+    if [[ ! -f "$batuta_dir/session.md" ]]; then
+        local project_name
+        project_name=$(basename "$target_dir")
+        cat > "$batuta_dir/session.md" << SESSIONEOF
+# Session — $project_name
+
+## Project
+- **Name**: $project_name
+- **Type**: (pending detection)
+- **Description**: (pending)
+- **Status**: New project
+
+## Current State
+- SDD Phase: not started
+- No active changes
+
+## Decisions
+- (none yet)
+
+## Conventions
+- Scope Rule enforced (features/{name}/{type}/)
+- SDD pipeline mandatory for all new features
+
+## Next Steps
+- Run /sdd:init to detect project type and bootstrap SDD
+SESSIONEOF
+        log_success "Created $batuta_dir/session.md"
+    else
+        log_info "session.md already exists, skipping"
+    fi
+
+    if [[ ! -f "$batuta_dir/prompt-log.jsonl" ]]; then
+        touch "$batuta_dir/prompt-log.jsonl"
+        log_success "Created $batuta_dir/prompt-log.jsonl"
+    else
+        log_info "prompt-log.jsonl already exists, skipping"
+    fi
+
+    # 3. Initialize git if not already a repo
+    if [[ ! -d "$target_dir/.git" ]]; then
+        (cd "$target_dir" && git init -q)
+        log_success "Initialized git repository in $target_dir"
+    else
+        log_info "Git repository already exists, skipping"
+    fi
+
+    # 4. Create .gitignore if not exists
+    if [[ ! -f "$target_dir/.gitignore" ]]; then
+        cat > "$target_dir/.gitignore" << 'IGNOREEOF'
+node_modules/
+.next/
+dist/
+.env
+.env.local
+.env.*.local
+*.log
+IGNOREEOF
+        log_success "Created .gitignore"
+    fi
+
+    echo ""
+    log_success "Project setup complete at $target_dir"
+    log_info "Next: open Claude Code in $target_dir and run /sdd:init"
 }
 
 # ============================================================================
@@ -442,6 +547,11 @@ Options:
                   Copies all SKILL.md files, assets, scope agents,
                   and slash commands so Claude Code can route and load.
   --all         Full setup: sync + skill-sync + copy CLAUDE.md (recommended)
+  --project <path>  Setup a target project directory:
+                  - Copies CLAUDE.md to project root
+                  - Creates .batuta/ with session.md + prompt-log.jsonl
+                  - Initializes git if not already a repo
+                  - Creates .gitignore
   --verify      Check that CLAUDE.md and skills are properly configured
   --help, -h    Show this help message
 
@@ -470,6 +580,7 @@ parse_args() {
         --claude)   generate_claude ;;
         --sync)     sync_claude; sync_agents ;;
         --all)      do_all ;;
+        --project)  shift_done=true; setup_project "$2" ;;
         --verify)   verify ;;
         --help|-h)  show_help; exit 0 ;;
         # Legacy flags — redirect to replicate-platform.sh
@@ -497,7 +608,12 @@ main() {
     if [[ $# -eq 0 ]]; then
         interactive_menu
     else
-        parse_args "$@"
+        # For --project, pass all args so $2 is available
+        if [[ "$1" == "--project" ]]; then
+            setup_project "$2"
+        else
+            parse_args "$@"
+        fi
     fi
 
     echo ""

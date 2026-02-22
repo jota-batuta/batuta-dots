@@ -199,9 +199,10 @@ BEFORE any code change, run the Execution Gate. Cannot be skipped.
 2. **Location Plan**: Where will files go? (invoke Scope Rule via infra-agent)
 3. **Impact**: Files affected, dependencies, breaking changes
 4. **SDD Check**: Active spec? Should this go through pipeline?
-5. **Skill Check**: Do loaded skills cover the technologies involved?
+5. **Skill Check**: Do loaded skills cover the technologies involved? If HIGH gaps detected → trigger Skill Gap Detection (see sdd-explore Step 2.5)
+6. **Team Assessment**: If scope count > 1 AND files > 4 → recommend Level 3 (Agent Teams). Inform the user: "Este cambio es complejo ({N} archivos, {M} scopes). Recomiendo Level 3 (Agent Team). Quieres que cree un equipo o continuo en modo solo?" Route to `team-orchestrator` skill if user accepts.
 
-Show: "Este cambio involucra scope {scope}: {file list}. Procedo?"
+Show: "Este cambio involucra scope {scope}: {file list}. Nivel recomendado: {1|2|3}. Procedo?"
 
 ### Clarification (separate from gate)
 - Ambiguous scope ("mejora esto") → ASK what, not whether
@@ -221,6 +222,24 @@ When `.batuta/prompt-log.jsonl` exists in the project:
 - Keep logging lightweight — never ask the user to rate satisfaction explicitly
 - Log gate events for routing traceability
 - For full format, gate event schema, and analysis mode, route to `observability-agent` → `prompt-tracker` skill
+
+### Auto-logging for SDD Skills (Mandatory)
+
+Every SDD skill invocation MUST be logged to `.batuta/prompt-log.jsonl`. This is not optional.
+
+**At the START of each SDD phase**, append:
+```json
+{"type":"prompt","timestamp":"{ISO-8601}","prompt":"/sdd:{phase} {change-name}","scope":"{scope}","notes":"{brief description of what this phase will do}"}
+```
+
+**At the END of each SDD phase**, if the phase produced artifacts or gate decisions, append the relevant event.
+
+**After Execution Gate (FULL mode)**, append:
+```json
+{"type":"gate","timestamp":"{ISO-8601}","mode":"FULL","scope":"{scope}","action":"{what was validated}","result":"{approved|rejected}","level":"{1|2|3}"}
+```
+
+This ensures complete traceability. Every phase of the SDD pipeline must leave a trace in the log.
 
 ---
 

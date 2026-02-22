@@ -78,9 +78,13 @@ Si los tres muestran un numero (como `v20.11.0`), estas lista.
 1. Abre el Explorador de Archivos de Windows
 2. Ve a donde quieras guardar tu proyecto (ejemplo: `E:\Proyectos\`)
 3. Click derecho → Nueva Carpeta
-4. Nombrala: `Batuta APP`
+4. Nombrala: `batuta-app`
 
-**Resultado**: Tienes una carpeta vacia llamada `Batuta APP`.
+> **IMPORTANTE**: Usa nombres SIN espacios y en minusculas (ejemplo: `batuta-app`, no `Batuta APP`).
+> Los espacios y mayusculas causan problemas con las herramientas de Node.js como npm.
+> Usa guiones (-) en lugar de espacios.
+
+**Resultado**: Tienes una carpeta vacia llamada `batuta-app`.
 
 ---
 
@@ -93,7 +97,7 @@ Si los tres muestran un numero (como `v20.11.0`), estas lista.
 2. Escribe exactamente esto y presiona Enter:
 
 ```
-cd "E:\Proyectos\Batuta APP"
+cd "E:\Proyectos\batuta-app"
 ```
 
 > Cambia la ruta si tu carpeta esta en otro lugar.

@@ -82,6 +82,26 @@ FOR EACH DECISION in design.md:
 └── Flag: WARNING if deviation found (may be valid improvement)
 ```
 
+### Step 3.5: Build Verification (Mandatory)
+
+Before checking tests, verify the project actually builds:
+
+```
+BUILD CHECK:
+├── Detect build system (package.json → npm/yarn/pnpm, Makefile, go build, etc.)
+├── Run build command:
+│   ├── Node.js: npm run build (or npx next build for Next.js)
+│   ├── Python: python -m py_compile or pytest --collect-only
+│   ├── Go: go build ./...
+│   └── Docker: docker build . (if Dockerfile exists)
+├── Capture output: compile errors, warnings, build time
+├── If build FAILS → CRITICAL (cannot deploy broken code)
+├── If build succeeds with warnings → WARNING (note the warnings)
+└── If build succeeds clean → PASS
+```
+
+**This step is NOT optional.** Code that does not build is not verified code. If a build command is not available (no package.json scripts, no Makefile), note it as a WARNING and recommend adding one.
+
 ### Step 4: Check Testing
 
 Verify test coverage for spec scenarios:
@@ -92,8 +112,30 @@ Search for test files related to the change
 ├── Do tests cover happy paths?
 ├── Do tests cover edge cases?
 ├── Do tests cover error states?
+├── If test runner exists (npm test, pytest, go test), RUN tests and report results
 └── Flag: WARNING if scenarios lack tests, SUGGESTION if coverage could improve
 ```
+
+### Step 4.5: Runtime Validation (When Possible)
+
+If the project has a dev server and the environment supports it:
+
+```
+RUNTIME CHECK (best-effort, not blocking):
+├── If webapp with Playwright configured:
+│   ├── Start dev server (npm run dev)
+│   ├── Run Playwright tests against spec scenarios
+│   └── Report: which scenarios pass in real browser
+├── If API project:
+│   ├── Start server
+│   ├── Run health check endpoint
+│   └── Report: server responds correctly
+├── If neither is available:
+│   └── Note: "Runtime validation skipped — no dev server or test framework configured"
+└── This step is BEST-EFFORT: if it fails, report as SUGGESTION, not CRITICAL
+```
+
+**Playwright integration**: If Playwright MCP is available and the project is a webapp, use it to validate spec scenarios SC-xxx in a real browser. This provides true E2E validation beyond code inspection.
 
 ### Step 5: Documentation Verification
 

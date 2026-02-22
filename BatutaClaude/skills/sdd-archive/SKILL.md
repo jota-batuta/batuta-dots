@@ -69,6 +69,36 @@ openspec/changes/{change-name}/specs/{domain}/spec.md
   → openspec/specs/{domain}/spec.md
 ```
 
+### Step 1.5: Reconcile Design Deviations
+
+Compare the `design.md` file structure against the actual implemented files:
+
+```
+FOR EACH file in design.md "File Structure":
+├── Check if it actually exists
+├── If file was NOT created → note as "omitted" with reason
+├── If file was ADDED that's not in design → note as "extra" with reason
+└── Update design.md with an "Implementation Notes" section at the bottom
+```
+
+Append to `design.md`:
+
+```markdown
+## Implementation Notes (added by sdd-archive)
+
+### Deviations from Original Design
+| Planned File | Status | Reason |
+|-------------|--------|--------|
+| {file} | Created / Omitted / Modified | {justification} |
+
+### Files Added (not in original design)
+| File | Reason |
+|------|--------|
+| {file} | {why it was needed} |
+```
+
+This ensures the design document remains an accurate historical record, not a stale plan.
+
 ### Step 2: Move to Archive
 
 Move the entire change folder to archive with date prefix:

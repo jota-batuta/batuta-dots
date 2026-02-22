@@ -91,6 +91,31 @@ INVESTIGATE:
 └── Check Langfuse traces / Presidio rules if AI pipeline is touched
 ```
 
+### Step 2.5: Skill Gap Detection (Active)
+
+After investigating, check the Available Skills table in CLAUDE.md for each technology the change requires:
+
+```
+FOR EACH technology required by this change:
+├── Check if a matching skill exists in ~/.claude/skills/
+├── If YES → note as "covered"
+├── If NO → classify gap severity:
+│   ├── HIGH: core technology for the change (e.g., Next.js for a webapp)
+│   ├── MEDIUM: supporting technology (e.g., a testing library)
+│   └── LOW: peripheral tool (e.g., a linting config)
+└── Compile Skill Gap Report
+```
+
+**When HIGH gaps are detected, ACTIVELY offer to create skills:**
+
+1. List all detected gaps with severity in the exploration output
+2. For each HIGH gap, ASK the user: "Detecto que no hay skill para {technology}. Quieres que lo cree? (1) Proyecto local, (2) Global batuta-dots, (3) Continuar sin skill"
+3. If user says "1" or "2", invoke `ecosystem-creator` skill to create the SKILL.md using Context7 research
+4. After creation, run `skill-sync` to register the new skill in routing tables
+5. Then continue the exploration with the new skill loaded
+
+**Do NOT silently continue when HIGH gaps exist.** The gap detection must be actionable, not just documented. This is the entry point for Auto-Update SPO — skills created here can later propagate to batuta-dots.
+
 ### Step 3: Analyze Options
 
 If there are multiple approaches, compare them:
@@ -106,32 +131,39 @@ If the orchestrator provided a change name (i.e., this exploration is part of `/
 
 ```
 openspec/changes/{change-name}/
-└── exploration.md          <- You create this
+└── explore.md          <- You create this (standardized name)
 ```
+
+**File name is `explore.md`** (not `exploration.md`). This is the standardized name across all SDD artifacts.
 
 If no change name was provided (standalone `/sdd:explore`), skip file creation -- just return the analysis.
 
 ### Step 5: Return Structured Analysis
 
-Return EXACTLY this format to the orchestrator (and write the same content to `exploration.md` if saving):
+Return EXACTLY this format to the orchestrator (and write the same content to `explore.md` if saving). This is the **mandatory template** — all sections are required:
 
 ```markdown
 ## Exploration: {topic}
 
 ### Current State
-{How the system works today relevant to this topic}
+{How the system works today relevant to this topic. For empty projects: "New project, no existing code."}
 
 ### Affected Areas
 - `path/to/file.ext` -- {why it's affected}
 - `path/to/other.ext` -- {why it's affected}
 
-### Stakeholder Impact
-Identify who is affected by this change and how:
+### Skill Gap Analysis
+| Technology | Skill Exists? | Gap Severity | Action Taken |
+|-----------|--------------|-------------|-------------|
+| {tech} | Yes / No | HIGH / MEDIUM / LOW / N/A | covered / created / skipped |
 
-- **Technical Team**: {How this affects developers, DevOps, QA -- e.g., new patterns to learn, migration effort, testing complexity}
-- **End Users**: {How this affects the people using the product -- e.g., performance changes, new capabilities, UX shifts, downtime risk}
-- **Business Stakeholders**: {How this affects product owners, executives, clients -- e.g., timeline impact, cost implications, competitive advantage, compliance}
-- **Tenant/Client Impact**: {For multi-tenant changes: which tenants are affected, data migration needs, rollout strategy}
+{If HIGH gaps were detected and skills were created, note them here.}
+
+### Stakeholder Impact
+- **Technical Team**: {How this affects developers, DevOps, QA}
+- **End Users**: {How this affects the people using the product}
+- **Business Stakeholders**: {How this affects product owners, executives, clients}
+- **Tenant/Client Impact**: {For multi-tenant changes: which tenants are affected}
 
 ### Approaches
 1. **{Approach name}** -- {brief description}
@@ -157,11 +189,7 @@ Identify who is affected by this change and how:
 {Yes/No -- and what the orchestrator should tell the user}
 
 ### What This Means (Simply)
-{A plain-language summary for non-technical readers. No jargon, no code references. Explain:
-- What we are looking at and why it matters
-- What the recommended path forward is in everyday terms
-- What the trade-offs are in terms anyone can understand (time, money, risk, user experience)
-- What decision, if any, is needed from leadership}
+{A plain-language summary for non-technical readers. No jargon, no code references.}
 ```
 
 ## Rules

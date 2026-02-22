@@ -42,6 +42,16 @@ Read the project to understand:
 - **Existing conventions** (linters, test frameworks, CI)
 - **Architecture patterns** in use (multi-tenant RLS, event-driven, workflow orchestration, agent graphs, etc.)
 
+#### Empty Project Handling
+
+If the project directory is empty (no package.json, no source files, no config files):
+1. **Do NOT guess** the tech stack — there is nothing to detect
+2. **ASK the user** for: project type, intended tech stack, and brief description
+3. Use the user's answers to populate `config.yaml` context
+4. Note in the config: `detected_from: user_input (empty project)`
+
+This is common for new projects initialized via `/batuta-init`. The user's description from `/sdd:explore` will provide the real context.
+
 #### Project Type Detection Heuristics
 
 | Signal | Likely Type |

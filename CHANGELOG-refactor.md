@@ -4,6 +4,65 @@
 
 ---
 
+## v7.1 — Integration Test Fixes (12 Findings from Batuta APP) (2026-02-22)
+
+### Contexto
+
+Se ejecuto la guia-batuta-app.md completa como prueba de integracion del ecosistema v7. Se construyo un dashboard Next.js 15 con 29 archivos, build exitoso, 6/6 escenarios PASS. El analisis identifico 12 hallazgos (F-001 a F-012) con score 18.8/35 (53.7%). Esta version corrige TODOS los gaps detectados.
+
+### Hallazgos corregidos
+
+| ID | Severidad | Titulo | Fix |
+|----|----------|--------|-----|
+| F-001 | CRITICO | setup.sh no configura proyecto target | +`setup_project()` + flag `--project <path>` |
+| F-002 | CRITICO | setup.sh requiere pasos manuales post-init | `--project` crea .batuta/, session.md, prompt-log.jsonl, git init, .gitignore |
+| F-003 | ALTO | sdd-init no maneja proyectos vacios | +seccion "Empty Project Handling": preguntar al usuario en vez de adivinar |
+| F-004 | ALTO | sdd-explore no activa Skill Gap Detection | +Step 2.5: deteccion activa, pregunta al usuario, invoca ecosystem-creator |
+| F-005 | MEDIO | explore.md sin template estandarizado | Renombrado exploration.md → explore.md, +tabla "Skill Gap Analysis" obligatoria |
+| F-006 | ALTO | Execution Gate no recomienda Agent Teams | +Step 6 en gate FULL: Team Assessment (scope > 1 AND files > 4 → Level 3) |
+| F-008 | MEDIO | Guia permite nombres con espacios | Carpeta `Batuta APP` → `batuta-app`, +IMPORTANTE sobre naming conventions |
+| F-010 | MEDIO | sdd-archive no reconcilia desvios de design | +Step 1.5: comparar design.md vs archivos reales, +seccion "Implementation Notes" |
+| F-011 | ALTO | sdd-verify no ejecuta build | +Step 3.5: Build Verification (Mandatory) con deteccion automatica |
+| F-012 | MEDIO | sdd-verify no sugiere validacion runtime | +Step 4.5: Runtime Validation (Playwright para webapps, health check para APIs) |
+| O.R.T.A. | ALTO | SDD skills no logean a prompt-log.jsonl | +seccion "Auto-logging for SDD Skills (Mandatory)" en CLAUDE.md |
+
+> F-007 y F-009 eran hallazgos informativos (no requerian fix en codigo).
+
+### Archivos modificados (7)
+
+| Archivo | Cambio | Razon |
+|---------|--------|-------|
+| `skills/setup.sh` | +`setup_project()` ~60 lineas, +`--project` flag | F-001/F-002: configurar proyecto target directamente |
+| `BatutaClaude/skills/sdd-init/SKILL.md` | +seccion "Empty Project Handling" | F-003: no adivinar stack en proyectos vacios |
+| `BatutaClaude/skills/sdd-explore/SKILL.md` | +Step 2.5 Skill Gap Detection activa, explore.md estandarizado | F-004/F-005: deteccion activa + template obligatorio |
+| `BatutaClaude/skills/sdd-verify/SKILL.md` | +Step 3.5 Build, +Step 4 tests, +Step 4.5 Runtime | F-011/F-012: build obligatorio + runtime sugerido |
+| `BatutaClaude/skills/sdd-archive/SKILL.md` | +Step 1.5 Reconcile Design Deviations | F-010: reconciliar design.md vs implementacion |
+| `BatutaClaude/CLAUDE.md` | +Team Assessment en gate, +Auto-logging mandate | F-006: gate recomienda nivel + O.R.T.A. logging |
+| `guides/guia-batuta-app.md` | Naming conventions, carpeta sin espacios | F-008: nombres lowercase con guiones |
+
+### Metricas
+
+| Metrica | Antes (v7) | Despues (v7.1) |
+|---------|-----------|---------------|
+| Hallazgos abiertos | 12 (2 criticos, 3 altos) | 0 |
+| setup.sh flags | --claude/--sync/--all/--verify | +--project |
+| Gate steps (FULL) | 5 | 6 (+Team Assessment) |
+| SDD verify steps | 4 | 6.5 (+Build, +Runtime) |
+| SDD archive steps | 4 | 5 (+Reconcile Deviations) |
+| SDD explore steps | 4 | 5 (+Skill Gap Detection activa) |
+| Auto-logging mandate | No (implicito) | Si (explicito en CLAUDE.md) |
+
+### Rollback
+
+Para revertir v7.1 y volver a v7:
+```bash
+git checkout HEAD~1 -- skills/setup.sh BatutaClaude/skills/sdd-init/SKILL.md \
+  BatutaClaude/skills/sdd-explore/SKILL.md BatutaClaude/skills/sdd-verify/SKILL.md \
+  BatutaClaude/skills/sdd-archive/SKILL.md BatutaClaude/CLAUDE.md guides/guia-batuta-app.md
+```
+
+---
+
 ## v7 — Agent Teams + 3-Level Execution Model (2026-02-22)
 
 ### Contexto
