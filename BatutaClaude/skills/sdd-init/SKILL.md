@@ -11,6 +11,9 @@ metadata:
   author: Batuta
   version: "1.0"
   created: "2025-01-01"
+  scope: [pipeline]
+  auto_invoke: "Starting SDD workflow, /sdd:init"
+allowed-tools: Read, Edit, Write, Glob, Grep, Bash
 ---
 
 ## Purpose

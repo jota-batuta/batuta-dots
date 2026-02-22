@@ -10,6 +10,9 @@ metadata:
   author: Batuta
   version: "1.0"
   created: "2026-02-20"
+  scope: [pipeline]
+  auto_invoke: "Creating change proposals, /sdd:new"
+allowed-tools: Read, Edit, Write, Glob, Grep
 ---
 
 ## Purpose

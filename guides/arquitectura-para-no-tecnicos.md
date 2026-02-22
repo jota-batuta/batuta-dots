@@ -49,7 +49,7 @@ Cada **skill** es una receta especifica. Por ejemplo:
 | `temporal-worker` | Como cocinar platos que llevan muchos pasos y pueden fallar |
 | `nextjs-portal` | Como montar el plato para que se vea bonito (la cara que ve el cliente) |
 
-El chef tiene **12 recetas basicas** que siempre estan disponibles, y puede **aprender
+El chef tiene **13 recetas basicas** que siempre estan disponibles, y puede **aprender
 recetas nuevas** cuando las necesita.
 
 **Detalle importante**: Las recetas NO se leen todas al empezar. El chef solo abre la
@@ -161,6 +161,82 @@ vuelve con un reporte. El chef principal nunca toca una olla.
 
 ---
 
+## Los Jefes de Area (Scope Agents)
+
+Pero el chef principal no le habla directamente a cada sub-chef. Tiene **jefes de area**
+que coordinan grupos de sub-chefs:
+
+| Jefe de area | Que coordina | Sub-chefs a su cargo |
+|-------------|-------------|----------------------|
+| **Jefe de Cocina** (pipeline) | Todo el proceso de crear platos nuevos | Los 9 sub-chefs del proceso SDD |
+| **Jefe de Almacen** (infra) | Organizacion, inventario, recetas | Organizacion de ingredientes (scope-rule), creacion de recetas (ecosystem-creator), inventario automatico (skill-sync) |
+| **Jefe de Calidad** (observability) | Control de calidad silencioso | Inspector de calidad (prompt-tracker) |
+
+El chef principal SOLO decide a que jefe de area pasarle el pedido. El jefe de area
+decide cuales sub-chefs necesita y los coordina.
+
+**Por que es mejor asi?** Porque el chef principal no necesita recordar los 14 recetarios.
+Solo necesita saber 3 numeros de telefono: el del jefe de cocina, el del jefe de almacen,
+y el del jefe de calidad. Cada jefe de area conoce en detalle las recetas de su area.
+
+---
+
+## El Checklist Antes de Cocinar (Execution Gate)
+
+Imagina que antes de empezar CUALQUIER plato, el chef revisa un checklist:
+
+```
+Antes de cocinar:
+ ✓ Tengo todos los ingredientes? (skill check)
+ ✓ Se donde va a ir este plato en el menu? (scope/location)
+ ✓ Cuantos platos diferentes voy a afectar? (impacto)
+ ✓ Hay una receta aprobada para esto? (SDD check)
+ → Si todo esta bien: "Voy a preparar {plato} en {estacion}. Procedo?"
+```
+
+Este checklist es el **Execution Gate**. Se ejecuta ANTES de cada cambio de codigo.
+No se puede saltar. Tiene dos modos:
+
+| Modo | Cuando | Ejemplo |
+|------|--------|---------|
+| **Rapido** | Un solo cambio simple | "Modifico el archivo X. Procedo?" |
+| **Completo** | Multiples cambios o algo nuevo | Lista de archivos + impacto + donde van |
+
+**Por que esto importa**: Es la diferencia entre un chef que verifica la receta antes
+de cocinar y uno que improvisa. El checklist previene errores ANTES de que ocurran.
+
+---
+
+## El Inventario Automatico (Skill-Sync)
+
+Imagina que cada vez que un chef agrega una receta nueva al libro, el sistema
+automaticamente actualiza:
+1. El menu del restaurante (para los clientes)
+2. La lista de recetas de cada jefe de area (para los sub-chefs)
+
+Nadie tiene que recordar hacerlo. Es automatico.
+
+Eso es lo que hace **skill-sync**: cuando se crea o modifica una receta (SKILL.md),
+un script lee todas las recetas y regenera las tablas de referencia automaticamente.
+
+```
+Chef crea nueva receta de sushi
+   ↓
+sync.sh lee TODAS las recetas
+   ↓
+Actualiza el menu general (CLAUDE.md)
+   ↓
+Actualiza la lista del jefe de cocina (pipeline-agent)
+   ↓
+Listo — todos saben que ahora hay sushi disponible
+```
+
+**Por que esto importa**: Sin inventario automatico, alguien tendria que recordar
+actualizar el menu cada vez que se agrega una receta. Con skill-sync, es imposible
+que una receta quede "invisible" — siempre aparece en el inventario.
+
+---
+
 ## La Actualizacion de Recetas (Auto-Update SPO)
 
 Imagina que en una sucursal del restaurante, un chef inventa una receta nueva increible
@@ -183,6 +259,49 @@ Al final de cada proyecto, Claude te pregunta:
 
 ---
 
+## El Cuaderno del Turno (Continuidad de Sesion)
+
+Imagina que en el restaurante hay tres turnos de chefs. Si el chef del turno de la mañana
+preparo una salsa especial y dejo notas de como le quedo, el chef de la tarde puede
+continuar sin empezar de cero.
+
+Eso es lo que hace `.batuta/session.md` — es el **cuaderno del turno**. Cada vez que
+Claude termina un trabajo importante, anota:
+
+- Que estaba haciendo
+- Que decisiones tomo
+- Que le falta por hacer
+- Que convenciones descubrio del proyecto
+
+La proxima vez que abras Claude, el lee el cuaderno del turno y sabe exactamente
+donde quedaste. Ya no necesitas repetirle "estabamos haciendo X con Y".
+
+---
+
+## El Inspector de Calidad (Prompt Tracker)
+
+Todo buen restaurante tiene un sistema para mejorar. Cuando un cliente dice "esta
+sopa le falta sal", eso no se olvida — se registra en una bitacora.
+
+El **prompt-tracker** es la bitacora del restaurante:
+
+- Cada vez que le pides algo a Claude, se registra silenciosamente
+- Si tienes que corregir algo ("no, queria con menos sal"), se registra el tipo de error
+- Cuando dices "perfecto" o "listo", se cierra la anotacion
+
+**Importante**: Claude NUNCA te pregunta "¿calificame del 1 al 10?". La bitacora es
+silenciosa y automatica.
+
+Despues de varias interacciones, puedes pedirle a Claude que analice la bitacora con
+`/batuta:analyze-prompts`. El te dira cosas como:
+
+> "El 60% de las correcciones son porque falta especificar el tamano de pantalla.
+> Recomendacion: cuando pidas interfaces, menciona en que pantallas debe verse bien."
+
+Esto te ayuda a TI a darle mejores instrucciones, y a Claude a mejorar sus reglas.
+
+---
+
 ## Los Comandos (Como le hablas al chef)
 
 No necesitas saber programar. Solo necesitas saber estos "comandos" que son como
@@ -199,6 +318,8 @@ pedidos en el restaurante:
 | Verificar que todo funcione | `/sdd:verify` |
 | Cerrar y documentar | `/sdd:archive` |
 | Crear una receta nueva | `/create:skill nombre` |
+| Analizar como mejorar la comunicacion | `/batuta:analyze-prompts` |
+| Actualizar inventario de recetas | `/batuta:sync-skills` |
 
 ---
 
@@ -207,12 +328,16 @@ pedidos en el restaurante:
 | Rol | Quien es | Que hace |
 |-----|---------|---------|
 | **Dueno del restaurante** | Tu (JNMZ) | Decides que platos ofrecer, apruebas propuestas |
-| **Chef principal** | Claude Code | Coordina, planea, delega. Nunca cocina directamente. |
+| **Chef principal (router)** | Claude Code + CLAUDE.md | Recibe pedidos y los pasa al jefe de area correcto. Nunca cocina. |
+| **Jefes de area** | Scope Agents (pipeline, infra, observability) | Coordinan a los sub-chefs de su area |
 | **Sub-chefs** | Sub-agentes SDD | Hacen el trabajo pesado: investigar, disenar, cocinar, verificar |
-| **Hoja de instrucciones** | CLAUDE.md | Las instrucciones que el chef lee al empezar + donde encontrar recetas |
 | **Recetas** | Skills (SKILL.md) | Instrucciones detalladas para cada plato/tecnologia |
 | **Organizacion de cocina** | Scope Rule | Donde va cada cosa |
+| **Checklist pre-cocina** | Execution Gate | Verifica antes de cocinar: ingredientes, ubicacion, impacto |
 | **Control de calidad** | sdd-verify + O.R.T.A. | Verifican que todo salga bien |
+| **Bitacora del turno** | .batuta/session.md | El cuaderno donde el chef anota en que quedo para el proximo turno |
+| **Inspector de calidad** | prompt-tracker | Registra silenciosamente cada pedido y correccion para mejorar |
+| **Inventario automatico** | skill-sync | Actualiza el menu y listas de recetas automaticamente |
 | **Aprendiz que investiga** | ecosystem-creator | Cuando falta una receta, investiga y la crea |
 
 ---
@@ -224,7 +349,7 @@ TU IDEA
    ↓
 "Quiero una app que haga X"
    ↓
-/batuta-init → Instala el ecosistema
+/batuta-init → Instala el ecosistema + crea .batuta/
    ↓
 /sdd:init → Define el tipo de proyecto
    ↓
@@ -237,6 +362,8 @@ TU IDEA
 TU APRUEBAS
    ↓
 /sdd:continue → Specs + Diseno + Tareas
+   ↓
+Execution Gate → Verifica antes de construir
    ↓
 /sdd:apply → Claude construye la app
    ↓
@@ -269,10 +396,13 @@ R: Claude Code tiene un costo de suscripcion. Las APIs de Google (Gmail, Gemini)
 
 **P: Que es O.R.T.A.?**
 R: Son cuatro cosas que toda aplicacion de Batuta debe tener:
-- **O**bservabilidad: Puedes ver que esta pasando en la app (logs, metricas)
+- **O**bservabilidad: Puedes ver que esta pasando en la app (logs, metricas). El **prompt-tracker** implementa esto para el propio ecosistema — registra cada interaccion y correccion.
 - **R**epetibilidad: Si algo funciona hoy, funciona manana igual
-- **T**razabilidad: Puedes seguir el rastro de cada decision y cambio
-- **A**uto-supervision: La app se vigila a si misma y te avisa si algo sale mal
+- **T**razabilidad: Puedes seguir el rastro de cada decision y cambio. El **session.md** implementa esto — guarda el contexto de cada sesion.
+- **A**uto-supervision: La app se vigila a si misma y te avisa si algo sale mal. Incluye el **Execution Gate** (preventivo: verifica ANTES de actuar) y el **prompt-tracker** (reactivo: registra DESPUES para mejorar)
+
+**P: Si cierro la terminal, Claude se olvida de todo?**
+R: No. Gracias al cuaderno del turno (`.batuta/session.md`), Claude lee donde quedo la ultima vez y continua sin que tengas que repetirle todo. Es automatico.
 
 **P: Por que el chef principal nunca cocina directamente?**
 R: Porque un CTO (director tecnico) no escribe codigo el mismo. Coordina al equipo, toma decisiones, y se asegura de que todo siga el plan. Si el CTO se pone a cocinar, nadie esta viendo el panorama completo.

@@ -11,6 +11,8 @@ metadata:
   author: Batuta
   version: "1.0"
   created: "2026-02-20"
+  scope: [infra]
+  auto_invoke: "Creating skills, agents, workflows"
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash, WebFetch, WebSearch, Task
 ---
 
@@ -154,6 +156,9 @@ metadata:
   author: Batuta
   version: "1.0"
   created: "{YYYY-MM-DD}"
+  scope: [{category}]
+  auto_invoke: "{human-readable trigger}"
+allowed-tools: Read, Edit, Write, Glob, Grep, Bash
 ---
 
 ## When to Use
@@ -188,7 +193,9 @@ metadata:
 | `metadata.author` | Yes | `Batuta` |
 | `metadata.version` | Yes | Semantic version as string (e.g., `"1.0"`) |
 | `metadata.created` | Yes | ISO date string (e.g., `"2026-02-20"`) |
-| `allowed-tools` | No | Comma-separated tool list if the skill needs specific tools |
+| `metadata.scope` | Yes | Scope category array (e.g., `[pipeline]`, `[infra]`, `[observability]`). Used by skill-sync for routing. |
+| `metadata.auto_invoke` | Yes | Human-readable trigger string or YAML list. When the AI should load this skill. |
+| `allowed-tools` | Yes | Comma-separated tool list. Required for skill-sync routing tables. |
 
 ### Skill Content Guidelines
 
@@ -377,20 +384,12 @@ After creating ANY component, you MUST register it. This is the most commonly fo
 ### Skill Registration Checklist
 
 - [ ] Skill directory created: `BatutaClaude/skills/{skill-name}/SKILL.md`
-- [ ] SKILL.md has complete frontmatter (name, description with triggers, license, metadata)
-- [ ] Added to **CLAUDE.md** under the appropriate skills table:
-  ```markdown
-  | `{skill-name}` | {Description} | [SKILL.md](BatutaClaude/skills/{skill-name}/SKILL.md) |
-  ```
-  - Infrastructure skills go under "Infrastructure Skills (Bootstrapped)"
-  - Project skills go under "Project Skills" with status `active`
-- [ ] Added to **CLAUDE.md** under "Skills (Auto-load based on context)":
-  ```markdown
-  | {Context trigger description} | `~/.claude/skills/{skill-name}/SKILL.md` |
-  ```
-  - Infrastructure skills go under "Infrastructure Skills (always available)"
-  - Project skills go under "Project Skills (added via ecosystem-creator)"
-- [ ] If the skill was in the planned roadmap (CLAUDE.md "Project Skills"), update status from `planned` to `active`
+- [ ] SKILL.md has complete frontmatter (name, description with triggers, license, metadata including **scope** and **auto_invoke**, **allowed-tools**)
+- [ ] Run `bash BatutaClaude/skills/skill-sync/assets/sync.sh` to auto-update routing tables in:
+  - `BatutaClaude/CLAUDE.md` (Available Skills table)
+  - `BatutaClaude/agents/{scope}-agent.md` (Skills table for the skill's scope)
+- [ ] Verify the skill appears in both auto-generated tables after sync
+- [ ] If the skill was in the planned roadmap (CLAUDE.md "Planned project skills"), update status
 - [ ] If the skill has assets/, verify templates are present
 
 ### Agent Registration Checklist
@@ -404,12 +403,11 @@ After creating ANY component, you MUST register it. This is the most commonly fo
 ### Sub-Agent Registration Checklist
 
 - [ ] Sub-agent skill file created: `BatutaClaude/skills/{sub-agent-name}/SKILL.md`
-- [ ] SKILL.md has complete frontmatter with triggers
+- [ ] SKILL.md has complete frontmatter with triggers, **scope**, **auto_invoke**, **allowed-tools**
 - [ ] Output contract section is present and follows the envelope format
-- [ ] Added to **CLAUDE.md** under "Infrastructure Skills (Bootstrapped)"
-- [ ] Added to **CLAUDE.md** under "Infrastructure Skills (always available)"
-- [ ] If it extends the SDD pipeline, added to the Dependency Graph in CLAUDE.md
-- [ ] Orchestrator rules in CLAUDE.md updated if new delegation pattern is needed
+- [ ] Run `bash BatutaClaude/skills/skill-sync/assets/sync.sh` to auto-update routing tables
+- [ ] Verify the sub-agent appears in the appropriate scope agent's skills table
+- [ ] If it extends the SDD pipeline, update the pipeline-agent.md Phase Routing table
 
 ### Workflow Registration Checklist
 
@@ -487,9 +485,9 @@ Skill Gap Detected: "{technology}" has no active skill
 │     ASK: "¿Apruebas este skill o quieres ajustar algo?"
 │
 └─ 6. REGISTER — Follow full Registration Checklist
-      Update: CLAUDE.md (change status from planned to active, or add new entry)
-      Update: CLAUDE.md (add to auto-load table)
-      Sync: Run setup.sh --sync-all (suggest to user)
+      Ensure: SKILL.md has scope, auto_invoke, allowed-tools in frontmatter
+      Sync: Run `bash BatutaClaude/skills/skill-sync/assets/sync.sh` to update routing tables
+      Verify: Skill appears in CLAUDE.md Available Skills table and scope agent Skills table
 ```
 
 ### Auto-Discovery Scope Options

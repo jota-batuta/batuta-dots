@@ -4,6 +4,177 @@
 
 ---
 
+## v5 — Mix-of-Experts + Execution Gate + Standardized Frontmatter + Skill-Sync (2026-02-21)
+
+### Problema detectado
+Tres gaps identificados en v4, validados por analisis del ecosistema Prowler (prowler-cloud/prowler):
+
+1. **O.R.T.A. sin capa preventiva**: El prompt-tracker es REACTIVO — registra DESPUES de que algo sale mal. La regla "just do it → PROCEED" permite saltar validacion. Auto-supervision debe significar que el agente se supervisa A SI MISMO antes de actuar.
+2. **Frontmatter inconsistente en skills**: Solo 2 de 12 skills tenian `allowed-tools`. Ninguno tenia `scope` ni `auto_invoke`. Prowler tiene los tres campos en TODOS sus 31 skills.
+3. **Agente principal sobrecargado**: CLAUDE.md contiene una tabla auto-invoke de 14 filas que el agente principal interpreta manualmente. No hay sub-agents para scopes fuera de SDD (infra, observability).
+
+### Solucion implementada (4 pilares)
+
+1. **Mix-of-Experts (MoE)**: Agente principal como router puro. 3 scope agents especializados: pipeline (SDD), infra (file org, ecosystem, skill-sync), observability (tracking, sessions).
+2. **Execution Gate**: Pre-validacion obligatoria antes de cualquier cambio de codigo. Dos modos: LIGHT (1-line) y FULL (location plan + impact + SDD/skill compliance). Tambien es el punto de routing — clasifica scope y delega.
+3. **Frontmatter estandarizado**: `scope`, `auto_invoke`, `allowed-tools` en TODOS los 13 skills. El scope es la clave de routing.
+4. **Skill-Sync automatizado**: Script lee frontmatters de TODOS los SKILL.md → genera tablas en CLAUDE.md y scope agents automaticamente. Redundancia sin depender del usuario.
+
+### Archivos nuevos (9)
+
+| Archivo | Proposito |
+|---------|-----------|
+| `BatutaClaude/agents/pipeline-agent.md` | Scope agent: SDD Pipeline (9 skills) |
+| `BatutaClaude/agents/infra-agent.md` | Scope agent: Infraestructura (3 skills) |
+| `BatutaClaude/agents/observability-agent.md` | Scope agent: O.R.T.A. (1 skill) |
+| `BatutaClaude/skills/skill-sync/SKILL.md` | Skill de sincronizacion de routing tables |
+| `BatutaClaude/skills/skill-sync/assets/sync.sh` | Script de sincronizacion (~270 lineas) |
+| `BatutaClaude/skills/skill-sync/assets/sync_test.sh` | Suite de tests para sync.sh (18 tests) |
+| `BatutaClaude/commands/batuta-sync-skills.md` | Slash command /batuta:sync-skills |
+
+### Archivos modificados (~25)
+
+| Archivo | Cambio | Razon |
+|---------|--------|-------|
+| `BatutaClaude/CLAUDE.md` | **Reescrito** (~239 → ~195 lineas) | Router MoE: Scope Routing Table + Execution Gate + AUTO-GENERATED skills table. Removido: Follow Questions, auto-invoke manual, contenido movido a scope agents |
+| 12 x `BatutaClaude/skills/*/SKILL.md` | **Frontmatter** | Agregados `metadata.scope`, `metadata.auto_invoke`, `allowed-tools` |
+| `BatutaClaude/skills/ecosystem-creator/SKILL.md` | **Actualizado** | Templates con scope/auto_invoke, Registration Checklist con skill-sync |
+| `BatutaClaude/skills/ecosystem-creator/assets/skill-template.md` | **Actualizado** | Campos scope y auto_invoke en metadata |
+| `BatutaClaude/skills/prompt-tracker/SKILL.md` | **Ampliado** | 5to evento "gate", metricas de gate compliance, patrones y recomendaciones |
+| `BatutaClaude/skills/sdd-apply/SKILL.md` | **Actualizado** | Step 0: verificacion de Execution Gate |
+| `BatutaClaude/commands/batuta-analyze-prompts.md` | **Actualizado** | Metricas de gate compliance y distribucion de scopes |
+| `skills/setup.sh` | **Ampliado** | +sync_agents(), +run_skill_sync(), flujo --all actualizado, verify con agents/skill-sync |
+| `guides/arquitectura-diagrama.md` | **Ampliado** | +3 diagramas MoE, actualizado lazy loading 3 niveles, prompt tracking con gate |
+| `guides/arquitectura-para-no-tecnicos.md` | **Ampliado** | +3 secciones (Jefes de Area, Checklist, Inventario), roles actualizados |
+| `README.md` + `README.es.md` | **Actualizados** | v5 MoE + Gate + Skill-Sync docs, conteo 13 skills + 3 agents |
+
+### Analisis Prowler como referencia
+
+Se analizo el repositorio prowler-cloud/prowler (31 skills, multi-AGENTS.md). Patrones adoptados:
+- `metadata.scope` en todos los skills → routing key
+- `metadata.auto_invoke` string o lista → trigger documentation
+- `allowed-tools` obligatorio → tool boundary enforcement
+- skill-sync script → redundancia automatica del ecosistema
+
+Patrones NO adoptados (Batuta tiene alternativas):
+- Multi-AGENTS.md → Batuta usa `agents/` directory con scope agents
+- Scope como path directo → Batuta usa scope como routing key a agent file
+
+### Como revertir
+
+```bash
+# 1. Restaurar CLAUDE.md v4
+git checkout HEAD~1 -- BatutaClaude/CLAUDE.md
+
+# 2. Eliminar scope agents
+rm -rf BatutaClaude/agents/
+
+# 3. Eliminar skill-sync
+rm -rf BatutaClaude/skills/skill-sync/
+
+# 4. Eliminar comando
+rm BatutaClaude/commands/batuta-sync-skills.md
+
+# 5. Revertir frontmatters (remover scope, auto_invoke de metadata en cada SKILL.md)
+# Nota: allowed-tools ya existia en 2 skills, no removerlo de esos
+
+# 6. Revertir setup.sh, guides, READMEs
+git checkout HEAD~1 -- skills/setup.sh guides/ README.md README.es.md
+```
+
+### Metricas antes/despues
+
+| Metrica | v4 | v5 |
+|---------|----|----|
+| CLAUDE.md lineas | ~239 | ~195 |
+| Skills con scope | 0 | 13 |
+| Skills con auto_invoke | 0 | 13 |
+| Skills con allowed-tools | 2 | 13 |
+| Scope agents | 0 | 3 |
+| Total skills | 12 | 13 (+ skill-sync) |
+| Routing tables | Manual | Auto-generadas |
+| Pre-validacion (Gate) | No | Si (LIGHT/FULL) |
+| Lazy loading niveles | 2 (CLAUDE.md → skill) | 3 (CLAUDE.md → agent → skill) |
+
+---
+
+## v4 — Continuidad de Sesion + Prompt Satisfaction Tracker + Pipeline de Aprendizaje (2026-02-21)
+
+### Problema detectado
+Dos gaps criticos tras v3:
+1. **Sin continuidad de sesion**: Cada nueva conversacion empieza de cero. Claude no recuerda decisiones, estado SDD, ni convenciones descubiertas en sesiones anteriores.
+2. **Sin feedback loop**: Cuando un prompt genera un resultado incorrecto y el usuario corrige, esa leccion se pierde. No hay mecanismo para mejorar el comportamiento del agente basado en la experiencia real.
+
+### Solucion implementada
+Sistema de tres capas alineado con el framework O.R.T.A.:
+
+1. **Directorio `.batuta/` por proyecto** — Archivos git-tracked para continuidad de sesion (`session.md`) y tracking de satisfaccion (`prompt-log.jsonl`).
+2. **Skill `prompt-tracker`** — Motor de observabilidad que registra interacciones en formato JSONL y analiza patrones.
+3. **Pipeline de analisis** — Comando `/batuta:analyze-prompts` que computa metricas y genera recomendaciones para mejorar reglas del agente, guia de prompting, y sub-agentes.
+4. **Follow Questions** — Reglas de depuracion de prompts antes de ejecutar (tabla de decision). *(Reemplazado por Execution Gate en v5)*
+5. **Separacion de preocupaciones en `/batuta-update`** — Comportamiento global (skills, CLAUDE.md) se actualiza; contexto local (`.batuta/`) nunca se toca.
+
+### Archivos nuevos
+
+| Archivo | Proposito |
+|---------|-----------|
+| `BatutaClaude/skills/prompt-tracker/SKILL.md` | Skill de observabilidad: logging JSONL + modo de analisis |
+| `BatutaClaude/skills/prompt-tracker/assets/session-template.md` | Template para `.batuta/session.md` |
+| `BatutaClaude/commands/batuta-analyze-prompts.md` | Slash command para analizar el log de satisfaccion |
+
+### Archivos modificados
+
+| Archivo | Cambio | Razon |
+|---------|--------|-------|
+| `BatutaClaude/CLAUDE.md` | **+34 lineas** (~193 → ~230) | Agregadas secciones: Follow Questions, Prompt Tracking (O.R.T.A.), Session Continuity. Registros en auto-invoke table, Available Skills, SDD Commands |
+| `BatutaClaude/commands/batuta-init.md` | **ACTUALIZADO** | Agrega Step 2.5: crear `.batuta/` con session.md y prompt-log.jsonl |
+| `BatutaClaude/commands/batuta-update.md` | **ACTUALIZADO** | Agrega tabla de separacion: que se actualiza (global) vs que se preserva (local) |
+| `skills/setup_test.sh` | **AMPLIADO** | 5 tests nuevos: prompt-tracker skill, session template, analyze command, v4 sections, sync |
+| `CHANGELOG-refactor.md` | **AMPLIADO** | Seccion v4 (este documento) |
+| `README.md` | **ACTUALIZADO** | Skills 12 → 13, nuevo concepto Prompt Tracking, nuevo comando |
+| `README.es.md` | **ACTUALIZADO** | Mismos cambios que README.md en espanol |
+| `guides/arquitectura-diagrama.md` | **ACTUALIZADO** | +prompt-tracker en Vista General, +/batuta:analyze-prompts en Commands, +2 diagramas Mermaid (Session Continuity, Prompt Tracking), +.batuta/ en Flujo Completo, ~170→~230 lineas |
+| `guides/arquitectura-para-no-tecnicos.md` | **ACTUALIZADO** | 12→13 recetas, +2 secciones (Cuaderno del Turno, Inspector de Calidad), +/batuta:analyze-prompts en Commands, +roles (bitacora, inspector), +FAQ sesion, FAQ O.R.T.A. ampliada |
+| `guides/guia-batuta-app.md` | **ACTUALIZADO** | FAQ sesion automatica con session.md, +.batuta/ en Slide 3, +Extra C (analyze-prompts), Extra C→D renombrado, resumen visual actualizado |
+| `guides/guia-temporal-io-app.md` | **ACTUALIZADO** | Nota sobre .batuta/ y continuidad de sesion en Slide 2 |
+| `guides/guia-langchain-gmail-agent.md` | **ACTUALIZADO** | Nota sobre .batuta/ y continuidad de sesion en Slide 2 |
+
+### Convencion `.batuta/`
+
+```
+proyecto/
+  .batuta/
+    session.md            # Contexto de sesion (Claude lo lee al iniciar, lo actualiza al terminar trabajo significativo)
+    prompt-log.jsonl      # Log de satisfaccion (append-only, formato JSONL)
+    analysis-report.md    # Generado por /batuta:analyze-prompts
+    prompting-guide.md    # Generado por /batuta:analyze-prompts (guia para el usuario)
+```
+
+### Formato del Log JSONL
+
+Cuatro tipos de evento: `prompt`, `correction`, `follow-up`, `closed`.
+Seis tipos de correccion: `missing-requirement`, `wrong-approach`, `style-mismatch`, `scope-error`, `misunderstanding`, `other`.
+
+### Como revertir si algo falla
+
+1. **Restaurar CLAUDE.md pre-v4**: `git checkout HEAD~1 -- BatutaClaude/CLAUDE.md`
+2. **Eliminar prompt-tracker**: `rm -rf BatutaClaude/skills/prompt-tracker/`
+3. **Eliminar comando analyze**: `rm BatutaClaude/commands/batuta-analyze-prompts.md`
+4. **Restaurar batuta-init/update**: `git checkout HEAD~1 -- BatutaClaude/commands/`
+5. **Restaurar tests**: `git checkout HEAD~1 -- skills/setup_test.sh`
+
+### Metricas
+
+| Metrica | Antes (v3) | Despues (v4) |
+|---------|-----------|-------------|
+| Lineas que Claude lee al iniciar | ~193 | ~230 |
+| Skills de infraestructura | 12 | 13 (+prompt-tracker) |
+| Comandos slash | 2 (init, update) | 3 (+analyze-prompts) |
+| Archivos por proyecto | CLAUDE.md + openspec/ | CLAUDE.md + openspec/ + .batuta/ |
+| Feedback loop | Ninguno | JSONL log + analisis + recomendaciones |
+
+---
+
 ## v3 — Eliminacion de AGENTS.md, CLAUDE.md como unico punto de entrada (2026-02-21)
 
 ### Problema detectado

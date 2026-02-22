@@ -31,6 +31,26 @@ Copy from `BATUTA_DOTS_PATH`:
 
 Do NOT copy settings.json, mcp-servers.template.json, or other config files — those stay in batuta-dots.
 
+### Step 2.5: Initialize .batuta/ directory
+
+Create the project-local Batuta directory for session continuity and prompt tracking:
+
+```bash
+mkdir -p .batuta
+```
+
+Copy the session template from batuta-dots:
+```bash
+cp "$BATUTA_DOTS_PATH/BatutaClaude/skills/prompt-tracker/assets/session-template.md" .batuta/session.md
+```
+
+Replace `{project-name}` in session.md with the actual project name (from argument or directory name).
+
+Create an empty prompt log:
+```bash
+touch .batuta/prompt-log.jsonl
+```
+
 ### Step 3: Sync skills
 
 Run the setup script to sync skills to the user's Claude config:
@@ -70,6 +90,8 @@ Ecosistema Batuta instalado en este proyecto.
 
 Archivos creados:
 - CLAUDE.md (personalidad + reglas + routing de skills)
+- .batuta/session.md (continuidad entre sesiones)
+- .batuta/prompt-log.jsonl (tracking de satisfaccion)
 
 Skills sincronizados a ~/.claude/skills/ (X skills)
 

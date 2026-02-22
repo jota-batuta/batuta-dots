@@ -2,6 +2,9 @@
 
 > **Para quien es esta guia**: Para cualquier persona que sepa copiar y pegar texto.
 > Claude Code hace la programacion, tu solo le das las instrucciones.
+>
+> **Formato**: Sigue los pasos en orden, como cuando aprendes a manejar.
+> Cada paso depende del anterior. No saltes pasos.
 
 ---
 
@@ -34,6 +37,10 @@ Vamos a construir un workflow de **onboarding de clientes** que:
 | **Worker** | El "cocinero" que ejecuta los workflows. Siempre esta escuchando, esperando trabajo. |
 | **Task Queue** | La "fila de pedidos" donde se acumulan los workflows pendientes. |
 | **Retry Policy** | Las reglas de reintento: cuantas veces reintentar, cuanto esperar entre intentos. |
+| **Docker** | Una herramienta que empaqueta aplicaciones para que funcionen en cualquier computadora igual. |
+| **Docker Compose** | Un archivo que le dice a Docker "levanta estos 3 servicios juntos". |
+| **Scope Agent** | Un "jefe de area" especializado de Claude. Coordina un grupo de tareas relacionadas. |
+| **Execution Gate** | Un checklist automatico que Claude ejecuta ANTES de hacer cualquier cambio de codigo. |
 
 ---
 
@@ -46,13 +53,21 @@ Necesitas tener instalado lo de siempre (Node.js, Git, Claude Code) mas:
 | **Docker** | Para correr Temporal Server en tu PC | Descarga de [docker.com](https://docker.com) |
 | **Python 3.11+** | El lenguaje que usaremos para los workers | Descarga de [python.org](https://python.org) |
 
+Para verificar:
+```
+docker --version
+python --version
+```
+
 ---
 
-# LAS SLIDES
+# PASO A PASO
+
+> Sigue cada paso en orden. Cada uno depende del anterior.
 
 ---
 
-## Slide 1 — Crear la carpeta del proyecto
+## Paso 1 — Crear la carpeta del proyecto
 
 1. Crea una carpeta llamada `Batuta Workers`
 2. Abre una terminal
@@ -70,7 +85,7 @@ claude
 
 ---
 
-## Slide 2 — Instalar el ecosistema Batuta
+## Paso 2 — Instalar el ecosistema Batuta
 
 Escribe:
 
@@ -78,11 +93,13 @@ Escribe:
 /batuta-init batuta-workers
 ```
 
-Si no tienes el comando instalado, usa el prompt largo de la guia principal (`guides/guia-batuta-app.md`, Slide 3 Opcion B).
+Esto instala las instrucciones del chef (CLAUDE.md), los jefes de area (scope agents), el sistema de calidad (.batuta/), y todas las recetas (skills). Si cierras la terminal y vuelves despues, Claude recuerda donde quedo gracias a `.batuta/session.md`.
+
+Si no tienes el comando instalado, usa el prompt largo de la guia principal (`guides/guia-batuta-app.md`, Paso 3 Opcion B).
 
 ---
 
-## Slide 3 — Iniciar el proyecto
+## Paso 3 — Iniciar el proyecto
 
 ```
 /sdd:init
@@ -98,7 +115,7 @@ Cuando Claude pregunte:
 
 ---
 
-## Slide 4 — Explorar la idea
+## Paso 4 — Explorar la idea
 
 ```
 /sdd:explore batuta-workers-onboarding
@@ -140,11 +157,11 @@ DEPLOY:
 - Coolify para produccion
 ```
 
-**Que esperar**: Claude va a investigar y probablemente detecte que necesita skills para Temporal.io y otros.
+**Que esperar**: Claude va a investigar y probablemente detecte que necesita skills para Temporal.io y otros. Esto es normal — el sistema de deteccion de skills esta funcionando.
 
 ---
 
-## Slide 5 — Cuando Claude detecte skills faltantes
+## Paso 5 — Cuando Claude detecte skills faltantes
 
 Claude va a decir que no tiene skills para:
 - **Temporal.io** (workflows, activities, workers)
@@ -159,35 +176,45 @@ Opcion 1 — Investiga y crea el skill acotado a nuestro proyecto
 
 Temporal.io es la tecnologia mas importante aqui. Claude va a investigar en Context7 las mejores practicas actuales del SDK de Python para Temporal y crear un skill documentado.
 
+**Tip**: Este paso puede tomar 10-15 minutos. Es una inversion que se paga sola — Claude va a escribir mejor codigo porque tiene las recetas correctas.
+
 ---
 
-## Slide 6 — Propuesta, especificaciones y diseno
+## Paso 6 — Propuesta y aprobacion
 
 ```
 /sdd:new batuta-workers-onboarding
 ```
 
-Lee el resumen. Si te parece bien:
+Lee el resumen que Claude te muestra. Si te parece bien:
 
 ```
 Aprobado, continua con el siguiente paso
 ```
 
-Luego:
+---
+
+## Paso 7 — Especificaciones, diseno y tareas
 
 ```
 /sdd:continue batuta-workers-onboarding
 ```
 
-Repite "Se ve bien, continua" para cada fase (specs, design, tasks).
+Repite "Se ve bien, continua" para cada fase (specs, design, tasks). Claude ejecuta estas 3 fases en orden:
+
+1. **Specs**: Define exactamente que hace cada workflow, activity y worker
+2. **Design**: Decide la arquitectura: como se conectan Temporal, PostgreSQL y la API
+3. **Tasks**: Divide todo en tareas pequenas y ordenadas
 
 ---
 
-## Slide 7 — Implementar
+## Paso 8 — Construir la aplicacion
 
 ```
 /sdd:apply batuta-workers-onboarding
 ```
+
+Antes de escribir codigo, Claude ejecuta el **Execution Gate** — valida donde van los archivos, que impacto tienen y que todo siga las reglas del proyecto.
 
 Claude va a crear:
 - Estructura de carpetas (siguiendo la Scope Rule)
@@ -210,13 +237,25 @@ Para desarrollo local, usa estos valores:
 
 ---
 
-## Slide 8 — Verificar y probar
+## Paso 9 — Verificar que todo funcione
 
 ```
 /sdd:verify batuta-workers-onboarding
 ```
 
-Despues de la verificacion:
+Si hay errores, dile:
+
+```
+Si, corrige todos los problemas que encontraste
+```
+
+Repite la verificacion hasta que todo este verde.
+
+---
+
+## Paso 10 — Probar en tu computadora
+
+**Que vamos a hacer**: Levantar todo el sistema en tu PC y verificar que funciona antes de subirlo a internet.
 
 ```
 Levanta todo el sistema con Docker Compose para que pueda probarlo.
@@ -226,18 +265,117 @@ Dame las instrucciones paso a paso.
 Claude va a ejecutar `docker-compose up` y te dira como acceder al dashboard.
 
 **Prueba**:
-1. Abre el dashboard en tu navegador
+1. Abre el dashboard en tu navegador (generalmente `http://localhost:3000`)
 2. Lanza un workflow de onboarding desde la API o el dashboard
 3. Verifica que los pasos se ejecutan en orden
 4. Detener un worker y ver que Temporal reintenta
 
+**Si algo no funciona**, dile a Claude exactamente que ves:
+
+```
+El worker de onboarding se cae con este error: [pega el error aqui]
+```
+
 ---
 
-## Slide 9 — Archivar
+## Paso 11 — Configurar el despliegue a produccion
+
+**Que vamos a hacer**: Preparar todo para que la aplicacion viva en internet. Coolify se encarga del hosting.
+
+```
+Necesito configurar el despliegue en Coolify para produccion.
+
+Tenemos:
+- Coolify corriendo en: [TU URL DE COOLIFY]
+- Temporal Server YA esta corriendo en produccion en: [URL DEL TEMPORAL SERVER]
+- El dominio para el dashboard sera: [TU DOMINIO, ejemplo: workers.batutaai.com]
+
+Configura:
+1. Servicios para los workers (pueden correr como Docker containers)
+2. Servicio para la API REST
+3. Servicio para el dashboard
+4. Base de datos PostgreSQL como servicio en Coolify
+5. Variables de entorno para todas las conexiones
+6. Despliegue automatico cuando hagamos push a main
+7. Health checks para saber si los workers estan vivos
+
+Dame los archivos necesarios (Dockerfiles, docker-compose.production.yml)
+y las instrucciones para Coolify.
+```
+
+**Que esperar**: Claude va a crear archivos de configuracion para produccion y darte instrucciones paso a paso de como configurar Coolify.
+
+---
+
+## Paso 12 — Subir a GitHub y desplegar
+
+```
+Crea un repositorio privado en GitHub llamado batuta-workers bajo la
+organizacion jota-batuta, sube todo el codigo, y configura el webhook
+de Coolify para despliegue automatico.
+
+Haz el commit inicial con todo lo que hemos construido.
+```
+
+**Si Claude pide permisos de git** (commit, push), di "yes".
+
+---
+
+## Paso 13 — Verificar que todo esta en internet
+
+```
+Verifica que el despliegue en Coolify esta funcionando correctamente.
+Revisa los logs de los servicios y confirma que:
+1. Los workers estan conectados al Temporal Server
+2. La API REST esta respondiendo
+3. El dashboard esta cargando
+4. La base de datos esta conectada
+5. Los health checks estan pasando
+```
+
+**Si todo esta bien**, abre tu navegador y ve a tu dominio (ejemplo: `https://workers.batutaai.com`).
+
+**Si algo falla**, los errores mas comunes con Temporal son:
+- Workers no conectan → verificar URL del Temporal Server y credenciales
+- Task queues vacias → verificar que los workers esten registrados
+- Base de datos no conecta → verificar cadena de conexion en variables de entorno
+
+Claude te ayuda a diagnosticar y resolver cada uno.
+
+---
+
+## Paso 14 — Archivar y celebrar
 
 ```
 /sdd:archive batuta-workers-onboarding
 ```
+
+Claude cierra el proyecto formalmente: verifica que todo esta completo, guarda las lecciones aprendidas, y actualiza `.batuta/session.md`.
+
+**Tu sistema de workflows esta en produccion. Felicidades!**
+
+---
+
+# DESPUES DE LA ENTREGA
+
+---
+
+## Agregar nuevos workflows
+
+Para agregar un nuevo workflow (ejemplo: procesamiento de pagos):
+
+```
+/sdd:new batuta-workers-payments
+
+Quiero agregar un workflow de procesamiento de pagos con estos pasos:
+1. Verificar fondos del cliente
+2. Cobrar el monto
+3. Generar factura
+4. Notificar al cliente
+Si el paso de cobro falla, reintentar 3 veces con backoff exponencial.
+```
+
+Y sigue el mismo flujo: explore → propose → specs → design → tasks → apply → verify.
 
 ---
 
@@ -270,7 +408,8 @@ batuta-workers/
 │   │   └── api/
 │   └── shared/                     # Shared entre 2+ features
 │       └── notifications/
-├── docker-compose.yml
+├── docker-compose.yml              # Desarrollo local
+├── docker-compose.production.yml   # Produccion (Coolify)
 ├── Dockerfile
 └── requirements.txt
 ```
@@ -287,3 +426,10 @@ batuta-workers/
 | Un workflow falla consistentemente | `El workflow X esta fallando en el paso Y. Muestra los logs y sugiere como arreglarlo` |
 | Quieres cambiar la politica de reintentos | `Cambia la retry policy del activity Z a maximo 5 intentos con backoff exponencial` |
 | Necesitas un workflow mas complejo | `Necesito un workflow que tenga pasos condicionales: si el paso 2 falla, ejecuta el paso 2B en lugar de reintentar` |
+| Quieres ver metricas del sistema | `/batuta:analyze-prompts` para ver como ha ido la comunicacion con Claude |
+
+---
+
+> **Recuerda**: No necesitas entender COMO funciona Temporal por dentro.
+> Solo necesitas describir los pasos de tu proceso, y Claude se encarga del resto.
+> Como aprender a manejar: primero sigues las instrucciones, despues lo haces naturalmente.

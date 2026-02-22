@@ -9,6 +9,9 @@ metadata:
   author: Batuta
   version: "1.0"
   created: 2025-06-01
+  scope: [pipeline]
+  auto_invoke: "Implementing task batches, /sdd:apply"
+allowed-tools: Read, Edit, Write, Glob, Grep, Bash
 ---
 
 ## Purpose
@@ -72,6 +75,15 @@ AND no matching skill exists in the user's loaded skills:
 This ensures the team progressively builds a library of reusable coding skills as the stack grows.
 
 ## What to Do
+
+### Step 0: Verify Execution Gate
+
+Before starting implementation, verify the Execution Gate ran for this task:
+1. Check `.batuta/prompt-log.jsonl` for a `gate` event linked to this prompt
+2. If no gate event exists, run the Execution Gate NOW (determine scope, location plan, impact)
+3. Log the gate event before proceeding
+
+This ensures every code change has a pre-validation record for traceability.
 
 ### Step 1: Read Context
 

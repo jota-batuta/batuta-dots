@@ -23,6 +23,19 @@ Check these locations in order:
 If found, do a `git pull` in that directory to get latest changes.
 If not found, clone: `git clone https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-dots`
 
+### Important: What gets updated vs what stays
+
+| Scope | Updates from batuta-dots? | Location |
+|-------|--------------------------|----------|
+| Agent behavior (rules, personality) | YES | CLAUDE.md |
+| Skills (coding standards) | YES | ~/.claude/skills/ |
+| Commands (slash commands) | YES | ~/.claude/commands/ |
+| Project context (session state) | **NO — stays local** | .batuta/session.md |
+| Prompt logs (satisfaction data) | **NO — stays local** | .batuta/prompt-log.jsonl |
+| SDD artifacts (specs, designs) | **NO — stays local** | openspec/ |
+
+NEVER overwrite `.batuta/` contents during update. Project context is sacred.
+
 ### Step 2: Re-sync skills
 
 ```bash

@@ -8,6 +8,9 @@ metadata:
   author: Batuta
   version: "1.0"
   created: "2026-02-20"
+  scope: [pipeline]
+  auto_invoke: "Exploring codebase for changes, /sdd:explore"
+allowed-tools: Read, Glob, Grep, WebFetch, WebSearch
 ---
 
 ## Purpose

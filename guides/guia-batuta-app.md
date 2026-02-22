@@ -2,6 +2,10 @@
 
 > **Para quien es esta guia**: Para cualquier persona, sin importar si nunca ha programado.
 > Solo necesitas saber copiar y pegar texto. Claude Code hace el resto.
+>
+> **Formato**: Sigue los pasos en orden, como cuando aprendes a manejar un carro:
+> primero el cinturon, luego el espejo, luego el freno, luego arrancar.
+> Cada paso depende del anterior.
 
 ---
 
@@ -23,6 +27,8 @@ Antes de empezar, aqui tienes un mini-diccionario. No necesitas memorizarlo, vue
 | **Repositorio (repo)** | Una carpeta especial que guarda todo tu codigo y recuerda cada cambio que haces. |
 | **n8n** | Una herramienta de automatizacion. Ejecuta tareas automaticas (como enviar emails, procesar datos). |
 | **Coolify** | Una plataforma para poner aplicaciones en internet. Como un hosting inteligente. |
+| **Scope Agent** | Un "jefe de area" especializado. Claude tiene 3: uno para el proceso de desarrollo, uno para organizacion de archivos, y uno para calidad. |
+| **Execution Gate** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden. |
 
 ---
 
@@ -57,11 +63,14 @@ Si los tres muestran un numero (como `v20.11.0`), estas lista.
 
 ---
 
-# LAS SLIDES
+# PASO A PASO
+
+> Sigue cada paso en orden. No saltes pasos — cada uno depende del anterior,
+> como cuando aprendes a manejar.
 
 ---
 
-## Slide 1 — Crear la carpeta del proyecto
+## Paso 1 — Crear la carpeta del proyecto
 
 **Que vamos a hacer**: Crear una carpeta vacia donde vivira toda nuestra aplicacion.
 
@@ -75,7 +84,7 @@ Si los tres muestran un numero (como `v20.11.0`), estas lista.
 
 ---
 
-## Slide 2 — Abrir Claude Code en tu proyecto
+## Paso 2 — Abrir Claude Code en tu proyecto
 
 **Que vamos a hacer**: Abrir el asistente de programacion dentro de tu carpeta.
 
@@ -104,9 +113,9 @@ Ese `>` es donde le escribes tus instrucciones.
 
 ---
 
-## Slide 3 — Instalar el ecosistema Batuta
+## Paso 3 — Instalar el ecosistema Batuta
 
-**Que vamos a hacer**: Darle a Claude las "recetas" (skills) que necesita para trabajar al estilo Batuta.
+**Que vamos a hacer**: Darle a Claude las "recetas" (skills) que necesita para trabajar al estilo Batuta. Esto incluye la configuracion del chef principal, los jefes de area (scope agents), y el sistema de calidad.
 
 **Opcion A — Si ya tienes los commands de Batuta instalados** (recomendado):
 
@@ -130,19 +139,22 @@ Haz lo siguiente:
 2. Ejecuta el script skills/setup.sh --all para copiar CLAUDE.md y sincronizar skills
 3. Copia el archivo BatutaClaude/CLAUDE.md a la raiz de este proyecto como CLAUDE.md
 4. Inicializa git en esta carpeta si no existe
-6. Confirma cuando todo este listo
+5. Confirma cuando todo este listo
 ```
 
 > Despues de esta primera vez, los commands `/batuta-init` y `/batuta-update` quedan
 > instalados y ya no necesitas copiar el prompt largo nunca mas.
 
-**Que esperar**: Claude va a descargar el ecosistema y configurar todo. Puede tomar 1-2 minutos. Cuando termine, te dira que archivos creo.
+**Que esperar**: Claude va a descargar el ecosistema y configurar todo. Puede tomar 1-2 minutos. Cuando termine, te dira que archivos creo, incluyendo:
+- `CLAUDE.md` — Las instrucciones del chef (router principal + scope agents + execution gate)
+- `.batuta/session.md` — El cuaderno donde Claude anota en que quedo (para continuar despues)
+- `.batuta/prompt-log.jsonl` — La bitacora de calidad (se llena automaticamente)
 
 **Tip**: Si Claude te pide permiso para ejecutar comandos, di "yes" o "si".
 
 ---
 
-## Slide 4 — Iniciar el proyecto con SDD
+## Paso 4 — Iniciar el proyecto con SDD
 
 **Que vamos a hacer**: Decirle a Claude que tipo de proyecto vamos a construir para que se prepare correctamente.
 
@@ -163,9 +175,12 @@ Haz lo siguiente:
 
 **Tip**: No te preocupes si no entiendes todo lo que Claude responde. Lo importante es que el "entienda" que queremos construir.
 
+> **Detalle tecnico (opcional)**: Cuando ejecutas `/sdd:init`, Claude activa su pipeline-agent
+> (el "jefe de cocina") que coordina todo el proceso de desarrollo.
+
 ---
 
-## Slide 5 — Explorar la idea
+## Paso 5 — Explorar la idea
 
 **Que vamos a hacer**: Pedirle a Claude que investigue COMO construir lo que necesitamos antes de empezar a programar. Como cuando un arquitecto estudia el terreno antes de dibujar planos.
 
@@ -212,7 +227,7 @@ Esto es **NORMAL y BUENO**. Significa que el sistema de deteccion de skills esta
 
 ---
 
-## Slide 6 — Cuando Claude dice "no tengo un skill para eso"
+## Paso 6 — Cuando Claude dice "no tengo un skill para eso"
 
 **Que vamos a hacer**: Entender que pasa cuando Claude detecta que necesita aprender algo nuevo. Esto es como si un chef te dijera "no tengo la receta para ese plato, pero puedo investigarla".
 
@@ -242,11 +257,14 @@ Opcion 1 — Investiga y crea el skill acotado a nuestro proyecto
 
 Claude va a investigar usando Context7 (su base de conocimiento actualizada) y crear las recetas que necesita. Esto toma unos minutos por skill, pero solo pasa una vez.
 
+> **Detalle tecnico (opcional)**: El infra-agent (jefe de almacen) coordina la creacion
+> de skills nuevos. Usa el ecosystem-creator para investigar y documentar la tecnologia.
+
 **Tip**: Este paso puede tomar 10-15 minutos en total. Es normal. Claude esta "aprendiendo" para hacerlo bien a la primera.
 
 ---
 
-## Slide 7 — Crear la propuesta
+## Paso 7 — Crear la propuesta
 
 **Que vamos a hacer**: Pedirle a Claude que escriba un plan formal de lo que va a construir. Como cuando un arquitecto te muestra el boceto antes de construir.
 
@@ -278,7 +296,7 @@ Aprobado, continua con el siguiente paso
 
 ---
 
-## Slide 8 — Continuar el pipeline automaticamente
+## Paso 8 — Especificaciones, diseno y tareas
 
 **Que vamos a hacer**: Dejar que Claude avance por las fases de planificacion. El va a crear las especificaciones tecnicas, el diseno de la arquitectura, y las tareas de implementacion.
 
@@ -317,7 +335,7 @@ Claude esta configurado para explicarte las cosas de forma que cualquier persona
 
 ---
 
-## Slide 9 — Implementar (construir la aplicacion)
+## Paso 9 — Construir la aplicacion
 
 **Que vamos a hacer**: Ahora si, pedirle a Claude que ESCRIBA el codigo. Esta es la parte donde la magia pasa. Claude va a crear todos los archivos del proyecto.
 
@@ -327,7 +345,21 @@ Claude esta configurado para explicarte las cosas de forma que cualquier persona
 /sdd:apply batuta-app-dashboard
 ```
 
-**Que esperar**: Claude va a implementar el proyecto en "lotes" (batches). Cada lote es un grupo de tareas relacionadas.
+**Que esperar**: Antes de empezar a escribir codigo, Claude va a ejecutar el **Execution Gate** — un checklist automatico que verifica:
+- Que archivos va a crear/modificar
+- Donde van a ir (siguiendo la Scope Rule)
+- Que impacto tienen los cambios
+- Que todo este alineado con las especificaciones
+
+Te mostrara algo como:
+```
+Este cambio involucra scope pipeline + infra:
+- Crear 12 archivos nuevos en features/dashboard/
+- Crear 3 archivos en core/
+- Procedo?
+```
+
+Despues del gate, Claude implementa en "lotes" (batches). Cada lote es un grupo de tareas relacionadas.
 
 Ejemplo de lo que vas a ver:
 ```
@@ -378,7 +410,7 @@ Va a pedir instalar dependencias (librerias que el proyecto necesita). Di "yes".
 
 ---
 
-## Slide 10 — Verificar que todo funcione
+## Paso 10 — Verificar que todo funcione
 
 **Que vamos a hacer**: Pedirle a Claude que revise su propio trabajo. Como cuando un profesor revisa un examen.
 
@@ -408,13 +440,13 @@ Despues de las correcciones, ejecuta verify otra vez:
 /sdd:verify batuta-app-dashboard
 ```
 
-**Cuando todo este verde (sin errores)**, continua al siguiente slide.
+**Cuando todo este verde (sin errores)**, continua al siguiente paso.
 
 ---
 
-## Slide 11 — Probar la aplicacion en tu computadora
+## Paso 11 — Probar en tu computadora
 
-**Que vamos a hacer**: Ver la aplicacion funcionando en tu computadora antes de subirla a internet.
+**Que vamos a hacer**: Ver la aplicacion funcionando en tu computadora antes de subirla a internet. Como una prueba de manejo antes de salir a la carretera.
 
 **Copia y pega este prompt**:
 
@@ -454,9 +486,9 @@ Claude va a investigar y corregir el problema.
 
 ---
 
-## Slide 12 — Configurar el despliegue automatico
+## Paso 12 — Configurar el despliegue a internet
 
-**Que vamos a hacer**: Configurar Coolify para que la aplicacion se suba a internet automaticamente cada vez que hagamos cambios.
+**Que vamos a hacer**: Preparar todo lo necesario para que la aplicacion viva en internet. Esto incluye los archivos de configuracion que Coolify necesita.
 
 **Copia y pega este prompt**:
 
@@ -488,9 +520,9 @@ instrucciones para configurar Coolify.
 
 ---
 
-## Slide 13 — Subir todo a GitHub
+## Paso 13 — Subir todo a GitHub
 
-**Que vamos a hacer**: Guardar todo el proyecto en GitHub y activar el despliegue automatico.
+**Que vamos a hacer**: Guardar todo el proyecto en GitHub y activar el despliegue automatico. Es como entregar el paquete al servicio de mensajeria.
 
 **Copia y pega este prompt**:
 
@@ -512,9 +544,9 @@ Haz el commit inicial con todo lo que hemos construido.
 
 ---
 
-## Slide 14 — Verificar el despliegue
+## Paso 14 — Verificar que la app esta en internet
 
-**Que vamos a hacer**: Confirmar que la aplicacion esta viva en internet.
+**Que vamos a hacer**: Confirmar que la aplicacion esta viva en internet. El momento de la verdad.
 
 **Copia y pega este prompt**:
 
@@ -531,13 +563,16 @@ Revisa los logs de los servicios y confirma que:
 
 **Si todo esta bien**, abre tu navegador y ve a tu dominio (ejemplo: `https://app.batutaai.com`).
 
-**Si algo falla**, Claude te dira que esta mal y como arreglarlo.
+**Si algo falla**, Claude te dira que esta mal y como arreglarlo. Los errores mas comunes son:
+- Variables de entorno mal configuradas → Claude te dice cuales faltan
+- Puerto incorrecto → Claude ajusta la configuracion
+- Base de datos no conectada → Claude revisa la cadena de conexion
 
 ---
 
-## Slide 15 — Archivar y celebrar
+## Paso 15 — Archivar y celebrar
 
-**Que vamos a hacer**: Cerrar formalmente el proyecto y guardar todo lo aprendido.
+**Que vamos a hacer**: Cerrar formalmente el proyecto y guardar todo lo aprendido. Como firmar la entrega de una obra.
 
 **Copia y pega este prompt**:
 
@@ -549,14 +584,19 @@ Revisa los logs de los servicios y confirma que:
 - Verificar que todo esta completo
 - Guardar las lecciones aprendidas
 - Crear un resumen final del proyecto
+- Actualizar `.batuta/session.md` con el estado final
+
+**Tu app esta en internet. Felicidades!**
 
 ---
 
-# EXTRAS
+# DESPUES DE LA ENTREGA
+
+> Estos pasos son opcionales pero recomendados para mantener tu proyecto saludable.
 
 ---
 
-## Extra A — Si quieres hacer cambios despues
+## Hacer cambios despues
 
 Cuando quieras agregar algo nuevo o cambiar algo, NO edites el codigo directamente. Usa el mismo proceso:
 
@@ -569,9 +609,44 @@ Por ejemplo: una nueva grafica que muestre los workflows mas usados de n8n.
 
 Y sigue el mismo flujo: explore → propose → specs → design → tasks → apply → verify.
 
+> **Importante**: Cada cambio pasa por el Execution Gate automaticamente.
+> Claude valida que el cambio siga las reglas del proyecto antes de escribir codigo.
+
 ---
 
-## Extra B — Comandos de emergencia
+## Mejorar tus instrucciones
+
+Despues de trabajar un rato con Claude (10+ interacciones), puedes pedirle que analice como le ha ido entendiendo tus pedidos:
+
+```
+/batuta:analyze-prompts
+```
+
+Claude va a revisar la bitacora de calidad y te dira:
+- Cuantas veces tuvo que corregir algo
+- Que tipo de errores comete mas seguido
+- Tasa de compliance del Execution Gate
+- **Recomendaciones concretas** para que tus proximos pedidos sean mas claros
+
+Ejemplo de lo que podria decirte:
+> "El 40% de las correcciones fueron porque faltaba especificar el tamano de pantalla.
+> Tip: cuando pidas interfaces, menciona en que dispositivos debe verse bien (celular, tablet, PC)."
+
+---
+
+## Actualizar el ecosistema Batuta
+
+Cuando haya actualizaciones disponibles del ecosistema:
+
+```
+/batuta-update
+```
+
+Esto actualiza los skills y las instrucciones del chef sin tocar tu codigo ni la bitacora del proyecto.
+
+---
+
+## Comandos de emergencia
 
 Si algo sale muy mal y quieres empezar de cero una fase:
 
@@ -584,7 +659,7 @@ Si algo sale muy mal y quieres empezar de cero una fase:
 
 ---
 
-## Extra C — Preguntas frecuentes
+## Preguntas frecuentes
 
 **P: Claude me dice cosas que no entiendo. Que hago?**
 R: Copialo y preguntale: "Explicame esto en espanol simple, sin palabras tecnicas"
@@ -593,7 +668,7 @@ R: Copialo y preguntale: "Explicame esto en espanol simple, sin palabras tecnica
 R: La primera vez, entre 1 y 2 horas incluyendo la creacion de skills. La segunda vez que hagas un proyecto similar, mucho menos porque los skills ya existen.
 
 **P: Puedo cerrar la terminal y continuar despues?**
-R: Si. Abre la terminal, navega a tu carpeta (`cd "ruta/Batuta APP"`), escribe `claude`, y dile: "Continuemos donde quedamos con el proyecto batuta-app-dashboard"
+R: Si. Abre la terminal, navega a tu carpeta (`cd "ruta/Batuta APP"`), escribe `claude`, y Claude automaticamente lee el archivo `.batuta/session.md` donde guardo en que quedo la ultima vez. No necesitas decirle nada especial — el recuerda solo.
 
 **P: Que pasa si no tengo las API keys de n8n o Google?**
 R: Dile a Claude que use valores de ejemplo. Despues tu o alguien mas puede reemplazarlos en los archivos de configuracion.
@@ -604,6 +679,12 @@ R: Si, Claude Code necesita internet para funcionar. Tambien necesitas internet 
 **P: Puedo usar esto para otros proyectos, no solo este?**
 R: Si. El ecosistema Batuta funciona para cualquier tipo de proyecto. Solo cambia la descripcion en el paso de `/sdd:init` y `/sdd:explore`.
 
+**P: Que es el Execution Gate?**
+R: Es un checklist automatico que Claude ejecuta antes de escribir codigo. Verifica donde van los archivos, que impacto tienen los cambios, y que todo siga las reglas del proyecto. No lo ves directamente, pero trabaja en segundo plano protegiendote de errores.
+
+**P: Que son los Scope Agents?**
+R: Son "jefes de area" especializados. Claude tiene 3: pipeline (proceso de desarrollo), infra (organizacion de archivos y recetas), y observability (calidad). El chef principal solo les pasa los pedidos al jefe correcto.
+
 ---
 
 ## Resumen visual del flujo completo
@@ -611,38 +692,41 @@ R: Si. El ecosistema Batuta funciona para cualquier tipo de proyecto. Solo cambi
 ```
 Tu (carpeta vacia)
  |
- +-- Slide 3: Instalar ecosistema Batuta
+ +-- Paso 3:  Instalar ecosistema Batuta + crear .batuta/
  |
- +-- Slide 4: /sdd:init .............. "Que tipo de proyecto es?"
+ +-- Paso 4:  /sdd:init .............. "Que tipo de proyecto es?"
  |
- +-- Slide 5: /sdd:explore ........... "Investigar como hacerlo"
+ +-- Paso 5:  /sdd:explore ........... "Investigar como hacerlo"
  |
- |   [Claude detecta skills faltantes → Slide 6: "Opcion 1"]
+ |   [Claude detecta skills faltantes → Paso 6: "Opcion 1"]
  |
- +-- Slide 7: /sdd:new ............... "Propuesta formal"
+ +-- Paso 7:  /sdd:new ............... "Propuesta formal"
  |     Tu: "Aprobado"
  |
- +-- Slide 8: /sdd:continue .......... "Specs → Design → Tasks"
+ +-- Paso 8:  /sdd:continue .......... "Specs → Design → Tasks"
  |     Tu: "Continua" (3 veces)
  |
- +-- Slide 9: /sdd:apply ............. "Construir la app"
+ +-- Paso 9:  /sdd:apply ............. "Construir la app"
+ |     [Execution Gate valida antes de cada cambio]
  |     Tu: "Si, continua" (por cada batch)
  |
- +-- Slide 10: /sdd:verify ........... "Revisar que todo funcione"
+ +-- Paso 10: /sdd:verify ........... "Revisar que todo funcione"
  |
- +-- Slide 11: Probar en tu PC ....... "localhost:3000"
+ +-- Paso 11: Probar en tu PC ....... "localhost:3000"
  |
- +-- Slide 12: Configurar Coolify .... "Deploy automatico"
+ +-- Paso 12: Configurar Coolify .... "Deploy automatico"
  |
- +-- Slide 13: Push a GitHub ......... "Codigo en la nube"
+ +-- Paso 13: Push a GitHub ......... "Codigo en la nube"
  |
- +-- Slide 14: Verificar deploy ...... "App en internet"
+ +-- Paso 14: Verificar deploy ...... "App en internet"
  |
- +-- Slide 15: /sdd:archive .......... "Cerrar y celebrar"
+ +-- Paso 15: /sdd:archive .......... "Cerrar y celebrar"
  |
  [Tu app esta en internet!]
 ```
 
 ---
 
-> **Recuerda**: No necesitas entender COMO funciona todo. Solo necesitas seguir los pasos y confiar en el proceso. Claude es tu asistente — el programa, tu decides.
+> **Recuerda**: No necesitas entender COMO funciona todo. Solo necesitas seguir los pasos
+> y confiar en el proceso. Como aprender a manejar: primero sigues las instrucciones al pie
+> de la letra, y con el tiempo lo haces naturalmente. Claude es tu asistente — el programa, tu decides.

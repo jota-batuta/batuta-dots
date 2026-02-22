@@ -8,6 +8,9 @@ metadata:
   author: Batuta
   version: "1.0"
   created: 2026-02-20
+  scope: [pipeline]
+  auto_invoke: "Archiving completed changes, /sdd:archive"
+allowed-tools: Read, Edit, Write, Glob, Grep
 ---
 
 ## Purpose

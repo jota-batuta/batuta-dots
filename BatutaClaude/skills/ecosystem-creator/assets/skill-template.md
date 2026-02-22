@@ -9,6 +9,8 @@ metadata:
   author: Batuta
   version: "1.0"
   created: "{YYYY-MM-DD}"
+  scope: [{category}]
+  auto_invoke: "{human-readable trigger for when this skill should be loaded}"
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash
 ---
 

@@ -2,6 +2,9 @@
 
 > **Para quien es esta guia**: Para cualquier persona que sepa copiar y pegar texto.
 > Claude Code hace la programacion, tu solo le das las instrucciones.
+>
+> **Formato**: Sigue los pasos en orden, como cuando aprendes a manejar.
+> Cada paso depende del anterior. No saltes pasos.
 
 ---
 
@@ -38,6 +41,8 @@ Todo esto sin que tu hagas nada.
 | **API de Gmail** | La forma oficial de conectarse a Gmail desde un programa. Google te da una "llave" (credenciales) para acceder. |
 | **OAuth** | El sistema de permisos de Google. Es como cuando una app te dice "Quieres dar acceso a tu Gmail?" y tu dices que si. |
 | **Tool (herramienta)** | Una accion que el agente puede ejecutar. Ejemplo: "leer correo", "crear label", "aplicar etiqueta" son tools. |
+| **Scope Agent** | Un "jefe de area" especializado de Claude. Coordina un grupo de tareas relacionadas. |
+| **Execution Gate** | Un checklist automatico que Claude ejecuta ANTES de hacer cualquier cambio de codigo. |
 
 ---
 
@@ -45,14 +50,14 @@ Todo esto sin que tu hagas nada.
 
 Esta parte necesita hacerse UNA SOLA VEZ. Pide ayuda si es necesario.
 
-### Paso 1: Crear proyecto en Google Cloud
+### Crear proyecto en Google Cloud
 
 1. Ve a [console.cloud.google.com](https://console.cloud.google.com)
 2. Crea un proyecto nuevo (nombre: "Batuta Email Agent")
 3. Activa la **Gmail API**: Busca "Gmail API" en la barra de busqueda y dale "Habilitar"
 4. Activa la **Generative Language API** (para Gemini): Busca "Generative Language API" y dale "Habilitar"
 
-### Paso 2: Crear credenciales OAuth
+### Crear credenciales OAuth
 
 1. Ve a "APIs y servicios" → "Credenciales"
 2. Click en "Crear credenciales" → "ID de cliente de OAuth"
@@ -61,7 +66,7 @@ Esta parte necesita hacerse UNA SOLA VEZ. Pide ayuda si es necesario.
 5. Descarga el archivo JSON (se llamara algo como `client_secret_XXXXX.json`)
 6. Renombralo a `credentials.json`
 
-### Paso 3: Obtener API key de Gemini
+### Obtener API key de Gemini
 
 1. Ve a [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
 2. Crea una API key
@@ -82,11 +87,13 @@ Esta parte necesita hacerse UNA SOLA VEZ. Pide ayuda si es necesario.
 
 ---
 
-# LAS SLIDES
+# PASO A PASO
+
+> Sigue cada paso en orden. Cada uno depende del anterior.
 
 ---
 
-## Slide 1 — Crear la carpeta del proyecto
+## Paso 1 — Crear la carpeta del proyecto
 
 1. Crea una carpeta llamada `Batuta Email Agent`
 2. Abre una terminal
@@ -96,7 +103,7 @@ Esta parte necesita hacerse UNA SOLA VEZ. Pide ayuda si es necesario.
 cd "E:\Proyectos\Batuta Email Agent"
 ```
 
-4. Copia el archivo `credentials.json` (del paso 2 de Google Cloud) dentro de esta carpeta
+4. Copia el archivo `credentials.json` (del paso de Google Cloud) dentro de esta carpeta
 
 5. Abre Claude Code:
 
@@ -106,15 +113,17 @@ claude
 
 ---
 
-## Slide 2 — Instalar el ecosistema Batuta
+## Paso 2 — Instalar el ecosistema Batuta
 
 ```
 /batuta-init batuta-email-agent
 ```
 
+Esto instala las instrucciones del chef (CLAUDE.md), los jefes de area (scope agents), el sistema de calidad (.batuta/), y todas las recetas (skills). Si cierras la terminal y vuelves despues, Claude recuerda donde quedo gracias a `.batuta/session.md`.
+
 ---
 
-## Slide 3 — Iniciar el proyecto
+## Paso 3 — Iniciar el proyecto
 
 ```
 /sdd:init
@@ -128,7 +137,7 @@ claude
 
 ---
 
-## Slide 4 — Explorar la idea
+## Paso 4 — Explorar la idea
 
 ```
 /sdd:explore batuta-email-classifier
@@ -185,11 +194,11 @@ SEGURIDAD:
 - El archivo .env NUNCA va a git
 ```
 
-**Que esperar**: Claude detectara que necesita skills para LangChain, Gmail API, y Gemini. Di "Opcion 1" cada vez.
+**Que esperar**: Claude detectara que necesita skills para LangChain, Gmail API, y Gemini. Di "Opcion 1" cada vez. Es normal y bueno.
 
 ---
 
-## Slide 5 — Skills faltantes
+## Paso 5 — Skills faltantes
 
 Claude va a detectar que necesita:
 - **LangChain** (o ai-agents) — construccion del agente
@@ -202,9 +211,11 @@ Claude va a detectar que necesita:
 Opcion 1 — Investiga y crea el skill acotado a nuestro proyecto
 ```
 
+**Tip**: Este paso puede tomar 10-15 minutos. Es una inversion que se paga sola.
+
 ---
 
-## Slide 6 — Propuesta y pipeline
+## Paso 6 — Propuesta y aprobacion
 
 ```
 /sdd:new batuta-email-classifier
@@ -216,21 +227,25 @@ Lee el resumen. Si esta bien:
 Aprobado, continua con el siguiente paso
 ```
 
-Luego:
+---
+
+## Paso 7 — Especificaciones, diseno y tareas
 
 ```
 /sdd:continue batuta-email-classifier
 ```
 
-Repite "Se ve bien, continua" para cada fase.
+Repite "Se ve bien, continua" para cada fase (specs, design, tasks).
 
 ---
 
-## Slide 7 — Implementar
+## Paso 8 — Construir el agente
 
 ```
 /sdd:apply batuta-email-classifier
 ```
+
+Antes de escribir codigo, Claude ejecuta el **Execution Gate** — valida donde van los archivos, que impacto tienen y que todo siga las reglas del proyecto.
 
 Di "Si, continua" por cada batch.
 
@@ -247,7 +262,7 @@ El token de Gmail (token.json) se va a generar la primera vez que ejecute el scr
 
 ---
 
-## Slide 8 — Verificar
+## Paso 9 — Verificar
 
 ```
 /sdd:verify batuta-email-classifier
@@ -259,9 +274,13 @@ Corrige si hay errores:
 Si, corrige todos los problemas que encontraste
 ```
 
+Repite la verificacion hasta que todo este verde.
+
 ---
 
-## Slide 9 — Probar el agente
+## Paso 10 — Probar el agente en tu computadora
+
+**Que vamos a hacer**: Ejecutar el agente por primera vez y verificar que clasifica correos correctamente.
 
 ```
 Ejecuta el agente para que procese mis correos.
@@ -296,12 +315,138 @@ Correo: "Newsletter semanal de TechCrunch"
 Ejecutar estas acciones? (si/no)
 ```
 
+**Si las clasificaciones se ven bien**, di "si".
+**Si algo no esta bien**, dile a Claude que ajuste.
+
 ---
 
-## Slide 10 — Archivar
+## Paso 11 — Configurar ejecucion automatica
+
+**Que vamos a hacer**: Hacer que el agente se ejecute solo cada cierto tiempo, sin que tengas que correrlo manualmente.
+
+```
+Configura el agente para que se ejecute automaticamente cada 30 minutos.
+
+Opciones:
+- Para desarrollo: un scheduler en Python (APScheduler o similar)
+- Para produccion: un cron job o un servicio que corra continuamente
+
+Necesito ambas opciones. Crea un archivo run_scheduled.py que ejecute
+el agente cada 30 minutos y logee los resultados.
+```
+
+---
+
+## Paso 12 — Configurar despliegue a produccion
+
+**Que vamos a hacer**: Hacer que el agente viva en un servidor y se ejecute solo, sin tu computadora encendida.
+
+```
+Necesito configurar el despliegue del agente en Coolify para que corra
+como un servicio continuo en produccion.
+
+Tenemos:
+- Coolify corriendo en: [TU URL DE COOLIFY]
+
+Configura:
+1. Un Dockerfile para el agente
+2. El servicio en Docker que ejecute run_scheduled.py continuamente
+3. Variables de entorno para las credenciales (Gmail y Gemini)
+4. Health check que verifique que el agente esta procesando correos
+5. Logs accesibles desde Coolify
+6. Despliegue automatico cuando hagamos push a main
+
+IMPORTANTE:
+- El token de Gmail (token.json) necesita generarse la primera vez manualmente
+- Despues de eso, el agente renueva el token automaticamente
+- Las credenciales van como secretos en Coolify, NO en el codigo
+```
+
+**Que esperar**: Claude va a crear los archivos de configuracion para produccion y darte instrucciones de como configurar Coolify.
+
+---
+
+## Paso 13 — Subir a GitHub y desplegar
+
+```
+Crea un repositorio privado en GitHub llamado batuta-email-agent bajo la
+organizacion jota-batuta, sube todo el codigo, y configura el webhook
+de Coolify para despliegue automatico.
+
+IMPORTANTE: Verifica que .gitignore incluya:
+- credentials.json
+- token.json
+- .env
+- Cualquier otro archivo con secretos
+
+Haz el commit inicial con todo lo que hemos construido.
+```
+
+**Si Claude pide permisos de git** (commit, push), di "yes".
+
+---
+
+## Paso 14 — Verificar en produccion
+
+```
+Verifica que el despliegue del agente en Coolify esta funcionando:
+1. El servicio esta corriendo
+2. Los logs muestran que el agente se ejecuta cada 30 minutos
+3. El ultimo ciclo proceso correos exitosamente
+4. El token de Gmail no ha expirado
+5. La API de Gemini esta respondiendo
+```
+
+**Si todo esta bien**, revisa tu Gmail en unas horas — deberias ver tus correos clasificados automaticamente.
+
+**Si algo falla**, los errores mas comunes son:
+- Token de Gmail expirado → hay que regenerar `token.json` manualmente una vez
+- API key de Gemini invalida → verificar que esta bien en las variables de entorno
+- Limites de API excedidos → verificar cuotas en Google Cloud Console
+
+---
+
+## Paso 15 — Archivar y celebrar
 
 ```
 /sdd:archive batuta-email-classifier
+```
+
+Claude cierra el proyecto: verifica que todo esta completo, guarda las lecciones aprendidas, y actualiza `.batuta/session.md`.
+
+**Tu agente de email esta en produccion, clasificando correos automaticamente. Felicidades!**
+
+---
+
+# DESPUES DE LA ENTREGA
+
+---
+
+## Agregar nuevas categorias
+
+Para agregar mas categorias de clasificacion:
+
+```
+/sdd:new email-classifier-new-categories
+
+Quiero agregar estas categorias al clasificador:
+- "recibo" — para comprobantes de pago
+- "reunion" — para invitaciones de calendario
+- "soporte" — para tickets de soporte tecnico
+
+Actualiza el prompt de Gemini y crea las labels nuevas.
+```
+
+---
+
+## Mejorar la clasificacion
+
+Si el agente se equivoca frecuentemente:
+
+```
+El clasificador esta poniendo newsletters como "trabajo".
+Mejora el prompt de clasificacion con ejemplos mas claros
+para distinguir entre newsletters y emails de trabajo.
 ```
 
 ---
@@ -333,24 +478,14 @@ batuta-email-agent/
 │       ├── agent.py                    # Definicion del agente
 │       └── prompts/
 │           └── system_prompt.py        # Instrucciones del agente
-├── run_agent.py                        # Punto de entrada
+├── run_agent.py                        # Punto de entrada (una ejecucion)
+├── run_scheduled.py                    # Ejecucion programada (cada 30 min)
+├── Dockerfile                          # Para produccion
 ├── .env                                # API keys (NO va a git)
 ├── credentials.json                    # OAuth Gmail (NO va a git)
 ├── requirements.txt
 └── .gitignore
 ```
-
----
-
-## Tips especificos de este proyecto
-
-| Situacion | Que decirle a Claude |
-|-----------|---------------------|
-| Quieres agregar una nueva categoria | `Agrega la categoria "recibo" al clasificador y actualiza el prompt de Gemini` |
-| El clasificador se equivoca mucho | `El clasificador esta poniendo newsletters como "trabajo". Mejora el prompt de clasificacion con ejemplos mas claros` |
-| Quieres procesar correos automaticamente cada hora | `Configura un cron job o un scheduler para ejecutar run_agent.py cada hora` |
-| Quieres que el agente tambien responda correos | `Agrega un tool de gmail_send_reply que responda automaticamente los correos urgentes con un mensaje de "recibido"` |
-| Quieres ver estadisticas | `Agrega un reporte que muestre cuantos correos de cada categoria se procesaron esta semana` |
 
 ---
 
@@ -361,3 +496,22 @@ batuta-email-agent/
 | **Gmail API** | Gratis (hasta 1 billon de requests/dia) |
 | **Gemini Flash** | Practicamente gratis (~$0.075 por 1 millon de tokens). 1000 correos ≈ $0.01 |
 | **Total por mes** | Menos de $1 USD para un uso normal |
+
+---
+
+## Tips especificos de este proyecto
+
+| Situacion | Que decirle a Claude |
+|-----------|---------------------|
+| Quieres agregar una nueva categoria | `Agrega la categoria "recibo" al clasificador y actualiza el prompt de Gemini` |
+| El clasificador se equivoca mucho | `El clasificador esta poniendo newsletters como "trabajo". Mejora el prompt de clasificacion con ejemplos mas claros` |
+| Quieres procesar correos automaticamente cada hora | `Cambia el scheduler de cada 30 minutos a cada hora` |
+| Quieres que el agente tambien responda correos | `Agrega un tool de gmail_send_reply que responda automaticamente los correos urgentes con un mensaje de "recibido"` |
+| Quieres ver estadisticas | `Agrega un reporte que muestre cuantos correos de cada categoria se procesaron esta semana` |
+| Quieres ver como mejorar tus instrucciones | `/batuta:analyze-prompts` para analizar la comunicacion con Claude |
+
+---
+
+> **Recuerda**: No necesitas entender COMO funciona la IA por dentro.
+> Solo necesitas describir que quieres que el agente haga, y Claude se encarga del resto.
+> Como aprender a manejar: primero sigues las instrucciones, despues lo haces naturalmente.
