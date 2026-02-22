@@ -16,11 +16,12 @@ Inspirado en [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman
 - **Personalidad CTO/Mentor** que educa y documenta para personas no tecnicas.
 - **Regla de Alcance (Scope Rule)** que organiza archivos por quien los usa, no por tipo.
 - **Auto-deteccion de gaps en skills** con investigacion automatica via Context7.
-- **Carga lazy de skills** — Claude lee ~216 lineas al iniciar, el resto se carga bajo demanda.
+- **Carga lazy de skills** — Claude lee ~228 lineas al iniciar, el resto se carga bajo demanda.
 - **Routing Mix-of-Experts** — agente principal delega a agentes de scope especializados.
 - **Execution Gate** — pre-validacion obligatoria antes de cualquier cambio de codigo.
 - **Skill-Sync** — tablas de routing auto-generadas desde frontmatters de skills.
 - **Framework O.R.T.A.** (Observabilidad, Repetibilidad, Trazabilidad, Auto-supervision).
+- **Agent Teams** — orquestacion de multiples sesiones Claude en paralelo para tareas complejas.
 
 ---
 
@@ -48,6 +49,7 @@ O ejecuta `./skills/setup.sh` sin argumentos para un menu interactivo.
 batuta-dots/
 ├── BatutaClaude/                      # Configuracion de Claude Code
 │   ├── CLAUDE.md                      # Punto de entrada unico (router + reglas + routing)
+│   ├── VERSION                        # Version del ecosistema (semver)
 │   ├── settings.json                  # Permisos, estilo de salida
 │   ├── mcp-servers.template.json      # Plantilla de servidores MCP
 │   ├── output-styles/batuta.md        # Estilo de salida personalizado
@@ -58,7 +60,7 @@ batuta-dots/
 │   │   └── batuta-sync-skills.md      # /batuta:sync-skills — regenerar tablas de routing
 │   ├── agents/                        # Agentes de scope (routing Mix-of-Experts)
 │   │   ├── pipeline-agent.md          # Especialista SDD Pipeline (9 skills)
-│   │   ├── infra-agent.md             # Especialista infraestructura (3 skills)
+│   │   ├── infra-agent.md             # Especialista infraestructura (4 skills)
 │   │   └── observability-agent.md     # Motor O.R.T.A. (1 skill)
 │   └── skills/                        # Skills instalables (carga lazy)
 │       ├── ecosystem-creator/         # Skill bootstrap
@@ -77,6 +79,7 @@ batuta-dots/
 │       ├── prompt-tracker/            # Tracking de satisfaccion (O.R.T.A.)
 │       │   ├── SKILL.md
 │       │   └── assets/session-template.md
+│       ├── team-orchestrator/SKILL.md # Orquestacion Agent Teams (cuando escalar)
 │       └── skill-sync/               # Generacion automatica de tablas de routing
 │           ├── SKILL.md
 │           └── assets/
@@ -91,12 +94,17 @@ batuta-dots/
 │   └── guia-langchain-gmail-agent.md  # Agente LangChain + Gmail — guia ciclo completo
 ├── qa/                                # Reportes de control de calidad
 │   ├── BatutaTestCalidadV5.md         # Reporte de test de calidad v5
-│   └── LogCorrecciones-V5.md         # Log de correcciones v5
-├── CHANGELOG-refactor.md              # Documento de traza de refactorizaciones (v1-v5)
+│   ├── LogCorrecciones-V5.md         # Log de correcciones v5
+│   ├── BatutaTestCalidadV6.md         # Reporte de test de calidad v6
+│   └── LogCorrecciones-V6.md         # Log de correcciones v6
+├── CHANGELOG-refactor.md              # Documento de traza de refactorizaciones (v1-v7)
 └── skills/                            # Scripts del repositorio
     ├── setup.sh                       # Script principal (Claude Code)
     ├── replicate-platform.sh          # Replicacion a otras plataformas (futuro)
-    └── setup_test.sh                  # Tests de verificacion (23 tests)
+    ├── setup_test.sh                  # Tests de verificacion (33 tests)
+    └── hooks/                         # Hooks O.R.T.A. para Agent Teams
+        ├── orta-teammate-idle.sh      # TeammateIdle — registrar fin de teammate
+        └── orta-task-gate.sh          # TaskCompleted — puerta de calidad
 ```
 
 ---
@@ -105,16 +113,21 @@ batuta-dots/
 
 1. **CLAUDE.md** es el unico punto de entrada. Actua como un router puro usando Mix-of-Experts: clasifica el scope de cada solicitud y delega a agentes de scope especializados.
 2. **setup.sh --all** sincroniza skills y agentes, ejecuta skill-sync para regenerar tablas de routing, y luego copia el CLAUDE.md actualizado a la raiz.
-3. **Claude Code** lee CLAUDE.md al iniciar (~216 lineas), luego usa carga lazy de 3 niveles: agente principal → agente de scope → skill.
+3. **Claude Code** lee CLAUDE.md al iniciar (~228 lineas), luego usa carga lazy de 3 niveles: agente principal → agente de scope → skill.
 
 ```
-CLAUDE.md (router — ~216 lineas)
+CLAUDE.md (router — ~228 lineas)
     │
     ├──> Execution Gate (validar → clasificar → rutear → logear)
     │
     ├──> pipeline-agent ──> sdd-init...sdd-archive (9 skills)
-    ├──> infra-agent ──────> scope-rule, ecosystem-creator, skill-sync
-    └──> observability-agent ──> prompt-tracker
+    ├──> infra-agent ──────> scope-rule, ecosystem-creator, skill-sync, team-orchestrator
+    ├──> observability-agent ──> prompt-tracker
+    │
+    └──> Agent Team (Nivel 3) ──> spawn teammates desde scope agents
+              │                     con task list compartida + hooks O.R.T.A.
+              ├── TeammateIdle hook → logging centralizado
+              └── TaskCompleted hook → puerta de calidad
 ```
 
 ### Otras plataformas (futuro)
@@ -156,10 +169,10 @@ El agente principal actua como un router puro. Clasifica el scope de cada solici
 | Agente de Scope | Dominio | Skills |
 |-----------------|---------|--------|
 | `pipeline-agent` | Ciclo de desarrollo | 9 skills SDD (init a archive) |
-| `infra-agent` | Organizacion de archivos, ecosistema | scope-rule, ecosystem-creator, skill-sync |
+| `infra-agent` | Organizacion de archivos, ecosistema | scope-rule, ecosystem-creator, skill-sync, team-orchestrator |
 | `observability-agent` | Tracking de calidad | prompt-tracker |
 
-Esto mantiene al agente principal liviano (~216 lineas) y a cada agente de scope enfocado en su dominio.
+Esto mantiene al agente principal liviano (~228 lineas) y a cada agente de scope enfocado en su dominio.
 
 ### Execution Gate (Puerta de Ejecucion)
 
@@ -182,7 +195,7 @@ Antes de escribir codigo con una tecnologia, Claude verifica si existe un skill 
 
 | Nivel | Que se carga | Lineas |
 |-------|-------------|--------|
-| 1 | CLAUDE.md (router) | ~216 |
+| 1 | CLAUDE.md (router) | ~228 |
 | 2 | Agente de scope | ~80-120 |
 | 3 | Skill individual | ~200-500 |
 
@@ -190,11 +203,23 @@ Solo se carga el nivel necesario. Una pregunta simple nunca llega al nivel 3.
 
 ### Tracking de Satisfaccion de Prompts (O.R.T.A.)
 
-Cada interaccion significativa se registra en `.batuta/prompt-log.jsonl`. Cinco tipos de evento: `prompt`, `gate`, `correction`, `follow-up`, `closed`. Con el tiempo, `/batuta:analyze-prompts` computa metricas y genera recomendaciones accionables.
+Cada interaccion significativa se registra en `.batuta/prompt-log.jsonl`. Seis tipos de evento: `prompt`, `gate`, `correction`, `follow-up`, `closed`, `team`. Con el tiempo, `/batuta:analyze-prompts` computa metricas y genera recomendaciones accionables.
 
 ### Continuidad de Sesion
 
 Al inicio de cada conversacion, Claude lee `.batuta/session.md` para restaurar el contexto. Al final de trabajo significativo, actualiza el archivo para que la proxima conversacion continue donde esta termino.
+
+### Agent Teams (Ejecucion de 3 Niveles)
+
+Batuta soporta tres niveles de ejecucion. El sistema evalua automaticamente cual usar:
+
+| Nivel | Mecanismo | Cuando |
+|-------|-----------|--------|
+| Sesion solo | Ejecucion directa | Edicion 1 archivo, bug fix, pregunta simple |
+| Subagente (Task tool) | Delegacion fire-and-forget | Investigacion, verificacion, fase SDD individual |
+| Agent Team | Multiples sesiones Claude independientes | Feature multi-modulo, pipeline SDD completo, hipotesis competitivas |
+
+Los Agent Teams crean sesiones reales de Claude Code que trabajan en paralelo con una lista de tareas compartida y mensajeria bidireccional. Hooks O.R.T.A. (`TeammateIdle`, `TaskCompleted`) aseguran logging centralizado y puertas de calidad.
 
 ### Auto-actualizacion del Ecosistema
 
@@ -202,13 +227,14 @@ Cuando se crean skills nuevos en un proyecto, Claude propone propagarlos de vuel
 
 ---
 
-## Skills Disponibles (13 + 3 agentes de scope)
+## Skills Disponibles (14 + 3 agentes de scope)
 
 | Skill | Scope | Descripcion |
 |-------|-------|-------------|
 | `ecosystem-creator` | infra | Crea nuevos skills, agentes, sub-agentes y workflows |
 | `scope-rule` | infra | Organiza archivos por alcance (feature / shared / core) |
 | `skill-sync` | infra | Genera tablas de routing automaticamente desde frontmatters |
+| `team-orchestrator` | infra | Evalua cuando escalar a Agent Teams, spawn y coordinacion |
 | `sdd-init` a `sdd-archive` | pipeline | Pipeline SDD de 9 fases |
 | `prompt-tracker` | observability | Tracking de satisfaccion, compliance de gate, y analisis de patrones |
 
@@ -244,7 +270,7 @@ Mas 16 skills de proyecto planificados. Ver CLAUDE.md para la hoja de ruta compl
 | `--claude` | Copia CLAUDE.md a la raiz del proyecto |
 | `--sync` | Sincroniza skills + agentes + commands a ~/.claude/ |
 | `--all` | Setup completo: sync + skill-sync + copy (recomendado) |
-| `--verify` | Verificacion completa (23 checks) |
+| `--verify` | Verificacion completa (33 checks) |
 
 El flag `--all`: sincroniza skills y agentes → ejecuta skill-sync → copia CLAUDE.md actualizado a la raiz.
 

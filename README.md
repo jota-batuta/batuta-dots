@@ -16,11 +16,12 @@ Inspired by [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.
 - **CTO/Mentor personality** that educates and documents for non-technical stakeholders.
 - **Scope Rule** that organizes files by who uses them, not by type.
 - **Skill Gap Detection** with automatic research via Context7.
-- **Lazy skill loading** — Claude reads ~216 lines at startup, skills load on demand.
+- **Lazy skill loading** — Claude reads ~228 lines at startup, skills load on demand.
 - **Mix-of-Experts routing** — principal agent delegates to specialized scope agents.
 - **Execution Gate** — mandatory pre-validation before any code change.
 - **Skill-Sync** — routing tables auto-generated from skill frontmatters.
 - **O.R.T.A. framework** (Observability, Repeatability, Traceability, Auto-supervision).
+- **Agent Teams** — orchestrate multiple Claude sessions in parallel for complex tasks.
 
 ---
 
@@ -48,6 +49,7 @@ Or run `./skills/setup.sh` with no arguments for an interactive menu.
 batuta-dots/
 ├── BatutaClaude/                      # Claude Code configuration
 │   ├── CLAUDE.md                      # Single entry point (router + rules + scope routing)
+│   ├── VERSION                        # Ecosystem version (semver)
 │   ├── settings.json                  # Permissions, output style
 │   ├── mcp-servers.template.json      # MCP server template
 │   ├── output-styles/batuta.md        # Custom output format
@@ -58,7 +60,7 @@ batuta-dots/
 │   │   └── batuta-sync-skills.md      # /batuta:sync-skills — regenerate routing tables
 │   ├── agents/                        # Scope agents (Mix-of-Experts routing)
 │   │   ├── pipeline-agent.md          # SDD Pipeline specialist (9 skills)
-│   │   ├── infra-agent.md             # Infrastructure specialist (3 skills)
+│   │   ├── infra-agent.md             # Infrastructure specialist (4 skills)
 │   │   └── observability-agent.md     # O.R.T.A. engine (1 skill)
 │   └── skills/                        # Skill definitions (lazy-loaded)
 │       ├── ecosystem-creator/         # Bootstrap skill
@@ -77,6 +79,7 @@ batuta-dots/
 │       ├── prompt-tracker/            # Prompt satisfaction tracking (O.R.T.A.)
 │       │   ├── SKILL.md
 │       │   └── assets/session-template.md
+│       ├── team-orchestrator/SKILL.md # Agent Teams orchestration (when to escalate)
 │       └── skill-sync/               # Automatic routing table generation
 │           ├── SKILL.md
 │           └── assets/
@@ -91,12 +94,17 @@ batuta-dots/
 │   └── guia-langchain-gmail-agent.md  # LangChain + Gmail agent — full lifecycle guide
 ├── qa/                                # Quality assurance reports
 │   ├── BatutaTestCalidadV5.md         # Quality test v5 report
-│   └── LogCorrecciones-V5.md         # Corrections log v5
-├── CHANGELOG-refactor.md              # Refactoring trace document (v1-v5)
+│   ├── LogCorrecciones-V5.md         # Corrections log v5
+│   ├── BatutaTestCalidadV6.md         # Quality test v6 report
+│   └── LogCorrecciones-V6.md         # Corrections log v6
+├── CHANGELOG-refactor.md              # Refactoring trace document (v1-v7)
 └── skills/                            # Repository-level scripts
     ├── setup.sh                       # Claude Code setup (primary)
     ├── replicate-platform.sh          # Multi-platform replication (future)
-    └── setup_test.sh                  # Verification tests (23 tests)
+    ├── setup_test.sh                  # Verification tests (33 tests)
+    └── hooks/                         # O.R.T.A. hooks for Agent Teams
+        ├── orta-teammate-idle.sh      # TeammateIdle — log teammate completion
+        └── orta-task-gate.sh          # TaskCompleted — quality gate
 ```
 
 ---
@@ -105,16 +113,21 @@ batuta-dots/
 
 1. **CLAUDE.md** is the single entry point. It acts as a pure router using Mix-of-Experts: it classifies each request's scope and delegates to specialized scope agents.
 2. **setup.sh --all** syncs skills and agents, runs skill-sync to regenerate routing tables, then copies the updated CLAUDE.md to root.
-3. **Claude Code** reads CLAUDE.md at conversation start (~216 lines), then uses 3-level lazy loading: principal agent → scope agent → skill.
+3. **Claude Code** reads CLAUDE.md at conversation start (~228 lines), then uses 3-level lazy loading: principal agent → scope agent → skill.
 
 ```
-CLAUDE.md (router — ~216 lines)
+CLAUDE.md (router — ~228 lines)
     │
     ├──> Execution Gate (validate → classify → route → log)
     │
     ├──> pipeline-agent ──> sdd-init...sdd-archive (9 skills)
-    ├──> infra-agent ──────> scope-rule, ecosystem-creator, skill-sync
-    └──> observability-agent ──> prompt-tracker
+    ├──> infra-agent ──────> scope-rule, ecosystem-creator, skill-sync, team-orchestrator
+    ├──> observability-agent ──> prompt-tracker
+    │
+    └──> Agent Team (Level 3) ──> spawn teammates from scope agents
+              │                     with shared task list + O.R.T.A. hooks
+              ├── TeammateIdle hook → centralized logging
+              └── TaskCompleted hook → quality gate
 ```
 
 Need other platforms later?
@@ -155,10 +168,10 @@ The principal agent acts as a pure router. It classifies the scope of each reque
 | Scope Agent | Domain | Skills |
 |-------------|--------|--------|
 | `pipeline-agent` | Development lifecycle | 9 SDD skills (init through archive) |
-| `infra-agent` | File organization, ecosystem | scope-rule, ecosystem-creator, skill-sync |
+| `infra-agent` | File organization, ecosystem | scope-rule, ecosystem-creator, skill-sync, team-orchestrator |
 | `observability-agent` | Quality tracking | prompt-tracker |
 
-This keeps the principal agent lightweight (~216 lines) and each scope agent focused on its domain.
+This keeps the principal agent lightweight (~228 lines) and each scope agent focused on its domain.
 
 ### Execution Gate
 
@@ -181,7 +194,7 @@ Before writing code with any technology, Claude checks if an active skill exists
 
 | Level | What loads | Lines |
 |-------|-----------|-------|
-| 1 | CLAUDE.md (router) | ~216 |
+| 1 | CLAUDE.md (router) | ~228 |
 | 2 | Scope agent | ~80-120 |
 | 3 | Individual skill | ~200-500 |
 
@@ -189,11 +202,23 @@ Only the needed level loads. A simple question never reaches level 3.
 
 ### Prompt Satisfaction Tracking (O.R.T.A.)
 
-Every significant interaction is logged in `.batuta/prompt-log.jsonl`. Five event types: `prompt`, `gate`, `correction`, `follow-up`, `closed`. Over time, `/batuta:analyze-prompts` computes metrics and generates actionable recommendations.
+Every significant interaction is logged in `.batuta/prompt-log.jsonl`. Six event types: `prompt`, `gate`, `correction`, `follow-up`, `closed`, `team`. Over time, `/batuta:analyze-prompts` computes metrics and generates actionable recommendations.
 
 ### Session Continuity
 
 At conversation start, Claude reads `.batuta/session.md` to restore context. At the end of significant work, it updates the file so the next conversation picks up where this one left off.
+
+### Agent Teams (3-Level Execution)
+
+Batuta supports three execution levels. The system automatically evaluates which level to use:
+
+| Level | Mechanism | When |
+|-------|-----------|------|
+| Solo session | Direct execution | 1-file edit, bug fix, simple question |
+| Subagent (Task tool) | Fire-and-forget delegation | Research, verify, single SDD phase |
+| Agent Team | Multiple independent Claude sessions | Multi-module feature, full SDD pipeline, competing hypotheses |
+
+Agent Teams spawn real Claude Code sessions that work in parallel with a shared task list and bidirectional messaging. O.R.T.A. hooks (`TeammateIdle`, `TaskCompleted`) ensure centralized logging and quality gates.
 
 ### Ecosystem Auto-Update
 
@@ -201,13 +226,14 @@ When new skills are created in a project, Claude proposes propagating them back 
 
 ---
 
-## Available Skills (13 + 3 scope agents)
+## Available Skills (14 + 3 scope agents)
 
 | Skill | Scope | Description |
 |-------|-------|-------------|
 | `ecosystem-creator` | infra | Create new skills, agents, sub-agents, and workflows |
 | `scope-rule` | infra | Enforce scope-based file organization |
 | `skill-sync` | infra | Auto-generate routing tables from SKILL.md frontmatters |
+| `team-orchestrator` | infra | Evaluate when to escalate to Agent Teams, spawn and coordinate |
 | `sdd-init` through `sdd-archive` | pipeline | 9-phase SDD pipeline |
 | `prompt-tracker` | observability | Track prompt satisfaction, gate compliance, and analyze patterns |
 
@@ -243,7 +269,7 @@ Plus 16 planned project skills. See CLAUDE.md for the full roadmap.
 | `--claude` | Copy CLAUDE.md to project root |
 | `--sync` | Sync skills + agents + commands to ~/.claude/ |
 | `--all` | Full setup: sync + skill-sync + copy (recommended) |
-| `--verify` | Verify setup (23 checks) |
+| `--verify` | Verify setup (33 checks) |
 
 The `--all` flag: syncs skills and agents → runs skill-sync to regenerate routing tables → copies updated CLAUDE.md to root.
 

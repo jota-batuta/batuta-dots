@@ -49,7 +49,7 @@ Cada **skill** es una receta especifica. Por ejemplo:
 | `temporal-worker` | Como cocinar platos que llevan muchos pasos y pueden fallar |
 | `nextjs-portal` | Como montar el plato para que se vea bonito (la cara que ve el cliente) |
 
-El chef tiene **13 recetas basicas** que siempre estan disponibles, y puede **aprender
+El chef tiene **14 recetas basicas** que siempre estan disponibles, y puede **aprender
 recetas nuevas** cuando las necesita.
 
 **Detalle importante**: Las recetas NO se leen todas al empezar. El chef solo abre la

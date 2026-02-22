@@ -4,6 +4,22 @@
     "commit": "",
     "pr": ""
   },
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "teammateMode": "in-process",
+  "hooks": {
+    "TeammateIdle": [{
+      "type": "command",
+      "command": "bash \"$BATUTA_DOTS_PATH/skills/hooks/orta-teammate-idle.sh\" \"$TEAMMATE_NAME\" \"$TEAM_NAME\"",
+      "description": "O.R.T.A. — Log teammate completion to prompt-log.jsonl"
+    }],
+    "TaskCompleted": [{
+      "type": "command",
+      "command": "bash \"$BATUTA_DOTS_PATH/skills/hooks/orta-task-gate.sh\" \"$TASK_ID\" \"$TEAM_NAME\"",
+      "description": "O.R.T.A. — Quality gate: verify task meets standards before marking complete"
+    }]
+  },
   "permissions": {
     "deny": [
       "Read(.env)",

@@ -430,6 +430,57 @@ batuta-workers/
 
 ---
 
+## Nivel Avanzado: Agent Teams (Equipos de Agentes)
+
+Cuando domines los pasos anteriores, puedes usar **Agent Teams** para trabajos complejos de Temporal. Es como tener un equipo de desarrolladores especializados trabajando juntos.
+
+### Cuando usar cada nivel
+
+| Nivel | Cuando usarlo | Ejemplo en este proyecto |
+|-------|--------------|------------------------|
+| **Solo** (normal) | Un workflow simple, cambiar retry policy | "Cambia el timeout del activity de envio a 30 segundos" |
+| **Subagente** (automatico) | Investigar patrones de Temporal | Claude consulta documentacion actualizada de Temporal |
+| **Agent Team** (tu lo pides) | Multiples workflows, sistema complejo | Implementar todo el sistema de procesamiento de ordenes |
+
+### Ejemplos practicos para este proyecto
+
+**Ejemplo 1 — Implementar multiples workflows en paralelo:**
+```
+Tu: "Necesito 3 workflows: procesamiento de ordenes, envio de notificaciones,
+     y generacion de reportes. Crea un equipo para implementarlos en paralelo."
+```
+
+**Ejemplo 2 — Debugging complejo:**
+```
+Tu: "El workflow de ordenes falla intermitentemente. Que un asistente analice
+     los logs del worker, otro revise la configuracion de reintentos, y otro
+     verifique la conexion a la base de datos."
+```
+
+**Ejemplo 3 — Migracion de workflows:**
+```
+Tu: "Necesito migrar 5 workflows de la version vieja a la nueva API de Temporal.
+     Que el equipo los migre en paralelo y un revisor verifique compatibilidad."
+```
+
+### Metricas esperadas de rendimiento
+
+Anota tus resultados reales cuando ejecutes cada paso. Eso mejora el sistema.
+
+| Escenario | Nivel | Tiempo estimado | Costo tokens | Calidad esperada | Fortaleza | Debilidad |
+|-----------|-------|----------------|-------------|-----------------|-----------|-----------|
+| Cambiar retry policy | Solo | 2-3 min | ~3K tokens | 95% primera vez | Rapido, preciso | N/A |
+| Crear 1 workflow SDD | Solo + Subagente | 20-30 min | ~60K tokens | 85% primera vez | Proceso trazable, spec completa | Secuencial |
+| Crear 3 workflows paralelo | Agent Team | 25-40 min | ~180K tokens | 80% primera vez | 3 workflows al mismo tiempo | Integracion entre workflows manual |
+| Debug workflow complejo | Agent Team | 15-20 min | ~100K tokens | 85% diagnostico | Multiples angulos simultaneos | Puede necesitar contexto compartido |
+| Migracion 5 workflows | Agent Team | 30-50 min | ~250K tokens | 75% primera vez | Paralelo masivo | Cada workflow puede tener edge cases unicos |
+
+> **Importante**: Temporal es un sistema complejo. Los Agent Teams brillan cuando tienes
+> multiples workflows independientes. Para workflows que dependen entre si, el modo Solo
+> con SDD suele ser mas confiable porque mantiene todo el contexto en un lugar.
+
+---
+
 > **Recuerda**: No necesitas entender COMO funciona Temporal por dentro.
 > Solo necesitas describir los pasos de tu proceso, y Claude se encarga del resto.
 > Como aprender a manejar: primero sigues las instrucciones, despues lo haces naturalmente.

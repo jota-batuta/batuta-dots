@@ -512,6 +512,59 @@ batuta-email-agent/
 
 ---
 
+## Nivel Avanzado: Agent Teams (Equipos de Agentes)
+
+Cuando domines los pasos anteriores, puedes usar **Agent Teams** para extender tu agente de Gmail con multiples capacidades al mismo tiempo.
+
+### Cuando usar cada nivel
+
+| Nivel | Cuando usarlo | Ejemplo en este proyecto |
+|-------|--------------|------------------------|
+| **Solo** (normal) | Ajustar clasificador, cambiar scheduler | "Mejora el prompt de clasificacion para distinguir newsletters de spam" |
+| **Subagente** (automatico) | Investigar APIs o modelos | Claude investiga si Gemini Flash es mejor que GPT-4o-mini para tu caso |
+| **Agent Team** (tu lo pides) | Agregar multiples tools al agente | Agregar respuesta automatica + resumen semanal + filtros avanzados |
+
+### Ejemplos practicos para este proyecto
+
+**Ejemplo 1 — Agregar multiples capacidades al agente:**
+```
+Tu: "Quiero que el agente tambien pueda: responder correos urgentes,
+     generar un resumen diario, y detectar phishing. Crea un equipo
+     para implementar las 3 capacidades en paralelo."
+```
+
+**Ejemplo 2 — Optimizar clasificacion con multiples enfoques:**
+```
+Tu: "El clasificador no es preciso. Que un asistente pruebe mejorando
+     el prompt de Gemini, otro pruebe con embeddings, y comparemos
+     cual funciona mejor."
+```
+
+**Ejemplo 3 — Integracion multi-servicio:**
+```
+Tu: "Quiero conectar el agente de Gmail con Slack y Notion. Que un
+     asistente haga la integracion con Slack y otro con Notion al
+     mismo tiempo."
+```
+
+### Metricas esperadas de rendimiento
+
+Anota tus resultados reales para alimentar `/batuta:analyze-prompts`.
+
+| Escenario | Nivel | Tiempo estimado | Costo tokens | Calidad esperada | Fortaleza | Debilidad |
+|-----------|-------|----------------|-------------|-----------------|-----------|-----------|
+| Ajustar prompt clasificador | Solo | 3-5 min | ~5K tokens | 90% primera vez | Rapido, iterativo | Solo un enfoque a la vez |
+| Agregar 1 tool nuevo | Solo + Subagente | 15-20 min | ~40K tokens | 85% primera vez | Trazable, spec clara | Secuencial |
+| Agregar 3 tools paralelo | Agent Team | 20-35 min | ~150K tokens | 80% primera vez | 3 tools simultaneos | Conflictos si comparten estado |
+| Optimizar clasificacion A/B | Agent Team | 15-25 min | ~120K tokens | 85% comparacion util | Multiples enfoques rapido | Necesita datos de prueba reales |
+| Integracion multi-servicio | Agent Team | 25-40 min | ~180K tokens | 75% primera vez | Cada integracion independiente | APIs externas pueden fallar |
+
+> **Importante**: Para agentes de IA, el modo Solo con SDD suele ser el mas confiable
+> para cambios que afectan la logica del clasificador (todo esta conectado). Los Agent Teams
+> son mejores para agregar capacidades independientes (nuevos tools, nuevas integraciones).
+
+---
+
 > **Recuerda**: No necesitas entender COMO funciona la IA por dentro.
 > Solo necesitas describir que quieres que el agente haga, y Claude se encarga del resto.
 > Como aprender a manejar: primero sigues las instrucciones, despues lo haces naturalmente.

@@ -727,6 +727,71 @@ Tu (carpeta vacia)
 
 ---
 
+## Nivel Avanzado: Agent Teams (Equipos de Agentes)
+
+Cuando te sientas comodo con los pasos anteriores, puedes usar **Agent Teams** para que Claude trabaje con multiples "asistentes" en paralelo. Es como tener un equipo de programadores en lugar de uno solo.
+
+### Cuando usar cada nivel
+
+| Nivel | Cuando usarlo | Ejemplo en este proyecto |
+|-------|--------------|------------------------|
+| **Solo** (normal) | Cambios simples, 1-2 archivos | "Cambia el color del boton de login" |
+| **Subagente** (automatico) | Investigar o verificar algo | Claude investiga una libreria antes de usarla |
+| **Agent Team** (tu lo pides) | Trabajo grande en multiples partes | Implementar todo el dashboard de una vez |
+
+### Como pedirle a Claude que use un equipo
+
+```
+Tu: "Necesito implementar el dashboard completo: sidebar, header, pagina de usuarios,
+     y pagina de metricas. Crea un equipo para hacerlo en paralelo."
+```
+
+Claude va a:
+1. Evaluar si el trabajo justifica un equipo (4 modulos = si)
+2. Crear 2-3 asistentes especializados (implementador, revisor)
+3. Repartir el trabajo en una lista de tareas compartida
+4. Cada asistente trabaja en su parte al mismo tiempo
+5. Un revisor verifica que todo encaje al final
+
+### Ejemplos practicos para este proyecto
+
+**Ejemplo 1 — Implementar multiples paginas en paralelo:**
+```
+Tu: "Tengo las specs de 4 paginas del dashboard: usuarios, metricas,
+     configuracion y perfil. Implementalas todas con un equipo."
+```
+
+**Ejemplo 2 — Investigar + implementar al mismo tiempo:**
+```
+Tu: "Necesito agregar graficas al dashboard. Que un asistente investigue
+     la mejor libreria de graficas para Next.js mientras otro prepara
+     los componentes base."
+```
+
+**Ejemplo 3 — Code review en equipo:**
+```
+Tu: "Revisa toda la app antes del deploy. Que un asistente revise
+     la seguridad, otro el rendimiento, y otro la accesibilidad."
+```
+
+### Metricas esperadas de rendimiento
+
+Estas metricas son estimaciones para que compares cuando ejecutes los pasos. Anota tus resultados reales para mejorar el sistema.
+
+| Escenario | Nivel | Tiempo estimado | Costo tokens | Calidad esperada | Fortaleza | Debilidad |
+|-----------|-------|----------------|-------------|-----------------|-----------|-----------|
+| Cambiar color de boton | Solo | 1-2 min | ~2K tokens | 95% primera vez | Rapido, sin overhead | N/A |
+| Implementar 1 pagina SDD | Solo + Subagente | 15-25 min | ~50K tokens | 85% primera vez | Proceso completo, trazable | Secuencial, un paso a la vez |
+| Implementar 4 paginas SDD | Agent Team | 20-35 min | ~150K tokens | 80% primera vez | Paralelo, mas rapido en total | Mas tokens, coordinacion puede fallar |
+| Code review completo | Agent Team | 10-15 min | ~80K tokens | 90% cobertura | Multiples perspectivas | Hallazgos pueden solaparse |
+| SDD Pipeline completo (explore→archive) | Agent Team | 30-45 min | ~200K tokens | 85% primera vez | Spec+Design en paralelo, apply paralelo | Requiere buena descripcion inicial |
+
+> **Importante**: Estas son estimaciones iniciales. Cuando ejecutes cada paso, anota cuanto tardo
+> realmente y si el resultado fue correcto a la primera. Esa informacion ayuda a mejorar el sistema
+> con `/batuta:analyze-prompts`.
+
+---
+
 > **Recuerda**: No necesitas entender COMO funciona todo. Solo necesitas seguir los pasos
 > y confiar en el proceso. Como aprender a manejar: primero sigues las instrucciones al pie
 > de la letra, y con el tiempo lo haces naturalmente. Claude es tu asistente — el programa, tu decides.

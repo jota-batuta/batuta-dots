@@ -62,11 +62,11 @@ flowchart TB
 flowchart TD
     USER["Usuario escribe prompt"]
     GATE["Execution Gate<br/>VALIDATE → CLASSIFY → ROUTE → LOG"]
-    ROUTER["CLAUDE.md (Router)<br/>~195 lineas: personalidad,<br/>reglas, routing table"]
+    ROUTER["CLAUDE.md (Router)<br/>~228 lineas: personalidad,<br/>reglas, routing table"]
 
     subgraph AGENTS["SCOPE AGENTS"]
         PIPELINE["pipeline-agent<br/>SDD Pipeline<br/>(9 skills)"]
-        INFRA["infra-agent<br/>Infraestructura<br/>(3 skills)"]
+        INFRA["infra-agent<br/>Infraestructura<br/>(4 skills)"]
         OBS["observability-agent<br/>O.R.T.A.<br/>(1 skill)"]
     end
 
@@ -196,7 +196,7 @@ graph LR
 ```mermaid
 flowchart TD
     START["Claude inicia conversacion"]
-    READ["Nivel 1: Lee CLAUDE.md<br/>(~195 lineas: personalidad,<br/>reglas, scope routing table)"]
+    READ["Nivel 1: Lee CLAUDE.md<br/>(~228 lineas: personalidad,<br/>reglas, scope routing table)"]
     TASK["Usuario pide tarea"]
     GATE["Execution Gate<br/>clasifica scope"]
     LOAD_AGENT["Nivel 2: Carga scope-agent<br/>(~80-120 lineas:<br/>reglas del scope)"]
@@ -216,7 +216,7 @@ flowchart TD
     style DIRECT fill:#666,color:#fff
 ```
 
-> Claude lee ~195 lineas al iniciar (Nivel 1). El scope agent agrega ~100 lineas (Nivel 2). El skill agrega ~200-500 lineas (Nivel 3). Solo se carga lo que se necesita.
+> Claude lee ~228 lineas al iniciar (Nivel 1). El scope agent agrega ~100 lineas (Nivel 2). El skill agrega ~200-500 lineas (Nivel 3). Solo se carga lo que se necesita.
 
 ---
 

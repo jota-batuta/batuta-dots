@@ -79,6 +79,22 @@ Note: Scope agents are reference documents, not independent sub-processes. Claud
 Multiple scopes can apply (e.g., `sdd-apply` invokes `pipeline` + `infra` for Scope Rule).
 For simple questions or conversation, respond directly without routing.
 
+### Team Routing (Agent Teams — Level 3)
+
+For complex tasks, escalate from solo/subagent to Agent Teams:
+
+| Complexity | Mechanism | When |
+|-----------|-----------|------|
+| Low | Solo session | 1-file edit, bug fix, question |
+| Medium | Subagent (Task tool) | Research, verify, single SDD phase |
+| High | Agent Team | Multi-module feature, full SDD pipeline, competing hypotheses |
+
+**When to create a team**: 4+ files AND multi-scope AND workers need communication.
+**When NOT to**: sequential tasks, same-file edits, routine changes.
+
+To spawn, read the scope-agent .md file and use its "Spawn Prompt" section.
+Full orchestration rules: route to `infra-agent` → `team-orchestrator` skill.
+
 ### Skill Gap Detection (summary)
 Before writing code for a technology without a matching skill in `~/.claude/skills/`, STOP and offer to create one.
 Full flow and template: route to `infra-agent` which has the complete detection protocol.
@@ -111,6 +127,7 @@ IMPORTANT: When you detect any of these contexts, route to the appropriate scope
 | `sdd-tasks` | pipeline | Breaking work into tasks |
 | `sdd-verify` | pipeline | Verifying implementation, /sdd:verify |
 | `skill-sync` | infra | After creating/modifying a skill; Regenerate CLAUDE.md and scope-agent routing tables (sync.sh); Troubleshoot why a skill is missing from routing tables |
+| `team-orchestrator` | infra | Evaluating whether to use subagents or Agent Teams; Spawning a team for complex tasks; Coordinating multi-agent work |
 
 <!-- END AUTO-GENERATED -->
 

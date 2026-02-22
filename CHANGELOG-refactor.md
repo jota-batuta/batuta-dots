@@ -4,6 +4,173 @@
 
 ---
 
+## v7 — Agent Teams + 3-Level Execution Model (2026-02-22)
+
+### Contexto
+
+Claude Code lanzo una feature experimental llamada **Agent Teams**: sesiones REALES de Claude Code que trabajan en paralelo, cada una con su propio context window, comunicandose via mailbox y coordinandose con un task list compartido.
+
+Se analizo la alineacion con el ecosistema Batuta y se diseno un modelo hibrido de 3 niveles.
+
+### Decisiones arquitecturales
+
+1. **Modelo hibrido de 3 niveles (no reemplazo, capa adicional)**:
+   - Nivel 1 — Solo session (como antes): bug fix, pregunta, edicion simple. Sin overhead.
+   - Nivel 2 — Subagents (Task tool, como antes): investigacion, verificacion, SDD phases individuales.
+   - Nivel 3 — Agent Teams (NUEVO): feature multi-modulo, debugging complejo, SDD pipeline completo.
+
+2. **Scope agents evolucionan, no se reemplazan**: Los `.md` ahora sirven dual-purpose — como referencia (niveles 1-2) y como spawn prompts (nivel 3). Se agrego seccion "Agent Team: Spawn Prompt" + "Team Context" a cada scope agent.
+
+3. **O.R.T.A. via Hooks**: Se usan los hooks nativos de Agent Teams (`TeammateIdle`, `TaskCompleted`) para centralizar logging y quality gates. SOLO el lead escribe a `prompt-log.jsonl` durante teams (evita conflictos multi-writer).
+
+4. **Plan Approval = Execution Gate para teams**: El plan approval de Agent Teams mapea al Execution Gate de Batuta a nivel de teammate.
+
+5. **In-process mode only**: Windows/Git Bash no soporta split panes (requiere tmux/iTerm2). Se usa modo in-process con Shift+Down para navegar.
+
+6. **Team event como 6to tipo de evento**: `prompt-log.jsonl` ahora registra eventos `team` con sub-eventos: `team_created`, `teammate_idle`, `task_completed`, `team_closed`.
+
+7. **SDD Pipeline como Task List**: Las fases SDD mapean a tasks con dependencias — spec y design corren en paralelo, apply batches corren en paralelo.
+
+8. **Dream Team on-the-go**: Skill Gap Detection + Auto-Update SPO = el roster de skills crece con cada proyecto. Cada nuevo proyecto agrega skills que quedan disponibles para futuros proyectos.
+
+### Archivos nuevos (3)
+
+| Archivo | Proposito |
+|---------|-----------|
+| `BatutaClaude/skills/team-orchestrator/SKILL.md` | Skill de orquestacion: decision tree (solo → subagent → team), spawn prompts, 4 patrones de composicion, lifecycle, metricas |
+| `skills/hooks/orta-teammate-idle.sh` | Hook TeammateIdle: registra fin de teammate en prompt-log.jsonl |
+| `skills/hooks/orta-task-gate.sh` | Hook TaskCompleted: quality gate (placeholder para Scope Rule, tests, SDD artifacts) |
+
+### Archivos modificados (14)
+
+| Archivo | Cambio | Razon |
+|---------|--------|-------|
+| `BatutaClaude/settings.json` | +env feature flag, +teammateMode, +hooks TeammateIdle/TaskCompleted | Habilitar Agent Teams + integrar O.R.T.A. |
+| `BatutaClaude/CLAUDE.md` | +seccion Team Routing (~12 lineas) | Decision tree de cuando crear team en el router principal |
+| `BatutaClaude/VERSION` | 5.0.0 → 7.0.0 | Version bump |
+| `BatutaClaude/agents/pipeline-agent.md` | +Spawn Prompt, +Team Context | Scope agent como spawn prompt para teammates |
+| `BatutaClaude/agents/infra-agent.md` | +Spawn Prompt, +Team Context | Scope agent como spawn prompt para teammates |
+| `BatutaClaude/agents/observability-agent.md` | +Spawn Prompt, +Team Context, +Team Event Format | Scope agent + schema de eventos team |
+| `BatutaClaude/skills/prompt-tracker/SKILL.md` | +evento type `team` (6to tipo) | Registrar lifecycle de Agent Teams |
+| `guides/guia-batuta-app.md` | +seccion Agent Teams + metricas rendimiento | Ejemplos nivel avanzado con metricas para validacion humana |
+| `guides/guia-temporal-io-app.md` | +seccion Agent Teams + metricas rendimiento | Ejemplos nivel avanzado con metricas para validacion humana |
+| `guides/guia-langchain-gmail-agent.md` | +seccion Agent Teams + metricas rendimiento | Ejemplos nivel avanzado con metricas para validacion humana |
+| `README.md` + `README.es.md` | +Agent Teams en features, tree, Core Concepts, skills table, line counts, test counts | Documentar v7 completo |
+| `about/arquitectura-diagrama.md` | ~195 → ~228 lineas, infra-agent 3→4 skills | Consistencia numerica |
+| `about/arquitectura-para-no-tecnicos.md` | 13→14 recetas basicas | Consistencia numerica |
+| `skills/setup_test.sh` | +6 tests v7, fix "Five"→"Six" event types, total 33 tests | Cobertura de tests v7 |
+
+### Metricas
+
+| Metrica | Valor |
+|---------|-------|
+| Skills activos | 14 (13 + team-orchestrator) |
+| Scope agents | 3 (todos extendidos con spawn prompts) |
+| Tipos de evento prompt-log | 6 (prompt, gate, correction, follow-up, closed, team) |
+| Hooks O.R.T.A. | 2 (TeammateIdle, TaskCompleted) |
+| Lineas CLAUDE.md | ~228 |
+| Patrones de composicion de team | 4 (SDD Pipeline, Parallel Review, Investigation, Cross-Layer) |
+| Niveles de ejecucion | 3 (solo, subagent, team) |
+| Tests en setup_test.sh | 33 (27 anteriores + 6 v7) |
+
+### Rollback
+
+Para revertir v7 y volver a v6:
+1. Eliminar `BatutaClaude/skills/team-orchestrator/` directorio
+2. Eliminar `skills/hooks/` directorio
+3. Revertir `settings.json` a version sin `env`, `teammateMode`, `hooks`
+4. Eliminar seccion "Team Routing" de `CLAUDE.md` (lineas ~81-92)
+5. Eliminar secciones "Agent Team: Spawn Prompt" y "Team Context" de los 3 scope agents
+6. Revertir evento #6 `team` en `prompt-tracker/SKILL.md`
+7. Revertir secciones "Nivel Avanzado: Agent Teams" de las 3 guias
+8. Revertir cambios v7 en READMEs
+
+---
+
+## v6 — Quality Audit + Folder Reorganization + Bug Fixes (2026-02-21/22)
+
+### Problema detectado
+Segundo test de calidad post-v5 identifico 13 hallazgos en 5 dimensiones:
+
+1. **Consistencia numerica rota**: CLAUDE.md tiene 216 lineas pero READMEs decian "~195" en 6+ lugares. CHANGELOG y READMEs tenian conteos incorrectos de planned skills (17 vs 16 real) y archivos nuevos (9 vs 7 real).
+2. **Carpeta guides/ mezclada**: `guides/` contenia guias de ejecucion Y documentacion de arquitectura. Deberian estar separadas.
+3. **Bug critico en setup.sh --sync**: El flag `--sync` no llamaba `sync_agents()`, causando inconsistencia con el menu interactivo opcion 2.
+4. **batuta-update.md incompleto**: Usaba `--sync` (incompleto post-v5) en vez de `--all`. No mencionaba agents ni routing tables.
+5. **Inconsistencias menores**: observability-agent field name no coincidia con template, sync_test.sh faltaba en READMEs.
+
+### Solucion implementada
+
+1. **Reorganizacion de carpetas**: `guides/` solo guias de ejecucion (3 archivos). Nueva carpeta `about/` para arquitectura y diseno (2 archivos movidos via `git mv`).
+2. **Bug fix setup.sh**: `--sync` ahora llama `sync_claude; sync_agents` (consistente con menu interactivo).
+3. **Consistencia numerica**: Todos los line counts actualizados a ~216, planned skills a 16, file counts corregidos en CHANGELOG.
+4. **batuta-update.md reescrito**: Usa `--all`, tabla incluye agents y routing tables, reporte completo.
+5. **READMEs actualizados**: Arboles de arquitectura con about/, qa/, sync_test.sh. Secciones Guides separadas de About.
+
+### Archivos nuevos (4)
+
+| Archivo | Proposito |
+|---------|-----------|
+| `about/` (directorio) | Documentacion de arquitectura y diseno (separada de guides/) |
+| `qa/BatutaTestCalidadV6.md` | Reporte de test de calidad v6 (13 hallazgos) |
+| `qa/LogCorrecciones-V6.md` | Log de correcciones v6 (integridad de guias y READMEs) |
+
+### Archivos modificados (8)
+
+| Archivo | Cambio | Razon |
+|---------|--------|-------|
+| `skills/setup.sh` | **Bug fix** (L471) | `--sync` no llamaba `sync_agents()` — inconsistente con menu interactivo |
+| `BatutaClaude/CLAUDE.md` | Planned skills 17 → 16 | Conteo real es 16 |
+| `BatutaClaude/commands/batuta-update.md` | **Reescrito** | --sync → --all, +agents/routing en tabla y reporte |
+| `BatutaClaude/agents/observability-agent.md` | Field name alineado | `last_batuta_update` → **Last batuta update** (formato template) |
+| `CHANGELOG-refactor.md` | Conteos corregidos | 9 → 7 archivos, ~195 → ~216 lineas |
+| `README.md` | **Ampliado** | Tree con about/qa/, line counts, guides/about separados |
+| `README.es.md` | **Ampliado** | Mismos cambios que README.md en espanol |
+
+### Archivos movidos (2)
+
+| Origen | Destino |
+|--------|---------|
+| `guides/arquitectura-diagrama.md` | `about/arquitectura-diagrama.md` |
+| `guides/arquitectura-para-no-tecnicos.md` | `about/arquitectura-para-no-tecnicos.md` |
+
+### Criterio de separacion
+
+| Carpeta | Proposito | Contenido |
+|---------|-----------|-----------|
+| `guides/` | Guias de ejecucion paso a paso | Como usar el ecosistema (prompts, workflows, lifecycle) |
+| `about/` | Arquitectura y diseno | Como funciona el ecosistema internamente (diagramas, analogias) |
+
+### Como revertir
+
+```bash
+# 1. Mover archivos de vuelta a guides/
+git mv about/arquitectura-diagrama.md guides/
+git mv about/arquitectura-para-no-tecnicos.md guides/
+rmdir about/
+
+# 2. Revertir setup.sh bug fix
+# En skills/setup.sh linea 471, cambiar:
+#   --sync)     sync_claude; sync_agents ;;
+# a:
+#   --sync)     sync_claude ;;
+
+# 3. Revertir READMEs, CLAUDE.md, CHANGELOG, batuta-update.md
+git checkout HEAD~1 -- README.md README.es.md BatutaClaude/CLAUDE.md CHANGELOG-refactor.md BatutaClaude/commands/batuta-update.md BatutaClaude/agents/observability-agent.md
+```
+
+### Metricas antes/despues
+
+| Metrica | V5 post-fix | V6 post-fix |
+|---------|------------|-------------|
+| Hallazgos abiertos | 5 (aceptados) | 2 (aceptados, historicos) |
+| Line count accuracy | Incorrecto (6+ lugares) | Correcto en todos los archivos |
+| Folder organization | Mezclada (guides/) | Separada (guides/ + about/) |
+| setup.sh --sync | Incompleto (sin agents) | Completo (skills + agents) |
+| batuta-update completeness | Parcial (sin agents/sync) | Completo (--all + agents + routing) |
+| Puntuacion promedio | 6.2/10 | 9.0/10 |
+
+---
+
 ## v5 — Mix-of-Experts + Execution Gate + Standardized Frontmatter + Skill-Sync (2026-02-21)
 
 ### Problema detectado

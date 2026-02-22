@@ -1,4 +1,4 @@
-# Test de Calidad V6 — Ecosistema Batuta
+ree# Test de Calidad V6 — Ecosistema Batuta
 
 > Segundo test de calidad post-v5. Enfoque: problemas no resueltos en V5, integridad READMEs/guias, reorganizacion de carpetas.
 

@@ -47,7 +47,7 @@ All data lives in the project's `.batuta/` directory:
 
 ## Event Format (JSONL)
 
-Each line in `.batuta/prompt-log.jsonl` is a JSON object representing one event. Five event types exist:
+Each line in `.batuta/prompt-log.jsonl` is a JSON object representing one event. Six event types exist:
 
 ### 1. `prompt` — User makes a request
 
@@ -168,6 +168,31 @@ This is NOT a correction — the original result was fine, the user is adding sc
 | `follow_ups` | Yes | Count of follow-up events for this prompt |
 | `corrections` | Yes | Count of correction events for this prompt |
 | `total_interactions` | Yes | Total messages exchanged for this prompt (prompt + corrections + follow-ups + closed) |
+
+### 6. `team` — Agent Team lifecycle events
+
+```json
+{
+  "ts": "2026-02-22T10:00:00Z",
+  "type": "team",
+  "event": "team_created",
+  "team": "checkout-feature",
+  "teammates": ["pipeline-specialist", "infra-specialist", "reviewer"],
+  "task_count": 9
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `event` | Yes | `team_created`, `teammate_idle`, `task_completed`, `team_closed` |
+| `team` | Yes | Team name identifier |
+| `teammates` | For `team_created` | Array of teammate names spawned |
+| `teammate` | For `teammate_idle` | Name of the teammate that went idle |
+| `task_id` | For `task_completed` | ID of the completed task |
+| `task_count` | For `team_created` | Number of tasks in the shared task list |
+| `details` | No | Additional context (skills used, duration, artifacts) |
+
+> **Note**: Team events are logged centrally by the lead or via O.R.T.A. hooks (TeammateIdle, TaskCompleted). Teammates do NOT write to prompt-log.jsonl directly to avoid multi-writer conflicts.
 
 ---
 

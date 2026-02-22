@@ -31,6 +31,11 @@
 #   - Agents sync via setup.sh
 #   - skill-sync script exists and is well-formed
 #   - AUTO-GENERATED delimiters in CLAUDE.md and agents
+#   v6 (Quality Audit + Folder Reorganization):
+#   - about/ directory exists with architecture docs
+#   - guides/ contains only execution guides (no architecture)
+#   - qa/ directory exists with quality reports
+#   - BatutaClaude/VERSION file exists
 #
 # Platform: Windows (Git Bash / MSYS2 / MINGW) and native Unix
 # ============================================================================
@@ -438,7 +443,7 @@ test_prompt_tracker_has_gate_event() {
     local tracker="$REPO_ROOT/BatutaClaude/skills/prompt-tracker/SKILL.md"
 
     assert_file_contains "$tracker" '"gate"' "gate event type"
-    assert_file_contains "$tracker" "Five event types" "updated event count to five"
+    assert_file_contains "$tracker" "Six event types" "updated event count to six"
     assert_file_contains "$tracker" "Gate compliance" "gate compliance metrics"
 }
 
@@ -591,6 +596,187 @@ test_skill_sync_tables_present() {
 }
 
 # ============================================================================
+# 24. about/ directory exists with architecture docs (v6)
+# ============================================================================
+
+test_about_directory_exists() {
+    log_test "about/ directory exists with architecture docs (v6)"
+    local about_dir="$REPO_ROOT/about"
+
+    assert_dir_exists "$about_dir"
+    assert_file_exists "$about_dir/arquitectura-diagrama.md"
+    assert_file_exists "$about_dir/arquitectura-para-no-tecnicos.md"
+}
+
+# ============================================================================
+# 25. guides/ contains only execution guides (v6)
+# ============================================================================
+
+test_guides_no_architecture_docs() {
+    log_test "guides/ contains only execution guides — no architecture docs (v6)"
+    local guides_dir="$REPO_ROOT/guides"
+
+    assert_dir_exists "$guides_dir"
+    assert_file_exists "$guides_dir/guia-batuta-app.md"
+    assert_file_exists "$guides_dir/guia-temporal-io-app.md"
+    assert_file_exists "$guides_dir/guia-langchain-gmail-agent.md"
+
+    # Architecture docs should NOT be in guides/ (moved to about/ in v6)
+    if [[ -f "$guides_dir/arquitectura-diagrama.md" ]]; then
+        log_fail "arquitectura-diagrama.md still in guides/ (should be in about/)"
+    else
+        log_pass "arquitectura-diagrama.md correctly in about/ (not guides/)"
+    fi
+
+    if [[ -f "$guides_dir/arquitectura-para-no-tecnicos.md" ]]; then
+        log_fail "arquitectura-para-no-tecnicos.md still in guides/ (should be in about/)"
+    else
+        log_pass "arquitectura-para-no-tecnicos.md correctly in about/ (not guides/)"
+    fi
+}
+
+# ============================================================================
+# 26. qa/ directory exists with quality reports (v6)
+# ============================================================================
+
+test_qa_directory_exists() {
+    log_test "qa/ directory exists with quality reports (v6)"
+    local qa_dir="$REPO_ROOT/qa"
+
+    assert_dir_exists "$qa_dir"
+
+    local report_count=0
+    for f in "$qa_dir"/*.md; do
+        [[ -f "$f" ]] && report_count=$((report_count + 1))
+    done
+
+    [[ $report_count -ge 2 ]] && log_pass "$report_count quality reports in qa/" || log_fail "Expected at least 2 reports in qa/, found $report_count"
+}
+
+# ============================================================================
+# 27. BatutaClaude/VERSION file exists (v6)
+# ============================================================================
+
+test_version_file_exists() {
+    log_test "BatutaClaude/VERSION file exists (v6)"
+    local version_file="$REPO_ROOT/BatutaClaude/VERSION"
+
+    assert_file_exists "$version_file"
+    assert_file_not_empty "$version_file"
+
+    if head -1 "$version_file" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+'; then
+        log_pass "VERSION contains valid semver format"
+    else
+        log_fail "VERSION does not contain a valid semver format"
+    fi
+}
+
+# ============================================================================
+# 28. team-orchestrator skill exists with proper frontmatter (v7)
+# ============================================================================
+
+test_team_orchestrator_skill_exists() {
+    log_test "team-orchestrator SKILL.md exists with infra scope (v7)"
+    local skill_file="$REPO_ROOT/BatutaClaude/skills/team-orchestrator/SKILL.md"
+
+    assert_file_exists "$skill_file"
+    assert_file_not_empty "$skill_file"
+    assert_file_contains "$skill_file" "scope:.*infra" "scope includes infra"
+    assert_file_contains "$skill_file" "auto_invoke" "has auto_invoke field"
+}
+
+# ============================================================================
+# 29. O.R.T.A. hooks exist (v7)
+# ============================================================================
+
+test_orta_hooks_exist() {
+    log_test "O.R.T.A. hooks for Agent Teams exist (v7)"
+    local hooks_dir="$REPO_ROOT/skills/hooks"
+
+    assert_dir_exists "$hooks_dir"
+    assert_file_exists "$hooks_dir/orta-teammate-idle.sh"
+    assert_file_exists "$hooks_dir/orta-task-gate.sh"
+
+    # Verify both have valid shebangs
+    if head -1 "$hooks_dir/orta-teammate-idle.sh" | grep -q '#!/usr/bin/env bash\|#!/bin/bash'; then
+        log_pass "orta-teammate-idle.sh has valid shebang"
+    else
+        log_fail "orta-teammate-idle.sh missing valid shebang"
+    fi
+
+    if head -1 "$hooks_dir/orta-task-gate.sh" | grep -q '#!/usr/bin/env bash\|#!/bin/bash'; then
+        log_pass "orta-task-gate.sh has valid shebang"
+    else
+        log_fail "orta-task-gate.sh missing valid shebang"
+    fi
+}
+
+# ============================================================================
+# 30. settings.json has Agent Teams configuration (v7)
+# ============================================================================
+
+test_settings_has_agent_teams() {
+    log_test "settings.json has Agent Teams config (v7)"
+    local settings="$REPO_ROOT/BatutaClaude/settings.json"
+
+    assert_file_contains "$settings" "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS" "Agent Teams feature flag"
+    assert_file_contains "$settings" "teammateMode" "teammate mode setting"
+    assert_file_contains "$settings" "TeammateIdle" "TeammateIdle hook"
+    assert_file_contains "$settings" "TaskCompleted" "TaskCompleted hook"
+}
+
+# ============================================================================
+# 31. CLAUDE.md has Team Routing section (v7)
+# ============================================================================
+
+test_claude_md_has_team_routing() {
+    log_test "CLAUDE.md has Team Routing section (v7)"
+    local claude_src="$REPO_ROOT/BatutaClaude/CLAUDE.md"
+
+    assert_file_contains "$claude_src" "Team Routing" "Team Routing section"
+    assert_file_contains "$claude_src" "Agent Team" "Agent Team reference"
+}
+
+# ============================================================================
+# 32. Scope agents have Spawn Prompt sections (v7)
+# ============================================================================
+
+test_scope_agents_have_spawn_prompts() {
+    log_test "All scope agents have Agent Team spawn prompts (v7)"
+    local agents_dir="$REPO_ROOT/BatutaClaude/agents"
+
+    for agent in pipeline-agent infra-agent observability-agent; do
+        local agent_file="$agents_dir/${agent}.md"
+        if [[ -f "$agent_file" ]]; then
+            if grep -q "Spawn Prompt" "$agent_file" 2>/dev/null; then
+                log_pass "${agent}.md has Spawn Prompt section"
+            else
+                log_fail "${agent}.md missing Spawn Prompt section"
+            fi
+            if grep -q "Team Context" "$agent_file" 2>/dev/null; then
+                log_pass "${agent}.md has Team Context section"
+            else
+                log_fail "${agent}.md missing Team Context section"
+            fi
+        else
+            log_fail "${agent}.md not found"
+        fi
+    done
+}
+
+# ============================================================================
+# 33. prompt-tracker has team event type (v7)
+# ============================================================================
+
+test_prompt_tracker_has_team_event() {
+    log_test "prompt-tracker SKILL.md documents team event type (v7)"
+    local tracker="$REPO_ROOT/BatutaClaude/skills/prompt-tracker/SKILL.md"
+
+    assert_file_contains "$tracker" '"team"' "team event type"
+    assert_file_contains "$tracker" "team_created\|teammate_idle\|task_completed\|team_closed" "team sub-events"
+}
+
+# ============================================================================
 # Run All Tests
 # ============================================================================
 
@@ -636,6 +822,20 @@ test_all_skills_have_allowed_tools
 test_agents_sync_correctly
 test_skill_sync_script_exists
 test_skill_sync_tables_present
+
+# --- v6 tests: Quality Audit + Folder Reorganization ---
+test_about_directory_exists
+test_guides_no_architecture_docs
+test_qa_directory_exists
+test_version_file_exists
+
+# --- v7 tests: Agent Teams + 3-Level Execution ---
+test_team_orchestrator_skill_exists
+test_orta_hooks_exist
+test_settings_has_agent_teams
+test_claude_md_has_team_routing
+test_scope_agents_have_spawn_prompts
+test_prompt_tracker_has_team_event
 
 # ============================================================================
 # Summary
