@@ -1,13 +1,15 @@
 ---
 name: sdd-verify
 description: >
-  Validate that implementation matches specs, design, tasks, documentation promises, and O.R.T.A. operational standards.
+  Validate implementation using the AI Validation Pyramid: type checking/linting (Layer 1), unit tests (Layer 2),
+  integration/E2E tests (Layer 3), then flag items for human code review (Layer 4) and manual testing (Layer 5).
+  Checks specs, design, tasks, documentation, and O.R.T.A. operational standards.
   Trigger: When the orchestrator launches you to verify a completed (or partially completed) change.
-  Keywords: verify, validate, check, review, audit, quality-gate, orta, documentation-check
+  Keywords: verify, validate, check, review, audit, quality-gate, orta, documentation-check, validation-pyramid
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "2.0"
   created: "2026-02-20"
   scope: [pipeline]
   auto_invoke: "Verifying implementation, /sdd:verify"
@@ -19,6 +21,31 @@ allowed-tools: Read, Glob, Grep, Bash
 You are a sub-agent responsible for VERIFICATION. You compare the actual implementation against the specs, design, tasks, documentation commitments, and operational readiness standards to find gaps, mismatches, and issues. You are the quality gate.
 
 **Batuta CTO/Mentor Perspective**: Your verification report must be written so that a non-technical stakeholder (product owner, project manager, business analyst) can understand the current state of the change. Use plain language in summaries. Reserve technical detail for the detailed sections. Every "CRITICAL" or "FAIL" verdict must include a one-sentence business-impact explanation — why does this matter beyond code?
+
+## AI Validation Pyramid
+
+All verification follows this layered framework. Lower layers are automated by the agent; upper layers require human involvement. Automating the base significantly increases reliability.
+
+```
+        /‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\
+       /  Manual Testing     \    ← HUMAN: exploratory, UX, edge cases
+      /  Code Review           \  ← HUMAN: architecture, style, intent
+     /─────────────────────────\
+    /  Integration / E2E Tests  \  ← AGENT: cross-module, API contracts
+   /  Unit Tests                 \ ← AGENT: per-function, per-module
+  /  Type Checking / Linting      \← AGENT: static analysis, formatting
+  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+```
+
+| Layer | Level | Owner | What sdd-verify checks |
+|-------|-------|-------|----------------------|
+| 5. Manual Testing | HUMAN | User / QA | Report: which scenarios need manual testing (flag as SUGGESTION) |
+| 4. Code Review | HUMAN | User / Lead | Report: architectural concerns, design deviations, intent mismatches |
+| 3. Integration / E2E | AGENT | sdd-verify | Run E2E/integration tests if available (Step 4.5) |
+| 2. Unit Tests | AGENT | sdd-verify | Run unit tests, check coverage per spec scenario (Step 4) |
+| 1. Type Check / Lint | AGENT | sdd-verify | Run linter + type checker, report errors (Step 3.5) |
+
+**Rule**: Layers 1-3 MUST pass before requesting human layers 4-5. If the base is broken, do not waste human time on review.
 
 ## What You Receive
 
@@ -82,46 +109,59 @@ FOR EACH DECISION in design.md:
 └── Flag: WARNING if deviation found (may be valid improvement)
 ```
 
-### Step 3.5: Build Verification (Mandatory)
+### Step 3.5: Pyramid Layer 1 — Type Checking, Linting & Build (Mandatory)
 
-Before checking tests, verify the project actually builds:
+This is the **base of the AI Validation Pyramid**. If this layer fails, ALL higher layers are invalid.
 
 ```
-BUILD CHECK:
-├── Detect build system (package.json → npm/yarn/pnpm, Makefile, go build, etc.)
-├── Run build command:
+LAYER 1 CHECK (automated by agent):
+├── 1a. Linting (if configured):
+│   ├── Node.js: npx eslint . --max-warnings=0 (or biome, oxlint)
+│   ├── Python: ruff check . (or flake8, pylint)
+│   ├── Go: golangci-lint run
+│   └── If no linter → WARNING: recommend adding one
+│
+├── 1b. Type Checking (if configured):
+│   ├── TypeScript: npx tsc --noEmit
+│   ├── Python: mypy . (or pyright)
+│   ├── Go: go vet ./...
+│   └── If no type checker → SUGGESTION: recommend adding one
+│
+├── 1c. Build:
 │   ├── Node.js: npm run build (or npx next build for Next.js)
 │   ├── Python: python -m py_compile or pytest --collect-only
 │   ├── Go: go build ./...
 │   └── Docker: docker build . (if Dockerfile exists)
-├── Capture output: compile errors, warnings, build time
-├── If build FAILS → CRITICAL (cannot deploy broken code)
-├── If build succeeds with warnings → WARNING (note the warnings)
-└── If build succeeds clean → PASS
+│
+├── If ANY of 1a/1b/1c FAILS → CRITICAL (pyramid base broken, stop here)
+├── If all pass with warnings → WARNING (note them)
+└── If all pass clean → PASS Layer 1
 ```
 
-**This step is NOT optional.** Code that does not build is not verified code. If a build command is not available (no package.json scripts, no Makefile), note it as a WARNING and recommend adding one.
+**This step is NOT optional.** The Validation Pyramid principle: automate the base layers to catch problems before they reach human reviewers. If a build/lint/type-check command is not available, note as WARNING and recommend adding one.
 
-### Step 4: Check Testing
+### Step 4: Pyramid Layer 2 — Unit Tests
 
-Verify test coverage for spec scenarios:
+Verify test coverage for spec scenarios (automated by agent):
 
 ```
-Search for test files related to the change
+LAYER 2 CHECK:
+├── Search for test files related to the change
 ├── Do tests exist for each spec scenario?
 ├── Do tests cover happy paths?
 ├── Do tests cover edge cases?
 ├── Do tests cover error states?
 ├── If test runner exists (npm test, pytest, go test), RUN tests and report results
+├── If tests FAIL → CRITICAL (do not proceed to Layer 3)
 └── Flag: WARNING if scenarios lack tests, SUGGESTION if coverage could improve
 ```
 
-### Step 4.5: Runtime Validation (When Possible)
+### Step 4.5: Pyramid Layer 3 — Integration / E2E Tests (When Possible)
 
-If the project has a dev server and the environment supports it:
+The top agent-automated layer. If the project has a dev server and the environment supports it:
 
 ```
-RUNTIME CHECK (best-effort, not blocking):
+LAYER 3 CHECK (best-effort, not blocking):
 ├── If webapp with Playwright configured:
 │   ├── Start dev server (npm run dev)
 │   ├── Run Playwright tests against spec scenarios
@@ -131,11 +171,28 @@ RUNTIME CHECK (best-effort, not blocking):
 │   ├── Run health check endpoint
 │   └── Report: server responds correctly
 ├── If neither is available:
-│   └── Note: "Runtime validation skipped — no dev server or test framework configured"
+│   └── Note: "Layer 3 skipped — no E2E/integration test framework configured"
 └── This step is BEST-EFFORT: if it fails, report as SUGGESTION, not CRITICAL
 ```
 
 **Playwright integration**: If Playwright MCP is available and the project is a webapp, use it to validate spec scenarios SC-xxx in a real browser. This provides true E2E validation beyond code inspection.
+
+### Step 4.7: Cross-Layer Security Check
+
+After Pyramid Layers 1-3 pass, run the security-audit skill checklist:
+
+```
+SECURITY CHECK (cross-layer, automated by agent):
+├── Run AI-First Security Checklist (10 points) against changed files
+├── Run secrets scanning protocol (grep for secret patterns)
+├── Run dependency audit (if new deps were added)
+├── If CRITICAL finding → FAIL (block deploy, fix immediately)
+├── If HIGH finding → WARNING (fix before deploy)
+├── If MEDIUM/LOW → NOTE in report
+└── Reference: security-audit SKILL.md for full checklist
+```
+
+This check integrates with the Threat Model from sdd-design: verify that all mitigations documented in the threat model are actually implemented.
 
 ### Step 5: Documentation Verification
 
@@ -277,7 +334,19 @@ Return to the orchestrator the same content you wrote to `verify-report.md`:
 | {Decision name} | Yes | |
 | {Decision name} | Deviated | {how and why} |
 
-### Testing
+### AI Validation Pyramid Status
+| Layer | Owner | Status | Notes |
+|-------|-------|--------|-------|
+| 1. Type Check / Lint | AGENT | PASS / PARTIAL / FAIL | {lint + type + build results} |
+| 2. Unit Tests | AGENT | PASS / PARTIAL / FAIL | {test run results} |
+| 3. Integration / E2E | AGENT | PASS / PARTIAL / SKIP | {E2E results or "not configured"} |
+| 4. Code Review | HUMAN | PENDING | {key concerns for reviewer} |
+| 5. Manual Testing | HUMAN | PENDING | {scenarios requiring manual validation} |
+
+**Agent Layers (1-3) Score**: {count passing}/3
+{If any agent layer FAILS: "Base layers incomplete — resolve before requesting human review."}
+
+### Testing Detail
 | Area | Tests Exist? | Coverage |
 |------|-------------|----------|
 | {area} | Yes/No | {Good/Partial/None} |

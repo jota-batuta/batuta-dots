@@ -49,7 +49,7 @@ Cada **skill** es una receta especifica. Por ejemplo:
 | `temporal-worker` | Como cocinar platos que llevan muchos pasos y pueden fallar |
 | `nextjs-portal` | Como montar el plato para que se vea bonito (la cara que ve el cliente) |
 
-El chef tiene **14 recetas basicas** que siempre estan disponibles, y puede **aprender
+El chef tiene **15 recetas basicas** que siempre estan disponibles, y puede **aprender
 recetas nuevas** cuando las necesita.
 
 **Detalle importante**: Las recetas NO se leen todas al empezar. El chef solo abre la
@@ -356,6 +356,106 @@ Los jefes de area (pipeline, infra, calidad) ahora tienen un doble rol:
 
 ---
 
+## Las Alarmas Automaticas (Native Hooks) — v8
+
+Imagina que el restaurante tiene un sistema de alarmas automaticas que funcionan sin que nadie las active:
+
+| Alarma | Cuando suena | Que hace |
+|--------|-------------|---------|
+| **Alarma de apertura** (SessionStart) | Cuando el chef empieza su turno | Lee el cuaderno del turno anterior y las instrucciones del restaurante |
+| **Alarma de cocina** (PreToolUse) | Cuando el chef va a tocar un plato | Ejecuta el checklist automaticamente — si no pasa, no puede cocinar |
+| **Alarma de cierre** (Stop) | Cuando el chef termina su turno | Guarda notas en el cuaderno para el siguiente turno |
+
+**Por que importa**: Antes, el chef tenia que "acordarse" de leer el cuaderno y hacer el checklist. Ahora las alarmas lo obligan — es imposible saltarselo. Es como tener un sistema contra incendios que funciona solo, sin depender de que alguien recuerde activarlo.
+
+---
+
+## El Control de Calidad por Capas (AI Validation Pyramid) — v8
+
+Imagina que antes de servir un plato, pasa por 5 controles de calidad, como una linea de inspeccion en una fabrica:
+
+```
+Nivel 5: TU pruebas el plato (obligatorio — el humano tiene la ultima palabra)
+Nivel 4: Un critico gastronomico lo evalua (humano experto o chef senior)
+Nivel 3: Se prueba que el plato completo funcione junto (integracion)
+Nivel 2: Se prueba cada ingrediente por separado (sabor, frescura)
+Nivel 1: Se verifica que los ingredientes basicos sean correctos (no estan vencidos)
+```
+
+**La regla clave**: Los niveles 1-3 los hace el chef automaticamente (rapido). Los niveles 4-5 SIEMPRE requieren un humano. No existe la calidad 100% automatica — tu siempre tienes la ultima palabra antes de servir.
+
+---
+
+## La Comanda Precisa (Contract-First Protocol) — v9
+
+En un restaurante con equipo temporal, el error mas comun es que el chef le dice al cocinero "haz el pollo" y el cocinero hace algo completamente diferente a lo esperado. La solucion? **Comandas precisas**.
+
+Antes de que el cocinero empiece, el chef le entrega una comanda que dice:
+
+```
+COMANDA PARA COCINERO A
+- Recibiras: la receta del pollo al horno, los ingredientes ya pesados
+- Debes producir: el pollo listo, en bandeja #3, con salsa aparte
+- Tu estacion: solo usas el horno #2 y la mesa 4 (no toques nada mas)
+```
+
+Esto evita tres problemas clasicos:
+1. **Producto diferente al esperado**: La comanda dice exactamente que se espera
+2. **Cocineros estorbandose**: Cada uno tiene su estacion asignada — no se cruzan
+3. **Platos incompletos**: Antes de servir, el chef compara el plato con la comanda. Si falta la salsa, se devuelve
+
+> **Tip**: Piensa en las comandas como los contratos de un proyecto — si todo esta escrito desde el principio, nadie puede decir "yo entendi otra cosa".
+
+---
+
+## Los Menus Especializados (Team Templates) — v9
+
+Imagina que el restaurante tiene menus pre-armados para diferentes tipos de eventos:
+
+| Evento | Menu | Cocineros |
+|--------|------|-----------|
+| **Boda elegante** (App web SaaS) | Menu de 5 tiempos con decoracion | Chef de carnes, pastelero, decorador |
+| **Catering de oficina** (Microservicio API) | Sandwiches + ensaladas + bebidas | Chef rapido, ayudante de calidad, empacador |
+| **Food truck** (Automatizacion n8n) | Tacos + aguas frescas | Taquero, ayudante |
+| **Curso de cocina** (Agente IA) | Clase practica paso a paso | Instructor, ayudante de seguridad, critico |
+| **Banquete industrial** (Pipeline de datos) | Comida para 500+ personas | Chef de linea, inspector de calidad, logistica |
+| **Renovar el menu** (Refactoring) | Modernizar platos clasicos sin perder sabor | Analista de recetas, dos cocineros, critico |
+
+Estos menus se guardan en `teams/templates/` y el chef solo tiene que elegir el que mas se parece a lo que necesitas.
+
+---
+
+## El Manual del Mesero Experimentado (Playbook) — v9
+
+El **playbook** (`teams/playbook.md`) es como el manual que le das a un mesero nuevo para que sepa como funciona todo sin tener que preguntarle a alguien cada 5 minutos:
+
+- **Cuando pedir equipo extra**: Solo para eventos grandes. Para un sandwich, no necesitas 3 cocineros
+- **Errores que todos cometen**: No armar equipo para tareas simples, no dar comandas claras, dejar que dos cocineros usen la misma olla
+- **Como elegir el menu correcto**: Segun el tipo de evento y cuantos invitados hay
+- **Como crear un menu nuevo**: Si ningun menu existente sirve para tu evento
+
+---
+
+## El Protocolo de Higiene (Security-Audit) — v9
+
+Todo restaurante serio tiene un protocolo de higiene. En la cocina digital, la "higiene" es la **seguridad**:
+
+| Inspeccion | Que revisa | Ejemplo |
+|-----------|-----------|---------|
+| **Ingredientes contaminados** | Codigo con vulnerabilidades comunes (OWASP) | Verificar que no hay inyecciones de codigo o datos sin validar |
+| **Llaves de la cocina expuestas** | Secretos visibles en el codigo | Contraseñas, tokens de API, credenciales de base de datos |
+| **Proveedores dudosos** | Dependencias con problemas conocidos | Librerias desactualizadas o con vulnerabilidades |
+| **Plan contra robos** | Modelo de amenazas | Quien podria atacar, como, y que protegemos |
+| **Higiene del chef AI** | Proteccion especifica para apps con IA | Que nadie pueda manipular al agente o abusar del servicio |
+
+El protocolo de higiene se revisa en DOS momentos:
+1. **Al disenar el plato** (sdd-design): Se planea la proteccion ANTES de cocinar
+2. **Al verificar el plato** (sdd-verify): Se inspecciona DESPUES de cocinar
+
+> **Regla de oro**: La seguridad no se agrega al final — se planea desde el principio. Es como lavarse las manos ANTES de cocinar, no despues de servir.
+
+---
+
 ## Los Comandos (Como le hablas al chef)
 
 No necesitas saber programar. Solo necesitas saber estos "comandos" que son como
@@ -395,6 +495,12 @@ pedidos en el restaurante:
 | **Aprendiz que investiga** | ecosystem-creator | Cuando falta una receta, investiga y la crea |
 | **Equipo temporal** | Agent Teams (v7) | Cocineros extra para banquetes grandes — trabajan en paralelo, cada uno con su estacion |
 | **Coordinador de equipo** | team-orchestrator (v7) | Decide cuando armar equipo temporal y como repartir las tareas |
+| **Alarmas automaticas** | Native Hooks (v8) | Alarmas que obligan al chef a seguir el proceso sin que pueda saltarselo |
+| **Control de calidad por capas** | AI Validation Pyramid (v8) | 5 niveles de inspeccion — los primeros 3 automaticos, los ultimos 2 humanos |
+| **Comandas precisas** | Contract-First Protocol (v9) | Contratos escritos que definen que recibe y que produce cada cocinero |
+| **Menus especializados** | Team Templates (v9) | Configuraciones pre-armadas de equipo para diferentes tipos de proyecto |
+| **Manual del mesero** | Playbook (v9) | Guia de cuando y como usar equipos temporales, errores comunes |
+| **Protocolo de higiene** | Security-Audit (v9) | Revision de seguridad en dos puntos: al disenar y al verificar |
 
 ---
 

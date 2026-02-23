@@ -663,6 +663,26 @@ Si algo sale muy mal y quieres empezar de cero una fase:
 
 ---
 
+## Seguridad — Protege tu aplicacion
+
+Antes de poner tu aplicacion en internet, Claude puede revisar que sea segura. Piensa en esto como poner cerraduras en las puertas de tu casa antes de irte de viaje.
+
+**Copia y pega este prompt en cualquier momento antes del deploy**:
+
+```
+Ejecuta una auditoria de seguridad de la aplicacion. Revisa:
+1. Que no haya claves o contrasenas escritas directamente en el codigo
+2. Que los formularios esten protegidos contra inyeccion
+3. Que las dependencias no tengan vulnerabilidades conocidas
+4. Que la autenticacion este bien configurada
+```
+
+**Que esperar**: Claude va a revisar tu codigo con el checklist de seguridad AI-First (10 puntos) y te dara un reporte con lo que esta bien y lo que hay que arreglar. Los problemas criticos deben resolverse antes del deploy.
+
+**Referencia**: Para entender mas sobre cada punto de seguridad, el skill `security-audit` tiene la guia completa.
+
+---
+
 ## Preguntas frecuentes
 
 **P: Claude me dice cosas que no entiendo. Que hago?**

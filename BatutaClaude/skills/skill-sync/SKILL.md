@@ -1,7 +1,7 @@
 ---
 name: skill-sync
 description: >
-  Syncs skill metadata to CLAUDE.md and scope agent Auto-invoke sections.
+  Syncs skill metadata to scope agent routing tables and validates skill inventory.
   Trigger: When updating skill metadata, regenerating routing tables, or running sync.sh.
 license: MIT
 metadata:
@@ -11,7 +11,7 @@ metadata:
   scope: [infra]
   auto_invoke:
     - "After creating/modifying a skill"
-    - "Regenerate CLAUDE.md and scope-agent routing tables (sync.sh)"
+    - "Regenerate scope-agent routing tables and validate skill inventory (sync.sh)"
     - "Troubleshoot why a skill is missing from routing tables"
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash
 ---
@@ -22,7 +22,7 @@ allowed-tools: Read, Edit, Write, Glob, Grep, Bash
 
 Maintain routing tables automatically. **No human should manually edit auto-generated sections.**
 
-When a new skill is created or an existing skill's frontmatter changes, skill-sync reads ALL skill frontmatters and regenerates the routing tables in CLAUDE.md and scope agent files.
+When a new skill is created or an existing skill's frontmatter changes, skill-sync reads ALL skill frontmatters and validates the ecosystem inventory. For scope agents with legacy AUTO-GENERATED tables, it regenerates them. For agents using native frontmatter `skills:` field, it validates that listed skills exist.
 
 ## How It Works
 
@@ -31,9 +31,14 @@ READS (sources of truth):
   BatutaClaude/skills/*/SKILL.md   → frontmatter: scope, auto_invoke, allowed-tools
   BatutaClaude/agents/*.md          → detects which agents exist
 
-WRITES (auto-generated):
-  BatutaClaude/CLAUDE.md            → Section "### Available Skills" (consolidated table)
+VALIDATES:
+  BatutaClaude/agents/*-agent.md    → skills in frontmatter match existing SKILL.md files
+
+WRITES (only for legacy agents with AUTO-GENERATED delimiters):
   BatutaClaude/agents/*-agent.md    → Section "### Skills" (per-scope table)
+
+NOTE: CLAUDE.md no longer has an AUTO-GENERATED table since v8.
+Skills are auto-invoked by Claude Code via their description field.
 ```
 
 ## Delimiter Convention
@@ -83,11 +88,9 @@ bash BatutaClaude/skills/skill-sync/assets/sync.sh --verbose
 4. Validate required fields — report any skills missing them
 5. Group skills by scope (pipeline, infra, observability, etc.)
 6. For each scope with an agent file:
-   - Generate markdown table (Skill | Auto-invoke | Tools)
-   - Replace `### Skills` auto-generated section in agent file
-7. Generate consolidated table for CLAUDE.md (Skill | Scope | Auto-invoke)
-8. Replace `### Available Skills` auto-generated section in CLAUDE.md
-9. Report summary: skills synced, warnings, scopes without agents
+   - If agent has AUTO-GENERATED delimiters (legacy): generate and replace table
+   - If agent uses native frontmatter: validate skills exist
+7. Report summary: skills synced, warnings, scopes without agents
 
 ## Table Formats
 

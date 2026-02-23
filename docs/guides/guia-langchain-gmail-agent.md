@@ -512,6 +512,45 @@ batuta-email-agent/
 
 ---
 
+## Seguridad — Protege tu agente y tus correos
+
+Tu agente maneja correos reales con datos personales. Es MUY importante protegerlo.
+
+### Pide una revision de seguridad
+
+Despues de que tu agente funcione, copia y pega esto en Claude Code:
+
+```
+Ejecuta una revision de seguridad completa de este proyecto.
+Quiero saber:
+1. Si hay credenciales o tokens expuestos en el codigo
+2. Si las dependencias tienen vulnerabilidades conocidas
+3. Si hay riesgos de inyeccion o manipulacion de datos
+4. Si los permisos de Gmail son los minimos necesarios
+```
+
+Claude activara el **skill de security-audit** y te dara un reporte con:
+- Problemas encontrados (critico, alto, medio, bajo)
+- Como arreglar cada problema (paso a paso)
+- Buenas practicas para proteger tus credenciales de Google
+
+### Reglas de oro para agentes con correo
+
+| Regla | Por que |
+|-------|---------|
+| **Nunca guardes tokens de Google en el codigo** | Usa variables de entorno (.env) — si el codigo se comparte, tus credenciales quedan expuestas |
+| **Usa los permisos minimos de Gmail** | Solo pide `gmail.readonly` y `gmail.modify` — nunca pidas acceso completo si no lo necesitas |
+| **Agrega .env y credentials.json a .gitignore** | Evita subir secretos a GitHub por accidente |
+| **Limita el acceso del agente** | El agente solo debe leer y etiquetar, no borrar ni enviar correos (a menos que lo necesites) |
+| **Revisa los logs del agente** | Si el agente clasifica mal, revisa los logs antes de darle mas permisos |
+| **Usa Presidio si manejas datos sensibles** | Si los correos tienen datos de clientes, Presidio puede anonimizar automaticamente |
+
+> **Tip para no-tecnicos**: Piensa en la seguridad como el cinturon de seguridad del auto.
+> No lo usas porque vayas a chocar, sino por si acaso. Lo mismo con tu agente — protegelo
+> desde el principio para no tener sustos despues.
+
+---
+
 ## Nivel Avanzado: Agent Teams (Equipos de Agentes)
 
 Cuando domines los pasos anteriores, puedes usar **Agent Teams** para extender tu agente de Gmail con multiples capacidades al mismo tiempo.

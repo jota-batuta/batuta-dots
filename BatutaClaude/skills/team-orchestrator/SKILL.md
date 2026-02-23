@@ -2,12 +2,12 @@
 name: team-orchestrator
 description: >
   Decides when to use solo session, subagents, or Agent Teams based on task complexity.
-  Provides spawn prompts and team coordination rules for the Batuta ecosystem.
+  Provides team coordination rules and composition patterns for the Batuta ecosystem.
   Trigger: When evaluating task complexity, spawning teams, or coordinating multi-agent work.
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "2.0"
   created: "2026-02-22"
   scope: [infra]
   auto_invoke:
@@ -23,9 +23,7 @@ allowed-tools: Read, Edit, Write, Glob, Grep, Bash, Task
 
 Decide the optimal execution level for any task and orchestrate Agent Teams when complexity warrants it. This skill integrates with the Execution Gate to recommend the right parallelism strategy.
 
-## Execution Levels
-
-### Decision Tree
+## Decision Tree
 
 ```
 Execution Gate fires →
@@ -65,37 +63,80 @@ Execution Gate fires →
 
 1. Confirm LEVEL 3 via decision tree
 2. Identify scope(s) involved (pipeline, infra, observability)
-3. Read the relevant scope-agent .md files for spawn prompt content
-4. Define task list with explicit dependencies
-5. Present team plan to user: "Voy a crear un equipo de {N} teammates: {roles}. Procedo?"
+3. Define task list with explicit dependencies
+4. Present team plan to user: "Voy a crear un equipo de {N} teammates: {roles}. Procedo?"
 
-### Spawn prompt template
+### Teammate configuration
 
-When creating a teammate, use this structure:
+Teammates are spawned using the scope agent files in `~/.claude/agents/`. Each scope agent has:
+- **Frontmatter**: `skills` (preloaded automatically), `memory: project`
+- **Body**: domain knowledge, rules, O.R.T.A. responsibilities
+
+The lead passes the specific task description when creating each teammate.
+
+## Contract-First Protocol
+
+Before spawning ANY teammate, the lead MUST define explicit contracts. This prevents incompatible outputs, file conflicts, and wasted tokens.
+
+### 1. Pre-Spawn Contract Definition
+
+For EACH teammate, define before spawning:
 
 ```
-You are a {ROLE} specialist for the Batuta software factory.
-
-## Your scope
-{Content from the relevant scope-agent .md file}
-
-## Your task
-{Specific task description from the shared task list}
-
-## Rules
-- Follow all patterns in your loaded skills (they load automatically via ~/.claude/skills/)
-- Apply the Execution Gate (LIGHT mode) before any code change
-- Follow the Scope Rule for ALL file creation
-- When done, mark your task as complete and message the lead with a summary
-- If blocked, message the lead immediately instead of guessing
-
-## O.R.T.A. Compliance
-- Log significant decisions to .batuta/prompt-log.jsonl only if you are the LEAD
-- Teammates: report findings to the lead who handles centralized logging
-- Never skip quality checks even under time pressure
+TEAMMATE CONTRACT:
+├── Name: {teammate-name}
+├── Input Contract:
+│   ├── Receives: {what data/context this teammate gets}
+│   ├── Format: {JSON schema, markdown artifacts, file paths}
+│   └── From: {who produces this input — lead or another teammate}
+├── Output Contract:
+│   ├── Produces: {what this teammate must deliver}
+│   ├── Format: {artifact type, file format, location}
+│   └── Success criteria: {how to verify output is complete}
+└── File Ownership:
+    ├── OWNS: {files this teammate can create/modify}
+    └── DO NOT TOUCH: {files owned by other teammates}
 ```
 
-### Team composition patterns
+### 2. File Ownership Rules
+
+- Each file belongs to EXACTLY ONE teammate (no overlap)
+- Lead is the only one who can touch shared/integration files
+- If two teammates need the same file → redesign the task split
+- Teammate spawn prompt includes: "You OWN: [files]. Do NOT modify: [other files]"
+
+### 3. Contract Diff (Pre-Completion)
+
+Before marking a teammate's task as done, the lead verifies:
+
+```
+CONTRACT DIFF:
+├── Compare output vs output contract
+├── Missing fields/artifacts → REJECT with specific feedback
+├── Extra fields/artifacts → Evaluate if valuable, update contract if yes
+├── File ownership violated → REJECT (touched files not in OWNS list)
+└── All checks pass → APPROVE completion
+```
+
+### 4. Cross-Review Protocol
+
+After teammates produce outputs, cross-review catches interface bugs:
+
+- Frontend teammate reviews Backend API contracts (correct endpoints, response shapes)
+- Backend teammate reviews Frontend data consumption (correct field usage)
+- All teammates verify their outputs match the SDD specs
+- Security reviewer (if present) reviews ALL teammate outputs for the AI-First Security Checklist
+
+### Contract Examples by Pattern
+
+| Pattern | Input Contract | Output Contract |
+|---------|---------------|-----------------|
+| SDD Pipeline | SDD artifacts (proposal, spec, design) | Phase artifacts per SDD schema |
+| Parallel Review | Source code + review checklist | Review report per pyramid layer |
+| Investigation | Bug report + hypothesis | Evidence report + confidence score |
+| Cross-Layer | API schema + data models | Implementation per layer |
+
+## Composition Patterns
 
 **Pattern A: SDD Pipeline Team**
 For full feature implementation following SDD:
@@ -110,16 +151,17 @@ For full feature implementation following SDD:
 
 Lead handles: init, tasks (splitting), archive, coordination.
 
-**Pattern B: Parallel Review Team**
-For comprehensive code review:
+**Pattern B: Parallel Review Team (AI Validation Pyramid)**
+For comprehensive code review, aligned with the AI Validation Pyramid layers:
 
-| Teammate | Focus | Checks |
-|----------|-------|--------|
-| security-reviewer | Security | OWASP top 10, auth, input validation, secrets |
-| perf-reviewer | Performance | N+1 queries, bundle size, memory leaks |
-| test-reviewer | Test coverage | Missing tests, edge cases, mocks vs integration |
+| Teammate | Pyramid Layer | Checks |
+|----------|---------------|--------|
+| static-reviewer | Layer 1: Type Check/Lint | Lint errors, type safety, formatting, dead code |
+| test-reviewer | Layer 2-3: Unit + E2E | Missing tests, edge cases, run test suite, E2E coverage |
+| security-reviewer | Cross-layer: Security | OWASP top 10, auth, input validation, secrets |
+| perf-reviewer | Cross-layer: Performance | N+1 queries, bundle size, memory leaks |
 
-Lead handles: synthesizing findings, prioritizing issues.
+Lead handles: synthesizing findings, ensuring agent layers (1-3) pass before flagging items for human layers (4-5: code review + manual testing). Pyramid rule: **broken base = no human review**.
 
 **Pattern C: Investigation Team**
 For debugging complex issues:
@@ -159,22 +201,10 @@ Task 8: verify           (depends: 6,7)   → reviewer
 Task 9: archive          (depends: 8)     → lead
 ```
 
-## Team Lifecycle
-
-```
-1. PLAN    — Lead evaluates complexity → decides team composition
-2. SPAWN   — Lead creates teammates with scope-agent spawn prompts
-3. ASSIGN  — Lead creates task list with dependencies
-4. WORK    — Teammates self-claim and execute tasks
-5. GATE    — TaskCompleted hooks verify quality
-6. SYNC    — Lead synthesizes results, resolves conflicts
-7. CLOSE   — Lead asks teammates to shut down → cleanup
-```
-
 ## Integration Points
 
 ### With Execution Gate
-The gate's FULL mode now includes a "Team Assessment" step:
+The gate's FULL mode includes a "Team Assessment" step:
 - Scope count > 1 AND files > 4 → suggest LEVEL 3
 - Single scope, focused change → LEVEL 1 or 2
 
@@ -201,15 +231,13 @@ At team CLOSE, the lead updates .batuta/session.md with:
 
 | Metric | How to measure | Target |
 |--------|---------------|--------|
-| Team vs solo ratio | Teams created / total sessions | 10-20% (most work is solo) |
+| Team vs solo ratio | Teams created / total sessions | 10-20% |
 | Teammate utilization | Active time / total time per teammate | > 70% |
 | Task completion rate | Completed / total tasks | > 90% |
 | Gate rejection rate | TaskCompleted rejections / completions | < 15% |
 | Skill gap discovery rate | New skills per team session | Track, no target |
 | Token efficiency | Result quality / tokens used (vs solo baseline) | > 1.5x quality for 3-5x tokens |
 
-## Platform Notes
+## Platform Note
 
-- **Windows (Git Bash)**: Only `in-process` mode available. Use Shift+Down to navigate teammates.
-- **macOS (tmux/iTerm2)**: Split panes available for visual monitoring.
-- **VS Code terminal**: in-process mode only (split panes not supported).
+Windows (Git Bash) only supports `in-process` mode. macOS supports split panes via tmux/iTerm2.

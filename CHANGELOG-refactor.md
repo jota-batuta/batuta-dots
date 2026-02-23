@@ -4,6 +4,162 @@
 
 ---
 
+## v9.0 — Contract-First + Security + Guides + Teams Playbook + Restructure (2026-02-22)
+
+### Contexto
+
+Post-v8: incorporacion del protocolo Contract-First (inspirado en Cole's context-engineering-intro), skill de seguridad AI-first, 10 guias de ejecucion, team templates con playbook, y reestructura de carpetas a monorepo organizado.
+
+### Cambios principales
+
+| Categoria | Cambio | Impacto |
+|-----------|--------|---------|
+| Restructura | `about/` → `docs/architecture/`, `guides/` → `docs/guides/`, `qa/` → `docs/qa/` | Monorepo organizado bajo docs/ |
+| Security | Nuevo skill `security-audit` (OWASP AI, threat model, secrets, deps) | 15 skills totales (era 14) |
+| Security | Threat Model integrado en sdd-design, Security Check en sdd-verify | Seguridad en todo el pipeline SDD |
+| Contracts | Contract-First Protocol en team-orchestrator | Contratos, file ownership, cross-review |
+| Templates | 6 team templates en `teams/templates/` | Assets reutilizables por stack |
+| Playbook | `teams/playbook.md` | Knowledge base de patrones de equipo |
+| Guides | 7 guias nuevas + 3 actualizadas = 10 total | Cobertura completa de casos de uso |
+| Infra | infra-agent ahora tiene 5 skills (+ security-audit) | Seguridad integrada en infra scope |
+
+### Archivos creados
+
+| Archivo | Descripcion |
+|---------|-------------|
+| `BatutaClaude/skills/security-audit/SKILL.md` | AI-first security: 10-point checklist, threat model, secrets scan, dependency audit, Claude Security |
+| `teams/templates/nextjs-saas.md` | Template: Next.js SaaS (Pattern D) |
+| `teams/templates/fastapi-service.md` | Template: FastAPI microservice (Pattern D) |
+| `teams/templates/n8n-automation.md` | Template: n8n automation (Pattern A) |
+| `teams/templates/ai-agent.md` | Template: AI agent LangChain/ADK (Pattern C) |
+| `teams/templates/data-pipeline.md` | Template: Data pipeline ETL (Pattern D) |
+| `teams/templates/refactoring.md` | Template: Legacy refactoring (Pattern A) |
+| `teams/playbook.md` | Team playbook: decision tree, anti-patterns, best practices |
+| `docs/guides/guia-n8n-automation.md` | Guia: Automatizacion con n8n |
+| `docs/guides/guia-fastapi-service.md` | Guia: Microservicio FastAPI |
+| `docs/guides/guia-nextjs-saas.md` | Guia: SaaS con Next.js |
+| `docs/guides/guia-cli-python.md` | Guia: CLI tool en Python |
+| `docs/guides/guia-data-pipeline.md` | Guia: Pipeline de datos |
+| `docs/guides/guia-refactoring-legacy.md` | Guia: Modernizar codigo legacy |
+| `docs/guides/guia-ai-agent-adk.md` | Guia: AI Agent con Google ADK |
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `BatutaClaude/skills/team-orchestrator/SKILL.md` | +Contract-First Protocol (~50 lineas) |
+| `BatutaClaude/skills/sdd-design/SKILL.md` | +Security Threat Model section |
+| `BatutaClaude/skills/sdd-verify/SKILL.md` | +Cross-Layer Security Check (Step 4.7) |
+| `BatutaClaude/agents/infra-agent.md` | +security-audit en frontmatter skills |
+| `docs/guides/guia-batuta-app.md` | +seccion seguridad, rutas actualizadas |
+| `docs/guides/guia-temporal-io-app.md` | +seccion seguridad, rutas actualizadas |
+| `docs/guides/guia-langchain-gmail-agent.md` | +seccion seguridad, rutas actualizadas |
+| `docs/architecture/arquitectura-diagrama.md` | +diagramas hooks, pyramid, contracts |
+| `docs/architecture/arquitectura-para-no-tecnicos.md` | +analogias: contratos, seguridad, templates |
+| `README.md` | Estructura docs/, 15 skills, teams section |
+| `README.es.md` | Mismos cambios en espanol |
+| `skills/setup.sh` | Rutas actualizadas a docs/ |
+| `skills/setup_test.sh` | Tests actualizados para docs/, teams/, 15 skills |
+| `BatutaClaude/VERSION` | 8.0.0 → 9.0.0 |
+
+### Rollback
+
+```bash
+git revert to v8.0.0 tag
+# Restaurar estructura anterior:
+git mv docs/architecture about
+git mv docs/guides guides
+git mv docs/qa qa
+rmdir docs
+rm -rf teams
+rm BatutaClaude/skills/security-audit
+```
+
+### Decisiones de diseno
+
+| Decision | Alternativa rechazada | Razon |
+|----------|----------------------|-------|
+| Monorepo con docs/ | Carpetas sueltas (about/, guides/, qa/) | Estructura estandar, escalable, un solo lugar para documentacion |
+| Skill dedicado para seguridad | Solo integracion en sdd-verify | Skill permite invocacion on-demand ademas de integracion en pipeline |
+| Templates + Playbook | Solo templates | Playbook captura conocimiento que no cabe en templates individuales |
+| Contract-First Protocol | Spawn-and-hope | Previene incompatibilidades entre teammates, reduce retrabajo |
+
+---
+
+## v8.0 — Native Hooks + Agent Frontmatter + DRY Cleanup (2026-02-22)
+
+### Contexto
+
+Auditoria completa de batuta-dots v7 vs capacidades nativas de Claude Code. Se identificaron 5 conflictos de ejecucion (C1-C5), 7 oportunidades de integracion nativa (O1-O7), y se aplico DRY para eliminar triple duplicacion que causaba hallazgos recurrentes en QA.
+
+### Problemas resueltos
+
+| ID | Tipo | Titulo | Fix |
+|----|------|--------|-----|
+| C1 | CONFLICTO | Routing manual pelea con auto-invocacion nativa | Eliminado "How to route" de CLAUDE.md; skills se auto-invocan via description |
+| C2 | CONFLICTO | Schemas JSON duplicados y conflictivos (CLAUDE.md vs observability-agent vs prompt-tracker) | Eliminados TODOS los JSON examples excepto en prompt-tracker (unica fuente de verdad) |
+| C3 | CONFLICTO | Spawn Prompts redundantes con agent frontmatter nativo | Convertidos a body del agent con frontmatter nativo (skills, memory) |
+| C4 | BUG | Hooks O.R.T.A. usan env vars como args pero Claude Code envia JSON via stdin | Reescritos para leer stdin con jq; corregido settings.json |
+| C5 | MANTENIMIENTO | Triple duplicacion causa hallazgos recurrentes en QA | Aplicado DRY: CLAUDE.md = referencia, agents = dominio unico, SKILL.md = source of truth |
+
+### Oportunidades nativas implementadas
+
+| ID | Hook/Feature | Impacto |
+|----|-------------|---------|
+| O1 | PreToolUse prompt hook para Execution Gate | Enforcement determinístico (antes aspiracional) |
+| O2 | SessionStart command hook | session.md se inyecta automaticamente como additionalContext |
+| O3 | Stop prompt hook | Claude evalua si debe actualizar session.md antes de parar |
+| O4 | Stop command hook | Logea session_end en prompt-log.jsonl |
+| O7 | TaskCompleted hook corregido (stdin) | Quality gate funciona correctamente |
+
+### Archivos creados (2)
+
+| Archivo | Proposito |
+|---------|-----------|
+| `skills/hooks/session-start.sh` | SessionStart hook: inyecta session.md como additionalContext |
+| `skills/hooks/session-save.sh` | Stop hook: logea session_end event |
+
+### Archivos modificados (10)
+
+| Archivo | Cambio | Razon |
+|---------|--------|-------|
+| `BatutaClaude/CLAUDE.md` | -92 lineas (252→160): eliminado routing manual, tabla AUTO-GENERATED, JSON examples, session compliance manual | C1, C2, C5: DRY + nativo |
+| `BatutaClaude/settings.json` | +5 hooks nativos (SessionStart, PreToolUse, Stop x2, corregidos TeammateIdle/TaskCompleted) | C4, O1-O4 |
+| `BatutaClaude/agents/pipeline-agent.md` | +frontmatter nativo, -tabla AUTO-GENERATED, -Spawn Prompt, -Allowed Tools (115→80) | C3, C5 |
+| `BatutaClaude/agents/infra-agent.md` | +frontmatter nativo, -tabla AUTO-GENERATED, -Spawn Prompt, -Allowed Tools (132→87) | C3, C5 |
+| `BatutaClaude/agents/observability-agent.md` | +frontmatter nativo, -tabla AUTO-GENERATED, -Spawn Prompt, -JSON examples, -Allowed Tools (148→86) | C2, C3, C5 |
+| `BatutaClaude/skills/team-orchestrator/SKILL.md` | -Team Lifecycle, -Spawn template, -Platform Notes detallado (216→155) | C3: nativo en Claude Code |
+| `BatutaClaude/skills/skill-sync/assets/sync.sh` | Ya no escribe en CLAUDE.md; valida agents con frontmatter nativo | C1: CLAUDE.md sin tabla |
+| `BatutaClaude/skills/skill-sync/SKILL.md` | Actualizado para reflejar nuevo scope (sin CLAUDE.md) | Documentacion |
+| `skills/hooks/orta-teammate-idle.sh` | Reescrito: lee JSON stdin con jq (antes usaba $1/$2) | C4: fix stdin protocol |
+| `skills/hooks/orta-task-gate.sh` | Reescrito: lee JSON stdin con jq, extrae task_subject | C4: fix stdin protocol |
+
+### Metricas
+
+| Metrica | v7 | v8 |
+|---------|----|----|
+| CLAUDE.md | ~252 lineas | ~160 lineas (-37%) |
+| Scope agents (3) | ~395 lineas | ~253 lineas (-36%) |
+| team-orchestrator | ~216 lineas | ~155 lineas (-28%) |
+| Hook scripts | 2 (ambos rotos) | 4 (todos funcionales) |
+| Hooks en settings.json | 2 (TeammateIdle, TaskCompleted) | 5 (+SessionStart, PreToolUse, Stop) |
+| JSON schema sources | 3 (conflictivos) | 1 (prompt-tracker SKILL.md) |
+| Enforcement Execution Gate | Aspiracional (compliance) | Determinístico (PreToolUse hook) |
+| Session continuity | Aspiracional (compliance) | Determinístico (SessionStart + Stop hooks) |
+
+### Rollback
+
+Para revertir v8 y volver a v7.1:
+```bash
+git checkout v7.1 -- BatutaClaude/CLAUDE.md BatutaClaude/settings.json \
+  BatutaClaude/agents/ BatutaClaude/skills/team-orchestrator/SKILL.md \
+  BatutaClaude/skills/skill-sync/ skills/hooks/ BatutaClaude/VERSION
+# Eliminar hooks nuevos
+rm -f skills/hooks/session-start.sh skills/hooks/session-save.sh
+```
+
+---
+
 ## v7.1 — Integration Test Fixes (12 Findings from Batuta APP) (2026-02-22)
 
 ### Contexto

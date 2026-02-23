@@ -31,11 +31,12 @@
 #   - Agents sync via setup.sh
 #   - skill-sync script exists and is well-formed
 #   - AUTO-GENERATED delimiters in CLAUDE.md and agents
-#   v6 (Quality Audit + Folder Reorganization):
-#   - about/ directory exists with architecture docs
-#   - guides/ contains only execution guides (no architecture)
-#   - qa/ directory exists with quality reports
+#   v6→v9 (Quality Audit + Folder Reorganization):
+#   - docs/architecture/ directory exists with architecture docs
+#   - docs/guides/ contains execution guides
+#   - docs/qa/ directory exists with quality reports
 #   - BatutaClaude/VERSION file exists
+#   - teams/ directory exists with templates and playbook
 #
 # Platform: Windows (Git Bash / MSYS2 / MINGW) and native Unix
 # ============================================================================
@@ -596,52 +597,52 @@ test_skill_sync_tables_present() {
 }
 
 # ============================================================================
-# 24. about/ directory exists with architecture docs (v6)
+# 24. docs/architecture/ directory exists with architecture docs (v9, was about/ in v6)
 # ============================================================================
 
 test_about_directory_exists() {
-    log_test "about/ directory exists with architecture docs (v6)"
-    local about_dir="$REPO_ROOT/about"
+    log_test "docs/architecture/ directory exists with architecture docs (v9)"
+    local arch_dir="$REPO_ROOT/docs/architecture"
 
-    assert_dir_exists "$about_dir"
-    assert_file_exists "$about_dir/arquitectura-diagrama.md"
-    assert_file_exists "$about_dir/arquitectura-para-no-tecnicos.md"
+    assert_dir_exists "$arch_dir"
+    assert_file_exists "$arch_dir/arquitectura-diagrama.md"
+    assert_file_exists "$arch_dir/arquitectura-para-no-tecnicos.md"
 }
 
 # ============================================================================
-# 25. guides/ contains only execution guides (v6)
+# 25. docs/guides/ contains execution guides (v9, was guides/ in v6)
 # ============================================================================
 
 test_guides_no_architecture_docs() {
-    log_test "guides/ contains only execution guides — no architecture docs (v6)"
-    local guides_dir="$REPO_ROOT/guides"
+    log_test "docs/guides/ contains execution guides (v9)"
+    local guides_dir="$REPO_ROOT/docs/guides"
 
     assert_dir_exists "$guides_dir"
     assert_file_exists "$guides_dir/guia-batuta-app.md"
     assert_file_exists "$guides_dir/guia-temporal-io-app.md"
     assert_file_exists "$guides_dir/guia-langchain-gmail-agent.md"
 
-    # Architecture docs should NOT be in guides/ (moved to about/ in v6)
+    # Architecture docs should NOT be in guides/ (moved to docs/architecture/)
     if [[ -f "$guides_dir/arquitectura-diagrama.md" ]]; then
-        log_fail "arquitectura-diagrama.md still in guides/ (should be in about/)"
+        log_fail "arquitectura-diagrama.md still in docs/guides/ (should be in docs/architecture/)"
     else
-        log_pass "arquitectura-diagrama.md correctly in about/ (not guides/)"
+        log_pass "arquitectura-diagrama.md correctly in docs/architecture/"
     fi
 
     if [[ -f "$guides_dir/arquitectura-para-no-tecnicos.md" ]]; then
-        log_fail "arquitectura-para-no-tecnicos.md still in guides/ (should be in about/)"
+        log_fail "arquitectura-para-no-tecnicos.md still in docs/guides/ (should be in docs/architecture/)"
     else
-        log_pass "arquitectura-para-no-tecnicos.md correctly in about/ (not guides/)"
+        log_pass "arquitectura-para-no-tecnicos.md correctly in docs/architecture/"
     fi
 }
 
 # ============================================================================
-# 26. qa/ directory exists with quality reports (v6)
+# 26. docs/qa/ directory exists with quality reports (v9, was qa/ in v6)
 # ============================================================================
 
 test_qa_directory_exists() {
-    log_test "qa/ directory exists with quality reports (v6)"
-    local qa_dir="$REPO_ROOT/qa"
+    log_test "docs/qa/ directory exists with quality reports (v9)"
+    local qa_dir="$REPO_ROOT/docs/qa"
 
     assert_dir_exists "$qa_dir"
 
@@ -650,7 +651,7 @@ test_qa_directory_exists() {
         [[ -f "$f" ]] && report_count=$((report_count + 1))
     done
 
-    [[ $report_count -ge 2 ]] && log_pass "$report_count quality reports in qa/" || log_fail "Expected at least 2 reports in qa/, found $report_count"
+    [[ $report_count -ge 2 ]] && log_pass "$report_count quality reports in docs/qa/" || log_fail "Expected at least 2 reports in docs/qa/, found $report_count"
 }
 
 # ============================================================================
@@ -777,6 +778,140 @@ test_prompt_tracker_has_team_event() {
 }
 
 # ============================================================================
+# 34. security-audit skill exists with proper frontmatter (v9)
+# ============================================================================
+
+test_security_audit_skill_exists() {
+    log_test "security-audit SKILL.md exists with infra+pipeline scope (v9)"
+    local skill_file="$REPO_ROOT/BatutaClaude/skills/security-audit/SKILL.md"
+
+    assert_file_exists "$skill_file"
+    assert_file_not_empty "$skill_file"
+    assert_file_contains "$skill_file" "scope:.*infra" "scope includes infra"
+    assert_file_contains "$skill_file" "scope:.*pipeline" "scope includes pipeline"
+    assert_file_contains "$skill_file" "OWASP\|owasp" "references OWASP"
+    assert_file_contains "$skill_file" "Threat Model\|threat.model" "has Threat Model"
+}
+
+# ============================================================================
+# 35. Team templates exist (v9)
+# ============================================================================
+
+test_team_templates_exist() {
+    log_test "Team templates exist in teams/templates/ (v9)"
+    local templates_dir="$REPO_ROOT/teams/templates"
+
+    assert_dir_exists "$templates_dir"
+
+    local template_count=0
+    for f in "$templates_dir"/*.md; do
+        [[ -f "$f" ]] && template_count=$((template_count + 1))
+    done
+
+    if [[ $template_count -ge 6 ]]; then
+        log_pass "$template_count team templates in teams/templates/"
+    else
+        log_fail "Expected at least 6 templates, found $template_count"
+    fi
+
+    assert_file_exists "$templates_dir/nextjs-saas.md"
+    assert_file_exists "$templates_dir/fastapi-service.md"
+    assert_file_exists "$templates_dir/n8n-automation.md"
+    assert_file_exists "$templates_dir/ai-agent.md"
+    assert_file_exists "$templates_dir/data-pipeline.md"
+    assert_file_exists "$templates_dir/refactoring.md"
+}
+
+# ============================================================================
+# 36. Team playbook exists (v9)
+# ============================================================================
+
+test_team_playbook_exists() {
+    log_test "Team playbook exists at teams/playbook.md (v9)"
+    local playbook="$REPO_ROOT/teams/playbook.md"
+
+    assert_file_exists "$playbook"
+    assert_file_not_empty "$playbook"
+}
+
+# ============================================================================
+# 37. 10 guides exist in docs/guides/ (v9)
+# ============================================================================
+
+test_ten_guides_exist() {
+    log_test "10 execution guides exist in docs/guides/ (v9)"
+    local guides_dir="$REPO_ROOT/docs/guides"
+
+    local guide_count=0
+    for f in "$guides_dir"/guia-*.md; do
+        [[ -f "$f" ]] && guide_count=$((guide_count + 1))
+    done
+
+    if [[ $guide_count -ge 10 ]]; then
+        log_pass "$guide_count guides in docs/guides/"
+    else
+        log_fail "Expected at least 10 guides, found $guide_count"
+    fi
+}
+
+# ============================================================================
+# 38. Contract-First Protocol in team-orchestrator (v9)
+# ============================================================================
+
+test_contract_first_protocol() {
+    log_test "team-orchestrator has Contract-First Protocol (v9)"
+    local skill_file="$REPO_ROOT/BatutaClaude/skills/team-orchestrator/SKILL.md"
+
+    assert_file_contains "$skill_file" "Contract-First Protocol" "Contract-First Protocol section"
+    assert_file_contains "$skill_file" "File Ownership" "File Ownership rules"
+    assert_file_contains "$skill_file" "Contract Diff" "Contract Diff verification"
+}
+
+# ============================================================================
+# 39. Security integrated in sdd-design and sdd-verify (v9)
+# ============================================================================
+
+test_security_integration() {
+    log_test "security-audit integrated in sdd-design and sdd-verify (v9)"
+    local design_file="$REPO_ROOT/BatutaClaude/skills/sdd-design/SKILL.md"
+    local verify_file="$REPO_ROOT/BatutaClaude/skills/sdd-verify/SKILL.md"
+
+    assert_file_contains "$design_file" "Threat Model\|threat.model\|Security" "sdd-design has security section"
+    assert_file_contains "$verify_file" "Security Check\|security.check\|security-audit" "sdd-verify has security check"
+}
+
+# ============================================================================
+# 40. Total skill count is 15 (v9)
+# ============================================================================
+
+test_fifteen_skills_total() {
+    log_test "15 skills total in BatutaClaude/skills/ (v9)"
+    local skills_dir="$REPO_ROOT/BatutaClaude/skills"
+
+    local skill_count=0
+    for d in "$skills_dir"/*/; do
+        [[ -d "$d" && -f "$d/SKILL.md" ]] && skill_count=$((skill_count + 1))
+    done
+
+    if [[ $skill_count -eq 15 ]]; then
+        log_pass "$skill_count skills (expected 15)"
+    else
+        log_fail "Expected 15 skills, found $skill_count"
+    fi
+}
+
+# ============================================================================
+# 41. infra-agent includes security-audit in skills list (v9)
+# ============================================================================
+
+test_infra_agent_has_security() {
+    log_test "infra-agent.md includes security-audit skill (v9)"
+    local agent_file="$REPO_ROOT/BatutaClaude/agents/infra-agent.md"
+
+    assert_file_contains "$agent_file" "security-audit" "security-audit in infra-agent skills"
+}
+
+# ============================================================================
 # Run All Tests
 # ============================================================================
 
@@ -836,6 +971,16 @@ test_settings_has_agent_teams
 test_claude_md_has_team_routing
 test_scope_agents_have_spawn_prompts
 test_prompt_tracker_has_team_event
+
+# --- v9 tests: Security + Contracts + Templates + Guides ---
+test_security_audit_skill_exists
+test_team_templates_exist
+test_team_playbook_exists
+test_ten_guides_exist
+test_contract_first_protocol
+test_security_integration
+test_fifteen_skills_total
+test_infra_agent_has_security
 
 # ============================================================================
 # Summary

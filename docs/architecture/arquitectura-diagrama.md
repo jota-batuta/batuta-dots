@@ -62,7 +62,7 @@ flowchart TB
 flowchart TD
     USER["Usuario escribe prompt"]
     GATE["Execution Gate<br/>VALIDATE → CLASSIFY → ROUTE → LOG"]
-    ROUTER["CLAUDE.md (Router)<br/>~228 lineas: personalidad,<br/>reglas, routing table"]
+    ROUTER["CLAUDE.md (Router)<br/>~186 lineas: personalidad,<br/>reglas, routing table"]
 
     subgraph AGENTS["SCOPE AGENTS"]
         PIPELINE["pipeline-agent<br/>SDD Pipeline<br/>(9 skills)"]
@@ -196,7 +196,7 @@ graph LR
 ```mermaid
 flowchart TD
     START["Claude inicia conversacion"]
-    READ["Nivel 1: Lee CLAUDE.md<br/>(~228 lineas: personalidad,<br/>reglas, scope routing table)"]
+    READ["Nivel 1: Lee CLAUDE.md<br/>(~186 lineas: personalidad,<br/>reglas, scope routing table)"]
     TASK["Usuario pide tarea"]
     GATE["Execution Gate<br/>clasifica scope"]
     LOAD_AGENT["Nivel 2: Carga scope-agent<br/>(~80-120 lineas:<br/>reglas del scope)"]
@@ -216,7 +216,7 @@ flowchart TD
     style DIRECT fill:#666,color:#fff
 ```
 
-> Claude lee ~228 lineas al iniciar (Nivel 1). El scope agent agrega ~100 lineas (Nivel 2). El skill agrega ~200-500 lineas (Nivel 3). Solo se carga lo que se necesita.
+> Claude lee ~186 lineas al iniciar (Nivel 1). El scope agent agrega ~100 lineas (Nivel 2). El skill agrega ~200-500 lineas (Nivel 3). Solo se carga lo que se necesita.
 
 ---
 
@@ -635,6 +635,228 @@ flowchart TD
     style LIVE fill:#8BB87A,color:#fff
     style GAP fill:#E8B84D,color:#000
     style PROPAGATE fill:#D4956A,color:#fff
+```
+
+---
+
+## Native Hooks: Deterministic Enforcement (v8)
+
+```mermaid
+flowchart TD
+    subgraph HOOKS["CLAUDE CODE NATIVE HOOKS"]
+        direction TB
+        SS["SessionStart<br/>(pre-tool)"]
+        PTU["PreToolUse<br/>(pre-tool)"]
+        STOP["Stop<br/>(post-tool)"]
+    end
+
+    subgraph SS_ACTIONS["SessionStart"]
+        READ_SESSION["Lee .batuta/session.md<br/>(continuidad)"]
+        READ_CLAUDE["Lee CLAUDE.md<br/>(personalidad + routing)"]
+    end
+
+    subgraph PTU_ACTIONS["PreToolUse: Edit/Write/NotebookEdit"]
+        GATE_CHECK["Execution Gate<br/>(LIGHT o FULL)"]
+        LOG_GATE["Log evento 'gate'<br/>en prompt-log.jsonl"]
+    end
+
+    subgraph STOP_ACTIONS["Stop"]
+        UPDATE_SESSION["Actualiza session.md<br/>(estado, decisiones)"]
+        LOG_CLOSE["Log evento 'closed'<br/>en prompt-log.jsonl"]
+    end
+
+    SS --> SS_ACTIONS
+    PTU --> PTU_ACTIONS
+    STOP --> STOP_ACTIONS
+
+    style HOOKS fill:#2d2d2d,stroke:#E8B84D,color:#F5EDE4
+    style SS fill:#8BB87A,color:#fff
+    style PTU fill:#D4956A,color:#fff
+    style STOP fill:#7AAFC4,color:#fff
+```
+
+> Los hooks nativos de Claude Code ejecutan de forma **determinista** — no dependen de que Claude "recuerde" hacerlo. SessionStart carga contexto, PreToolUse valida antes de escribir codigo, Stop guarda estado al cerrar.
+
+---
+
+## AI Validation Pyramid (v8)
+
+```mermaid
+flowchart BT
+    subgraph PYRAMID["PIRAMIDE DE VALIDACION AI"]
+        direction BT
+        L1["Layer 1: Type Check / Lint<br/>(automatico, agente)"]
+        L2["Layer 2: Unit Tests<br/>(automatico, agente)"]
+        L3["Layer 3: E2E / Integration<br/>(automatico, agente)"]
+        L4["Layer 4: Code Review<br/>(humano o agente senior)"]
+        L5["Layer 5: Manual Testing<br/>(humano obligatorio)"]
+    end
+
+    L1 --> L2 --> L3 --> L4 --> L5
+
+    subgraph LABELS["QUIEN EJECUTA"]
+        AUTO["Layers 1-3: AGENTE<br/>(automatico, rapido)"]
+        HUMAN["Layers 4-5: HUMANO<br/>(juicio, validacion final)"]
+    end
+
+    style L1 fill:#8BB87A,color:#fff
+    style L2 fill:#8BB87A,color:#fff
+    style L3 fill:#7AAFC4,color:#fff
+    style L4 fill:#E8B84D,color:#000
+    style L5 fill:#D4956A,color:#fff
+    style AUTO fill:#8BB87A,color:#fff
+    style HUMAN fill:#D4956A,color:#fff
+```
+
+> Las capas 1-3 se ejecutan automaticamente por el agente (sdd-verify). Las capas 4-5 REQUIEREN un humano. No existe la validacion 100% automatica — el humano siempre tiene la ultima palabra.
+
+---
+
+## Contract-First Protocol (v9)
+
+```mermaid
+flowchart TD
+    LEAD["Lead evalua tarea"]
+    CONTRACTS["Define contratos ANTES de crear teammates"]
+
+    subgraph CONTRACT_DEF["DEFINICION DE CONTRATOS"]
+        INPUT["Input Contract<br/>(que recibe cada teammate)"]
+        OUTPUT["Output Contract<br/>(que debe producir)"]
+        FILES["File Ownership<br/>(que archivos puede tocar)"]
+    end
+
+    SPAWN["Spawn teammates con contratos"]
+
+    subgraph TEAMMATES["TEAMMATES TRABAJANDO"]
+        TM1["Teammate A<br/>Owns: src/api/*"]
+        TM2["Teammate B<br/>Owns: src/ui/*"]
+        TM3["Teammate C<br/>Owns: tests/*"]
+    end
+
+    DIFF["Contract Diff<br/>(output vs contrato)"]
+    CROSS["Cross-Review<br/>(A revisa interfaces de B)"]
+
+    LEAD --> CONTRACTS
+    CONTRACTS --> CONTRACT_DEF
+    CONTRACT_DEF --> SPAWN --> TEAMMATES
+    TEAMMATES --> DIFF
+    DIFF -->|"OK"| CROSS
+    DIFF -->|"Falta campo"| TEAMMATES
+    CROSS --> DONE["Task completa"]
+
+    style CONTRACT_DEF fill:#2d2d2d,stroke:#E8B84D,color:#F5EDE4
+    style TEAMMATES fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
+    style DIFF fill:#E8B84D,color:#000
+    style CROSS fill:#7AAFC4,color:#fff
+    style FILES fill:#D4956A,color:#fff
+```
+
+> El lead define QUE recibe y QUE produce cada teammate ANTES de crearlos. File Ownership evita conflictos: cada archivo pertenece a exactamente 1 teammate. Contract Diff verifica que el output cumpla el contrato antes de cerrar la task.
+
+---
+
+## Team Templates + Playbook (v9)
+
+```mermaid
+flowchart TD
+    USER["Usuario describe proyecto"]
+    DECIDE{"Que tipo de proyecto?"}
+
+    subgraph TEMPLATES["TEAM TEMPLATES (teams/templates/)"]
+        T1["nextjs-saas.md<br/>App SaaS multi-tenant"]
+        T2["fastapi-service.md<br/>Microservicio API"]
+        T3["n8n-automation.md<br/>Automatizacion workflows"]
+        T4["ai-agent.md<br/>Agente IA (LangChain/ADK)"]
+        T5["data-pipeline.md<br/>Pipeline de datos ETL"]
+        T6["refactoring.md<br/>Refactoring legacy"]
+    end
+
+    PLAYBOOK["teams/playbook.md<br/>Guia: cuando usar teams,<br/>errores comunes, mejores practicas"]
+
+    LEAD["Lead configura equipo<br/>usando template + contratos"]
+    TEAM["Agent Team ejecuta"]
+
+    USER --> DECIDE
+    DECIDE --> TEMPLATES
+    TEMPLATES --> LEAD
+    PLAYBOOK -.->|"consulta"| LEAD
+    LEAD --> TEAM
+
+    style TEMPLATES fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
+    style PLAYBOOK fill:#7AAFC4,color:#fff
+    style LEAD fill:#D4956A,color:#fff
+```
+
+> Los templates son "recetas pre-armadas" para equipos de agentes. El playbook es la guia de cuando y como usarlos. Cada template define composicion, contratos, file ownership, y lecciones aprendidas.
+
+---
+
+## Security-Audit Integration (v9)
+
+```mermaid
+flowchart TD
+    subgraph SDD["SDD PIPELINE"]
+        DESIGN["sdd-design<br/>(incluye Threat Model)"]
+        APPLY["sdd-apply<br/>(escribe codigo)"]
+        VERIFY["sdd-verify<br/>(incluye Security Check)"]
+    end
+
+    subgraph SECURITY["SECURITY-AUDIT SKILL"]
+        CHECKLIST["AI-First Checklist<br/>(10 puntos OWASP+AI)"]
+        THREAT["Threat Model Template<br/>(assets, vectors, mitigations)"]
+        SECRETS["Secrets Scanning<br/>(regex patterns)"]
+        DEPS["Dependency Audit<br/>(npm/pip/cargo audit)"]
+        CLAUDE_SEC["Claude Security<br/>(prompt protection, PII)"]
+    end
+
+    DESIGN -->|"Step: Threat Model"| THREAT
+    VERIFY -->|"Step 4.7: Security Check"| CHECKLIST
+    VERIFY -->|"Step 4.7"| SECRETS
+    VERIFY -->|"Step 4.7"| DEPS
+
+    style SDD fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style SECURITY fill:#2d2d2d,stroke:#D47272,color:#F5EDE4
+    style CHECKLIST fill:#D47272,color:#fff
+    style THREAT fill:#E8B84D,color:#000
+    style SECRETS fill:#D4956A,color:#fff
+```
+
+> El skill de security-audit se integra en DOS puntos del pipeline: en sdd-design (threat model ANTES de construir) y en sdd-verify (security check DESPUES de construir). Cubre OWASP + amenazas especificas de codigo generado por AI.
+
+---
+
+## Folder Structure (v9)
+
+```mermaid
+flowchart TD
+    subgraph ROOT["batuta-dots/"]
+        CLAUDE_DIR["BatutaClaude/<br/>CLAUDE.md, settings.json,<br/>agents/, skills/, commands/"]
+        SKILLS_DIR["skills/<br/>setup.sh, hooks/"]
+        DOCS["docs/<br/>architecture/, guides/, qa/"]
+        TEAMS["teams/<br/>templates/, playbook.md"]
+        README["README.md, README.es.md"]
+        CHANGELOG["CHANGELOG-refactor.md"]
+    end
+
+    subgraph CLAUDE_DETAIL["BatutaClaude/"]
+        CLAUDE_MD["CLAUDE.md (router)"]
+        AGENTS["agents/<br/>pipeline, infra, observability"]
+        SKILLS_15["skills/ (15 skills)<br/>sdd-*, ecosystem, scope-rule,<br/>skill-sync, team-orchestrator,<br/>prompt-tracker, security-audit"]
+    end
+
+    subgraph DOCS_DETAIL["docs/"]
+        ARCH["architecture/<br/>diagrama, para-no-tecnicos"]
+        GUIDES["guides/<br/>10 guias de uso"]
+        QA["qa/<br/>auditorias v5, v6"]
+    end
+
+    CLAUDE_DIR --> CLAUDE_DETAIL
+    DOCS --> DOCS_DETAIL
+
+    style ROOT fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
+    style CLAUDE_DETAIL fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style DOCS_DETAIL fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
+    style TEAMS fill:#E8B84D,color:#000
 ```
 
 ---

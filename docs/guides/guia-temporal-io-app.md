@@ -95,7 +95,7 @@ Escribe:
 
 Esto instala las instrucciones del chef (CLAUDE.md), los jefes de area (scope agents), el sistema de calidad (.batuta/), y todas las recetas (skills). Si cierras la terminal y vuelves despues, Claude recuerda donde quedo gracias a `.batuta/session.md`.
 
-Si no tienes el comando instalado, usa el prompt largo de la guia principal (`guides/guia-batuta-app.md`, Paso 3 Opcion B).
+Si no tienes el comando instalado, usa el prompt largo de la guia principal (`docs/guides/guia-batuta-app.md`, Paso 3 Opcion B).
 
 ---
 
@@ -427,6 +427,24 @@ batuta-workers/
 | Quieres cambiar la politica de reintentos | `Cambia la retry policy del activity Z a maximo 5 intentos con backoff exponencial` |
 | Necesitas un workflow mas complejo | `Necesito un workflow que tenga pasos condicionales: si el paso 2 falla, ejecuta el paso 2B en lugar de reintentar` |
 | Quieres ver metricas del sistema | `/batuta:analyze-prompts` para ver como ha ido la comunicacion con Claude |
+
+---
+
+## Seguridad — Protege tu aplicacion
+
+Antes de poner tu aplicacion en produccion, Claude puede revisar que sea segura. Los workflows de Temporal manejan datos importantes — asegurate de que esten protegidos.
+
+**Copia y pega este prompt antes del deploy**:
+
+```
+Ejecuta una auditoria de seguridad del proyecto. Revisa:
+1. Que no haya claves o contrasenas escritas directamente en el codigo
+2. Que los endpoints de Temporal esten protegidos
+3. Que las dependencias no tengan vulnerabilidades conocidas
+4. Que los datos sensibles no se logeen en texto plano
+```
+
+**Que esperar**: Claude revisara tu codigo con el checklist de seguridad AI-First y te dara un reporte con hallazgos y recomendaciones.
 
 ---
 

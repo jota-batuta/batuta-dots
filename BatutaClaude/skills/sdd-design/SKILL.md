@@ -110,6 +110,13 @@ Call out which parts of the Batuta stack are involved.}
 **Alternatives considered**: {What we rejected}
 **Rationale**: {Why this choice over alternatives}
 
+## Security: Threat Model
+
+{Run the threat model template from the security-audit skill.
+Identify assets, threat actors, attack vectors, mitigations, and residual risk.
+If the change handles user input, auth, file I/O, or external APIs, this section is MANDATORY.
+If not applicable (e.g., pure refactoring with no new attack surface), state "No new attack surface."}
+
 ## Data Flow
 
 {Describe how data moves through the system for this change.

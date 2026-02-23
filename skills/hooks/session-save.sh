@@ -1,17 +1,21 @@
 #!/usr/bin/env bash
 # =============================================================================
-# O.R.T.A. Hook: TaskCompleted
+# O.R.T.A. Hook: Stop
 # =============================================================================
-# Runs when a task is being marked as complete.
-# Acts as a quality gate — exit code 2 rejects completion with feedback.
+# Runs when Claude Code session is ending.
+# Provides context to Claude about saving session state via prompt hook.
+# This is a lightweight reminder — the actual session.md update is done by
+# Claude (the prompt hook type handles the LLM evaluation).
+#
+# Note: This script serves as a command hook backup. The primary mechanism
+# is the "prompt" type hook in settings.json which asks Claude to evaluate
+# whether session.md needs updating before stopping.
 #
 # Input: JSON via stdin from Claude Code hooks system
-#   { "task_id": "...", "task_subject": "...", "teammate_name": "...",
-#     "team_name": "...", "cwd": "...", ... }
+#   { "session_id": "...", "cwd": "...", "last_assistant_message": "...", ... }
 #
 # Exit codes:
-#   0 = approve task completion
-#   2 = reject completion, stderr feedback sent to teammate
+#   0 = allow stop
 # =============================================================================
 
 set -euo pipefail
@@ -36,12 +40,7 @@ json_val() {
     esac
 }
 
-TASK_ID=$(json_val task_id "unknown")
-TASK_SUBJECT=$(json_val task_subject "")
-TEAMMATE_NAME=$(json_val teammate_name "unknown")
-TEAM_NAME=$(json_val team_name "default")
 CWD=$(json_val cwd ".")
-TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 # Find project's .batuta/ directory
 BATUTA_DIR=""
@@ -51,19 +50,18 @@ elif [[ -n "${CLAUDE_PROJECT_DIR:-}" && -d "$CLAUDE_PROJECT_DIR/.batuta" ]]; the
     BATUTA_DIR="$CLAUDE_PROJECT_DIR/.batuta"
 fi
 
-# Log task completion event
-if [[ -n "$BATUTA_DIR" && -f "$BATUTA_DIR/prompt-log.jsonl" ]]; then
-    echo "{\"ts\":\"$TIMESTAMP\",\"type\":\"team\",\"event\":\"task_completed\",\"task_id\":\"$TASK_ID\",\"task_subject\":\"$TASK_SUBJECT\",\"teammate\":\"$TEAMMATE_NAME\",\"team\":\"$TEAM_NAME\"}" >> "$BATUTA_DIR/prompt-log.jsonl"
+# If no .batuta directory, nothing to do
+if [[ -z "$BATUTA_DIR" ]]; then
+    exit 0
 fi
 
-# Quality gate checks could be added here:
-# - Check if Scope Rule was followed (files in correct locations)
-# - Check if tests exist for new code
-# - Check if SDD artifacts are present
-#
-# To reject: echo "feedback message" >&2 && exit 2
-#
-# For now, approve all completions. Quality gates will be
-# refined based on real usage patterns via /batuta:analyze-prompts.
+# Log session end event if prompt-log.jsonl exists
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+SESSION_ID=$(json_val session_id "unknown")
 
+if [[ -f "$BATUTA_DIR/prompt-log.jsonl" ]]; then
+    echo "{\"ts\":\"$TIMESTAMP\",\"type\":\"prompt\",\"event\":\"session_end\",\"session_id\":\"$SESSION_ID\"}" >> "$BATUTA_DIR/prompt-log.jsonl"
+fi
+
+# Allow stop — the prompt hook in settings.json handles the LLM evaluation
 exit 0
