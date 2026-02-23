@@ -91,8 +91,8 @@ batuta-dots/
 │               └── sync_test.sh
 ├── docs/                              # All documentation
 │   ├── architecture/                  # Architecture and design
-│   │   ├── arquitectura-diagrama.md   # Mermaid architecture diagrams (9+ diagrams)
-│   │   └── arquitectura-para-no-tecnicos.md  # Non-technical guide (restaurant analogy)
+│   │   ├── arquitectura-diagrama.md   # Mermaid architecture diagrams (15+ diagrams)
+│   │   └── arquitectura-para-no-tecnicos.md  # Non-technical guide (restaurant analogy, 15+ roles)
 │   ├── guides/                        # Step-by-step execution guides (10 guides, Spanish)
 │   │   ├── guia-batuta-app.md         # Dashboard app — full lifecycle guide
 │   │   ├── guia-temporal-io-app.md    # Temporal.io workflows — full lifecycle guide
@@ -105,8 +105,14 @@ batuta-dots/
 │   │   ├── guia-refactoring-legacy.md # Legacy refactoring guide
 │   │   └── guia-ai-agent-adk.md       # AI agent (Google ADK) guide
 │   └── qa/                            # Quality assurance reports
-│       ├── BatutaTestCalidadV5-V7.md  # Quality test reports (v5-v7)
-│       └── LogCorrecciones-V5-V7.md   # Corrections logs (v5-v7)
+│       ├── BatutaTestCalidadV5.md     # Quality test report v5
+│       ├── BatutaTestCalidadV6.md     # Quality test report v6
+│       ├── BatutaTestCalidadV7.md     # Quality test report v7
+│       ├── BatutaTestCalidadV9.md     # Quality test report v9
+│       ├── LogCorrecciones-V5.md      # Corrections log v5
+│       ├── LogCorrecciones-V6.md      # Corrections log v6
+│       ├── LogCorrecciones-V7.md      # Corrections log v7
+│       └── LogCorrecciones-V9.md      # Corrections log v9
 ├── teams/                             # Agent Team assets
 │   ├── templates/                     # Pre-built team compositions per stack
 │   │   ├── nextjs-saas.md             # Next.js SaaS team template

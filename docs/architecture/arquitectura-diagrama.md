@@ -66,13 +66,13 @@ flowchart TD
 
     subgraph AGENTS["SCOPE AGENTS"]
         PIPELINE["pipeline-agent<br/>SDD Pipeline<br/>(9 skills)"]
-        INFRA["infra-agent<br/>Infraestructura<br/>(4 skills)"]
+        INFRA["infra-agent<br/>Infraestructura<br/>(5 skills)"]
         OBS["observability-agent<br/>O.R.T.A.<br/>(1 skill)"]
     end
 
     subgraph SKILLS["SKILLS (carga lazy)"]
         SDD["sdd-init...sdd-archive"]
-        ECO["ecosystem-creator<br/>scope-rule<br/>skill-sync"]
+        ECO["ecosystem-creator<br/>scope-rule<br/>skill-sync<br/>team-orchestrator<br/>security-audit"]
         PROMPT["prompt-tracker"]
     end
 
@@ -471,8 +471,8 @@ flowchart TD
     end
 
     subgraph HOOKS["HOOKS (bash scripts)"]
-        IDLE["TeammateIdle<br/>hooks/teammate-idle.sh"]
-        COMPLETED["TaskCompleted<br/>hooks/task-completed.sh"]
+        IDLE["TeammateIdle<br/>hooks/orta-teammate-idle.sh"]
+        COMPLETED["TaskCompleted<br/>hooks/orta-task-gate.sh"]
     end
 
     subgraph ORTA["O.R.T.A. INTEGRATION"]
@@ -847,7 +847,7 @@ flowchart TD
     subgraph DOCS_DETAIL["docs/"]
         ARCH["architecture/<br/>diagrama, para-no-tecnicos"]
         GUIDES["guides/<br/>10 guias de uso"]
-        QA["qa/<br/>auditorias v5, v6"]
+        QA["qa/<br/>auditorias v5-v9"]
     end
 
     CLAUDE_DIR --> CLAUDE_DETAIL

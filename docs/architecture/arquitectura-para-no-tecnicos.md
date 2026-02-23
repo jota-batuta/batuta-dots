@@ -169,13 +169,13 @@ que coordinan grupos de sub-chefs:
 | Jefe de area | Que coordina | Sub-chefs a su cargo |
 |-------------|-------------|----------------------|
 | **Jefe de Cocina** (pipeline) | Todo el proceso de crear platos nuevos | Los 9 sub-chefs del proceso SDD |
-| **Jefe de Almacen** (infra) | Organizacion, inventario, recetas | Organizacion de ingredientes (scope-rule), creacion de recetas (ecosystem-creator), inventario automatico (skill-sync) |
+| **Jefe de Almacen** (infra) | Organizacion, inventario, seguridad, recetas | Organizacion de ingredientes (scope-rule), creacion de recetas (ecosystem-creator), inventario automatico (skill-sync), coordinador de equipo (team-orchestrator), protocolo de higiene (security-audit) |
 | **Jefe de Calidad** (observability) | Control de calidad silencioso | Inspector de calidad (prompt-tracker) |
 
 El chef principal SOLO decide a que jefe de area pasarle el pedido. El jefe de area
 decide cuales sub-chefs necesita y los coordina.
 
-**Por que es mejor asi?** Porque el chef principal no necesita recordar los 14 recetarios.
+**Por que es mejor asi?** Porque el chef principal no necesita recordar los 15 recetarios.
 Solo necesita saber 3 numeros de telefono: el del jefe de cocina, el del jefe de almacen,
 y el del jefe de calidad. Cada jefe de area conoce en detalle las recetas de su area.
 
