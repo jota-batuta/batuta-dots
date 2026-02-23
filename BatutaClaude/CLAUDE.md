@@ -110,8 +110,10 @@ Full process: see `infra-agent` which has the evaluation → generalize → prop
 | `/create:skill <name>` | infra → ecosystem-creator |
 | `/create:sub-agent <name>` | infra → ecosystem-creator |
 | `/create:workflow <name>` | infra → ecosystem-creator |
-| `/batuta:analyze-prompts` | observability → prompt-tracker (analysis mode) |
-| `/batuta:sync-skills` | infra → skill-sync (regenerate routing tables) |
+| `/batuta-analyze-prompts` | observability → prompt-tracker (analysis mode) |
+| `/batuta-sync-skills` | infra → skill-sync (regenerate routing tables) |
+| `/batuta-init` | Setup Batuta ecosystem in current project |
+| `/batuta-update` | Update Batuta ecosystem to latest version |
 
 ---
 

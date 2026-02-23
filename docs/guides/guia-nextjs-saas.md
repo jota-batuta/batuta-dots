@@ -173,6 +173,8 @@ Ese `>` es donde le escribes tus instrucciones.
 
 **Opcion A — Si ya tienes los commands de Batuta instalados** (recomendado):
 
+> **IMPORTANTE**: Asegurate de estar dentro de la carpeta de tu proyecto antes de ejecutar este comando. Todo lo que Claude cree se guardara en la carpeta actual.
+
 ```
 /batuta-init mi-saas-app
 ```
@@ -188,11 +190,12 @@ Necesito configurar este proyecto con el ecosistema Batuta.
 
 Haz lo siguiente:
 1. Clona el repositorio github.com/jota-batuta/batuta-dots en una carpeta temporal
-2. Ejecuta el script skills/setup.sh --all para copiar CLAUDE.md, sincronizar skills e instalar hooks
-3. Copia el archivo BatutaClaude/CLAUDE.md a la raiz de este proyecto como CLAUDE.md
-4. Inicializa git en esta carpeta si no existe
-5. Confirma cuando todo este listo
+2. Ejecuta: bash <ruta-a-batuta-dots>/skills/setup.sh --project .
+3. Inicializa git en esta carpeta si no existe
+4. Confirma cuando todo este listo
 ```
+
+Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en tu proyecto.
 
 > Despues de esta primera vez, los commands `/batuta-init` y `/batuta-update` quedan
 > instalados y ya no necesitas copiar el prompt largo nunca mas.
@@ -208,11 +211,11 @@ Haz lo siguiente:
 
 ---
 
-## Paso 3 — Explorar los requisitos del SaaS
+## Paso 3 — Inicializar el proyecto SDD
 
-**Que vamos a hacer**: Decirle a Claude EXACTAMENTE que queremos construir para que investigue como hacerlo. Como cuando un arquitecto estudia el terreno antes de dibujar los planos.
+**Que vamos a hacer**: Decirle a Claude que tipo de proyecto vamos a construir para que se prepare correctamente. Como cuando un arquitecto registra el tipo de obra antes de empezar.
 
-**Primero, inicializa el proyecto SDD:**
+**Copia y pega este prompt:**
 
 ```
 /sdd:init
@@ -226,62 +229,7 @@ Cuando Claude pregunte:
 | Tipo de proyecto | `webapp` |
 | Descripcion | `Aplicacion SaaS multi-tenant con registro de usuarios, dashboard con graficas, gestion de suscripciones, y panel de administracion. Usando Next.js, Prisma, PostgreSQL y NextAuth.` |
 
-**Ahora, explora los requisitos. Copia y pega este prompt:**
-
-```
-/sdd:explore mi-saas-app
-
-Necesito explorar como construir una aplicacion SaaS multi-tenant con estas caracteristicas:
-
-REGISTRO Y LOGIN:
-- Registro con email y contrasena
-- Verificacion de email (enviar un correo de confirmacion)
-- Login con email y contrasena
-- Recuperar contrasena por email
-- Sesiones seguras (que el usuario no tenga que iniciar sesion cada vez)
-- Roles: usuario normal y administrador
-
-MULTI-TENANT:
-- Cada organizacion (empresa/equipo) tiene sus propios datos separados
-- Un usuario puede pertenecer a una organizacion
-- Los datos de una organizacion NUNCA son visibles para otra
-- Al registrarse, el usuario crea su organizacion o se une a una existente con un codigo de invitacion
-
-DASHBOARD (lo que ve el usuario despues de iniciar sesion):
-- Tarjetas de resumen: numero de miembros, plan actual, uso del mes
-- Grafica de barras: actividad de los ultimos 30 dias
-- Grafica circular: distribucion de uso por categoria
-- Lista de actividad reciente (ultimas 10 acciones)
-- Todo se actualiza al cargar la pagina
-
-GESTION DE SUSCRIPCIONES:
-- 3 planes: Gratis (basico, limitado), Pro (funciones extra), Enterprise (todo ilimitado)
-- Pagina donde el usuario ve su plan actual y puede cambiarse
-- Limites por plan: cantidad de miembros, cantidad de proyectos, almacenamiento
-- No necesitamos integrar pagos reales todavia (Stripe lo agregamos despues)
-- Por ahora, el admin puede cambiar el plan de cualquier organizacion manualmente
-
-PANEL DE ADMINISTRACION (solo para administradores):
-- Lista de todas las organizaciones registradas
-- Cantidad de usuarios por organizacion
-- Plan de cada organizacion
-- Poder cambiar el plan de una organizacion
-- Poder desactivar una organizacion
-- Metricas globales: total de usuarios, organizaciones, distribucion de planes
-
-BASE DE DATOS:
-- PostgreSQL
-- Tablas principales: usuarios, organizaciones, membresias, suscripciones, actividad
-- Relaciones: un usuario pertenece a una organizacion a traves de una membresia
-- Separacion de datos por organizacion en todas las consultas
-
-DEPLOY:
-- Preparado para desplegar en Vercel (opcion rapida) o Docker/Coolify (opcion propia)
-- Variables de entorno para todas las credenciales
-- Base de datos PostgreSQL en la nube o en Docker
-```
-
-**Que esperar**: Claude va a investigar las tecnologias y el enfoque. Probablemente detecte que necesita crear skills para algunas tecnologias. Esto es normal y bueno.
+**Que esperar**: Claude te va a hacer preguntas. Cuando termine, va a guardar la configuracion base del proyecto.
 
 ---
 
@@ -289,7 +237,7 @@ DEPLOY:
 
 **Que vamos a hacer**: Entender que pasa cuando Claude detecta que necesita aprender algo nuevo. Esto es como si un chef te dijera "no tengo la receta para ese plato, pero puedo investigarla".
 
-**MOMENTO IMPORTANTE**: Despues del explore, Claude probablemente detecte que necesita skills para varias tecnologias. Te va a preguntar que hacer para cada una.
+**MOMENTO IMPORTANTE**: Durante el proceso de desarrollo (especialmente al ejecutar `/sdd:new`), Claude probablemente detecte que necesita skills para varias tecnologias. Te va a preguntar que hacer para cada una.
 
 **Cuando Claude diga algo como:**
 > "No tengo un skill documentado para Next.js App Router... Te propongo:
@@ -332,6 +280,8 @@ Claude va a investigar usando Context7 (su base de conocimiento actualizada) y c
 /sdd:new mi-saas-app
 ```
 
+Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
+
 **Que esperar**: Claude va a crear un documento llamado "proposal" que incluye:
 - Que se va a construir (en lenguaje simple)
 - Que riesgos hay
@@ -363,6 +313,10 @@ Aprobado, continua con el siguiente paso
 ```
 /sdd:continue mi-saas-app
 ```
+
+Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+
+> **Alternativa rapida**: `/sdd:ff mi-saas-app` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude va a ejecutar las siguientes fases una por una:
 
@@ -958,7 +912,7 @@ Estas metricas son estimaciones para que compares cuando ejecutes los pasos. Ano
 
 > **Importante**: Estas son estimaciones iniciales. Cuando ejecutes cada paso, anota cuanto tardo
 > realmente y si el resultado fue correcto a la primera. Esa informacion ayuda a mejorar el sistema
-> con `/batuta:analyze-prompts`.
+> con `/batuta-analyze-prompts`.
 
 ---
 
@@ -1115,7 +1069,7 @@ Si algo sale muy mal y quieres recuperarte rapido:
 | Claude se trabo y no responde | Cierra la terminal, abrela de nuevo, escribe `claude` |
 | Quieres deshacer el ultimo cambio | `Deshaz el ultimo cambio que hiciste` |
 | No entiendes algo | `Explicame [lo que no entiendes] como si tuviera 15 anos` |
-| Quieres ver el estado del proyecto | `/sdd:continue mi-saas-app` (te muestra donde quedamos) |
+| Quieres ver el estado del proyecto | **Ver estado**: Pregunta a Claude: '¿En que fase estamos?' |
 | La base de datos esta enredada | `Resetea la base de datos de desarrollo y ejecuta el seed de nuevo` |
 | El build falla y no sabes por que | `Ejecuta npm run build y analiza cada error. Corrigelos todos.` |
 
@@ -1150,7 +1104,7 @@ Y sigue el mismo flujo: explore → propose → specs → design → tasks → a
 Despues de trabajar un rato con Claude (10+ interacciones), puedes pedirle que analice como le ha ido entendiendo tus pedidos:
 
 ```
-/batuta:analyze-prompts
+/batuta-analyze-prompts
 ```
 
 Claude va a revisar la bitacora de calidad y te dira:
@@ -1323,11 +1277,11 @@ Tu (carpeta vacia)
  |
  +-- Paso 1-2:  Crear carpeta + Instalar Batuta + crear .batuta/
  |
- +-- Paso 3:    /sdd:init + /sdd:explore ..... "Investigar que necesitamos"
+ +-- Paso 3:    /sdd:init ................... "Configurar proyecto SDD"
  |
  |   [Claude detecta skills faltantes → Paso 4: "Opcion 1"]
  |
- +-- Paso 5:    /sdd:new .................... "Propuesta formal"
+ +-- Paso 5:    /sdd:new .................... "Explorar + Propuesta formal"
  |     Tu: "Aprobado"
  |
  +-- Paso 6:    /sdd:continue ............... "Specs → Design → Tasks"

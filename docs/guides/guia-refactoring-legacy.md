@@ -33,7 +33,7 @@ Antes de empezar, aqui tienes un mini-diccionario. No necesitas memorizarlo, vue
 | **SDD** | Spec-Driven Development. Un proceso paso a paso para construir software: primero planeas, luego construyes. Como un arquitecto que primero dibuja el plano y luego construye la casa. |
 | **Repositorio (repo)** | Una carpeta especial que guarda todo tu codigo y recuerda cada cambio que haces. |
 | **Scope Rule** | La regla que decide DONDE va cada archivo en el proyecto. "El uso determina la ubicacion" — si solo una parte del proyecto usa algo, va en esa parte. |
-| **Scope Agent** | Un "jefe de area" especializado. Claude tiene 3: uno para el proceso de desarrollo, uno para organizacion de archivos, y uno para calidad. |
+| **Scope Agent** | Un "jefe de area" especializado. Claude tiene 3: uno para el proceso de desarrollo, uno para organizacion de archivos, y uno para observabilidad y continuidad de sesion. |
 | **Execution Gate** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden. |
 | **Docker** | Una herramienta que empaqueta aplicaciones para que funcionen en cualquier computadora igual. |
 | **CI/CD** | Integracion Continua / Despliegue Continuo. Un sistema automatico que revisa y publica los cambios cada vez que guardas codigo. Como un servicio de mensajeria que automaticamente despacha cada paquete que dejas en el mostrador. |
@@ -174,6 +174,8 @@ claude
 
 2. Instala el ecosistema:
 
+> **IMPORTANTE**: Asegurate de estar dentro de la carpeta de tu proyecto antes de ejecutar este comando. Todo lo que Claude cree se guardara en la carpeta actual.
+
 **Opcion A — Si ya tienes los commands de Batuta instalados:**
 
 ```
@@ -191,13 +193,14 @@ Necesito configurar este proyecto con el ecosistema Batuta.
 
 Haz lo siguiente:
 1. Clona el repositorio github.com/jota-batuta/batuta-dots en una carpeta temporal
-2. Ejecuta el script skills/setup.sh --all para copiar CLAUDE.md, sincronizar skills e instalar hooks
-3. Copia el archivo BatutaClaude/CLAUDE.md a la raiz de este proyecto como CLAUDE.md
-4. Confirma cuando todo este listo
+2. Ejecuta el script: bash <ruta-a-batuta-dots>/skills/setup.sh --project .
+3. Confirma cuando todo este listo
 
 IMPORTANTE: Este proyecto YA EXISTE y tiene codigo. No borres ni modifiques
 nada del codigo existente en este paso.
 ```
+
+Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en tu proyecto.
 
 **Que esperar**: Claude instala el ecosistema SIN tocar tu codigo existente. Crea:
 - `CLAUDE.md` — Las instrucciones del chef
@@ -208,17 +211,17 @@ nada del codigo existente en este paso.
 
 ---
 
-## Paso 3 — Explorar el proyecto ("el detective")
+## Paso 3 — Explorar el proyecto y crear la propuesta de refactoring
 
-**Que vamos a hacer**: Pedirle a Claude que investigue tu proyecto como un detective: que tecnologias usa, como esta organizado, donde estan los problemas, que funciona y que no. Claude va a leer TODOS los archivos y crear un "diagnostico" completo.
+**Que vamos a hacer**: Pedirle a Claude que investigue tu proyecto como un detective (que tecnologias usa, como esta organizado, donde estan los problemas) y luego cree un plan de que modernizar, que dejar como esta, y en que orden. Es como el arquitecto que primero inspecciona la casa y luego dibuja el plan de renovacion.
 
 **Copia y pega este prompt** (adaptalo a tu proyecto):
 
 ```
-/sdd:explore refactoring-modernizacion
+/sdd:new refactoring-modernizacion
 
-Necesito que explores este proyecto existente para entender su estado actual.
-Actua como un detective: investiga todo sin cambiar nada.
+Este es un proyecto existente que necesita modernizacion.
+Antes de proponer cambios, investiga el proyecto completo como un detective.
 
 SOBRE EL PROYECTO:
 - [Describe brevemente que hace tu proyecto]
@@ -226,57 +229,7 @@ SOBRE EL PROYECTO:
 - [O: "Es una app de React que muestra graficas de ventas"]
 - [O: "Es un script que procesa facturas"]
 
-NECESITO QUE INVESTIGUES:
-1. Estructura de archivos: como esta organizado, donde estan las cosas
-2. Tecnologias: que lenguajes, frameworks, librerias usa
-3. Dependencias: cuales estan desactualizadas o tienen vulnerabilidades
-4. Tipos: tiene tipos definidos? (TypeScript, type hints de Python, etc.)
-5. Tests: tiene tests? cuantos? que cubren?
-6. Organizacion: sigue algun patron? o los archivos estan en cualquier lugar?
-7. Documentacion: tiene README? comentarios? algo que explique como funciona?
-8. Problemas detectados: archivos duplicados, imports circulares, codigo muerto
-
-NO MODIFIQUES NADA — solo investiga y dame un reporte completo.
-Incluye una seccion "Estado de salud" con nota del 1 al 10 para cada area.
-```
-
-**Que esperar**: Claude va a leer tu proyecto entero y darte un reporte como:
-
-```
-REPORTE DE DIAGNOSTICO — mi-proyecto
-
-Estado de salud:
-- Estructura de archivos: 4/10 — archivos mezclados en la raiz, sin patron claro
-- Tipos: 2/10 — sin tipos, todo es "any" implicito
-- Tests: 3/10 — solo 5 tests, cubren 15% del codigo
-- Dependencias: 5/10 — 3 paquetes con vulnerabilidades conocidas
-- Documentacion: 3/10 — README basico, sin comentarios en el codigo
-- Organizacion: 3/10 — utils/ con 47 archivos mezclados
-```
-
-**Lee el reporte con calma**. No necesitas entender todo — Claude te va a explicar lo que significa cada punto.
-
-**Si Claude detecta skills faltantes** (tecnologias que no conoce), di:
-
-```
-Opcion 1 — Investiga y crea el skill acotado a nuestro proyecto
-```
-
-> **Detalle tecnico (opcional)**: Cuando Claude explora, activa el pipeline-agent
-> (jefe del proceso de desarrollo) que usa el skill sdd-explore para hacer el diagnostico.
-
----
-
-## Paso 4 — Crear la propuesta de refactoring
-
-**Que vamos a hacer**: Basandose en el diagnostico, Claude va a crear un plan de que modernizar, que dejar como esta, y en que orden. Es como el plan de renovacion del arquitecto.
-
-**Copia y pega este prompt**:
-
-```
-/sdd:new refactoring-modernizacion
-
-Basandote en el diagnostico del explore, crea una propuesta de refactoring
+Crea una propuesta de refactoring
 con estos objetivos (en orden de prioridad):
 
 1. REORGANIZAR ARCHIVOS con la Scope Rule
@@ -303,7 +256,9 @@ REGLAS INQUEBRANTABLES:
 - NO agregar funcionalidad nueva — solo modernizar lo existente
 ```
 
-**Que esperar**: Claude crea una propuesta con:
+Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
+
+**Que esperar**: Claude va a leer tu proyecto entero, hacer un diagnostico, y probablemente detecte skills faltantes (tecnologias que no conoce). Cada vez que pregunte, responde "Opcion 1 — Investiga y crea el skill acotado a nuestro proyecto". Despues, Claude crea una propuesta con:
 - Lista de cambios ordenados por prioridad
 - Riesgos identificados y como mitigarlos
 - Estimacion de esfuerzo por lote
@@ -324,7 +279,7 @@ Aprobado, continua con el siguiente paso
 
 ---
 
-## Paso 5 — Especificaciones (las reglas del juego)
+## Paso 4 — Especificaciones (las reglas del juego)
 
 **Que vamos a hacer**: Definir reglas muy estrictas para el refactoring. La regla mas importante: MANTENER TODOS LOS COMPORTAMIENTOS EXISTENTES. No estamos cambiando que hace el software, solo como esta organizado por dentro.
 
@@ -333,6 +288,10 @@ Aprobado, continua con el siguiente paso
 ```
 /sdd:continue refactoring-modernizacion
 ```
+
+Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+
+> **Alternativa rapida**: `/sdd:ff refactoring-modernizacion` ejecuta todas las fases pendientes de corrido sin pausas.
 
 Claude va a crear las especificaciones. Cuando te las muestre, verifica que incluya:
 
@@ -360,7 +319,7 @@ Se ve bien, continua
 
 ---
 
-## Paso 6 — Diseno (la estrategia de la renovacion)
+## Paso 5 — Diseno (la estrategia de la renovacion)
 
 **Que vamos a hacer**: Claude va a disenar la estrategia de refactoring: como reorganizar los archivos, en que orden mover las cosas, y como verificar que nada se rompe en cada paso.
 
@@ -400,7 +359,7 @@ Lee este mapa con calma. Si algo no tiene sentido, dile a Claude.
 
 ---
 
-## Paso 7 — Dividir el trabajo en lotes seguros
+## Paso 6 — Dividir el trabajo en lotes seguros
 
 **Que vamos a hacer**: Dividir todo el trabajo de refactoring en lotes pequeños y seguros. Cada lote es independiente — si algo falla, solo se revierte ese lote, no todo el trabajo.
 
@@ -427,7 +386,7 @@ Se ve bien, continua
 
 ---
 
-## Paso 8 — Batch 1: Reorganizar archivos (aplicar la Scope Rule)
+## Paso 7 — Batch 1: Reorganizar archivos (aplicar la Scope Rule)
 
 **Que vamos a hacer**: Este es el lote mas grande e importante. Claude va a mover los archivos al lugar correcto segun la Scope Rule. Es como reorganizar todos los muebles de la casa.
 
@@ -485,7 +444,7 @@ Mensaje: "refactor: reorganizar archivos con Scope Rule"
 
 ---
 
-## Paso 9 — Batch 2: Agregar tipos y linting
+## Paso 8 — Batch 2: Agregar tipos y linting
 
 **Que vamos a hacer**: Agregar "etiquetas" a los datos para que el codigo sea mas predecible. Tambien agregar un revisor automatico (linter) que detecte errores comunes.
 
@@ -530,7 +489,7 @@ Mensaje: "refactor: agregar type hints y configurar linter"
 
 ---
 
-## Paso 10 — Batch 3: Agregar tests para las partes criticas
+## Paso 9 — Batch 3: Agregar tests para las partes criticas
 
 **Que vamos a hacer**: Agregar pruebas automaticas para las partes mas importantes del proyecto. Los tests son como alarmas: si algo se rompe en el futuro, las alarmas suenan inmediatamente.
 
@@ -571,7 +530,7 @@ Mensaje: "test: agregar tests para funciones criticas"
 
 ---
 
-## Paso 11 — Verificacion final (el momento de la verdad)
+## Paso 10 — Verificacion final (el momento de la verdad)
 
 **Que vamos a hacer**: Ejecutar TODAS las verificaciones para confirmar que la renovacion no rompio nada. Este paso es critico — es la inspeccion final antes de entregar la casa renovada.
 
@@ -636,7 +595,7 @@ Repite la verificacion hasta que todo pase:
 
 ---
 
-## Paso 12 — Archivar, documentar y celebrar
+## Paso 11 — Archivar, documentar y celebrar
 
 **Que vamos a hacer**: Cerrar formalmente el proyecto de refactoring, documentar que cambio, y guardar las lecciones aprendidas.
 
@@ -644,8 +603,14 @@ Repite la verificacion hasta que todo pase:
 
 ```
 /sdd:archive refactoring-modernizacion
+```
 
-Ademas del archivo normal, genera un documento "CHANGELOG-refactoring.md" que incluya:
+Claude archivara el cambio y creara un archivo `lessons-learned.md` en `openspec/changes/archive/refactoring-modernizacion/`. Este archivo documenta las lecciones aprendidas durante el proceso.
+
+Si necesitas un CHANGELOG adicional para el equipo, pidele a Claude que lo genere por separado:
+
+```
+Genera un documento "CHANGELOG-refactoring.md" en la raiz del proyecto que incluya:
 
 1. RESUMEN: Que se hizo (en espanol simple, para no-tecnicos)
 2. ANTES Y DESPUES: Tabla mostrando la estructura vieja vs la nueva
@@ -662,7 +627,7 @@ Este documento es para el equipo que va a mantener el proyecto despues.
 **Despues de archivar**, guarda todo con un commit final:
 
 ```
-Haz un commit final con todos los cambios del refactoring y el changelog.
+Haz un commit final con todos los cambios del refactoring.
 Mensaje: "refactor: modernizacion completa — archivos reorganizados, tipos y tests agregados"
 ```
 
@@ -731,7 +696,7 @@ Ya tiene tipos en las funciones publicas, ahora faltan las internas.
 Despues de varias sesiones de refactoring:
 
 ```
-/batuta:analyze-prompts
+/batuta-analyze-prompts
 ```
 
 Claude te dice como mejorar tus pedidos para futuras sesiones.
@@ -881,7 +846,7 @@ Tu: "Haz una auditoria completa del proyecto antes del refactoring.
 
 ## Metricas esperadas de rendimiento
 
-Anota tus resultados reales para mejorar el sistema con `/batuta:analyze-prompts`.
+Anota tus resultados reales para mejorar el sistema con `/batuta-analyze-prompts`.
 
 | Escenario | Nivel | Tiempo estimado | Costo tokens | Calidad esperada | Fortaleza | Debilidad |
 |-----------|-------|----------------|-------------|-----------------|-----------|-----------|
@@ -1025,7 +990,7 @@ importe y re-exporte desde la nueva ubicacion.
 ## Preguntas frecuentes
 
 **P: Puedo hacer refactoring en un proyecto que no tiene tests?**
-R: Si, pero con mas cuidado. Los tests son tu red de seguridad. Sin ellos, cada cambio tiene mas riesgo. Por eso agregamos tests como parte del refactoring (Paso 10).
+R: Si, pero con mas cuidado. Los tests son tu red de seguridad. Sin ellos, cada cambio tiene mas riesgo. Por eso agregamos tests como parte del refactoring (Paso 9).
 
 **P: Cuanto tiempo toma refactorizar un proyecto?**
 R: Depende del tamano. Un proyecto de 20-30 archivos toma 1-2 horas. Uno de 100+ archivos puede tomar medio dia. La buena noticia es que puedes parar y continuar despues — `.batuta/session.md` guarda el progreso.
@@ -1037,7 +1002,7 @@ R: Si. Claude lee y entiende el codigo. Tu solo necesitas saber que hace el proy
 R: Por eso trabajamos en una rama separada. No hagas merge a `main` hasta que todo este verificado. Si ya hiciste merge y se rompio, usa `git revert` para deshacer.
 
 **P: Puedo refactorizar solo una parte del proyecto?**
-R: Absolutamente. Puedes refactorizar un solo modulo o carpeta. En la propuesta (Paso 4), dile a Claude exactamente que parte quieres modernizar y que parte dejar como esta.
+R: Absolutamente. Puedes refactorizar un solo modulo o carpeta. En la propuesta (Paso 3), dile a Claude exactamente que parte quieres modernizar y que parte dejar como esta.
 
 **P: Puedo cerrar la terminal y continuar despues?**
 R: Si. Abre la terminal, navega a tu carpeta, escribe `claude`, y Claude lee `.batuta/session.md` donde guardo en que quedo.
@@ -1053,32 +1018,30 @@ Tu (proyecto desordenado)
  |
  +-- Paso 2:  Instalar ecosistema Batuta ... "Darle recetas al chef"
  |
- +-- Paso 3:  /sdd:explore ................ "El detective investiga la casa"
+ +-- Paso 3:  /sdd:new .................... "Investigar + Plan de renovacion"
  |
  |   [Claude detecta skills faltantes → "Opcion 1"]
- |
- +-- Paso 4:  /sdd:new .................... "Plan de renovacion"
  |     Tu: "Aprobado"
  |
- +-- Paso 5:  Specs ....................... "Regla de oro: no romper nada"
+ +-- Paso 4:  Specs ....................... "Regla de oro: no romper nada"
  |
- +-- Paso 6:  Design + Tasks .............. "Mapa de donde va cada cosa"
+ +-- Paso 5:  Design + Tasks .............. "Mapa de donde va cada cosa"
  |
- +-- Paso 7:  Dividir en lotes ............ "Habitacion por habitacion"
+ +-- Paso 6:  Dividir en lotes ............ "Habitacion por habitacion"
  |
- +-- Paso 8:  Batch 1 — Reorganizar ....... "Mover muebles"
+ +-- Paso 7:  Batch 1 — Reorganizar ....... "Mover muebles"
  |     [Tests deben pasar → commit]
  |
- +-- Paso 9:  Batch 2 — Tipos + linting ... "Etiquetar todo"
+ +-- Paso 8:  Batch 2 — Tipos + linting ... "Etiquetar todo"
  |     [Tests deben pasar → commit]
  |
- +-- Paso 10: Batch 3 — Agregar tests ..... "Instalar alarmas"
+ +-- Paso 9:  Batch 3 — Agregar tests ..... "Instalar alarmas"
  |     [Tests deben pasar → commit]
  |
- +-- Paso 11: /sdd:verify ................. "Inspeccion final"
+ +-- Paso 10: /sdd:verify ................. "Inspeccion final"
  |     [TODO debe pasar]
  |
- +-- Paso 12: /sdd:archive + merge ........ "Entregar la casa renovada"
+ +-- Paso 11: /sdd:archive + merge ........ "Entregar la casa renovada"
  |
  [Proyecto modernizado, organizado, con tipos y tests!]
 ```

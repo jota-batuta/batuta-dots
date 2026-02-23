@@ -36,6 +36,7 @@ Documentan **que se corrigio** en cada version, archivo por archivo.
 | v6 | [corrections/v6-correcciones.md](corrections/v6-correcciones.md) |
 | v7 | [corrections/v7-correcciones.md](corrections/v7-correcciones.md) |
 | v9 | [corrections/v9-correcciones.md](corrections/v9-correcciones.md) |
+| v9.2 | [corrections/v9.2-correcciones.md](corrections/v9.2-correcciones.md) |
 
 ## Tests de Integracion
 
@@ -58,4 +59,4 @@ Simulan la **experiencia del usuario** siguiendo cada guia paso a paso. Identifi
 
 ---
 
-> Ultima actualizacion: 2026-02-23
+> Ultima actualizacion: 2026-02-23 (v9.2)

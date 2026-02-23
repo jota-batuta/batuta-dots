@@ -123,6 +123,8 @@ Ese `>` es donde le escribes tus instrucciones.
 
 **Opcion A — Si ya tienes los commands de Batuta instalados** (recomendado):
 
+> **IMPORTANTE**: Asegurate de estar dentro de la carpeta de tu proyecto antes de ejecutar este comando. Todo lo que Claude cree se guardara en la carpeta actual.
+
 Simplemente escribe:
 
 ```
@@ -140,11 +142,12 @@ Necesito configurar este proyecto con el ecosistema Batuta.
 
 Haz lo siguiente:
 1. Clona el repositorio github.com/jota-batuta/batuta-dots en una carpeta temporal
-2. Ejecuta el script skills/setup.sh --all para copiar CLAUDE.md, sincronizar skills e instalar hooks
-3. Copia el archivo BatutaClaude/CLAUDE.md a la raiz de este proyecto como CLAUDE.md
-4. Inicializa git en esta carpeta si no existe
-5. Confirma cuando todo este listo
+2. Ejecuta: bash <ruta-a-batuta-dots>/skills/setup.sh --project .
+3. Inicializa git en esta carpeta si no existe
+4. Confirma cuando todo este listo
 ```
+
+Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en tu proyecto.
 
 > Despues de esta primera vez, los commands `/batuta-init` y `/batuta-update` quedan
 > instalados y ya no necesitas copiar el prompt largo nunca mas.
@@ -184,58 +187,11 @@ Haz lo siguiente:
 
 ---
 
-## Paso 5 — Explorar la idea
-
-**Que vamos a hacer**: Pedirle a Claude que investigue COMO construir lo que necesitamos antes de empezar a programar. Como cuando un arquitecto estudia el terreno antes de dibujar planos.
-
-**Copia y pega este prompt**:
-
-```
-/sdd:explore batuta-app-dashboard
-
-Necesito explorar como construir un dashboard con estas caracteristicas:
-
-PANTALLA PRINCIPAL:
-- Grafica de barras mostrando ejecuciones de n8n por dia (exitosas vs fallidas)
-- Numero total de ejecuciones este mes
-- Porcentaje de exito
-- Lista de las ultimas 10 ejecuciones con su estado (exito/fallo) y nombre del workflow
-
-PANTALLA DE TOKENS:
-- Consumo de tokens de Google AI del proyecto actual
-- Grafica de consumo por dia
-- Costo estimado en dolares
-
-AUTENTICACION:
-- Login con email y contrasena
-- Registro de usuarios nuevos
-- Recuperar contrasena por email
-- No necesitamos Google login ni nada complicado
-
-DATOS:
-- Los datos de n8n vienen de la API REST de n8n (ya tenemos n8n corriendo)
-- Los datos de Google vienen de la API de Google Cloud (billing o AI platform)
-- La app debe actualizarse cada 5 minutos automaticamente
-
-DEPLOY:
-- Se despliega en Coolify
-- Cuando hacemos push a git, se despliega automaticamente
-- Frontend y backend se despliegan juntos pero como servicios separados
-```
-
-**Que esperar**: Claude va a investigar el codebase (que esta vacio) y las tecnologias. Probablemente te diga algo como:
-
-> "Para implementar esto necesitamos trabajar con **Next.js**, pero no tengo un skill documentado..."
-
-Esto es **NORMAL y BUENO**. Significa que el sistema de deteccion de skills esta funcionando.
-
----
-
-## Paso 6 — Cuando Claude dice "no tengo un skill para eso"
+## Paso 5 — Cuando Claude dice "no tengo un skill para eso"
 
 **Que vamos a hacer**: Entender que pasa cuando Claude detecta que necesita aprender algo nuevo. Esto es como si un chef te dijera "no tengo la receta para ese plato, pero puedo investigarla".
 
-**MOMENTO IMPORTANTE**: Despues del explore, Claude probablemente detecte que necesita skills para varias tecnologias. Te va a preguntar que hacer para cada una.
+**MOMENTO IMPORTANTE**: Durante el proceso de desarrollo (especialmente al ejecutar `/sdd:new`), Claude probablemente detecte que necesita skills para varias tecnologias. Te va a preguntar que hacer para cada una.
 
 **Cuando Claude diga algo como:**
 > "No tengo un skill documentado para Next.js... Te propongo:
@@ -268,7 +224,7 @@ Claude va a investigar usando Context7 (su base de conocimiento actualizada) y c
 
 ---
 
-## Paso 7 — Crear la propuesta
+## Paso 6 — Crear la propuesta
 
 **Que vamos a hacer**: Pedirle a Claude que escriba un plan formal de lo que va a construir. Como cuando un arquitecto te muestra el boceto antes de construir.
 
@@ -277,6 +233,8 @@ Claude va a investigar usando Context7 (su base de conocimiento actualizada) y c
 ```
 /sdd:new batuta-app-dashboard
 ```
+
+Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
 
 **Que esperar**: Claude va a crear un documento llamado "proposal" que incluye:
 - Que se va a construir (en lenguaje simple)
@@ -300,7 +258,7 @@ Aprobado, continua con el siguiente paso
 
 ---
 
-## Paso 8 — Especificaciones, diseno y tareas
+## Paso 7 — Especificaciones, diseno y tareas
 
 **Que vamos a hacer**: Dejar que Claude avance por las fases de planificacion. El va a crear las especificaciones tecnicas, el diseno de la arquitectura, y las tareas de implementacion.
 
@@ -309,6 +267,10 @@ Aprobado, continua con el siguiente paso
 ```
 /sdd:continue batuta-app-dashboard
 ```
+
+Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+
+> **Alternativa rapida**: `/sdd:ff batuta-app-dashboard` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude va a ejecutar las siguientes fases una por una:
 
@@ -339,7 +301,7 @@ Claude esta configurado para explicarte las cosas de forma que cualquier persona
 
 ---
 
-## Paso 9 — Construir la aplicacion
+## Paso 8 — Construir la aplicacion
 
 **Que vamos a hacer**: Ahora si, pedirle a Claude que ESCRIBA el codigo. Esta es la parte donde la magia pasa. Claude va a crear todos los archivos del proyecto.
 
@@ -414,7 +376,7 @@ Va a pedir instalar dependencias (librerias que el proyecto necesita). Di "yes".
 
 ---
 
-## Paso 10 — Verificar que todo funcione
+## Paso 9 — Verificar que todo funcione
 
 **Que vamos a hacer**: Pedirle a Claude que revise su propio trabajo. Como cuando un profesor revisa un examen.
 
@@ -448,7 +410,7 @@ Despues de las correcciones, ejecuta verify otra vez:
 
 ---
 
-## Paso 11 — Probar en tu computadora
+## Paso 10 — Probar en tu computadora
 
 **Que vamos a hacer**: Ver la aplicacion funcionando en tu computadora antes de subirla a internet. Como una prueba de manejo antes de salir a la carretera.
 
@@ -490,7 +452,7 @@ Claude va a investigar y corregir el problema.
 
 ---
 
-## Paso 12 — Configurar el despliegue a internet
+## Paso 11 — Configurar el despliegue a internet
 
 **Que vamos a hacer**: Preparar todo lo necesario para que la aplicacion viva en internet. Esto incluye los archivos de configuracion que Coolify necesita.
 
@@ -524,15 +486,15 @@ instrucciones para configurar Coolify.
 
 ---
 
-## Paso 13 — Subir todo a GitHub
+## Paso 12 — Subir todo a GitHub
 
 **Que vamos a hacer**: Guardar todo el proyecto en GitHub y activar el despliegue automatico. Es como entregar el paquete al servicio de mensajeria.
 
 **Copia y pega este prompt**:
 
 ```
-Crea un repositorio privado en GitHub llamado batuta-app bajo la organizacion
-jota-batuta, sube todo el codigo, y configura el webhook de Coolify para
+Crea un repositorio privado en GitHub llamado batuta-app bajo tu organizacion
+o usuario de GitHub [TU-ORGANIZACION-O-USUARIO], sube todo el codigo, y configura el webhook de Coolify para
 despliegue automatico.
 
 Haz el commit inicial con todo lo que hemos construido.
@@ -548,7 +510,7 @@ Haz el commit inicial con todo lo que hemos construido.
 
 ---
 
-## Paso 14 — Verificar que la app esta en internet
+## Paso 13 — Verificar que la app esta en internet
 
 **Que vamos a hacer**: Confirmar que la aplicacion esta viva en internet. El momento de la verdad.
 
@@ -574,7 +536,7 @@ Revisa los logs de los servicios y confirma que:
 
 ---
 
-## Paso 15 — Archivar y celebrar
+## Paso 14 — Archivar y celebrar
 
 **Que vamos a hacer**: Cerrar formalmente el proyecto y guardar todo lo aprendido. Como firmar la entrega de una obra.
 
@@ -623,7 +585,7 @@ Y sigue el mismo flujo: explore → propose → specs → design → tasks → a
 Despues de trabajar un rato con Claude (10+ interacciones), puedes pedirle que analice como le ha ido entendiendo tus pedidos:
 
 ```
-/batuta:analyze-prompts
+/batuta-analyze-prompts
 ```
 
 Claude va a revisar la bitacora de calidad y te dira:
@@ -659,7 +621,7 @@ Si algo sale muy mal y quieres empezar de cero una fase:
 | Claude se trabo y no responde | Cierra la terminal, abrela de nuevo, escribe `claude` |
 | Quieres deshacer el ultimo cambio | `Deshaz el ultimo cambio que hiciste` |
 | No entiendes algo | `Explicame [lo que no entiendes] como si tuviera 15 anos` |
-| Quieres ver el estado del proyecto | `/sdd:continue batuta-app-dashboard` (te muestra donde quedamos) |
+| Quieres ver el estado del proyecto | **Ver estado**: Pregunta a Claude: '¿En que fase estamos?' |
 
 ---
 
@@ -701,7 +663,7 @@ R: Dile a Claude que use valores de ejemplo. Despues tu o alguien mas puede reem
 R: Si, Claude Code necesita internet para funcionar. Tambien necesitas internet para que las APIs de n8n y Google respondan.
 
 **P: Puedo usar esto para otros proyectos, no solo este?**
-R: Si. El ecosistema Batuta funciona para cualquier tipo de proyecto. Solo cambia la descripcion en el paso de `/sdd:init` y `/sdd:explore`.
+R: Si. El ecosistema Batuta funciona para cualquier tipo de proyecto. Solo cambia la descripcion en el paso de `/sdd:init` y `/sdd:new`.
 
 **P: Que es el Execution Gate?**
 R: Es un checklist automatico que Claude ejecuta antes de escribir codigo. Verifica donde van los archivos, que impacto tienen los cambios, y que todo siga las reglas del proyecto. No lo ves directamente, pero trabaja en segundo plano protegiendote de errores.
@@ -720,31 +682,29 @@ Tu (carpeta vacia)
  |
  +-- Paso 4:  /sdd:init .............. "Que tipo de proyecto es?"
  |
- +-- Paso 5:  /sdd:explore ........... "Investigar como hacerlo"
+ |   [Claude detecta skills faltantes → Paso 5: "Opcion 1"]
  |
- |   [Claude detecta skills faltantes → Paso 6: "Opcion 1"]
- |
- +-- Paso 7:  /sdd:new ............... "Propuesta formal"
+ +-- Paso 6:  /sdd:new ............... "Explorar + Propuesta formal"
  |     Tu: "Aprobado"
  |
- +-- Paso 8:  /sdd:continue .......... "Specs → Design → Tasks"
+ +-- Paso 7:  /sdd:continue .......... "Specs → Design → Tasks"
  |     Tu: "Continua" (3 veces)
  |
- +-- Paso 9:  /sdd:apply ............. "Construir la app"
+ +-- Paso 8:  /sdd:apply ............. "Construir la app"
  |     [Execution Gate valida antes de cada cambio]
  |     Tu: "Si, continua" (por cada batch)
  |
- +-- Paso 10: /sdd:verify ........... "Revisar que todo funcione"
+ +-- Paso 9:  /sdd:verify ........... "Revisar que todo funcione"
  |
- +-- Paso 11: Probar en tu PC ....... "localhost:3000"
+ +-- Paso 10: Probar en tu PC ....... "localhost:3000"
  |
- +-- Paso 12: Configurar Coolify .... "Deploy automatico"
+ +-- Paso 11: Configurar Coolify .... "Deploy automatico"
  |
- +-- Paso 13: Push a GitHub ......... "Codigo en la nube"
+ +-- Paso 12: Push a GitHub ......... "Codigo en la nube"
  |
- +-- Paso 14: Verificar deploy ...... "App en internet"
+ +-- Paso 13: Verificar deploy ...... "App en internet"
  |
- +-- Paso 15: /sdd:archive .......... "Cerrar y celebrar"
+ +-- Paso 14: /sdd:archive .......... "Cerrar y celebrar"
  |
  [Tu app esta en internet!]
 ```
@@ -812,7 +772,7 @@ Estas metricas son estimaciones para que compares cuando ejecutes los pasos. Ano
 
 > **Importante**: Estas son estimaciones iniciales. Cuando ejecutes cada paso, anota cuanto tardo
 > realmente y si el resultado fue correcto a la primera. Esa informacion ayuda a mejorar el sistema
-> con `/batuta:analyze-prompts`.
+> con `/batuta-analyze-prompts`.
 
 ---
 

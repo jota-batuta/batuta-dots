@@ -25,8 +25,8 @@
 
 | Teammate | Scope Agent | Responsabilidad | Archivos Propios |
 |----------|-------------|-----------------|------------------|
-| `agent-dev` | pipeline-agent | Logica del agente, tools, chains, memory | `src/agent/**`, `src/tools/**`, `src/chains/**` |
-| `prompt-engineer` | pipeline-agent | System prompts, few-shot examples, evaluacion | `prompts/**`, `evaluations/**` |
+| `agent-dev` | pipeline-agent | Logica del agente, tools, chains, memory | `features/agent/**`, `features/agent/tools/**`, `features/agent/chains/**` |
+| `prompt-engineer` | pipeline-agent | System prompts, few-shot examples, evaluacion | `features/agent/prompts/**`, `features/agent/evaluations/**` |
 | `security-reviewer` | infra-agent | Defensa contra prompt injection, manejo de PII, control de costos | `security/**` (solo reportes, no modifica codigo) |
 
 **Lead owns**: `main.py` / `index.ts`, archivos de configuracion, `README.md`, integracion final.
@@ -41,14 +41,14 @@
 |----------|--------|---------|----------|
 | `agent-dev` | Requisitos funcionales + definiciones de tools + comportamiento deseado | Markdown (spec SDD o brief) | Lead |
 | `prompt-engineer` | Especificacion de comportamiento del agente + conversaciones de ejemplo | Markdown + JSONL (ejemplos) | Lead |
-| `security-reviewer` | Todo el codigo + todos los prompts para revision | Acceso lectura a `src/**` + `prompts/**` | Lead (post-implementacion) |
+| `security-reviewer` | Todo el codigo + todos los prompts para revision | Acceso lectura a `features/**` + `features/agent/prompts/**` | Lead (post-implementacion) |
 
 ### Output Contracts
 
 | Teammate | Produce | Formato | Criterio de exito |
 |----------|---------|---------|-------------------|
-| `agent-dev` | Agente funcional con tools y memory | Codigo ejecutable en `src/` | Agente responde correctamente a 5 casos de prueba basicos |
-| `prompt-engineer` | Prompts optimizados + resultados de evaluacion | Markdown en `prompts/` + metricas en `evaluations/` | Score de evaluacion >= umbral definido |
+| `agent-dev` | Agente funcional con tools y memory | Codigo ejecutable en `features/agent/` | Agente responde correctamente a 5 casos de prueba basicos |
+| `prompt-engineer` | Prompts optimizados + resultados de evaluacion | Markdown en `features/agent/prompts/` + metricas en `features/agent/evaluations/` | Score de evaluacion >= umbral definido |
 | `security-reviewer` | Reporte de auditoria de seguridad | Markdown en `security/audit-report.md` | Cero vulnerabilidades criticas; hallazgos medios documentados |
 
 ---
@@ -57,13 +57,13 @@
 
 ```
 agent-dev OWNS:
-  src/agent/**
-  src/tools/**
-  src/chains/**
+  features/agent/**            (logica del agente, orchestration)
+  features/agent/tools/**      (definiciones de tools)
+  features/agent/chains/**     (cadenas de razonamiento)
 
 prompt-engineer OWNS:
-  prompts/**
-  evaluations/**
+  features/agent/prompts/**      (system prompts, few-shot examples)
+  features/agent/evaluations/**  (metricas y resultados de evaluacion)
 
 security-reviewer OWNS:
   security/**  (solo reportes — NO modifica codigo de otros teammates)
@@ -75,7 +75,7 @@ Lead OWNS:
   docker-compose.yml (si aplica)
 ```
 
-> Si `agent-dev` necesita leer prompts de `prompts/`, lo hace en modo lectura. Solo `prompt-engineer` puede modificar esos archivos.
+> Si `agent-dev` necesita leer prompts de `features/agent/prompts/`, lo hace en modo lectura. Solo `prompt-engineer` puede modificar esos archivos.
 
 ---
 

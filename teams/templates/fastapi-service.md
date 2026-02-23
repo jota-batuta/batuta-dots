@@ -18,11 +18,11 @@
 
 | Teammate | Scope Agent | Responsabilidad | Archivos Propios |
 |----------|-------------|-----------------|------------------|
-| `api-dev` | pipeline-agent | Rutas, servicios, modelos Pydantic, logica de negocio | `app/api/**`, `app/services/**`, `app/models/**` |
+| `api-dev` | pipeline-agent | Rutas, servicios, modelos Pydantic, logica de negocio | `features/*/routes/**`, `features/*/services/**`, `features/*/models/**` |
 | `test-dev` | pipeline-agent | Suite de tests, fixtures, mocks, cobertura | `tests/**`, `conftest.py` |
 | `infra-dev` | infra-agent | Docker, CI/CD, migraciones Alembic, configuracion | `Dockerfile`, `docker-compose.yml`, `alembic/**`, `.github/**` |
 
-**Lead coordina**: `pyproject.toml`, `app/main.py`, `app/config.py`, `README.md`, integracion general.
+**Lead coordina**: `pyproject.toml`, `core/main.py`, `core/config.py`, `README.md`, integracion general.
 
 ---
 
@@ -51,15 +51,16 @@
 
 ```
 LEAD (integracion):
-  pyproject.toml          (dependencias, config de herramientas)
-  app/main.py             (FastAPI app factory, startup/shutdown)
-  app/config.py           (settings con Pydantic BaseSettings)
+  pyproject.toml              (dependencias, config de herramientas)
+  core/main.py                (FastAPI app factory, startup/shutdown)
+  core/config.py              (settings con Pydantic BaseSettings)
   README.md
 
 api-dev:
-  app/api/**              (routers, dependencias de inyeccion)
-  app/services/**         (logica de negocio, casos de uso)
-  app/models/**           (modelos Pydantic, schemas SQLAlchemy)
+  features/*/routes/**        (routers, dependencias de inyeccion)
+  features/*/services/**      (logica de negocio, casos de uso)
+  features/*/models/**        (modelos Pydantic, schemas SQLAlchemy)
+  features/shared/models/**   (modelos compartidos entre features)
 
 test-dev:
   tests/**                (unit, integration, e2e)
@@ -129,7 +130,7 @@ Esto significa que `test-dev` puede arrancar con fixtures y estructura, pero los
 - **Alembic migrations coordinadas**: `infra-dev` gestiona la carpeta `alembic/`, pero los cambios a modelos SQLAlchemy los hace `api-dev`. Coordinar via Lead cuando hay cambios de schema.
 - **Fixtures compartidas via conftest.py**: `test-dev` es dueno de `conftest.py`. Si `api-dev` necesita una fixture, la pide a `test-dev` o la propone y `test-dev` la integra.
 - **Health check primero**: `api-dev` implementa `/health` como primer endpoint. `infra-dev` lo usa en Docker y CI para verificar que el servicio arranca.
-- **No hardcodear env vars**: usar `app/config.py` con `BaseSettings`. `infra-dev` define las variables, `api-dev` las consume via config.
+- **No hardcodear env vars**: usar `core/config.py` con `BaseSettings`. `infra-dev` define las variables, `api-dev` las consume via config.
 
 ---
 

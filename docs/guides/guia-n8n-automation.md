@@ -29,7 +29,7 @@ Antes de empezar, aqui tienes un mini-diccionario. No necesitas memorizarlo, vue
 | **Coolify** | Una plataforma para poner aplicaciones en internet. Como un hosting inteligente que se encarga de que todo siga corriendo. |
 | **SDD** | Spec-Driven Development. Un proceso paso a paso para construir software: primero planeas, luego construyes. Como un arquitecto que primero dibuja el plano y luego construye la casa. |
 | **Skill** | Un documento que le dice a Claude COMO hacer algo especifico. Como una receta de cocina. |
-| **Scope Agent** | Un "jefe de area" especializado. Claude tiene 3: uno para el proceso de desarrollo, uno para organizacion de archivos, y uno para calidad. |
+| **Scope Agent** | Un "jefe de area" especializado. Claude tiene 3: uno para desarrollo (SDD pipeline), uno para infraestructura y seguridad, y uno para observabilidad y continuidad de sesion. |
 | **Execution Gate** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden antes de tocar algo. |
 | **Rate Limiting** | Un limite de velocidad. Controla cuantas peticiones puede recibir tu sistema por minuto. Como un portero de discoteca que solo deja entrar a 10 personas por minuto para que no se llene de golpe. |
 | **JSON** | Un formato para organizar datos. Piensa en el como una ficha con campos: nombre, edad, direccion. Las computadoras lo leen facilmente. |
@@ -151,6 +151,8 @@ Ese `>` es donde le escribes tus instrucciones.
 
 **Que vamos a hacer**: Darle a Claude las "recetas" (skills) que necesita para trabajar al estilo Batuta. Esto incluye la configuracion del chef principal, los jefes de area (scope agents), y el sistema de calidad.
 
+> **IMPORTANTE**: Asegurate de estar dentro de la carpeta de tu proyecto antes de ejecutar este comando. Todo lo que Claude cree se guardara en la carpeta actual.
+
 **Opcion A — Si ya tienes los commands de Batuta instalados** (recomendado):
 
 Simplemente escribe:
@@ -163,18 +165,13 @@ Y listo. Claude configura todo automaticamente.
 
 **Opcion B — Si es la primera vez y no tienes los commands:**
 
-Copia y pega este prompt:
+Ejecuta en la terminal (fuera de Claude Code):
 
 ```
-Necesito configurar este proyecto con el ecosistema Batuta.
-
-Haz lo siguiente:
-1. Clona el repositorio github.com/jota-batuta/batuta-dots en una carpeta temporal
-2. Ejecuta el script skills/setup.sh --all para copiar CLAUDE.md, sincronizar skills e instalar hooks
-3. Copia el archivo BatutaClaude/CLAUDE.md a la raiz de este proyecto como CLAUDE.md
-4. Inicializa git en esta carpeta si no existe
-5. Confirma cuando todo este listo
+bash <ruta-a-batuta-dots>/skills/setup.sh --project .
 ```
+
+Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en tu proyecto.
 
 > Despues de esta primera vez, los commands `/batuta-init` y `/batuta-update` quedan
 > instalados y ya no necesitas copiar el prompt largo nunca mas.
@@ -214,68 +211,7 @@ Haz lo siguiente:
 
 ---
 
-## Paso 4 — Explorar la idea
-
-**Que vamos a hacer**: Pedirle a Claude que investigue COMO construir lo que necesitamos antes de empezar a programar. Como cuando un chef estudia una receta nueva antes de cocinar — lee los ingredientes, entiende los pasos, y se prepara.
-
-**Copia y pega este prompt**:
-
-```
-/sdd:explore batuta-email-automator
-
-Necesito explorar como construir un sistema de automatizacion de emails con n8n:
-
-FLUJO PRINCIPAL:
-1. Un webhook en n8n recibe notificaciones cuando llega un email nuevo
-2. n8n extrae el asunto y el cuerpo del email
-3. n8n envia ese texto a un servicio de clasificacion con IA
-4. La IA clasifica el email en: urgente, normal, o spam
-5. Segun la clasificacion:
-   - Urgente: n8n envia una respuesta automatica inmediata + notifica al equipo
-   - Normal: n8n etiqueta el email y lo deja en la bandeja de entrada
-   - Spam: n8n mueve el email a la carpeta de spam
-6. Todo queda registrado en un log para saber que paso con cada email
-
-SERVICIO DE CLASIFICACION (el cerebro):
-- Un microservicio en Node.js o Python que recibe texto y devuelve la clasificacion
-- Usa un modelo de IA (Gemini Flash por costo, o Claude si prefieres calidad)
-- Expone un endpoint HTTP que n8n puede llamar
-- Responde en formato JSON: {"clasificacion": "urgente", "confianza": 0.95, "razon": "Contiene palabras de emergencia"}
-
-WORKFLOW DE N8N:
-- Nodo 1: Webhook Trigger (recibe la notificacion de email nuevo)
-- Nodo 2: HTTP Request (llama al servicio de clasificacion)
-- Nodo 3: Switch (decide que hacer segun la clasificacion)
-- Nodo 4a: Respuesta automatica (para urgentes)
-- Nodo 4b: Etiquetar email (para normales)
-- Nodo 4c: Mover a spam (para spam)
-- Nodo 5: Guardar registro en base de datos o archivo
-
-WEBHOOK DE ENTRADA:
-- URL publica que recibe POST con los datos del email
-- Se puede conectar a Gmail via Apps Script, a Outlook via Power Automate, o a cualquier otro proveedor
-- Formato esperado: {"from": "email@ejemplo.com", "subject": "asunto", "body": "cuerpo del email", "timestamp": "2026-01-01T12:00:00Z"}
-
-SEGURIDAD:
-- El webhook debe tener autenticacion (un token secreto en el header)
-- Las API keys del modelo de IA van en variables de entorno, nunca en el codigo
-- Rate limiting: maximo 100 emails por minuto para no sobrecargar la IA
-
-DEPLOY:
-- El servicio de clasificacion se despliega en Docker
-- n8n ya esta corriendo (cloud o self-hosted)
-- Todo se despliega en Coolify para produccion
-```
-
-**Que esperar**: Claude va a investigar las tecnologias y el codebase (que esta vacio). Probablemente te diga algo como:
-
-> "Para implementar esto necesito trabajar con n8n workflows y webhooks, pero no tengo un skill documentado..."
-
-Esto es **NORMAL y BUENO**. Significa que el sistema de deteccion de skills esta funcionando. Pasa al siguiente paso.
-
----
-
-## Paso 5 — Cuando Claude dice "no tengo un skill para eso"
+## Paso 4 — Cuando Claude dice "no tengo un skill para eso"
 
 **Que vamos a hacer**: Entender que pasa cuando Claude detecta que necesita aprender algo nuevo. Esto es como si un chef te dijera "no tengo la receta para ese plato, pero puedo investigarla y documentarla para hacerlo bien".
 
@@ -286,6 +222,8 @@ Esto es **NORMAL y BUENO**. Significa que el sistema de deteccion de skills esta
 > 1. Investigar y crear el skill (proyecto)
 > 2. Investigar y crear el skill (global)
 > 3. Continuar sin skill"
+
+Opcion 1 crea el skill solo para este proyecto. Opcion 2 lo hace disponible para todos tus proyectos.
 
 **Tu respuesta siempre debe ser**:
 
@@ -311,7 +249,7 @@ Claude va a investigar usando Context7 (su base de conocimiento actualizada) y c
 
 ---
 
-## Paso 6 — Crear la propuesta
+## Paso 5 — Crear la propuesta
 
 **Que vamos a hacer**: Pedirle a Claude que escriba un plan formal de lo que va a construir. Como cuando un arquitecto te muestra el boceto antes de construir — puedes decir "esto no me gusta" o "agrega esto" ANTES de que empiece a construir.
 
@@ -320,6 +258,8 @@ Claude va a investigar usando Context7 (su base de conocimiento actualizada) y c
 ```
 /sdd:new batuta-email-automator
 ```
+
+Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
 
 **Que esperar**: Claude va a crear un documento llamado "proposal" que incluye:
 - Que se va a construir (en lenguaje simple)
@@ -344,7 +284,7 @@ Aprobado, continua con el siguiente paso
 
 ---
 
-## Paso 7 — Especificaciones, diseno y tareas
+## Paso 6 — Especificaciones, diseno y tareas
 
 **Que vamos a hacer**: Dejar que Claude avance por las fases de planificacion. El va a crear las especificaciones tecnicas (que exactamente debe hacer cada parte), el diseno de la arquitectura (como se conectan las piezas), y la lista de tareas (en que orden se construye).
 
@@ -353,6 +293,10 @@ Aprobado, continua con el siguiente paso
 ```
 /sdd:continue batuta-email-automator
 ```
+
+Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+
+> **Alternativa rapida**: `/sdd:ff batuta-email-automator` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude va a ejecutar las siguientes fases una por una:
 
@@ -383,7 +327,7 @@ Claude esta configurado para explicarte las cosas de forma que cualquier persona
 
 ---
 
-## Paso 8 — Construir el servicio de clasificacion
+## Paso 7 — Construir el servicio de clasificacion
 
 **Que vamos a hacer**: Pedirle a Claude que construya el "cerebro" de nuestra automatizacion — el servicio que recibe texto de un email y responde con la clasificacion (urgente, normal, o spam). Esta es la primera parte del codigo real.
 
@@ -443,7 +387,7 @@ Crea un archivo .env con las credenciales.
 
 ---
 
-## Paso 9 — Construir la logica del webhook
+## Paso 8 — Construir la logica del webhook
 
 **Que vamos a hacer**: Crear la "puerta de entrada" que recibe los emails. El webhook es como un buzon inteligente — recibe el email, verifica que venga de una fuente autorizada, y se lo pasa al clasificador.
 
@@ -475,7 +419,7 @@ Al terminar, tendras dos componentes funcionando:
 
 ---
 
-## Paso 10 — Crear el workflow de n8n
+## Paso 9 — Crear el workflow de n8n
 
 **Que vamos a hacer**: Crear el workflow visual en n8n que conecta todo: recibe el email, llama al clasificador, y ejecuta la accion correcta segun la clasificacion. Este es el paso donde la "fabrica" se arma completa.
 
@@ -540,7 +484,7 @@ y como configurar las credenciales dentro de n8n.
 
 ---
 
-## Paso 11 — Probar la automatizacion completa
+## Paso 10 — Probar la automatizacion completa
 
 **Que vamos a hacer**: Verificar que todo funciona de principio a fin. Vamos a simular que llega un email y ver si el sistema lo clasifica y responde correctamente. Como una prueba de manejo antes de salir a la carretera.
 
@@ -597,7 +541,7 @@ Claude va a investigar y corregir el problema.
 
 ---
 
-## Paso 12 — Verificar con SDD
+## Paso 11 — Verificar con SDD
 
 **Que vamos a hacer**: Pedirle a Claude que revise su propio trabajo completo. Como cuando un profesor revisa un examen — busca errores, cosas incompletas, o problemas de seguridad.
 
@@ -632,7 +576,7 @@ Despues de las correcciones, ejecuta verify otra vez:
 
 ---
 
-## Paso 13 — Desplegar a produccion
+## Paso 12 — Desplegar a produccion
 
 **Que vamos a hacer**: Poner todo en internet para que funcione solo, las 24 horas, sin tu computadora encendida. Es como instalar una maquina en una fabrica — una vez encendida, trabaja sola.
 
@@ -674,7 +618,7 @@ Dame los archivos necesarios y las instrucciones paso a paso.
 
 ---
 
-## Paso 14 — Subir a GitHub y activar
+## Paso 13 — Subir a GitHub y activar
 
 **Que vamos a hacer**: Guardar todo el proyecto en GitHub (como una copia de seguridad inteligente) y activar el despliegue automatico. Cada vez que hagas un cambio y lo subas a GitHub, la app se actualiza sola en internet.
 
@@ -682,7 +626,7 @@ Dame los archivos necesarios y las instrucciones paso a paso.
 
 ```
 Crea un repositorio privado en GitHub llamado batuta-n8n-automation
-bajo la organizacion jota-batuta, sube todo el codigo, y configura
+bajo la organizacion [TU-ORGANIZACION-O-USUARIO], sube todo el codigo, y configura
 el webhook de Coolify para despliegue automatico.
 
 IMPORTANTE: Verifica que .gitignore incluya:
@@ -704,7 +648,7 @@ Haz el commit inicial con todo lo que hemos construido.
 
 ---
 
-## Paso 15 — Verificar y archivar
+## Paso 14 — Verificar y archivar
 
 **Que vamos a hacer**: Confirmar que todo esta funcionando en internet y cerrar formalmente el proyecto.
 
@@ -861,7 +805,7 @@ para manejar las nuevas categorias.
 Despues de trabajar un rato con Claude (10+ interacciones), puedes pedirle que analice como le ha ido entendiendo tus pedidos:
 
 ```
-/batuta:analyze-prompts
+/batuta-analyze-prompts
 ```
 
 Claude va a revisar la bitacora de calidad y te dira:
@@ -983,32 +927,30 @@ Tu (carpeta vacia)
  |
  +-- Paso 3:  /sdd:init .............. "Que tipo de proyecto es?"
  |
- +-- Paso 4:  /sdd:explore ........... "Investigar como hacerlo"
+ |   [Claude detecta skills faltantes → Paso 4: "Opcion 1"]
  |
- |   [Claude detecta skills faltantes → Paso 5: "Opcion 1"]
- |
- +-- Paso 6:  /sdd:new ............... "Propuesta formal"
+ +-- Paso 5:  /sdd:new ............... "Explora + Propuesta formal"
  |     Tu: "Aprobado"
  |
- +-- Paso 7:  /sdd:continue .......... "Specs → Design → Tasks"
+ +-- Paso 6:  /sdd:continue .......... "Specs → Design → Tasks"
  |     Tu: "Continua" (3 veces)
  |
- +-- Paso 8:  /sdd:apply ............. "Construir el clasificador"
+ +-- Paso 7:  /sdd:apply ............. "Construir el clasificador"
  |     [Execution Gate valida antes de cada cambio]
  |
- +-- Paso 9:  Construir webhook ...... "La puerta de entrada"
+ +-- Paso 8:  Construir webhook ...... "La puerta de entrada"
  |
- +-- Paso 10: Crear workflow n8n ..... "Conectar todo visualmente"
+ +-- Paso 9:  Crear workflow n8n ..... "Conectar todo visualmente"
  |
- +-- Paso 11: Probar todo ............ "Emails de prueba"
+ +-- Paso 10: Probar todo ............ "Emails de prueba"
  |
- +-- Paso 12: /sdd:verify ............ "Revisar que todo funcione"
+ +-- Paso 11: /sdd:verify ............ "Revisar que todo funcione"
  |
- +-- Paso 13: Deploy a Coolify ....... "Poner en internet"
+ +-- Paso 12: Deploy a Coolify ....... "Poner en internet"
  |
- +-- Paso 14: Push a GitHub .......... "Codigo en la nube"
+ +-- Paso 13: Push a GitHub .......... "Codigo en la nube"
  |
- +-- Paso 15: Verificar + archivar ... "Confirmar y celebrar"
+ +-- Paso 14: Verificar + archivar ... "Confirmar y celebrar"
  |
  [Tu automatizacion esta en produccion!]
 ```
@@ -1079,7 +1021,7 @@ Estas metricas son estimaciones para que compares cuando ejecutes los pasos. Ano
 
 > **Importante**: Estas son estimaciones iniciales. Cuando ejecutes cada paso, anota cuanto tardo
 > realmente y si el resultado fue correcto a la primera. Esa informacion ayuda a mejorar el sistema
-> con `/batuta:analyze-prompts`.
+> con `/batuta-analyze-prompts`.
 
 ---
 

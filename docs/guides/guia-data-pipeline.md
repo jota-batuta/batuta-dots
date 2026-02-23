@@ -32,7 +32,7 @@ Antes de empezar, aqui tienes un mini-diccionario. No necesitas memorizarlo, vue
 | **Skill** | Un documento que le dice a Claude COMO hacer algo especifico. Como una receta de cocina. |
 | **SDD** | Spec-Driven Development. Un proceso paso a paso para construir software: primero planeas, luego construyes. Como un arquitecto que primero dibuja el plano y luego construye la casa. |
 | **Repositorio (repo)** | Una carpeta especial que guarda todo tu codigo y recuerda cada cambio que haces. |
-| **Scope Agent** | Un "jefe de area" especializado. Claude tiene 3: uno para el proceso de desarrollo, uno para organizacion de archivos, y uno para calidad. |
+| **Scope Agent** | Un "jefe de area" especializado. Claude tiene 3: uno para el proceso de desarrollo, uno para organizacion de archivos, y uno para observabilidad y continuidad de sesion. |
 | **Execution Gate** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden. |
 | **Docker** | Una herramienta que empaqueta aplicaciones para que funcionen en cualquier computadora igual. Como meter todo en una caja con instrucciones: "abre esto en cualquier PC y funciona". |
 | **Scope Rule** | La regla que decide DONDE va cada archivo en el proyecto. "El uso determina la ubicacion" — si solo una parte del proyecto usa algo, va en esa parte. |
@@ -181,6 +181,8 @@ claude
 
 4. Se abre Claude Code. Ahora instala el ecosistema:
 
+> **IMPORTANTE**: Asegurate de estar dentro de la carpeta de tu proyecto antes de ejecutar este comando. Todo lo que Claude cree se guardara en la carpeta actual.
+
 **Opcion A — Si ya tienes los commands de Batuta instalados** (recomendado):
 
 ```
@@ -196,11 +198,12 @@ Necesito configurar este proyecto con el ecosistema Batuta.
 
 Haz lo siguiente:
 1. Clona el repositorio github.com/jota-batuta/batuta-dots en una carpeta temporal
-2. Ejecuta el script skills/setup.sh --all para copiar CLAUDE.md, sincronizar skills e instalar hooks
-3. Copia el archivo BatutaClaude/CLAUDE.md a la raiz de este proyecto como CLAUDE.md
-4. Inicializa git en esta carpeta si no existe
-5. Confirma cuando todo este listo
+2. Ejecuta el script: bash <ruta-a-batuta-dots>/skills/setup.sh --project .
+3. Inicializa git en esta carpeta si no existe
+4. Confirma cuando todo este listo
 ```
+
+Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en tu proyecto.
 
 **Que esperar**: Claude va a descargar el ecosistema y configurar todo. Puede tomar 1-2 minutos. Cuando termine, veras estos archivos nuevos:
 - `CLAUDE.md` — Las instrucciones del chef (router principal + scope agents + execution gate)
@@ -211,11 +214,9 @@ Haz lo siguiente:
 
 ---
 
-## Paso 3 — Iniciar el proyecto con SDD y explorar la idea
+## Paso 3 — Iniciar el proyecto con SDD
 
-**Que vamos a hacer**: Decirle a Claude que tipo de proyecto vamos a construir y que investigue como hacerlo. Es como cuando un ingeniero estudia el proceso de la fabrica antes de disenar la linea de ensamblaje.
-
-**Paso 3A — Inicializar el proyecto:**
+**Que vamos a hacer**: Decirle a Claude que tipo de proyecto vamos a construir. Es como cuando un ingeniero registra formalmente el proyecto antes de empezar a planificar.
 
 ```
 /sdd:init
@@ -229,69 +230,7 @@ Cuando Claude pregunte:
 | Tipo de proyecto | `data-pipeline` |
 | Descripcion | `Pipeline de datos en Python que lee archivos CSV y Excel, limpia y transforma datos (duplicados, formatos, validacion), genera reportes de resumen, y exporta a PostgreSQL o CSV limpio. Usa pandas o polars.` |
 
-**Paso 3B — Explorar la idea:**
-
-```
-/sdd:explore batuta-data-pipeline
-
-Necesito explorar como construir un pipeline de datos con estas caracteristicas:
-
-FUENTES DE DATOS (Estacion 1 — Recepcion):
-- Leer archivos CSV (con diferentes separadores: coma, punto y coma, tabulador)
-- Leer archivos Excel (.xlsx, multiples hojas)
-- Detectar automaticamente el encoding del archivo (UTF-8, Latin-1, etc.)
-- Poder procesar multiples archivos a la vez (todos los CSV de una carpeta)
-- Archivos pueden ser grandes: hasta 1 millon de filas
-
-TRANSFORMACIONES (Estacion 2 — Limpieza):
-- Eliminar filas completamente duplicadas
-- Estandarizar nombres: "JUAN PEREZ" → "Juan Perez"
-- Estandarizar fechas: convertir cualquier formato a YYYY-MM-DD
-- Limpiar espacios extra en textos: "  Juan   Perez  " → "Juan Perez"
-- Normalizar telefonos: quitar guiones, espacios, parentesis
-- Convertir tipos: "30" (texto) → 30 (numero)
-- Reemplazar valores vacios con un valor por defecto configurable
-- Poder agregar transformaciones personalizadas (reglas de negocio)
-
-VALIDACION (Estacion 3 — Control de calidad):
-- Validar emails: debe tener formato correcto (algo@algo.algo)
-- Validar rangos numericos: edad entre 0 y 150, precio mayor que 0
-- Validar campos obligatorios: nombre y email no pueden estar vacios
-- Validar unicidad: no debe haber dos registros con el mismo email
-- Validar formato de telefono: minimo 7 digitos
-- Generar reporte de errores: que fila, que columna, que error
-- Registros invalidos van a un archivo separado (rechazados.csv) para revision
-
-REPORTES:
-- Total de registros leidos
-- Total de duplicados eliminados
-- Total de transformaciones aplicadas
-- Total de registros validos vs invalidos
-- Estadisticas por columna: conteo, valores unicos, valores nulos
-- Reporte en formato legible (no tecnico)
-- Exportar reporte como archivo de texto o JSON
-
-EXPORTACION (Estacion 4 — Empaque):
-- Opcion 1: Guardar en PostgreSQL (crear tabla si no existe, o agregar a tabla existente)
-- Opcion 2: Guardar como CSV limpio
-- Opcion 3: Ambas — PostgreSQL y CSV
-- Log de lo que se exporto: cuantos registros, a donde, cuando
-
-CONFIGURACION:
-- Un archivo de configuracion sencillo donde se define:
-  - Que archivos leer y de donde
-  - Que transformaciones aplicar
-  - Que validaciones ejecutar
-  - A donde exportar
-- Que sea facil de modificar sin tocar el codigo
-
-EJECUCION:
-- Se ejecuta desde la terminal: python run_pipeline.py
-- Opcionalmente, programar para que se ejecute solo cada cierto tiempo
-- Sin frontend — solo terminal y archivos
-```
-
-**Que esperar**: Claude va a investigar y probablemente detecte que necesita skills para pandas/polars, validacion de datos, y posiblemente PostgreSQL. Esto es normal — el sistema de deteccion de skills esta funcionando.
+**Que esperar**: Claude va a registrar el proyecto en el sistema SDD y preparar todo para el siguiente paso.
 
 ---
 
@@ -319,9 +258,9 @@ Esto puede pasar 2-4 veces. Cada vez, responde "Opcion 1". Claude va a investiga
 
 ---
 
-## Paso 5 — Crear la propuesta
+## Paso 5 — Explorar el proyecto y crear la propuesta
 
-**Que vamos a hacer**: Pedirle a Claude que escriba un plan formal de lo que va a construir. Como cuando el ingeniero de la fabrica te muestra el plano de la linea de ensamblaje antes de instalarla.
+**Que vamos a hacer**: Pedirle a Claude que investigue como construir el pipeline y escriba un plan formal. Como cuando el ingeniero de la fabrica estudia el proceso y luego te muestra el plano de la linea de ensamblaje.
 
 **Copia y pega este prompt**:
 
@@ -329,7 +268,9 @@ Esto puede pasar 2-4 veces. Cada vez, responde "Opcion 1". Claude va a investiga
 /sdd:new batuta-data-pipeline
 ```
 
-**Que esperar**: Claude va a crear un documento llamado "proposal" que incluye:
+Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
+
+**Que esperar**: Claude va a investigar y probablemente detecte que necesita skills para pandas/polars, validacion de datos, y posiblemente PostgreSQL. Esto es normal — el sistema de deteccion de skills esta funcionando. Despues, va a crear un documento llamado "proposal" que incluye:
 - Que se va a construir (en lenguaje simple)
 - Que riesgos hay
 - Criterios de exito (como sabemos que funciona)
@@ -360,6 +301,10 @@ Aprobado, continua con el siguiente paso
 ```
 /sdd:continue batuta-data-pipeline
 ```
+
+Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+
+> **Alternativa rapida**: `/sdd:ff batuta-data-pipeline` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude va a ejecutar estas fases en orden:
 
@@ -780,7 +725,7 @@ batuta-data-pipeline/
 Despues de trabajar un rato con Claude (10+ interacciones):
 
 ```
-/batuta:analyze-prompts
+/batuta-analyze-prompts
 ```
 
 Claude analiza la bitacora de calidad y te dice:
@@ -949,7 +894,7 @@ Tu: "El pipeline tarda 10 minutos con 1 millon de filas. Que un asistente
 
 ## Metricas esperadas de rendimiento
 
-Anota tus resultados reales para mejorar el sistema con `/batuta:analyze-prompts`.
+Anota tus resultados reales para mejorar el sistema con `/batuta-analyze-prompts`.
 
 | Escenario | Nivel | Tiempo estimado | Costo tokens | Calidad esperada | Fortaleza | Debilidad |
 |-----------|-------|----------------|-------------|-----------------|-----------|-----------|
@@ -1103,11 +1048,11 @@ Tu (archivos CSV/Excel crudos)
  |
  +-- Paso 2:  Instalar ecosistema Batuta + crear .batuta/
  |
- +-- Paso 3:  /sdd:init + /sdd:explore ..... "Que tipo de fabrica necesitamos?"
+ +-- Paso 3:  /sdd:init ................... "Registrar el proyecto"
  |
  |   [Claude detecta skills faltantes → Paso 4: "Opcion 1"]
  |
- +-- Paso 5:  /sdd:new .................... "Propuesta: plano de la fabrica"
+ +-- Paso 5:  /sdd:new .................... "Explorar + Propuesta: plano de la fabrica"
  |     Tu: "Aprobado"
  |
  +-- Paso 6:  /sdd:continue ............... "Specs → Design → Tasks"

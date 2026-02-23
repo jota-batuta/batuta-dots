@@ -183,6 +183,8 @@ claude
 
 **Que vamos a hacer**: Darle a Claude las "recetas" (skills) que necesita para trabajar al estilo Batuta.
 
+> **IMPORTANTE**: Asegurate de estar dentro de la carpeta de tu proyecto antes de ejecutar este comando. Todo lo que Claude cree se guardara en la carpeta actual.
+
 **Opcion A — Si ya tienes los commands de Batuta instalados** (recomendado):
 
 ```
@@ -198,11 +200,12 @@ Necesito configurar este proyecto con el ecosistema Batuta.
 
 Haz lo siguiente:
 1. Clona el repositorio github.com/jota-batuta/batuta-dots en una carpeta temporal
-2. Ejecuta el script skills/setup.sh --all para copiar CLAUDE.md, sincronizar skills e instalar hooks
-3. Copia el archivo BatutaClaude/CLAUDE.md a la raiz de este proyecto como CLAUDE.md
-4. Inicializa git en esta carpeta si no existe
-5. Confirma cuando todo este listo
+2. Ejecuta el script: bash <ruta-a-batuta-dots>/skills/setup.sh --project .
+3. Inicializa git en esta carpeta si no existe
+4. Confirma cuando todo este listo
 ```
+
+Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en tu proyecto.
 
 **Que esperar**: Claude configura el ecosistema en 1-2 minutos. Crea:
 - `CLAUDE.md` — Las instrucciones del chef
@@ -213,11 +216,11 @@ Haz lo siguiente:
 
 ---
 
-## Paso 3 — Explorar el diseno de la herramienta
+## Paso 3 — Iniciar el proyecto con SDD
 
-**Que vamos a hacer**: Decirle a Claude exactamente que queremos construir para que investigue la mejor forma de hacerlo. Como cuando un carpintero estudia que tipo de madera usar antes de construir un mueble.
+**Que vamos a hacer**: Decirle a Claude que tipo de proyecto vamos a construir para que se prepare correctamente. SDD es el proceso de "primero planear, luego construir".
 
-**Primero, inicializa el proyecto SDD:**
+**Copia y pega este prompt:**
 
 ```
 /sdd:init
@@ -228,75 +231,10 @@ Cuando Claude pregunte:
 | Si Claude pregunta... | Tu respondes... |
 |----------------------|-----------------|
 | Nombre del proyecto | `ordena-archivos` |
-| Tipo de proyecto | `cli` |
+| Tipo de proyecto | `library` |
 | Descripcion | `Herramienta CLI en Python que organiza archivos de una carpeta por tipo (imagenes, documentos, videos, musica, comprimidos, codigo). Con vista previa, deshacer, estadisticas y configuracion personalizable.` |
 
-**Ahora, explora los requisitos. Copia y pega este prompt:**
-
-```
-/sdd:explore ordena-archivos-cli
-
-Necesito explorar como construir una herramienta CLI que organice archivos por tipo:
-
-COMANDO PRINCIPAL — ordena organizar <carpeta>:
-- Lee todos los archivos de la carpeta indicada
-- Clasifica cada archivo por su extension:
-  * Imagenes (.jpg, .jpeg, .png, .gif, .bmp, .svg, .webp) → Imagenes/
-  * Documentos (.pdf, .doc, .docx, .txt, .xlsx, .pptx, .csv) → Documentos/
-  * Videos (.mp4, .avi, .mov, .mkv, .wmv) → Videos/
-  * Musica (.mp3, .wav, .flac, .aac, .ogg) → Musica/
-  * Comprimidos (.zip, .rar, .7z, .tar, .gz) → Comprimidos/
-  * Codigo (.py, .js, .ts, .html, .css, .json) → Codigo/
-  * Todo lo demas → Otros/
-- Crea las carpetas de destino si no existen
-- Mueve cada archivo a su carpeta correspondiente
-- Muestra un resumen con colores: cuantos archivos se movieron a cada carpeta
-- Opcion --destino para organizar en otra ubicacion (por defecto: dentro de la misma carpeta)
-- Si un archivo con el mismo nombre ya existe en el destino, agregar un numero: foto(1).jpg
-
-VISTA PREVIA — ordena vista-previa <carpeta>:
-- Muestra una tabla con lo que HARIA sin mover nada
-- Agrupado por categoria (Imagenes, Documentos, etc.)
-- Muestra cuantos archivos y cuanto pesan por categoria
-- Al final muestra resumen total
-
-DESHACER — ordena deshacer:
-- Deshace la ultima organizacion (devuelve los archivos a donde estaban)
-- Guarda un registro de cada operacion en ~/.ordena/historial.json
-- Solo se puede deshacer la ULTIMA operacion
-- Pide confirmacion antes de deshacer
-
-ESTADISTICAS — ordena stats <carpeta>:
-- Muestra una tabla con:
-  * Cantidad de archivos por tipo
-  * Peso total por tipo
-  * Porcentaje que ocupa cada tipo
-  * Archivo mas grande y mas pequeno
-- Grafica de barras horizontal (con Rich) mostrando la distribucion
-
-CONFIGURACION — ordena config:
-- ordena config --mostrar → muestra las reglas actuales
-- ordena config --agregar .sketch Diseno → agrega una extension a una categoria
-- ordena config --quitar .csv Documentos → quita una extension de una categoria
-- ordena config --reset → vuelve a la configuracion por defecto
-- La configuracion se guarda en ~/.ordena/config.json
-
-FRAMEWORK CLI:
-- Evaluar Click vs Typer (el que mejor se adapte)
-- Usar Rich para la salida bonita (tablas, colores, barras de progreso)
-
-EMPAQUETADO:
-- Que se pueda instalar con pip install .
-- Que el comando "ordena" quede disponible en la terminal
-- pyproject.toml para la configuracion del paquete
-
-TESTS:
-- pytest para verificar que todo funciona
-- Tests con carpetas temporales (que no toquen archivos reales)
-- Tests para: organizar, vista previa, deshacer, estadisticas, configuracion
-```
-
-**Que esperar**: Claude va a investigar Click vs Typer, Rich, y como manejar archivos en Python. Puede que detecte que necesita skills — di "Opcion 1" si pregunta.
+**Que esperar**: Claude puede detectar que necesita skills para Click/Typer, Rich, u otras tecnologias. Di "Opcion 1" si pregunta.
 
 ---
 
@@ -309,6 +247,8 @@ TESTS:
 ```
 /sdd:new ordena-archivos-cli
 ```
+
+Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
 
 **Que esperar**: Claude crea una propuesta con:
 - Que se va a construir
@@ -339,6 +279,10 @@ Aprobado, continua con el siguiente paso
 ```
 /sdd:continue ordena-archivos-cli
 ```
+
+Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+
+> **Alternativa rapida**: `/sdd:ff <nombre>` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude ejecuta 3 fases:
 
@@ -893,7 +837,7 @@ Verifica:
 | Claude se trabo y no responde | Cierra la terminal, abrela de nuevo, escribe `claude` |
 | Quieres deshacer el ultimo cambio | `Deshaz el ultimo cambio que hiciste` |
 | No entiendes algo | `Explicame [lo que no entiendes] como si tuviera 15 anos` |
-| Quieres ver el estado del proyecto | `/sdd:continue ordena-archivos-cli` (te muestra donde quedamos) |
+| Quieres ver el estado del proyecto | Pregunta a Claude: "En que fase estamos?" |
 | Los tests fallan y no sabes por que | `Ejecuta pytest con -v (verbose) y analiza cada fallo. Corrigelos todos.` |
 | Moviste archivos que no querias | Usa `ordena deshacer` en la terminal (no en Claude Code) |
 
@@ -917,7 +861,7 @@ Que los mueva a una carpeta llamada "Diseno/".
 Actualiza la configuracion por defecto y los tests.
 ```
 
-Y sigue el mismo flujo: explore → propose → specs → design → tasks → apply → verify.
+Y sigue el mismo flujo: propose → specs → design → tasks → apply → verify (el explore se ejecuta automaticamente dentro de `/sdd:new`).
 
 ---
 
@@ -1009,11 +953,11 @@ Tu (carpeta vacia)
  |
  +-- Paso 1-2:  Crear carpeta + Instalar Batuta + crear .batuta/
  |
- +-- Paso 3:    /sdd:init + /sdd:explore .... "Investigar como hacerlo"
+ +-- Paso 3:    /sdd:init .................. "Que tipo de proyecto es?"
  |
  |   [Claude puede detectar skills faltantes → "Opcion 1"]
  |
- +-- Paso 4:    /sdd:new ................... "Propuesta formal"
+ +-- Paso 4:    /sdd:new ................... "Explora + Propuesta formal"
  |     Tu: "Aprobado"
  |
  +-- Paso 5:    /sdd:continue .............. "Specs → Design → Tasks"

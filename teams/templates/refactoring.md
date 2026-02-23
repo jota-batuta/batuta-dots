@@ -64,11 +64,11 @@ analyst OWNS:
 
 implementor-1 OWNS:
   {archivos del batch 1}  — definidos EXPLICITAMENTE por el Lead
-  Ejemplo: src/moduleA/**, tests/moduleA/**
+  Ejemplo: features/moduleA/**, tests/moduleA/**
 
 implementor-2 OWNS:
   {archivos del batch 2}  — definidos EXPLICITAMENTE por el Lead
-  Ejemplo: src/moduleB/**, tests/moduleB/**
+  Ejemplo: features/moduleB/**, tests/moduleB/**
 
 reviewer OWNS:
   NADA — acceso read-only a todo para verificacion

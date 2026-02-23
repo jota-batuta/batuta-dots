@@ -37,7 +37,7 @@ Antes de empezar, aqui tienes un mini-diccionario. No necesitas memorizarlo, vue
 | **Coolify** | Una plataforma para poner aplicaciones en internet. Como un hosting inteligente. |
 | **SDD** | Spec-Driven Development. Un proceso paso a paso: primero planeas, luego construyes. Como un arquitecto que primero dibuja el plano. |
 | **Skill** | Un documento que le dice a Claude COMO hacer algo especifico. Como una receta de cocina. |
-| **Scope Agent** | Un "jefe de area" especializado. Claude tiene 3: uno para el proceso de desarrollo, uno para organizacion de archivos, y uno para calidad. |
+| **Scope Agent** | Un "jefe de area" especializado. Claude tiene 3: uno para desarrollo (SDD pipeline), uno para infraestructura y seguridad, y uno para observabilidad y continuidad de sesion. |
 | **Execution Gate** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden. |
 | **pytest** | Una herramienta para ejecutar pruebas automaticas en Python. Como un inspector de calidad que revisa cada pieza antes de empaquetarla. |
 | **OWASP** | Una organizacion que publica las mejores practicas de seguridad para aplicaciones web. Como un manual de seguridad industrial — te dice que peligros existen y como prevenirlos. |
@@ -158,6 +158,8 @@ Ese `>` es donde le escribes tus instrucciones.
 
 **Que vamos a hacer**: Darle a Claude las "recetas" (skills) que necesita para trabajar al estilo Batuta. Esto incluye la configuracion del chef principal, los jefes de area (scope agents), y el sistema de calidad.
 
+> **IMPORTANTE**: Asegurate de estar dentro de la carpeta de tu proyecto antes de ejecutar este comando. Todo lo que Claude cree se guardara en la carpeta actual.
+
 **Opcion A — Si ya tienes los commands de Batuta instalados** (recomendado):
 
 Simplemente escribe:
@@ -177,11 +179,12 @@ Necesito configurar este proyecto con el ecosistema Batuta.
 
 Haz lo siguiente:
 1. Clona el repositorio github.com/jota-batuta/batuta-dots en una carpeta temporal
-2. Ejecuta el script skills/setup.sh --all para copiar CLAUDE.md, sincronizar skills e instalar hooks
-3. Copia el archivo BatutaClaude/CLAUDE.md a la raiz de este proyecto como CLAUDE.md
-4. Inicializa git en esta carpeta si no existe
-5. Confirma cuando todo este listo
+2. Ejecuta el script: bash <ruta-a-batuta-dots>/skills/setup.sh --project .
+3. Inicializa git en esta carpeta si no existe
+4. Confirma cuando todo este listo
 ```
+
+Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en tu proyecto.
 
 > Despues de esta primera vez, los commands `/batuta-init` y `/batuta-update` quedan
 > instalados y ya no necesitas copiar el prompt largo nunca mas.
@@ -221,81 +224,11 @@ Haz lo siguiente:
 
 ---
 
-## Paso 4 — Explorar la idea
-
-**Que vamos a hacer**: Pedirle a Claude que investigue COMO construir lo que necesitamos. Como cuando un chef estudia una receta compleja antes de cocinar — revisa los ingredientes, entiende las tecnicas, y planifica el orden.
-
-**Copia y pega este prompt**:
-
-```
-/sdd:explore batuta-task-manager
-
-Necesito explorar como construir un microservicio de gestion de tareas con FastAPI:
-
-AUTENTICACION (quien eres):
-- Registro de usuarios: email + contrasena
-- Login: email + contrasena → devuelve un token JWT
-- Las contrasenas NUNCA se guardan en texto plano — se guardan como hash
-- El token JWT expira despues de 24 horas
-- Para acceder a cualquier endpoint de tareas, necesitas enviar el token en el header
-
-ENDPOINTS DE USUARIOS:
-- POST /auth/register — Crear cuenta nueva (email, contrasena, nombre)
-- POST /auth/login — Iniciar sesion (email, contrasena) → recibe token JWT
-- GET /auth/me — Ver mi perfil (requiere token)
-- PUT /auth/me — Actualizar mi perfil (requiere token)
-
-ENDPOINTS DE TAREAS (todos requieren token):
-- POST /tasks — Crear una tarea nueva
-- GET /tasks — Ver todas MIS tareas (solo las del usuario logueado)
-- GET /tasks/{id} — Ver una tarea especifica (solo si es mia)
-- PUT /tasks/{id} — Actualizar una tarea (titulo, descripcion, estado)
-- DELETE /tasks/{id} — Borrar una tarea (solo si es mia)
-- GET /tasks?status=pending — Filtrar tareas por estado (pendiente, en progreso, completada)
-
-ESTRUCTURA DE UNA TAREA:
-- id: numero unico
-- titulo: texto obligatorio (maximo 200 caracteres)
-- descripcion: texto opcional (maximo 2000 caracteres)
-- estado: pendiente, en_progreso, completada
-- prioridad: baja, media, alta
-- fecha de creacion: automatica
-- fecha de vencimiento: opcional
-- usuario_id: quien creo la tarea (automatico, del token JWT)
-
-BASE DE DATOS:
-- PostgreSQL con SQLAlchemy como ORM (traductor Python → SQL)
-- Alembic para migraciones (cambios controlados en la estructura)
-- 2 tablas principales: usuarios y tareas
-- La tabla de tareas tiene una referencia al usuario que la creo
-
-TESTS:
-- Tests con pytest
-- Tests de autenticacion: registro, login, token invalido
-- Tests de CRUD: crear, leer, actualizar, borrar tareas
-- Tests de seguridad: un usuario NO puede ver las tareas de otro
-- Cobertura minima: 80% del codigo
-
-DOCUMENTACION:
-- FastAPI genera automaticamente una pagina de documentacion interactiva
-- Accesible en /docs (Swagger UI) y /redoc (formato alternativo)
-- Cada endpoint documentado con ejemplos
-
-DEPLOY:
-- Docker para empaquetar la aplicacion
-- Docker Compose para desarrollo local (API + PostgreSQL)
-- Coolify para produccion
-```
-
-**Que esperar**: Claude va a investigar las tecnologias y probablemente te diga que necesita skills para algunas de ellas. Esto es normal — pasa al siguiente paso.
-
----
-
-## Paso 5 — Cuando Claude dice "no tengo un skill para eso"
+## Paso 4 — Cuando Claude dice "no tengo un skill para eso"
 
 **Que vamos a hacer**: Dejar que Claude investigue y documente las tecnologias que necesita. Es como si un chef dijera "no conozco esta tecnica, dejame investigarla primero".
 
-**MOMENTO IMPORTANTE**: Despues del explore, Claude probablemente detecte que necesita skills para:
+**MOMENTO IMPORTANTE**: Durante el proceso, Claude probablemente detecte que necesita skills para:
 - **FastAPI** (el framework del microservicio)
 - **SQLAlchemy** (hablar con la base de datos)
 - **Alembic** (migraciones de base de datos)
@@ -316,6 +249,8 @@ Opcion 1 — Investiga y crea el skill acotado a nuestro proyecto
 
 **Cada vez que te pregunte, responde "Opcion 1"**.
 
+> Opcion 1 crea el skill solo para este proyecto. Opcion 2 lo hace disponible para todos tus proyectos.
+
 Claude va a investigar usando Context7 (su base de conocimiento actualizada) y crear las recetas que necesita. Esto toma unos minutos por skill, pero solo pasa una vez.
 
 > **Detalle tecnico (opcional)**: El infra-agent (jefe de organizacion) coordina la creacion
@@ -325,7 +260,7 @@ Claude va a investigar usando Context7 (su base de conocimiento actualizada) y c
 
 ---
 
-## Paso 6 — Crear la propuesta
+## Paso 5 — Crear la propuesta
 
 **Que vamos a hacer**: Pedirle a Claude que escriba un plan formal de lo que va a construir. Como cuando un arquitecto te muestra el boceto antes de construir — puedes decir "cambia esto" ANTES de que empiece.
 
@@ -334,6 +269,8 @@ Claude va a investigar usando Context7 (su base de conocimiento actualizada) y c
 ```
 /sdd:new batuta-task-manager
 ```
+
+Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
 
 **Que esperar**: Claude va a crear un documento de propuesta que incluye:
 - Que se va a construir (en lenguaje simple)
@@ -358,7 +295,7 @@ Aprobado, continua con el siguiente paso
 
 ---
 
-## Paso 7 — Especificaciones y diseno
+## Paso 6 — Especificaciones y diseno
 
 **Que vamos a hacer**: Dejar que Claude avance por las fases de planificacion. El va a crear las especificaciones tecnicas (que exactamente debe hacer cada endpoint), el diseno de la arquitectura (como se organizan las piezas), y la lista de tareas (en que orden se construye).
 
@@ -367,6 +304,10 @@ Aprobado, continua con el siguiente paso
 ```
 /sdd:continue batuta-task-manager
 ```
+
+Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+
+> **Alternativa rapida**: `/sdd:ff <nombre>` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude va a ejecutar las siguientes fases una por una:
 
@@ -397,7 +338,7 @@ Claude esta configurado para explicarte las cosas como si tuvieras 15 anos.
 
 ---
 
-## Paso 8 — Construir los modelos de base de datos
+## Paso 7 — Construir los modelos de base de datos
 
 **Que vamos a hacer**: Crear las "tablas" de la base de datos. Las tablas son como hojas de calculo: una para usuarios (con columnas de nombre, email, contrasena) y otra para tareas (con columnas de titulo, descripcion, estado). Este es el cimiento de toda la aplicacion.
 
@@ -451,7 +392,7 @@ Si, procede
 
 ---
 
-## Paso 9 — Construir la autenticacion
+## Paso 8 — Construir la autenticacion
 
 **Que vamos a hacer**: Construir el sistema de login. Esto incluye: registrarse, iniciar sesion, y recibir un token JWT (la "pulsera" que demuestra que eres tu). Sin esto, cualquiera podria ver las tareas de cualquiera.
 
@@ -500,7 +441,7 @@ El secreto del JWT debe estar en una variable de entorno, no en el codigo.
 
 ---
 
-## Paso 10 — Construir las operaciones de tareas (CRUD)
+## Paso 9 — Construir las operaciones de tareas (CRUD)
 
 **Que vamos a hacer**: Construir los endpoints para crear, ver, actualizar y borrar tareas. Esta es la funcionalidad principal de nuestra aplicacion — todo lo que el usuario hace con sus tareas.
 
@@ -556,7 +497,7 @@ IMPORTANTE — Seguridad:
 
 ---
 
-## Paso 11 — Escribir tests automaticos
+## Paso 10 — Escribir tests automaticos
 
 **Que vamos a hacer**: Crear pruebas automaticas que verifican que TODO funciona correctamente. Es como un inspector de calidad que revisa cada pieza antes de empaquetarla. Si alguien cambia algo en el futuro y rompe algo, los tests lo detectan inmediatamente.
 
@@ -630,7 +571,7 @@ Repite hasta que todos pasen.
 
 ---
 
-## Paso 12 — Verificar con la Piramide de Validacion
+## Paso 11 — Verificar con la Piramide de Validacion
 
 **Que vamos a hacer**: Pedirle a Claude que haga una revision completa de todo el proyecto. La Piramide de Validacion revisa desde lo mas basico (errores de escritura en el codigo) hasta lo mas avanzado (seguridad y documentacion).
 
@@ -642,13 +583,15 @@ Repite hasta que todos pasen.
 
 **Que esperar**: Claude va a verificar 5 capas, de abajo hacia arriba:
 
-| Capa | Que verifica | Que significa |
-|------|-------------|---------------|
-| **1. Tipos** | Que los datos sean del tipo correcto (numeros donde van numeros, texto donde va texto) | Como verificar que no pusiste tu nombre en el campo de telefono |
-| **2. Tests unitarios** | Que cada pieza funcione por separado | Como probar que cada engranaje gira bien |
-| **3. Tests de integracion** | Que las piezas funcionen juntas | Como probar que los engranajes conectados mueven la maquina |
-| **4. Seguridad** | Que no haya vulnerabilidades conocidas | Como verificar que las cerraduras de tu casa funcionan |
-| **5. Documentacion** | Que todo este documentado para quien venga despues | Como dejar instrucciones claras para el siguiente inquilino |
+| Capa | Que verifica | Quien |
+|------|-------------|-------|
+| 1 | Tipos, linting, build | Claude |
+| 2 | Tests unitarios | Claude |
+| 3 | Tests de integracion/E2E | Claude |
+| 4 | Code review | TU (humano) |
+| 5 | Testing manual | TU (humano) |
+
+Ademas, Claude verifica seguridad y documentacion automaticamente como pasos transversales.
 
 Si encuentra problemas, los va a listar y te va a preguntar si quieres que los corrija.
 
@@ -668,7 +611,7 @@ Despues de las correcciones, ejecuta verify otra vez:
 
 ---
 
-## Paso 13 — Probar en tu computadora
+## Paso 12 — Probar en tu computadora
 
 **Que vamos a hacer**: Levantar la aplicacion completa en tu computadora y probarla antes de subirla a internet. FastAPI genera automaticamente una pagina interactiva donde puedes probar cada endpoint sin necesidad de herramientas extra.
 
@@ -717,7 +660,7 @@ Claude va a investigar y corregir el problema.
 
 ---
 
-## Paso 14 — Desplegar a produccion
+## Paso 13 — Desplegar a produccion
 
 **Que vamos a hacer**: Poner la aplicacion en internet para que funcione las 24 horas. Esto incluye crear los archivos que Docker necesita para empaquetar la aplicacion y configurar Coolify para que la mantenga corriendo.
 
@@ -761,7 +704,7 @@ Dame los archivos necesarios y las instrucciones paso a paso.
 
 ---
 
-## Paso 15 — Subir a GitHub y activar
+## Paso 14 — Subir a GitHub y activar
 
 **Que vamos a hacer**: Guardar todo en GitHub y activar el despliegue automatico. Cada vez que hagas un cambio y lo subas, la API se actualiza sola en internet.
 
@@ -769,7 +712,7 @@ Dame los archivos necesarios y las instrucciones paso a paso.
 
 ```
 Crea un repositorio privado en GitHub llamado batuta-task-api
-bajo la organizacion jota-batuta, sube todo el codigo, y configura
+bajo tu organizacion o usuario de GitHub [TU-ORGANIZACION-O-USUARIO], sube todo el codigo, y configura
 el webhook de Coolify para despliegue automatico.
 
 IMPORTANTE: Verifica que .gitignore incluya:
@@ -785,7 +728,7 @@ Haz el commit inicial con todo lo que hemos construido.
 
 ---
 
-## Paso 16 — Verificar, archivar, y celebrar
+## Paso 15 — Verificar, archivar, y celebrar
 
 **Que vamos a hacer**: Confirmar que todo funciona en internet y cerrar formalmente el proyecto.
 
@@ -907,7 +850,7 @@ Por ejemplo: un campo de "etiquetas" a las tareas para poder
 organizarlas por temas (trabajo, personal, etc.)
 ```
 
-Y sigue el mismo flujo: explore, propose, specs, design, tasks, apply, verify.
+Y sigue el mismo flujo: propose, specs, design, tasks, apply, verify (el explore se ejecuta automaticamente dentro de `/sdd:new`).
 
 > **Importante**: Cada cambio pasa por el Execution Gate automaticamente.
 > Claude valida que el cambio siga las reglas del proyecto antes de escribir codigo.
@@ -944,7 +887,7 @@ Quiero agregar subtareas:
 Despues de trabajar un rato con Claude (10+ interacciones):
 
 ```
-/batuta:analyze-prompts
+/batuta-analyze-prompts
 ```
 
 Claude revisa la bitacora de calidad y te da recomendaciones concretas.
@@ -1066,34 +1009,32 @@ Tu (carpeta vacia)
  |
  +-- Paso 3:  /sdd:init .............. "Que tipo de proyecto es?"
  |
- +-- Paso 4:  /sdd:explore ........... "Investigar como hacerlo"
+ |   [Claude detecta skills faltantes → Paso 4: "Opcion 1"]
  |
- |   [Claude detecta skills faltantes → Paso 5: "Opcion 1"]
- |
- +-- Paso 6:  /sdd:new ............... "Propuesta formal"
+ +-- Paso 5:  /sdd:new ............... "Explora + Propuesta formal"
  |     Tu: "Aprobado"
  |
- +-- Paso 7:  /sdd:continue .......... "Specs → Design → Tasks"
+ +-- Paso 6:  /sdd:continue .......... "Specs → Design → Tasks"
  |     Tu: "Continua" (3 veces)
  |
- +-- Paso 8:  /sdd:apply ............. "Modelos de base de datos"
+ +-- Paso 7:  /sdd:apply ............. "Modelos de base de datos"
  |     [Execution Gate valida antes de cada cambio]
  |
- +-- Paso 9:  Autenticacion .......... "Register, login, JWT"
+ +-- Paso 8:  Autenticacion .......... "Register, login, JWT"
  |
- +-- Paso 10: CRUD de tareas ......... "Crear, leer, actualizar, borrar"
+ +-- Paso 9:  CRUD de tareas ......... "Crear, leer, actualizar, borrar"
  |
- +-- Paso 11: Tests con pytest ....... "21 tests automaticos"
+ +-- Paso 10: Tests con pytest ....... "21 tests automaticos"
  |
- +-- Paso 12: /sdd:verify ............ "Piramide de Validacion"
+ +-- Paso 11: /sdd:verify ............ "Piramide de Validacion"
  |
- +-- Paso 13: Probar en tu PC ........ "localhost:8000/docs"
+ +-- Paso 12: Probar en tu PC ........ "localhost:8000/docs"
  |
- +-- Paso 14: Deploy a Coolify ....... "Poner en internet"
+ +-- Paso 13: Deploy a Coolify ....... "Poner en internet"
  |
- +-- Paso 15: Push a GitHub .......... "Codigo en la nube"
+ +-- Paso 14: Push a GitHub .......... "Codigo en la nube"
  |
- +-- Paso 16: Verificar + archivar ... "Confirmar y celebrar"
+ +-- Paso 15: Verificar + archivar ... "Confirmar y celebrar"
  |
  [Tu API esta en produccion!]
 ```

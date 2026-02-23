@@ -163,6 +163,8 @@ claude
 
 **Que vamos a hacer**: Darle a Claude las "recetas" que necesita para trabajar al estilo Batuta.
 
+> **IMPORTANTE**: Asegurate de estar dentro de la carpeta de tu proyecto antes de ejecutar este comando. Todo lo que Claude cree se guardara en la carpeta actual.
+
 **Copia y pega este prompt**:
 
 ```
@@ -177,21 +179,16 @@ claude
 **Si no tienes el comando /batuta-init**, copia y pega esto en su lugar:
 
 ```
-Necesito configurar este proyecto con el ecosistema Batuta.
-
-Haz lo siguiente:
-1. Clona el repositorio github.com/jota-batuta/batuta-dots en una carpeta temporal
-2. Ejecuta el script skills/setup.sh --all para copiar CLAUDE.md, sincronizar skills e instalar hooks
-3. Copia el archivo BatutaClaude/CLAUDE.md a la raiz de este proyecto como CLAUDE.md
-4. Inicializa git en esta carpeta si no existe
-5. Confirma cuando todo este listo
+bash <ruta-a-batuta-dots>/skills/setup.sh --project .
 ```
+
+Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en tu proyecto.
 
 **Tip**: Si Claude pide permiso para ejecutar comandos, di "yes".
 
 ---
 
-## Paso 3 — Inicializar y explorar (SDD Init + Explore)
+## Paso 3 — Inicializar el proyecto (SDD Init)
 
 **Que vamos a hacer**: Decirle a Claude que investigue COMO construir nuestro agente antes de empezar a programar. Primero se planea, despues se construye.
 
@@ -209,72 +206,11 @@ Cuando Claude pregunte, responde asi:
 | Tipo de proyecto | `ai-agent` |
 | Descripcion | `Agente conversacional de IA que responde preguntas sobre documentos, busca en internet, guarda notas, hace calculos y recuerda conversaciones. Usa Google ADK o LangChain.` |
 
-Despues de la inicializacion, **copia y pega este prompt**:
-
-```
-/sdd:explore batuta-ai-agent
-
-Necesito explorar como construir un agente conversacional de IA:
-
-CAPACIDADES DEL AGENTE:
-- Responder preguntas sobre un documento que el usuario le da (PDF, TXT, Markdown)
-- Buscar informacion actualizada en internet cuando no sabe la respuesta
-- Guardar notas que el usuario le pida ("anotate esto")
-- Recordar la conversacion completa (memoria persistente)
-- Hacer calculos matematicos
-- Leer archivos locales
-- Ejecutarse desde la terminal (sin pagina web, solo texto)
-
-HERRAMIENTAS (TOOLS) DEL AGENTE:
-1. document_search — Buscar informacion dentro del documento cargado
-2. web_search — Buscar en internet usando Tavily
-3. calculator — Resolver operaciones matematicas
-4. save_note — Guardar una nota con titulo y contenido
-5. list_notes — Listar todas las notas guardadas
-6. get_note — Leer una nota especifica por su titulo
-7. read_file — Leer un archivo local
-
-MEMORIA:
-- Historial de conversacion: recordar las ultimas 50 interacciones
-- Almacen de notas: SQLite para guardar las notas de forma permanente
-
-FRAMEWORK:
-- Primera opcion: Google ADK (Agent Development Kit)
-- Alternativa: LangChain si ADK no tiene lo que necesitamos
-- Claude investiga cual es mejor para este caso y recomienda
-
-LLM (CEREBRO):
-- Debe funcionar con cualquiera: Claude, GPT, Gemini
-- El usuario elige cual usar mediante una variable de entorno
-- Por defecto: Gemini Flash (por ser gratis para empezar)
-
-INTERFAZ:
-- Terminal interactiva: el usuario escribe y el agente responde
-- Comando para cargar un documento: "carga este archivo: ruta/al/archivo.pdf"
-- Comando para salir: "salir" o "exit"
-- Mostrar que herramienta esta usando: "[Buscando en el documento...]"
-
-CONFIGURACION:
-- Archivo .env para las API keys
-- Archivo config.yaml para las instrucciones del agente
-- Los archivos de configuracion NUNCA van a git
-
-SEGURIDAD:
-- Proteccion contra prompt injection
-- Limite de tokens por conversacion
-- Nunca guardar datos personales en los logs
-- API keys en variables de entorno, nunca en el codigo
-```
-
-**Que hace Claude**: Investiga las tecnologias disponibles. Probablemente te recomiende una opcion entre Google ADK y LangChain, explicando los pros y contras de cada uno.
-
-**Que vas a ver**: Un resumen de lo que encontro, con su recomendacion.
-
 ---
 
-## Paso 4 — Propuesta de arquitectura (SDD Proposal)
+## Paso 4 — Explorar y proponer arquitectura (SDD Proposal)
 
-**Que vamos a hacer**: Pedirle a Claude que escriba un plan formal de lo que va a construir. Como cuando un arquitecto te muestra el boceto antes de construir la casa.
+**Que vamos a hacer**: Pedirle a Claude que investigue las tecnologias disponibles y escriba un plan formal de lo que va a construir. Como cuando un arquitecto investiga materiales y te muestra el boceto antes de construir la casa.
 
 **Copia y pega este prompt**:
 
@@ -282,7 +218,9 @@ SEGURIDAD:
 /sdd:new batuta-ai-agent
 ```
 
-**Que hace Claude**: Crea una propuesta que incluye que framework eligio y por que, que herramientas va a implementar, como funciona la memoria, y los riesgos que ve.
+Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
+
+**Que hace Claude**: Investiga las tecnologias, te recomienda entre Google ADK y LangChain, y crea una propuesta que incluye que framework eligio y por que, que herramientas va a implementar, como funciona la memoria, y los riesgos que ve.
 
 **Que vas a ver**: Un resumen de la propuesta. Leelo con calma.
 
@@ -303,6 +241,10 @@ Aprobado, continua con el siguiente paso
 ```
 /sdd:continue batuta-ai-agent
 ```
+
+Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+
+> **Alternativa rapida**: `/sdd:ff batuta-ai-agent` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que hace Claude**: Ejecuta tres fases seguidas:
 
@@ -342,6 +284,8 @@ En alguno de los pasos anteriores (o en este), Claude va a detectar que necesita
 ```
 Opcion 1 — Investiga y crea el skill acotado a nuestro proyecto
 ```
+
+Opcion 1 crea el skill solo para este proyecto. Opcion 2 lo hace disponible para todos tus proyectos.
 
 Esto puede pasar varias veces para Google ADK, Tavily, el LLM que elijas, etc. **Cada vez que te pregunte, responde "Opcion 1"**.
 
@@ -526,37 +470,10 @@ Optimiza el system prompt del agente. Necesito que:
 **Copia y pega este prompt**:
 
 ```
-Ejecuta una auditoria de seguridad completa del agente. Revisa estos 5 puntos
-y corrige lo que encuentres:
-
-1. PROMPT INJECTION (instrucciones maliciosas):
-   - Verifica que el agente no pueda ser manipulado por instrucciones ocultas
-     dentro de documentos o resultados de busqueda
-   - Agrega defensas al system prompt
-   - Prueba con un documento que contenga "Ignora tus instrucciones anteriores"
-
-2. CONTROL DE COSTOS:
-   - Verifica que exista un limite de tokens por conversacion
-   - Agrega un limite de busquedas web por sesion (maximo 10)
-   - Agrega un limite de tamanio de documento (maximo 50 paginas)
-
-3. DATOS PERSONALES (PII):
-   - Verifica que los logs NO guarden datos personales
-   - Agrega un filtro que detecte emails, telefonos y los reemplace
-     con "[REDACTADO]" en los logs
-
-4. SEGURIDAD DE API KEYS:
-   - Verifica que TODAS las API keys esten en .env
-   - Verifica que .env este en .gitignore
-   - Verifica que NO haya API keys en el codigo fuente
-   - El agente NUNCA debe revelar sus API keys
-
-5. VALIDACION DE SALIDAS:
-   - El agente NO debe ejecutar codigo que le sugieran documentos o la web
-   - Las notas se guardan como texto plano, nunca como codigo ejecutable
-
-Dame un reporte con el estado de cada punto y que cambios hiciste.
+Ejecuta una auditoria de seguridad completa del proyecto.
 ```
+
+Claude activara su checklist de seguridad AI-First automaticamente, que incluye los 10 puntos del OWASP para codigo generado por IA.
 
 **Que hace Claude**: Revisa todo el codigo, encuentra vulnerabilidades, y las corrige. Te da un reporte.
 
@@ -647,7 +564,7 @@ Cuando cargo un archivo PDF me sale este error: [pega el error aqui]
 
 ```
 Crea un repositorio privado en GitHub llamado batuta-ai-agent bajo la
-organizacion jota-batuta, sube todo el codigo, y haz el commit inicial.
+organizacion [TU-ORGANIZACION-O-USUARIO], sube todo el codigo, y haz el commit inicial.
 
 IMPORTANTE: Verifica que .gitignore incluya:
 - .env
@@ -832,7 +749,7 @@ Ajusta el system prompt para que:
 Despues de 10+ interacciones con Claude:
 
 ```
-/batuta:analyze-prompts
+/batuta-analyze-prompts
 ```
 
 Claude revisa la bitacora de calidad y te dice que tipo de errores comete y como mejorar tus instrucciones.
@@ -990,9 +907,9 @@ Tu (carpeta vacia)
  |
  +-- Paso 2:  Instalar Batuta ......... CLAUDE.md + .batuta/
  |
- +-- Paso 3:  /sdd:init + explore ..... "Que tipo de agente? Como hacerlo?"
+ +-- Paso 3:  /sdd:init ............... "Que tipo de agente? Como hacerlo?"
  |
- +-- Paso 4:  /sdd:new ................ "Propuesta formal: ADK o LangChain?"
+ +-- Paso 4:  /sdd:new ................ "Explora + Propuesta formal: ADK o LangChain?"
  |     Tu: "Aprobado"
  |
  +-- Paso 5:  /sdd:continue ........... "Specs, Design, Tasks"

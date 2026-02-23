@@ -6,7 +6,7 @@
 ## Meta
 - **Last updated**: {date}
 - **Last batuta update**: {date}
-- **Batuta version**: 5.0.0
+- **Batuta version**: 9.2.0
 
 ## Project
 - **Type**: {webapp|automation|ai-agent|infrastructure|data-pipeline|library}

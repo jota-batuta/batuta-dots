@@ -115,6 +115,8 @@ claude
 
 ## Paso 2 — Instalar el ecosistema Batuta
 
+> **IMPORTANTE**: Asegurate de estar dentro de la carpeta de tu proyecto antes de ejecutar este comando. Todo lo que Claude cree se guardara en la carpeta actual.
+
 ```
 /batuta-init batuta-email-agent
 ```
@@ -137,73 +139,9 @@ Esto instala las instrucciones del chef (CLAUDE.md), los jefes de area (scope ag
 
 ---
 
-## Paso 4 — Explorar la idea
+## Paso 4 — Skills faltantes
 
-```
-/sdd:explore batuta-email-classifier
-
-Necesito explorar como construir un agente de IA que organice correos de Gmail:
-
-AGENTE:
-- Construido con LangChain en Python
-- El agente tiene "tools" (herramientas) que puede usar
-- El agente decide que hacer con cada correo basandose en su contenido
-
-TOOLS DEL AGENTE:
-1. gmail_list_messages — Lista los correos no leidos o sin etiquetar
-2. gmail_get_message — Lee el contenido de un correo especifico
-3. gmail_list_labels — Lista las etiquetas existentes en Gmail
-4. gmail_create_label — Crea una nueva etiqueta en Gmail
-5. gmail_apply_label — Aplica una etiqueta a un correo
-6. classify_text — Envia el texto del correo a Gemini Flash para clasificarlo
-
-CLASIFICACION CON GEMINI FLASH:
-- Modelo: gemini-2.0-flash (rapido y barato)
-- Categorias: urgente, factura, newsletter, spam, personal, trabajo, otro
-- El clasificador recibe: asunto + primeras 500 palabras del cuerpo
-- Responde SOLO con la categoria (una palabra)
-
-FLUJO DEL AGENTE:
-1. Obtener correos no procesados (ultimos 50 sin la etiqueta "Procesado")
-2. Para cada correo:
-   a. Leer el contenido
-   b. Clasificar con Gemini Flash
-   c. Verificar si existe la label para esa categoria
-   d. Si no existe, crear la label
-   e. Aplicar la label al correo
-   f. Aplicar la label "Procesado" para no repetir
-3. Generar un resumen: "Procesados X correos. Y urgentes, Z facturas, etc."
-
-CONEXION A GMAIL:
-- Usar la API REST de Gmail via google-api-python-client
-- OAuth2 con credentials.json (ya lo tenemos en la carpeta del proyecto)
-- El token se genera la primera vez (abre el navegador para dar permisos)
-
-CONEXION A GEMINI:
-- Usar google-generativeai Python SDK
-- API key guardada en variable de entorno GOOGLE_API_KEY
-
-EJECUCION:
-- Se ejecuta como un script: python run_agent.py
-- Opcionalmente, se puede programar para ejecutar cada 30 minutos
-- Sin frontend — solo terminal
-
-SEGURIDAD:
-- Las credenciales de Gmail (credentials.json, token.json) NUNCA van a git
-- La API key de Gemini va en un archivo .env
-- El archivo .env NUNCA va a git
-```
-
-**Que esperar**: Claude detectara que necesita skills para LangChain, Gmail API, y Gemini. Di "Opcion 1" cada vez. Es normal y bueno.
-
----
-
-## Paso 5 — Skills faltantes
-
-Claude va a detectar que necesita:
-- **LangChain** (o ai-agents) — construccion del agente
-- **Gmail API** — conexion a Google
-- **Gemini** — clasificador de texto
+Claude va a detectar que necesita skills para las tecnologias que usaremos (LangChain, Gmail API, Gemini).
 
 **Tu respuesta cada vez:**
 
@@ -215,11 +153,13 @@ Opcion 1 — Investiga y crea el skill acotado a nuestro proyecto
 
 ---
 
-## Paso 6 — Propuesta y aprobacion
+## Paso 5 — Explorar y proponer arquitectura
 
 ```
 /sdd:new batuta-email-classifier
 ```
+
+Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
 
 Lee el resumen. Si esta bien:
 
@@ -229,17 +169,21 @@ Aprobado, continua con el siguiente paso
 
 ---
 
-## Paso 7 — Especificaciones, diseno y tareas
+## Paso 6 — Especificaciones, diseno y tareas
 
 ```
 /sdd:continue batuta-email-classifier
 ```
 
+Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+
+> **Alternativa rapida**: `/sdd:ff batuta-email-classifier` ejecuta todas las fases pendientes de corrido sin pausas.
+
 Repite "Se ve bien, continua" para cada fase (specs, design, tasks).
 
 ---
 
-## Paso 8 — Construir el agente
+## Paso 7 — Construir el agente
 
 ```
 /sdd:apply batuta-email-classifier
@@ -262,7 +206,7 @@ El token de Gmail (token.json) se va a generar la primera vez que ejecute el scr
 
 ---
 
-## Paso 9 — Verificar
+## Paso 8 — Verificar
 
 ```
 /sdd:verify batuta-email-classifier
@@ -278,7 +222,7 @@ Repite la verificacion hasta que todo este verde.
 
 ---
 
-## Paso 10 — Probar el agente en tu computadora
+## Paso 9 — Probar el agente en tu computadora
 
 **Que vamos a hacer**: Ejecutar el agente por primera vez y verificar que clasifica correos correctamente.
 
@@ -320,7 +264,7 @@ Ejecutar estas acciones? (si/no)
 
 ---
 
-## Paso 11 — Configurar ejecucion automatica
+## Paso 10 — Configurar ejecucion automatica
 
 **Que vamos a hacer**: Hacer que el agente se ejecute solo cada cierto tiempo, sin que tengas que correrlo manualmente.
 
@@ -337,7 +281,7 @@ el agente cada 30 minutos y logee los resultados.
 
 ---
 
-## Paso 12 — Configurar despliegue a produccion
+## Paso 11 — Configurar despliegue a produccion
 
 **Que vamos a hacer**: Hacer que el agente viva en un servidor y se ejecute solo, sin tu computadora encendida.
 
@@ -366,11 +310,11 @@ IMPORTANTE:
 
 ---
 
-## Paso 13 — Subir a GitHub y desplegar
+## Paso 12 — Subir a GitHub y desplegar
 
 ```
 Crea un repositorio privado en GitHub llamado batuta-email-agent bajo la
-organizacion jota-batuta, sube todo el codigo, y configura el webhook
+organizacion o usuario de GitHub [TU-ORGANIZACION-O-USUARIO], sube todo el codigo, y configura el webhook
 de Coolify para despliegue automatico.
 
 IMPORTANTE: Verifica que .gitignore incluya:
@@ -386,7 +330,7 @@ Haz el commit inicial con todo lo que hemos construido.
 
 ---
 
-## Paso 14 — Verificar en produccion
+## Paso 13 — Verificar en produccion
 
 ```
 Verifica que el despliegue del agente en Coolify esta funcionando:
@@ -406,7 +350,7 @@ Verifica que el despliegue del agente en Coolify esta funcionando:
 
 ---
 
-## Paso 15 — Archivar y celebrar
+## Paso 14 — Archivar y celebrar
 
 ```
 /sdd:archive batuta-email-classifier
@@ -508,7 +452,7 @@ batuta-email-agent/
 | Quieres procesar correos automaticamente cada hora | `Cambia el scheduler de cada 30 minutos a cada hora` |
 | Quieres que el agente tambien responda correos | `Agrega un tool de gmail_send_reply que responda automaticamente los correos urgentes con un mensaje de "recibido"` |
 | Quieres ver estadisticas | `Agrega un reporte que muestre cuantos correos de cada categoria se procesaron esta semana` |
-| Quieres ver como mejorar tus instrucciones | `/batuta:analyze-prompts` para analizar la comunicacion con Claude |
+| Quieres ver como mejorar tus instrucciones | `/batuta-analyze-prompts` para analizar la comunicacion con Claude |
 
 ---
 
@@ -588,7 +532,7 @@ Tu: "Quiero conectar el agente de Gmail con Slack y Notion. Que un
 
 ### Metricas esperadas de rendimiento
 
-Anota tus resultados reales para alimentar `/batuta:analyze-prompts`.
+Anota tus resultados reales para alimentar `/batuta-analyze-prompts`.
 
 | Escenario | Nivel | Tiempo estimado | Costo tokens | Calidad esperada | Fortaleza | Debilidad |
 |-----------|-------|----------------|-------------|-----------------|-----------|-----------|

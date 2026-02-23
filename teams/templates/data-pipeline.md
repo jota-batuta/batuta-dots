@@ -25,8 +25,8 @@
 
 | Teammate | Scope Agent | Responsabilidad | Archivos Propios |
 |----------|-------------|-----------------|------------------|
-| `pipeline-dev` | pipeline-agent | Logica ETL/ELT, transformaciones, scheduling | `pipeline/**`, `transforms/**`, `schedules/**` |
-| `data-validator` | pipeline-agent | Checks de calidad, validacion de esquemas, tests | `validators/**`, `tests/**`, `schemas/**` |
+| `pipeline-dev` | pipeline-agent | Logica ETL/ELT, transformaciones, scheduling | `features/ingestion/**`, `features/transformation/**`, `features/loading/**`, `core/scheduling/**` |
+| `data-validator` | pipeline-agent | Checks de calidad, validacion de esquemas, tests | `features/validation/**`, `tests/**`, `core/schemas/**` |
 | `infra-dev` | infra-agent | Docker, configuracion de orquestador, almacenamiento | `Dockerfile`, `docker-compose.yml`, `infra/**` |
 
 **Lead owns**: `main.py` / `run.py`, configuracion global, `README.md`, integracion entre capas.
@@ -47,8 +47,8 @@
 
 | Teammate | Produce | Formato | Criterio de exito |
 |----------|---------|---------|-------------------|
-| `pipeline-dev` | Pipeline funcional que transforma datos segun spec | Codigo en `pipeline/` + `transforms/` | Datos de prueba transformados correctamente (comparacion con expected output) |
-| `data-validator` | Suite de validacion que detecta anomalias | Codigo en `validators/` + tests en `tests/` | 100% de reglas de negocio cubiertas; datos invalidos rechazados correctamente |
+| `pipeline-dev` | Pipeline funcional que transforma datos segun spec | Codigo en `features/ingestion/` + `features/transformation/` + `features/loading/` | Datos de prueba transformados correctamente (comparacion con expected output) |
+| `data-validator` | Suite de validacion que detecta anomalias | Codigo en `features/validation/` + tests en `tests/` | 100% de reglas de negocio cubiertas; datos invalidos rechazados correctamente |
 | `infra-dev` | Infraestructura lista para ejecutar el pipeline | `Dockerfile` + `docker-compose.yml` + configs en `infra/` | Pipeline ejecuta end-to-end en contenedor local |
 
 ---
@@ -57,14 +57,15 @@
 
 ```
 pipeline-dev OWNS:
-  pipeline/**        (extractores, loaders, orquestacion logica)
-  transforms/**      (funciones de transformacion)
-  schedules/**       (definiciones de schedule/DAG)
+  features/ingestion/**        (extractores, conectores a fuentes)
+  features/transformation/**   (funciones de transformacion)
+  features/loading/**          (loaders a destinos)
+  core/scheduling/**           (definiciones de schedule/DAG)
 
 data-validator OWNS:
-  validators/**      (checks de calidad de datos)
-  tests/**           (unit tests + integration tests)
-  schemas/**         (JSON Schema de entrada/salida)
+  features/validation/**       (checks de calidad de datos)
+  tests/**                     (unit tests + integration tests)
+  core/schemas/**              (JSON Schema de entrada/salida)
 
 infra-dev OWNS:
   Dockerfile
@@ -77,7 +78,7 @@ Lead OWNS:
   README.md
 ```
 
-> Regla critica: `schemas/` pertenece a `data-validator`, pero `pipeline-dev` los lee como referencia. Si `pipeline-dev` necesita cambiar un esquema, lo solicita a traves del Lead.
+> Regla critica: `core/schemas/` pertenece a `data-validator`, pero `pipeline-dev` los lee como referencia. Si `pipeline-dev` necesita cambiar un esquema, lo solicita a traves del Lead.
 
 ---
 
@@ -114,10 +115,10 @@ En pipelines de datos, los **esquemas son los contratos**. Antes de escribir una
 
 ```
 SCHEMA CONTRACT:
-  Input Schema:  schemas/source_{name}.json    — define estructura de cada fuente
-  Output Schema: schemas/target_{name}.json    — define estructura del destino
-  Transform Rules: transforms/rules.md         — reglas de negocio para transformacion
-  Validation Rules: validators/rules.md        — que hace que un registro sea invalido
+  Input Schema:  core/schemas/source_{name}.json          — define estructura de cada fuente
+  Output Schema: core/schemas/target_{name}.json          — define estructura del destino
+  Transform Rules: features/transformation/rules.md       — reglas de negocio para transformacion
+  Validation Rules: features/validation/rules.md          — que hace que un registro sea invalido
 ```
 
 Estos cuatro artefactos se definen ANTES del spawn. Los teammates los reciben como input inmutable. Si un teammate descubre que un esquema necesita cambio, lo escala al Lead.

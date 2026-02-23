@@ -4,6 +4,38 @@
 
 ---
 
+## v9.2 — Correccion Integral: 8 Patrones Sistemicos + 7 Hallazgos Individuales (2026-02-23)
+
+### Contexto
+
+Integration tests en las 10 guias del ecosistema con 10 agentes independientes (A1-A10). **74 hallazgos** (7C, 28I, 39M) en **8 patrones sistemicos**. Analisis de 6 capas de impacto. Reporte: `docs/qa/integration-tests/consolidado-10-guias.md`.
+
+### Patrones Sistemicos Corregidos
+
+| ID | Patron | Fix |
+|----|--------|-----|
+| PS-1 | `/sdd:new` duplica explore (8/10) | Eliminado explore standalone, solo `/sdd:new` |
+| PS-2 | `/sdd:continue` = 1 fase (8/10) | Aclarado + nota `/sdd:ff` + fix "ver estado" |
+| PS-3 | Opcion B `--all` → `--project` (7/10) | `setup.sh --project .` |
+| PS-4 | Colon → hyphen (7/10 + CLAUDE.md) | `/batuta-analyze-prompts` unificado |
+| PS-5 | Glosario observability (4/10) | "observabilidad y continuidad de sesion" |
+| PS-6 | Piramide capas 4-5 (2/10) | Layer 4=Code Review, Layer 5=Manual Testing |
+| PS-7 | Templates `src/` → `features/` (6) | Alineados con Scope Rule |
+| PS-8 | `jota-batuta` hardcoded (5/10) | `[TU-ORGANIZACION-O-USUARIO]` |
+
+### Hallazgos Individuales: I-1 (cli→library), I-2 (+batuta-init en tabla), I-3 (advertencia directorio), I-4 (lessons-learned.md), I-5 (local vs global skill), I-6 (version 9.2.0), I-7 (security prompt simplificado)
+
+### Archivos modificados (17)
+
+`BatutaClaude/CLAUDE.md`, `session-template.md`, 6 templates en `teams/templates/`, 10 guias en `docs/guides/`, `VERSION`
+
+### Rollback
+```bash
+git revert <commit-hash>
+```
+
+---
+
 ## v9.1 — Integration Test Fixes (12 Findings from guia-nextjs-saas) (2026-02-22)
 
 ### Contexto

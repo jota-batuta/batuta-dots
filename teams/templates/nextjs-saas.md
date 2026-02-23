@@ -18,8 +18,8 @@
 
 | Teammate | Scope Agent | Responsabilidad | Archivos Propios |
 |----------|-------------|-----------------|------------------|
-| `backend-dev` | pipeline-agent | API routes, middleware, modelos Prisma, logica de negocio | `src/app/api/**`, `prisma/**`, `src/lib/server/**` |
-| `frontend-dev` | pipeline-agent | Componentes, paginas, estado del cliente, UI/UX | `src/app/(dashboard)/**`, `src/components/**`, `src/lib/client/**` |
+| `backend-dev` | pipeline-agent | API routes, middleware, modelos Prisma, logica de negocio | `app/api/**`, `features/*/services/**`, `prisma/**`, `core/server/**` |
+| `frontend-dev` | pipeline-agent | Componentes, paginas, estado del cliente, UI/UX | `app/(dashboard)/**`, `features/*/components/**`, `features/shared/components/**`, `core/client/**` |
 | `infra-dev` | infra-agent | Docker, CI/CD, configuracion de entorno, despliegue | `Dockerfile`, `docker-compose.yml`, `.github/**`, `.env.example` |
 
 **Lead coordina**: `package.json`, `tsconfig.json`, `next.config.js`, `README.md`, puntos de integracion.
@@ -54,14 +54,16 @@ LEAD (integracion):
   package.json, tsconfig.json, next.config.js, README.md
 
 backend-dev:
-  src/app/api/**          (API routes)
-  prisma/**               (schema, migraciones, seed)
-  src/lib/server/**       (utilidades server-side, auth helpers)
+  app/api/**                    (API route handlers — convencion Next.js)
+  features/*/services/**        (logica de negocio por feature)
+  prisma/**                     (schema, migraciones, seed)
+  core/server/**                (utilidades server-side compartidas, auth helpers)
 
 frontend-dev:
-  src/app/(dashboard)/**  (paginas del dashboard)
-  src/components/**       (componentes React)
-  src/lib/client/**       (hooks, stores, utilidades client-side)
+  app/(dashboard)/**              (paginas del dashboard — convencion Next.js)
+  features/*/components/**        (componentes React por feature)
+  features/shared/components/**   (componentes compartidos entre features)
+  core/client/**                  (hooks y utilidades client-side globales)
 
 infra-dev:
   Dockerfile              (imagen de produccion)
@@ -107,7 +109,7 @@ El Lead revisa todos los outputs contra la SDD spec original.
 - **API contracts primero**: define los endpoints y sus tipos antes de que frontend empiece a consumir. Evita retrabajo.
 - **Prisma schema = punto de coordinacion**: cualquier cambio al schema de base de datos pasa por el Lead. Un cambio en un modelo puede romper API y frontend simultaneamente.
 - **Variables de entorno**: `infra-dev` define los nombres y valores por defecto. Los otros teammates consumen, nunca inventan variables nuevas sin coordinar.
-- **Auth middleware es compartido**: vive en `src/lib/server/` pero afecta a `backend-dev` y potencialmente a `frontend-dev`. El Lead coordina cambios.
+- **Auth middleware es compartido**: vive en `core/server/` pero afecta a `backend-dev` y potencialmente a `frontend-dev`. El Lead coordina cambios.
 - **Migraciones antes de UI**: `backend-dev` debe completar las migraciones de Prisma antes de que `frontend-dev` integre contra la API real.
 
 ---

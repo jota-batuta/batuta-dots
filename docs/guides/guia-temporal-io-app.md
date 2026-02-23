@@ -39,7 +39,7 @@ Vamos a construir un workflow de **onboarding de clientes** que:
 | **Retry Policy** | Las reglas de reintento: cuantas veces reintentar, cuanto esperar entre intentos. |
 | **Docker** | Una herramienta que empaqueta aplicaciones para que funcionen en cualquier computadora igual. |
 | **Docker Compose** | Un archivo que le dice a Docker "levanta estos 3 servicios juntos". |
-| **Scope Agent** | Un "jefe de area" especializado de Claude. Coordina un grupo de tareas relacionadas. |
+| **Scope Agent** | Un "jefe de area" especializado. Claude tiene 3: uno para desarrollo (SDD pipeline), uno para infraestructura y seguridad, y uno para observabilidad y continuidad de sesion. |
 | **Execution Gate** | Un checklist automatico que Claude ejecuta ANTES de hacer cualquier cambio de codigo. |
 
 ---
@@ -87,6 +87,8 @@ claude
 
 ## Paso 2 — Instalar el ecosistema Batuta
 
+> **IMPORTANTE**: Asegurate de estar dentro de la carpeta de tu proyecto antes de ejecutar este comando. Todo lo que Claude cree se guardara en la carpeta actual.
+
 Escribe:
 
 ```
@@ -115,58 +117,14 @@ Cuando Claude pregunte:
 
 ---
 
-## Paso 4 — Explorar la idea
-
-```
-/sdd:explore batuta-workers-onboarding
-
-Necesito explorar como construir un sistema de workflows con Temporal.io:
-
-WORKFLOWS INICIALES:
-- Onboarding de clientes: validar datos → crear cuenta → enviar email → configurar permisos
-- Procesamiento de pagos: verificar fondos → cobrar → generar factura → notificar
-- Cada workflow debe poder reintentar pasos individuales si fallan
-
-WORKERS:
-- Workers en Python usando el SDK oficial de Temporal
-- Cada worker escucha su propia task queue
-- Workers separados para: onboarding, pagos, notificaciones
-
-TEMPORAL SERVER:
-- Correr Temporal Server en Docker para desarrollo local
-- En produccion, ya tenemos Temporal corriendo en nuestro servidor
-
-DASHBOARD:
-- Una pagina web sencilla que muestre:
-  - Workflows activos
-  - Workflows completados hoy
-  - Workflows fallidos (con el error)
-  - Boton para reintentar workflows fallidos
-
-API REST:
-- Endpoint para lanzar un workflow de onboarding
-- Endpoint para consultar el estado de un workflow
-- Endpoint para listar workflows por tipo
-
-BASE DE DATOS:
-- PostgreSQL para guardar datos de clientes
-- Multi-tenant: cada cliente de Batuta tiene sus datos separados
-
-DEPLOY:
-- Docker Compose para desarrollo local
-- Coolify para produccion
-```
-
-**Que esperar**: Claude va a investigar y probablemente detecte que necesita skills para Temporal.io y otros. Esto es normal — el sistema de deteccion de skills esta funcionando.
-
----
-
-## Paso 5 — Cuando Claude detecte skills faltantes
+## Paso 4 — Cuando Claude detecte skills faltantes
 
 Claude va a decir que no tiene skills para:
 - **Temporal.io** (workflows, activities, workers)
 - **PostgreSQL multi-tenant** (base de datos)
 - Posiblemente **Python** (convenciones de proyecto)
+
+Opcion 1 crea el skill solo para este proyecto. Opcion 2 lo hace disponible para todos tus proyectos.
 
 **Tu respuesta cada vez:**
 
@@ -180,11 +138,13 @@ Temporal.io es la tecnologia mas importante aqui. Claude va a investigar en Cont
 
 ---
 
-## Paso 6 — Propuesta y aprobacion
+## Paso 5 — Propuesta y aprobacion
 
 ```
 /sdd:new batuta-workers-onboarding
 ```
+
+Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
 
 Lee el resumen que Claude te muestra. Si te parece bien:
 
@@ -194,13 +154,17 @@ Aprobado, continua con el siguiente paso
 
 ---
 
-## Paso 7 — Especificaciones, diseno y tareas
+## Paso 6 — Especificaciones, diseno y tareas
 
 ```
 /sdd:continue batuta-workers-onboarding
 ```
 
-Repite "Se ve bien, continua" para cada fase (specs, design, tasks). Claude ejecuta estas 3 fases en orden:
+Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+
+> **Alternativa rapida**: `/sdd:ff batuta-workers-onboarding` ejecuta todas las fases pendientes de corrido sin pausas.
+
+Repite "Se ve bien, continua" para cada fase. Claude ejecuta estas 3 fases en orden:
 
 1. **Specs**: Define exactamente que hace cada workflow, activity y worker
 2. **Design**: Decide la arquitectura: como se conectan Temporal, PostgreSQL y la API
@@ -208,7 +172,7 @@ Repite "Se ve bien, continua" para cada fase (specs, design, tasks). Claude ejec
 
 ---
 
-## Paso 8 — Construir la aplicacion
+## Paso 7 — Construir la aplicacion
 
 ```
 /sdd:apply batuta-workers-onboarding
@@ -237,7 +201,7 @@ Para desarrollo local, usa estos valores:
 
 ---
 
-## Paso 9 — Verificar que todo funcione
+## Paso 8 — Verificar que todo funcione
 
 ```
 /sdd:verify batuta-workers-onboarding
@@ -253,7 +217,7 @@ Repite la verificacion hasta que todo este verde.
 
 ---
 
-## Paso 10 — Probar en tu computadora
+## Paso 9 — Probar en tu computadora
 
 **Que vamos a hacer**: Levantar todo el sistema en tu PC y verificar que funciona antes de subirlo a internet.
 
@@ -278,7 +242,7 @@ El worker de onboarding se cae con este error: [pega el error aqui]
 
 ---
 
-## Paso 11 — Configurar el despliegue a produccion
+## Paso 10 — Configurar el despliegue a produccion
 
 **Que vamos a hacer**: Preparar todo para que la aplicacion viva en internet. Coolify se encarga del hosting.
 
@@ -307,11 +271,11 @@ y las instrucciones para Coolify.
 
 ---
 
-## Paso 12 — Subir a GitHub y desplegar
+## Paso 11 — Subir a GitHub y desplegar
 
 ```
 Crea un repositorio privado en GitHub llamado batuta-workers bajo la
-organizacion jota-batuta, sube todo el codigo, y configura el webhook
+organizacion [TU-ORGANIZACION-O-USUARIO], sube todo el codigo, y configura el webhook
 de Coolify para despliegue automatico.
 
 Haz el commit inicial con todo lo que hemos construido.
@@ -321,7 +285,7 @@ Haz el commit inicial con todo lo que hemos construido.
 
 ---
 
-## Paso 13 — Verificar que todo esta en internet
+## Paso 12 — Verificar que todo esta en internet
 
 ```
 Verifica que el despliegue en Coolify esta funcionando correctamente.
@@ -344,7 +308,7 @@ Claude te ayuda a diagnosticar y resolver cada uno.
 
 ---
 
-## Paso 14 — Archivar y celebrar
+## Paso 13 — Archivar y celebrar
 
 ```
 /sdd:archive batuta-workers-onboarding
@@ -426,7 +390,7 @@ batuta-workers/
 | Un workflow falla consistentemente | `El workflow X esta fallando en el paso Y. Muestra los logs y sugiere como arreglarlo` |
 | Quieres cambiar la politica de reintentos | `Cambia la retry policy del activity Z a maximo 5 intentos con backoff exponencial` |
 | Necesitas un workflow mas complejo | `Necesito un workflow que tenga pasos condicionales: si el paso 2 falla, ejecuta el paso 2B en lugar de reintentar` |
-| Quieres ver metricas del sistema | `/batuta:analyze-prompts` para ver como ha ido la comunicacion con Claude |
+| Quieres ver metricas del sistema | `/batuta-analyze-prompts` para ver como ha ido la comunicacion con Claude |
 
 ---
 
@@ -437,12 +401,10 @@ Antes de poner tu aplicacion en produccion, Claude puede revisar que sea segura.
 **Copia y pega este prompt antes del deploy**:
 
 ```
-Ejecuta una auditoria de seguridad del proyecto. Revisa:
-1. Que no haya claves o contrasenas escritas directamente en el codigo
-2. Que los endpoints de Temporal esten protegidos
-3. Que las dependencias no tengan vulnerabilidades conocidas
-4. Que los datos sensibles no se logeen en texto plano
+Ejecuta una auditoria de seguridad completa del proyecto.
 ```
+
+Claude activara su checklist de seguridad AI-First automaticamente, que incluye los 10 puntos del OWASP para codigo generado por IA.
 
 **Que esperar**: Claude revisara tu codigo con el checklist de seguridad AI-First y te dara un reporte con hallazgos y recomendaciones.
 
