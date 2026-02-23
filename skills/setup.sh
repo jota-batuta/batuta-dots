@@ -110,10 +110,15 @@ setup_project() {
         return 1
     fi
 
-    # Resolve relative paths
+    # Resolve relative paths (fallback — main() should have pre-resolved)
     if [[ ! "$target_dir" = /* && ! "$target_dir" =~ ^[A-Za-z]: ]]; then
+        log_warning "Path not pre-resolved, using current dir: $(pwd)"
         target_dir="$(pwd)/$target_dir"
     fi
+
+    # Normalize trailing slashes and /. patterns
+    target_dir="${target_dir%/}"
+    target_dir="${target_dir%/.}"
 
     if [[ ! -d "$target_dir" ]]; then
         log_error "Target directory does not exist: $target_dir"
@@ -281,38 +286,43 @@ _merge_settings_jq() {
 _merge_settings_python() {
     local source="$1"
     local target="$2"
+    local merge_exit=0
 
     python3 -c "
-import json
+import json, sys
 
-with open('$source') as f:
-    src = json.load(f)
-with open('$target') as f:
-    tgt = json.load(f)
+try:
+    with open(sys.argv[1]) as f:
+        src = json.load(f)
+    with open(sys.argv[2]) as f:
+        tgt = json.load(f)
 
-# Replace hooks entirely
-tgt['hooks'] = src.get('hooks', {})
+    # Replace hooks entirely
+    tgt['hooks'] = src.get('hooks', {})
 
-# Merge env: add missing keys only
-for k, v in src.get('env', {}).items():
-    tgt.setdefault('env', {})[k] = tgt.get('env', {}).get(k, v)
+    # Merge env: add missing keys only
+    for k, v in src.get('env', {}).items():
+        tgt.setdefault('env', {})[k] = tgt.get('env', {}).get(k, v)
 
-# Merge permissions: union arrays
-for perm_type in ['deny', 'ask', 'allow']:
-    src_perms = src.get('permissions', {}).get(perm_type, [])
-    tgt_perms = tgt.get('permissions', {}).get(perm_type, [])
-    merged = list(dict.fromkeys(tgt_perms + src_perms))
-    tgt.setdefault('permissions', {})[perm_type] = merged
+    # Merge permissions: union arrays
+    for perm_type in ['deny', 'ask', 'allow']:
+        src_perms = src.get('permissions', {}).get(perm_type, [])
+        tgt_perms = tgt.get('permissions', {}).get(perm_type, [])
+        merged = list(dict.fromkeys(tgt_perms + src_perms))
+        tgt.setdefault('permissions', {})[perm_type] = merged
 
-with open('$target', 'w') as f:
-    json.dump(tgt, f, indent=2, ensure_ascii=False)
-    f.write('\n')
-" 2>/dev/null
+    with open(sys.argv[2], 'w') as f:
+        json.dump(tgt, f, indent=2, ensure_ascii=False)
+        f.write('\n')
+except Exception as e:
+    print(f'Error: {e}', file=sys.stderr)
+    sys.exit(1)
+" "$source" "$target" || merge_exit=$?
 
-    if [[ $? -eq 0 ]]; then
+    if [[ $merge_exit -eq 0 ]]; then
         log_success "Merged hooks, env, and permissions into $target (python3)"
     else
-        log_error "Python merge failed — settings not modified"
+        log_error "Python merge failed (exit $merge_exit) — settings not modified"
         return 1
     fi
 }
@@ -729,14 +739,25 @@ parse_args() {
 # ============================================================================
 
 main() {
+    # IMPORTANT: Resolve --project path BEFORE cd to REPO_ROOT
+    # Otherwise relative paths (like ".") resolve to batuta-dots instead of user's project
+    local resolved_project_path=""
+    if [[ "$1" == "--project" && -n "$2" ]]; then
+        local raw_path="$2"
+        if [[ ! "$raw_path" = /* && ! "$raw_path" =~ ^[A-Za-z]: ]]; then
+            resolved_project_path="$(cd "$(pwd)" && pwd)/$raw_path"
+        else
+            resolved_project_path="$raw_path"
+        fi
+    fi
+
     cd "$REPO_ROOT"
 
     if [[ $# -eq 0 ]]; then
         interactive_menu
     else
-        # For --project, pass all args so $2 is available
         if [[ "$1" == "--project" ]]; then
-            setup_project "$2"
+            setup_project "$resolved_project_path"
         else
             parse_args "$@"
         fi
