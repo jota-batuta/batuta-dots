@@ -12,8 +12,9 @@
 #   ./skills/setup.sh              # Interactive menu
 #   ./skills/setup.sh --claude     # Copy CLAUDE.md to project root
 #   ./skills/setup.sh --sync       # Sync skills to ~/.claude/skills/
-#   ./skills/setup.sh --all        # Copy + Sync
-#   ./skills/setup.sh --project <path>  # Setup a target project (CLAUDE.md + .batuta/ + git)
+#   ./skills/setup.sh --all        # Copy + Sync + Hooks
+#   ./skills/setup.sh --hooks      # Install hooks + permissions to ~/.claude/settings.json
+#   ./skills/setup.sh --project <path>  # Setup a target project (CLAUDE.md + .batuta/ + git + hooks)
 #   ./skills/setup.sh --verify     # Verify setup
 #   ./skills/setup.sh --help       # Show this help
 #
@@ -196,9 +197,124 @@ IGNOREEOF
         log_success "Created .gitignore"
     fi
 
+    # 5. Install hooks + permissions to ~/.claude/settings.json
+    echo ""
+    install_hooks
+
     echo ""
     log_success "Project setup complete at $target_dir"
     log_info "Next: open Claude Code in $target_dir and run /sdd:init"
+}
+
+# ============================================================================
+# Install Hooks + Permissions to ~/.claude/settings.json
+# ============================================================================
+
+install_hooks() {
+    local source_settings="$REPO_ROOT/BatutaClaude/settings.json"
+    local target_settings="$HOME_DIR/.claude/settings.json"
+    local target_dir="$HOME_DIR/.claude"
+
+    log_info "Installing hooks and permissions to $target_settings"
+
+    if [[ ! -f "$source_settings" ]]; then
+        log_error "BatutaClaude/settings.json not found"
+        return 1
+    fi
+
+    # Ensure ~/.claude/ exists
+    mkdir -p "$target_dir"
+
+    if [[ ! -f "$target_settings" ]]; then
+        # No existing settings — copy entire file
+        cp -f "$source_settings" "$target_settings"
+        log_success "Created $target_settings (full copy from BatutaClaude/settings.json)"
+        return 0
+    fi
+
+    # Existing settings found — backup and merge
+    local backup="$target_settings.bak.$(date +%Y%m%d%H%M%S)"
+    cp -f "$target_settings" "$backup"
+    log_info "Backed up existing settings to $backup"
+
+    # Merge using jq (preferred) or python3 (fallback)
+    if command -v jq &>/dev/null; then
+        _merge_settings_jq "$source_settings" "$target_settings"
+    elif command -v python3 &>/dev/null; then
+        _merge_settings_python "$source_settings" "$target_settings"
+    else
+        log_error "Neither jq nor python3 found. Cannot merge settings."
+        log_info "Manual install: copy hooks from $source_settings to $target_settings"
+        return 1
+    fi
+}
+
+_merge_settings_jq() {
+    local source="$1"
+    local target="$2"
+    local tmp="${target}.tmp"
+
+    # Source first + target on top = target values win (not overwritten)
+    # Hooks: replace entirely (Batuta is source of truth)
+    # Env: keep existing, add missing from source
+    # Permissions: union arrays (deduplicated)
+    jq -s '
+      .[0] as $source | .[1] as $target |
+      $target
+      | .hooks = $source.hooks
+      | .env = ($source.env // {}) + (.env // {})
+      | .permissions.deny = ((.permissions.deny // []) + ($source.permissions.deny // []) | unique)
+      | .permissions.ask = ((.permissions.ask // []) + ($source.permissions.ask // []) | unique)
+      | .permissions.allow = ((.permissions.allow // []) + ($source.permissions.allow // []) | unique)
+    ' "$source" "$target" > "$tmp"
+
+    if [[ -s "$tmp" ]]; then
+        mv -f "$tmp" "$target"
+        log_success "Merged hooks, env, and permissions into $target"
+    else
+        rm -f "$tmp"
+        log_error "jq merge produced empty output — settings not modified"
+        return 1
+    fi
+}
+
+_merge_settings_python() {
+    local source="$1"
+    local target="$2"
+
+    python3 -c "
+import json
+
+with open('$source') as f:
+    src = json.load(f)
+with open('$target') as f:
+    tgt = json.load(f)
+
+# Replace hooks entirely
+tgt['hooks'] = src.get('hooks', {})
+
+# Merge env: add missing keys only
+for k, v in src.get('env', {}).items():
+    tgt.setdefault('env', {})[k] = tgt.get('env', {}).get(k, v)
+
+# Merge permissions: union arrays
+for perm_type in ['deny', 'ask', 'allow']:
+    src_perms = src.get('permissions', {}).get(perm_type, [])
+    tgt_perms = tgt.get('permissions', {}).get(perm_type, [])
+    merged = list(dict.fromkeys(tgt_perms + src_perms))
+    tgt.setdefault('permissions', {})[perm_type] = merged
+
+with open('$target', 'w') as f:
+    json.dump(tgt, f, indent=2, ensure_ascii=False)
+    f.write('\n')
+" 2>/dev/null
+
+    if [[ $? -eq 0 ]]; then
+        log_success "Merged hooks, env, and permissions into $target (python3)"
+    else
+        log_error "Python merge failed — settings not modified"
+        return 1
+    fi
 }
 
 # ============================================================================
@@ -334,13 +450,16 @@ do_all() {
     # Order matters:
     # 1. Sync skills, agents, commands to ~/.claude/
     # 2. Run skill-sync to regenerate tables in BatutaClaude/ (source of truth)
-    # 3. Copy updated BatutaClaude/CLAUDE.md to project root (now with updated tables)
+    # 3. Install hooks + permissions to ~/.claude/settings.json
+    # 4. Copy updated BatutaClaude/CLAUDE.md to project root (now with updated tables)
 
     sync_claude
     echo ""
     sync_agents
     echo ""
     run_skill_sync
+    echo ""
+    install_hooks
     echo ""
     generate_claude
 
@@ -497,14 +616,15 @@ show_menu() {
     echo ""
     printf "  ${CYAN}1)${NC} Copy CLAUDE.md to project root\n"
     printf "  ${CYAN}2)${NC} Sync skills + agents to ~/.claude/\n"
-    printf "  ${CYAN}3)${NC} Full setup (sync + skill-sync + copy)\n"
-    printf "  ${CYAN}4)${NC} Verify setup\n"
-    printf "  ${CYAN}5)${NC} Help\n"
+    printf "  ${CYAN}3)${NC} Full setup (sync + skill-sync + hooks + copy)\n"
+    printf "  ${CYAN}4)${NC} Install hooks + permissions only\n"
+    printf "  ${CYAN}5)${NC} Verify setup\n"
+    printf "  ${CYAN}6)${NC} Help\n"
     printf "  ${CYAN}0)${NC} Exit\n"
     echo ""
     echo "  Need other platforms? Run: ./skills/replicate-platform.sh --help"
     echo ""
-    printf "Enter choice [0-5]: "
+    printf "Enter choice [0-6]: "
 }
 
 handle_menu_choice() {
@@ -512,8 +632,9 @@ handle_menu_choice() {
         1) generate_claude ;;
         2) sync_claude; sync_agents ;;
         3) do_all ;;
-        4) verify ;;
-        5) show_help ;;
+        4) install_hooks ;;
+        5) verify ;;
+        6) show_help ;;
         0) log_info "Exiting..."; exit 0 ;;
         *) log_error "Invalid choice: $1"; return 1 ;;
     esac
@@ -546,12 +667,16 @@ Options:
   --sync        Sync skills, agents, and commands to ~/.claude/
                   Copies all SKILL.md files, assets, scope agents,
                   and slash commands so Claude Code can route and load.
-  --all         Full setup: sync + skill-sync + copy CLAUDE.md (recommended)
+  --all         Full setup: sync + skill-sync + hooks + copy CLAUDE.md (recommended)
+  --hooks       Install hooks and permissions to ~/.claude/settings.json
+                  Merges Batuta hooks (5), env vars, and permissions.
+                  Backs up existing settings before merging.
   --project <path>  Setup a target project directory:
                   - Copies CLAUDE.md to project root
                   - Creates .batuta/ with session.md + prompt-log.jsonl
                   - Initializes git if not already a repo
                   - Creates .gitignore
+                  - Installs hooks + permissions
   --verify      Check that CLAUDE.md and skills are properly configured
   --help, -h    Show this help message
 
@@ -580,6 +705,7 @@ parse_args() {
         --claude)   generate_claude ;;
         --sync)     sync_claude; sync_agents ;;
         --all)      do_all ;;
+        --hooks)    install_hooks ;;
         --project)  shift_done=true; setup_project "$2" ;;
         --verify)   verify ;;
         --help|-h)  show_help; exit 0 ;;

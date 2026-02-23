@@ -216,6 +216,9 @@ automaticamente actualiza:
 
 Nadie tiene que recordar hacerlo. Es automatico.
 
+Ademas, `setup.sh --all` tambien instala las **alarmas automaticas** (hooks) que
+hacen que el checklist y la bitacora funcionen automaticamente.
+
 Eso es lo que hace **skill-sync**: cuando se crea o modifica una receta (SKILL.md),
 un script lee todas las recetas y regenera las tablas de referencia automaticamente.
 
@@ -511,7 +514,7 @@ TU IDEA
    ↓
 "Quiero una app que haga X"
    ↓
-/batuta-init → Instala el ecosistema + crea .batuta/
+/batuta-init → Instala el ecosistema + hooks + crea .batuta/
    ↓
 /sdd:init → Define el tipo de proyecto
    ↓

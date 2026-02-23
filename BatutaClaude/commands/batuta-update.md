@@ -32,6 +32,7 @@ If not found, clone: `git clone https://github.com/jota-batuta/batuta-dots.git /
 | Scope agents (routing docs) | YES | ~/.claude/agents/ |
 | Commands (slash commands) | YES | ~/.claude/commands/ |
 | Routing tables (auto-generated) | YES | BatutaClaude/CLAUDE.md + agents/ |
+| Hooks + permissions | YES | ~/.claude/settings.json |
 | Project context (session state) | **NO — stays local** | .batuta/session.md |
 | Prompt logs (satisfaction data) | **NO — stays local** | .batuta/prompt-log.jsonl |
 | SDD artifacts (specs, designs) | **NO — stays local** | openspec/ |
@@ -44,7 +45,7 @@ NEVER overwrite `.batuta/` contents during update. Project context is sacred.
 bash "$BATUTA_DOTS_PATH/skills/setup.sh" --all
 ```
 
-This syncs skills + scope agents + commands to `~/.claude/`, runs skill-sync to regenerate routing tables, and copies the updated CLAUDE.md to the project root.
+This syncs skills + scope agents + commands to `~/.claude/`, runs skill-sync to regenerate routing tables, installs hooks + permissions to `~/.claude/settings.json`, and copies the updated CLAUDE.md to the project root.
 
 ### Step 3: Confirm CLAUDE.md update
 
@@ -66,6 +67,7 @@ Ecosistema Batuta actualizado.
 
 Skills sincronizados: X skills en ~/.claude/skills/
 Agentes sincronizados: X agentes en ~/.claude/agents/
+Hooks + permissions: instalados en ~/.claude/settings.json
 Tablas de routing: regeneradas por skill-sync
 CLAUDE.md: [actualizado | sin cambios | omitido]
 

@@ -383,12 +383,21 @@ After creating ANY component, you MUST register it. This is the most commonly fo
 
 ### Skill Registration Checklist
 
-- [ ] Skill directory created: `BatutaClaude/skills/{skill-name}/SKILL.md`
+**Destination depends on SCOPE DECISION** (Step 2 of Auto-Discovery):
+
+| Scope | Destination | When to use |
+|-------|-------------|-------------|
+| **Project-local** | `.claude/skills/{skill-name}/SKILL.md` | Only this project needs it |
+| **Global** | `~/.claude/skills/{skill-name}/SKILL.md` | All projects benefit from it |
+| **Batuta repo** | `BatutaClaude/skills/{skill-name}/SKILL.md` | Developing the ecosystem itself |
+
+- [ ] Skill directory created at the correct destination (see table above)
 - [ ] SKILL.md has complete frontmatter (name, description with triggers, license, metadata including **scope** and **auto_invoke**, **allowed-tools**)
-- [ ] Run `bash BatutaClaude/skills/skill-sync/assets/sync.sh` to auto-update routing tables in:
+- [ ] For **global** or **batuta-repo** skills: Run `bash BatutaClaude/skills/skill-sync/assets/sync.sh` to auto-update routing tables in:
   - `BatutaClaude/CLAUDE.md` (Available Skills table)
   - `BatutaClaude/agents/{scope}-agent.md` (Skills table for the skill's scope)
-- [ ] Verify the skill appears in both auto-generated tables after sync
+- [ ] For **project-local** skills: No sync needed — Claude Code discovers `.claude/skills/` automatically
+- [ ] Verify the skill appears in the auto-generated tables after sync (global/batuta only)
 
 > **Automation Note**: After creating a skill, always run `sync.sh` to update routing tables. In future versions, this step will be invoked automatically by the ecosystem-creator.
 - [ ] If the skill was in the planned roadmap (CLAUDE.md "Planned project skills"), update status
@@ -487,9 +496,10 @@ Skill Gap Detected: "{technology}" has no active skill
 │     ASK: "¿Apruebas este skill o quieres ajustar algo?"
 │
 └─ 6. REGISTER — Follow full Registration Checklist
+      Destination: Based on SCOPE DECISION — project-local (.claude/skills/), global (~/.claude/skills/), or batuta-repo (BatutaClaude/skills/)
       Ensure: SKILL.md has scope, auto_invoke, allowed-tools in frontmatter
-      Sync: Run `bash BatutaClaude/skills/skill-sync/assets/sync.sh` to update routing tables
-      Verify: Skill appears in CLAUDE.md Available Skills table and scope agent Skills table
+      Sync: For global/batuta-repo only — run `bash BatutaClaude/skills/skill-sync/assets/sync.sh` to update routing tables
+      Verify: For global/batuta-repo — skill appears in CLAUDE.md Available Skills table and scope agent Skills table
 ```
 
 ### Auto-Discovery Scope Options

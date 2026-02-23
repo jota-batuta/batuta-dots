@@ -132,6 +132,8 @@ Si alguno NO muestra un numero, instala esa herramienta antes de continuar.
 3. Click derecho → Nueva Carpeta
 4. Nombrala: `mi-saas-app`
 
+> **Nota**: Si la carpeta ya tiene archivos de un intento anterior, borra su contenido primero o usa otra carpeta vacia.
+
 > **IMPORTANTE**: Usa nombres SIN espacios y en minusculas (ejemplo: `mi-saas-app`, no `Mi SaaS App`).
 > Los espacios y mayusculas causan problemas con las herramientas de Node.js como npm.
 > Usa guiones (-) en lugar de espacios.
@@ -186,7 +188,7 @@ Necesito configurar este proyecto con el ecosistema Batuta.
 
 Haz lo siguiente:
 1. Clona el repositorio github.com/jota-batuta/batuta-dots en una carpeta temporal
-2. Ejecuta el script skills/setup.sh --all para copiar CLAUDE.md y sincronizar skills
+2. Ejecuta el script skills/setup.sh --all para copiar CLAUDE.md, sincronizar skills e instalar hooks
 3. Copia el archivo BatutaClaude/CLAUDE.md a la raiz de este proyecto como CLAUDE.md
 4. Inicializa git en esta carpeta si no existe
 5. Confirma cuando todo este listo

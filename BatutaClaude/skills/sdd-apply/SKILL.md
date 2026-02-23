@@ -46,6 +46,7 @@ Rules:
 
 Batuta's ecosystem includes the following technologies. When implementing tasks that touch these systems, apply domain-specific best practices:
 
+<!-- Stack Awareness: contextualized for this phase. See sdd-explore for base reference. -->
 | Technology | Domain | Key Considerations |
 |---|---|---|
 | **Temporal.io** | Workflow orchestration | Idempotent activities, retry policies, saga patterns, workflow versioning |

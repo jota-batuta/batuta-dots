@@ -63,6 +63,7 @@ This is common for new projects initialized via `/batuta-init`. The user's descr
 | ETL scripts, Temporal workflows, data transforms, pipeline DAGs | `data-pipeline` |
 | pyproject.toml with build-system, setup.py, package publishing config | `library` |
 
+<!-- Stack Awareness: contextualized for this phase. See sdd-explore for base reference. -->
 #### Batuta Stack Detection
 
 Actively look for these technologies common in Batuta projects:

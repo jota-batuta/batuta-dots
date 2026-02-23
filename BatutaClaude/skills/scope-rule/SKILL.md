@@ -176,6 +176,7 @@ When moving a component from feature-scoped to shared:
 
 ## Batuta Stack Integration
 
+<!-- Stack Awareness: contextualized for this phase. See sdd-explore for base reference. -->
 | Stack Component | Scope Rule Application |
 |---|---|
 | **Temporal.io** | Workflow definitions → `features/{name}/workers/`, shared activities → `features/shared/workers/` |

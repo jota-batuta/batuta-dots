@@ -37,6 +37,7 @@ From the orchestrator:
 
 When designing, be aware of and leverage the Batuta standard stack where applicable:
 
+<!-- Stack Awareness: contextualized for this phase. See sdd-explore for base reference. -->
 | Layer | Technology | Notes |
 |-------|-----------|-------|
 | Workflow Orchestration | **Temporal.io** | Durable workflows, saga patterns, retries |

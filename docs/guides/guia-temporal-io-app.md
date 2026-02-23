@@ -93,7 +93,7 @@ Escribe:
 /batuta-init batuta-workers
 ```
 
-Esto instala las instrucciones del chef (CLAUDE.md), los jefes de area (scope agents), el sistema de calidad (.batuta/), y todas las recetas (skills). Si cierras la terminal y vuelves despues, Claude recuerda donde quedo gracias a `.batuta/session.md`.
+Esto instala las instrucciones del chef (CLAUDE.md), los jefes de area (scope agents), el sistema de calidad (.batuta/), todas las recetas (skills) y las alarmas automaticas (hooks). Si cierras la terminal y vuelves despues, Claude recuerda donde quedo gracias a `.batuta/session.md`.
 
 Si no tienes el comando instalado, usa el prompt largo de la guia principal (`docs/guides/guia-batuta-app.md`, Paso 3 Opcion B).
 

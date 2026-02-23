@@ -35,7 +35,7 @@ Inspired by [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.
 git clone https://github.com/jota-batuta/batuta-dots.git
 cd batuta-dots
 
-# 2. Full setup: sync skills + agents + skill-sync + copy CLAUDE.md
+# 2. Full setup: sync skills + agents + skill-sync + hooks + copy CLAUDE.md
 ./skills/setup.sh --all
 
 # 3. Verify everything is set up correctly
@@ -139,7 +139,7 @@ batuta-dots/
 ## How It Works
 
 1. **CLAUDE.md** is the single entry point. It acts as a pure router using Mix-of-Experts: it classifies each request's scope and delegates to specialized scope agents.
-2. **setup.sh --all** syncs skills and agents, runs skill-sync to regenerate routing tables, then copies the updated CLAUDE.md to root.
+2. **setup.sh --all** syncs skills and agents, runs skill-sync to regenerate routing tables, installs hooks + permissions to `~/.claude/settings.json`, then copies the updated CLAUDE.md to root.
 3. **Claude Code** reads CLAUDE.md at conversation start (~186 lines), then uses 3-level lazy loading: principal agent → scope agent → skill.
 
 ```
@@ -294,10 +294,12 @@ When new skills are created in a project, Claude proposes propagating them back 
 |------|--------|
 | `--claude` | Copy CLAUDE.md to project root |
 | `--sync` | Sync skills + agents + commands to ~/.claude/ |
-| `--all` | Full setup: sync + skill-sync + copy (recommended) |
+| `--all` | Full setup: sync + skill-sync + hooks + copy (recommended) |
+| `--hooks` | Install hooks + permissions to ~/.claude/settings.json |
+| `--project <path>` | Setup a target project (CLAUDE.md + .batuta/ + git + hooks) |
 | `--verify` | Verify setup (51 checks) |
 
-The `--all` flag: syncs skills and agents → runs skill-sync to regenerate routing tables → copies updated CLAUDE.md to root.
+The `--all` flag: syncs skills and agents → runs skill-sync → installs hooks + permissions → copies updated CLAUDE.md to root.
 
 ---
 

@@ -4,6 +4,88 @@
 
 ---
 
+## v9.1 — Integration Test Fixes (12 Findings from guia-nextjs-saas) (2026-02-22)
+
+### Contexto
+
+Se ejecutaron los pasos 1-6 de `guia-nextjs-saas.md` como prueba de integracion real en un proyecto nuevo. Se identificaron 12 hallazgos (4 criticos, 5 importantes, 3 menores). Tras exploracion profunda: H12 ya resuelto (pipeline-agent ya tenia dependency graph), H11 reclasificado (Stack Awareness no es duplicacion, es especializacion por fase). Reporte completo en `docs/qa/integration-test-nextjs-saas.md`.
+
+### Hallazgos corregidos
+
+| ID | Severidad | Titulo | Fix |
+|----|----------|--------|-----|
+| H4 | CRITICO | setup.sh no instala hooks nativos | +`install_hooks()` con merge jq/python3: hooks=replace, env=add-missing, permissions=union |
+| H1 | CRITICO | guia-nextjs-saas sin nota de re-intento | +nota en Step 1: limpiar carpeta si tiene archivos previos |
+| H2 | IMPORTANTE | Guias no mencionan `--project <path>` | 10 guias actualizadas con referencia a hooks y opciones de setup |
+| H8 | IMPORTANTE | Skill Gap Detection solo checa ruta global | infra-agent ahora checa `~/.claude/skills/` Y `.claude/skills/` |
+| H10 | IMPORTANTE | ecosystem-creator hardcodea destino | +tabla 3 destinos: project-local, global, batuta-repo |
+| H5 | MEDIO | artifact_store.mode no documentado | +seccion Artifact Store en pipeline-agent.md |
+| H6 | MEDIO | Stack Awareness hardcodeado | +nota de adaptabilidad en sdd-explore |
+| H11 | MENOR | Stack Awareness sin cross-references | +comentarios HTML de referencia en 5 skills |
+
+> H12 (dependency graph) ya resuelto en v9.0. H7 cubierto por H4 (hooks install). H3 cubierto por H2 (guias update). H9 informativo.
+
+### Nueva funcion: install_hooks()
+
+Merge inteligente de `BatutaClaude/settings.json` → `~/.claude/settings.json`:
+- **hooks**: reemplazo completo (Batuta = source of truth)
+- **env**: solo agrega variables faltantes (no sobreescribe existentes)
+- **permissions**: union de arrays (deny, ask, allow) con dedup
+- Implementacion dual: `jq` (preferido) con fallback `python3`
+- Backup automatico: `settings.json.bak.YYYYMMDD`
+
+### Archivos modificados (29)
+
+| Archivo | Cambio | Razon |
+|---------|--------|-------|
+| `skills/setup.sh` | +`install_hooks()`, `_merge_settings_jq()`, `_merge_settings_python()`, flag `--hooks`, menu actualizado | H4: instalar hooks nativos |
+| `BatutaClaude/commands/batuta-init.md` | Step 3 usa --sync + --hooks, confirmacion menciona hooks | H4: init incluye hooks |
+| `BatutaClaude/commands/batuta-update.md` | Descripcion, tabla y reporte mencionan hooks | H4: update documenta hooks |
+| `BatutaClaude/agents/infra-agent.md` | Dual-path: global + project-local | H8: Gap Detection ambas rutas |
+| `BatutaClaude/skills/ecosystem-creator/SKILL.md` | Tabla 3 destinos + logic condicional en Registration | H10: destinos claros |
+| `BatutaClaude/agents/pipeline-agent.md` | +seccion Artifact Store | H5: documentar artifact_store.mode |
+| `BatutaClaude/skills/sdd-explore/SKILL.md` | +nota adaptabilidad Stack Awareness | H6: no hardcodear stack |
+| `BatutaClaude/skills/sdd-{propose,design,apply,init}/SKILL.md` | +cross-reference HTML comments | H11: trazabilidad |
+| `BatutaClaude/skills/scope-rule/SKILL.md` | +cross-reference HTML comment | H11: trazabilidad |
+| 10 guias en `docs/guides/` | Setup instructions mencionan hooks | H2: commands correctos |
+| `docs/guides/guia-nextjs-saas.md` | +nota re-intento Step 1 | H1: carpeta con archivos previos |
+| `README.md` | Quick Start, How It Works, setup.sh Reference actualizados | Docs arquitectonicas |
+| `README.es.md` | Mismos cambios en espanol + dual-path Gap Detection | Docs arquitectonicas |
+| `docs/architecture/arquitectura-diagrama.md` | +--hooks en Mermaid, dual-path en flowchart | Docs arquitectonicas |
+| `docs/architecture/arquitectura-para-no-tecnicos.md` | Hooks en Inventario, batuta-init actualizado | Docs arquitectonicas |
+| `skills/setup_test.sh` | +7 integration tests (155 total) | Cobertura de v9.1 |
+| `BatutaClaude/VERSION` | 9.0.0 → 9.1.0 | Version bump |
+
+### Metricas
+
+| Metrica | v9.0 | v9.1 |
+|---------|------|------|
+| Hallazgos abiertos | 12 (del integration test) | 0 |
+| setup.sh flags | --claude/--sync/--all/--verify/--project | +--hooks |
+| Gap Detection paths | 1 (global) | 2 (global + project-local) |
+| ecosystem-creator destinos | 1 (hardcodeado) | 3 (project-local, global, batuta-repo) |
+| Stack Awareness cross-refs | 0 | 5 skills con referencia a sdd-explore |
+| Tests en setup_test.sh | 148 | 155 (+7 integration) |
+
+### Rollback
+
+```bash
+git checkout v9.0 -- skills/setup.sh BatutaClaude/commands/ BatutaClaude/agents/ \
+  BatutaClaude/skills/ docs/guides/ docs/architecture/ README.md README.es.md \
+  skills/setup_test.sh BatutaClaude/VERSION
+```
+
+### Decisiones de diseno
+
+| Decision | Alternativa rechazada | Razon |
+|----------|----------------------|-------|
+| Hooks replace completo | Merge granular por hook | Batuta es source of truth; merge granular es fragil |
+| Dual-path Gap Detection | Solo agregar global path | Proyectos con .claude/skills/ local perderian deteccion |
+| 3 destinos ecosystem-creator | Pregunta abierta al usuario | Tabla explicita reduce friccion y errores |
+| Cross-references (no centralizacion) | Tabla Stack Awareness centralizada | Cada fase tiene version contextualizada (cols diferentes) |
+
+---
+
 ## v9.0 — Contract-First + Security + Guides + Teams Playbook + Restructure (2026-02-22)
 
 ### Contexto

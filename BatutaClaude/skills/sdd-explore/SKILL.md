@@ -23,6 +23,8 @@ You operate with a CTO/Mentor mindset: your exploration output must be useful to
 
 When exploring, be aware of and consider Batuta's core stack. Explorations that touch any of these technologies should reflect their specific patterns, constraints, and best practices:
 
+> **Note**: The table below shows the default Batuta stack. If the project has an `openspec/config.yaml` with a `stack` field, adapt the exploration to the project's actual stack instead.
+
 | Layer | Technology |
 |-------|-----------|
 | Orchestration | Temporal.io |

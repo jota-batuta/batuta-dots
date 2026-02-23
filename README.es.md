@@ -36,7 +36,7 @@ Inspirado en [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman
 git clone https://github.com/jota-batuta/batuta-dots.git
 cd batuta-dots
 
-# 2. Setup completo: sync skills + agentes + skill-sync + copiar CLAUDE.md
+# 2. Setup completo: sync skills + agentes + skill-sync + hooks + copiar CLAUDE.md
 ./skills/setup.sh --all
 
 # 3. Verificar
@@ -238,7 +238,7 @@ El inventario de skills se gestiona desde los frontmatters de SKILL.md. Agregar 
 
 ### Deteccion de Skills Faltantes
 
-Antes de escribir codigo con una tecnologia, Claude verifica si existe un skill activo. Si no existe, se detiene y ofrece investigar via Context7 y crear el skill antes de continuar.
+Antes de escribir codigo con una tecnologia, Claude verifica si existe un skill activo en `~/.claude/skills/` (global) o `.claude/skills/` (local del proyecto). Si no existe en ninguna ubicacion, se detiene y ofrece investigar via Context7 y crear el skill antes de continuar.
 
 ### Carga Lazy (3 niveles)
 
@@ -317,10 +317,12 @@ Cuando se crean skills nuevos en un proyecto, Claude propone propagarlos de vuel
 |------|--------|
 | `--claude` | Copia CLAUDE.md a la raiz del proyecto |
 | `--sync` | Sincroniza skills + agentes + commands a ~/.claude/ |
-| `--all` | Setup completo: sync + skill-sync + copy (recomendado) |
+| `--all` | Setup completo: sync + skill-sync + hooks + copy (recomendado) |
+| `--hooks` | Instala hooks + permisos en ~/.claude/settings.json |
+| `--project <path>` | Setup de un proyecto destino (CLAUDE.md + .batuta/ + git + hooks) |
 | `--verify` | Verificacion completa (51 checks) |
 
-El flag `--all`: sincroniza skills y agentes → ejecuta skill-sync → copia CLAUDE.md actualizado a la raiz.
+El flag `--all`: sincroniza skills y agentes → ejecuta skill-sync → instala hooks + permisos → copia CLAUDE.md actualizado a la raiz.
 
 ---
 

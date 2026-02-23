@@ -45,6 +45,7 @@ Rules:
 
 When analyzing scope, risks, and affected areas, consider the implications across Batuta's typical stack. Not every project uses all of these, but be aware of cross-cutting concerns:
 
+<!-- Stack Awareness: contextualized for this phase. See sdd-explore for base reference. -->
 | Layer | Technologies | Common Considerations |
 |-------|-------------|----------------------|
 | Orchestration | Temporal.io, n8n | Workflow versioning, signal/query contracts, retry policies, n8n webhook endpoints |

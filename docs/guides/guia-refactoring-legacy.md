@@ -191,7 +191,7 @@ Necesito configurar este proyecto con el ecosistema Batuta.
 
 Haz lo siguiente:
 1. Clona el repositorio github.com/jota-batuta/batuta-dots en una carpeta temporal
-2. Ejecuta el script skills/setup.sh --all para copiar CLAUDE.md y sincronizar skills
+2. Ejecuta el script skills/setup.sh --all para copiar CLAUDE.md, sincronizar skills e instalar hooks
 3. Copia el archivo BatutaClaude/CLAUDE.md a la raiz de este proyecto como CLAUDE.md
 4. Confirma cuando todo este listo
 

@@ -911,6 +911,62 @@ test_infra_agent_has_security() {
     assert_file_contains "$agent_file" "security-audit" "security-audit in infra-agent skills"
 }
 
+# --- v9.1 tests: Integration Test Findings (from guia-nextjs-saas integration test) ---
+
+test_setup_has_install_hooks() {
+    log_test "setup.sh has install_hooks function"
+    assert_file_contains "$REPO_ROOT/skills/setup.sh" "install_hooks" \
+        "setup.sh should contain install_hooks function"
+}
+
+test_setup_has_hooks_flag() {
+    log_test "setup.sh accepts --hooks flag"
+    assert_file_contains "$REPO_ROOT/skills/setup.sh" "\-\-hooks" \
+        "setup.sh should accept --hooks flag"
+}
+
+test_gap_detection_checks_both_paths() {
+    log_test "infra-agent checks both global and local skill paths"
+    assert_file_contains "$REPO_ROOT/BatutaClaude/agents/infra-agent.md" ".claude/skills" \
+        "infra-agent should reference project-local .claude/skills/ path"
+}
+
+test_ecosystem_creator_has_destination_logic() {
+    log_test "ecosystem-creator distinguishes local vs global skill creation"
+    assert_file_contains "$REPO_ROOT/BatutaClaude/skills/ecosystem-creator/SKILL.md" "project-local\|Project-local" \
+        "ecosystem-creator should document project-local destination"
+}
+
+test_artifact_store_documented() {
+    log_test "artifact_store.mode is documented in pipeline-agent"
+    assert_file_contains "$REPO_ROOT/BatutaClaude/agents/pipeline-agent.md" "artifact_store\|Artifact Store" \
+        "pipeline-agent should document artifact_store"
+}
+
+test_stack_awareness_cross_referenced() {
+    log_test "Stack Awareness tables have source reference comments"
+    local count=0
+    for skill in sdd-propose sdd-design sdd-apply sdd-init scope-rule; do
+        local skill_file="$REPO_ROOT/BatutaClaude/skills/$skill/SKILL.md"
+        if [[ -f "$skill_file" ]] && grep -q "Stack Awareness" "$skill_file" 2>/dev/null; then
+            count=$((count + 1))
+        fi
+    done
+    if [[ $count -ge 4 ]]; then
+        log_pass "Stack Awareness present in $count/5 skills"
+    else
+        log_fail "Stack Awareness only found in $count/5 skills"
+    fi
+}
+
+test_commands_mention_hooks() {
+    log_test "batuta-init and batuta-update commands mention hooks"
+    assert_file_contains "$REPO_ROOT/BatutaClaude/commands/batuta-init.md" "hooks" \
+        "batuta-init should mention hooks installation"
+    assert_file_contains "$REPO_ROOT/BatutaClaude/commands/batuta-update.md" "hooks" \
+        "batuta-update should mention hooks installation"
+}
+
 # ============================================================================
 # Run All Tests
 # ============================================================================
@@ -981,6 +1037,15 @@ test_contract_first_protocol
 test_security_integration
 test_fifteen_skills_total
 test_infra_agent_has_security
+
+# --- v9.1 tests: Integration Test Findings ---
+test_setup_has_install_hooks
+test_setup_has_hooks_flag
+test_gap_detection_checks_both_paths
+test_ecosystem_creator_has_destination_logic
+test_artifact_store_documented
+test_stack_awareness_cross_referenced
+test_commands_mention_hooks
 
 # ============================================================================
 # Summary

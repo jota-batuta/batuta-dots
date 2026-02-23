@@ -58,13 +58,16 @@ Create an empty prompt log:
 touch .batuta/prompt-log.jsonl
 ```
 
-### Step 3: Sync skills
+### Step 3: Sync skills + install hooks
 
-Run the setup script to sync skills to the user's Claude config:
+Run the setup script to sync skills and install hooks:
 
 ```bash
 bash "$BATUTA_DOTS_PATH/skills/setup.sh" --sync
+bash "$BATUTA_DOTS_PATH/skills/setup.sh" --hooks
 ```
+
+The `--hooks` flag installs the 5 native hooks (Execution Gate, session continuity, O.R.T.A.) and permissions to `~/.claude/settings.json`. It backs up existing settings before merging.
 
 If the script fails, manually copy skills:
 ```bash
@@ -103,6 +106,7 @@ Archivos creados:
 - .batuta/prompt-log.jsonl (tracking de satisfaccion)
 
 Skills sincronizados a ~/.claude/skills/ (X skills)
+Hooks instalados en ~/.claude/settings.json (5 hooks + permissions)
 
 Comandos disponibles:
 - /sdd:init          — Iniciar proyecto con SDD

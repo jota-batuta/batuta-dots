@@ -15,7 +15,7 @@ flowchart TB
     end
 
     subgraph SETUP["SCRIPTS"]
-        SETUP_SH["setup.sh<br/>--claude | --sync | --all | --verify"]
+        SETUP_SH["setup.sh<br/>--claude | --sync | --all | --hooks | --verify"]
         SYNC_SH["skill-sync/sync.sh<br/>regenera routing tables"]
         REPLICATE["replicate-platform.sh<br/>--gemini | --copilot | --codex<br/>(futuro)"]
     end
@@ -287,7 +287,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     START["Usuario pide implementar<br/>algo con tecnologia X"]
-    CHECK{"Existe un skill<br/>activo para X?"}
+    CHECK{"Existe un skill activo<br/>en ~/.claude/skills/ o<br/>.claude/skills/?"}
     LOAD["Cargar skill<br/>y continuar"]
     STOP["PARAR — Informar<br/>al usuario"]
     OPTIONS{"Usuario elige"}
