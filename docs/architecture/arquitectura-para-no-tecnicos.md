@@ -518,7 +518,7 @@ pedidos en el restaurante:
 
 | Rol | Quien es | Que hace |
 |-----|---------|---------|
-| **Dueno del restaurante** | Tu (JNMZ) | Decides que platos ofrecer, apruebas propuestas |
+| **Dueno del restaurante** | Tu (el usuario) | Decides que platos ofrecer, apruebas propuestas |
 | **Chef principal (router)** | Claude Code + CLAUDE.md | Recibe pedidos y los pasa al jefe de area correcto. Nunca cocina. |
 | **Jefes de area** | Scope Agents (pipeline, infra, observability) | Coordinan a los sub-chefs de su area |
 | **Sub-chefs** | Sub-agentes SDD | Hacen el trabajo pesado: investigar, disenar, cocinar, verificar |

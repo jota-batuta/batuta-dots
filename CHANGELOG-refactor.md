@@ -12,8 +12,8 @@ Batuta Dots v10.0 tenia 24 skills, 3 agentes, 12 guias, y documentacion tecnica 
 
 ### Contenido creado
 
-- 55 archivos en academia/ organizados en 8 modulos
-- 20 casos de uso reales en 10 industrias (operaciones, mantenimiento, produccion, supply chain, logistica, marketing, finanzas, RRHH, estudiantes, desarrollo web)
+- 54 archivos en academia/ organizados en 8 modulos
+- 21 casos de uso reales en 10 industrias (operaciones, mantenimiento, produccion, supply chain, logistica, marketing, finanzas, RRHH, estudiantes, desarrollo web)
 - 4 niveles progresivos: Cero (fundamentos), Uno (ecosistema), Dos (flujos avanzados), Tres (extension)
 - 4 rutas recomendadas: Estudiante, Desarrollador, Operaciones/Industria, CTO/Lider tecnico
 - 5 quizzes de autoevaluacion + checklist de graduacion
@@ -24,7 +24,7 @@ Batuta Dots v10.0 tenia 24 skills, 3 agentes, 12 guias, y documentacion tecnica 
 - README.md: +seccion Academia con tabla de modulos
 - README.es.md: +seccion Academia (version espanol)
 - CHANGELOG-refactor.md: +entrada v10.1
-- academia/ (55 archivos nuevos): curso completo
+- academia/ (54 archivos nuevos): curso completo
 
 ### Rollback
 

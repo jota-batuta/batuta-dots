@@ -166,7 +166,7 @@ setup_project() {
 - SDD pipeline mandatory for all new features
 
 ## Next Steps
-- Run /sdd:init to detect project type and bootstrap SDD
+- Run /sdd-init to detect project type and bootstrap SDD
 SESSIONEOF
         log_success "Created $batuta_dir/session.md"
     else
@@ -208,7 +208,7 @@ IGNOREEOF
 
     echo ""
     log_success "Project setup complete at $target_dir"
-    log_info "Next: open Claude Code in $target_dir and run /sdd:init"
+    log_info "Next: open Claude Code in $target_dir and run /sdd-init"
 }
 
 # ============================================================================
@@ -229,6 +229,18 @@ install_hooks() {
 
     # Ensure ~/.claude/ exists
     mkdir -p "$target_dir"
+
+    # Copy hook scripts to ~/.claude/hooks/ so they work from any project
+    local hooks_source="$REPO_ROOT/infra/hooks"
+    local hooks_target="$target_dir/hooks"
+    if [[ -d "$hooks_source" ]]; then
+        mkdir -p "$hooks_target"
+        cp -f "$hooks_source"/*.sh "$hooks_target/"
+        chmod +x "$hooks_target"/*.sh
+        log_success "Copied hook scripts to $hooks_target/"
+    else
+        log_warning "infra/hooks/ not found — hook scripts not copied"
+    fi
 
     if [[ ! -f "$target_settings" ]]; then
         # No existing settings — copy entire file
