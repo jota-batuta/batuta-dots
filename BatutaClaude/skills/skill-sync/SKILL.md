@@ -99,7 +99,7 @@ bash BatutaClaude/skills/skill-sync/assets/sync.sh --verbose
 ```markdown
 | Skill | Auto-invoke | Tools |
 |-------|-------------|-------|
-| `sdd-init` | Starting SDD workflow, /sdd:init | Read, Edit, Write, Glob, Grep, Bash |
+| `sdd-init` | Starting SDD workflow, /sdd-init | Read, Edit, Write, Glob, Grep, Bash |
 ```
 
 ### In CLAUDE.md
@@ -107,7 +107,7 @@ bash BatutaClaude/skills/skill-sync/assets/sync.sh --verbose
 ```markdown
 | Skill | Scope | Auto-invoke |
 |-------|-------|-------------|
-| `sdd-init` | pipeline | Starting SDD workflow, /sdd:init |
+| `sdd-init` | pipeline | Starting SDD workflow, /sdd-init |
 ```
 
 ## Ordering
@@ -138,7 +138,7 @@ sync skills → sync agents → run skill-sync → copy CLAUDE.md
 
 ### With ecosystem-creator
 
-After creating a new skill via `/create:skill`, the ecosystem-creator should suggest:
+After creating a new skill via `/create-skill`, the ecosystem-creator should suggest:
 > "Skill creado. Ejecuta `/batuta:sync-skills` para actualizar las tablas de routing."
 
 ### With /batuta:sync-skills command

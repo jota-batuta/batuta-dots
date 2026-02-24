@@ -12,7 +12,7 @@ metadata:
   version: "2.0"
   created: "2026-02-20"
   scope: [pipeline]
-  auto_invoke: "Verifying implementation, /sdd:verify"
+  auto_invoke: "Verifying implementation, /sdd-verify"
 allowed-tools: Read, Glob, Grep, Bash
 ---
 

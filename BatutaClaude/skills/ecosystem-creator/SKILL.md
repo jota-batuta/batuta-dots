@@ -36,23 +36,23 @@ What are you creating?
 ├─ SKILL ──────────── A set of patterns, rules, and templates for a technology,
 │                     workflow, or project-type that the AI follows when working
 │                     in that context.
-│                     Command: /create:skill <name>
+│                     Command: /create-skill <name>
 │                     Examples: python-batuta, temporal-worker, nextjs-portal
 │
 ├─ AGENT ──────────── A named AI persona with specific capabilities, tools, and
 │                     system prompt for use in OpenCode (opencode.json).
-│                     Command: /create:agent <name>
+│                     Command: /create-agent <name>
 │                     Examples: reviewer, deployer, documenter
 │
 ├─ SUB-AGENT ──────── An SDD-style sub-agent skill that receives a task from the
 │                     orchestrator, does focused work, and returns a structured
 │                     envelope contract (status, summary, artifacts, next, risks).
-│                     Command: /create:sub-agent <name>
+│                     Command: /create-sub-agent <name>
 │                     Examples: sdd-migrate, sdd-audit, sdd-refactor
 │
 └─ WORKFLOW ───────── A command-to-skill mapping that defines a slash command and
                       the skill(s) it invokes, with input/output contracts.
-                      Command: /create:workflow <name>
+                      Command: /create-workflow <name>
                       Examples: /deploy:staging, /audit:security, /report:weekly
 ```
 
@@ -105,8 +105,8 @@ Consistent naming is non-negotiable. Every component follows these patterns:
 
 | Type | Pattern | Examples |
 |------|---------|----------|
-| SDD workflow | `/sdd:{action}` | `/sdd:init`, `/sdd:new`, `/sdd:apply` |
-| Ecosystem workflow | `/create:{type}` | `/create:skill`, `/create:agent` |
+| SDD workflow | `/sdd-{action}` | `/sdd-init`, `/sdd-new`, `/sdd-apply` |
+| Ecosystem workflow | `/create-{type}` | `/create-skill`, `/create-agent` |
 | Operations workflow | `/{domain}:{action}` | `/deploy:staging`, `/audit:security` |
 | Reporting workflow | `/report:{topic}` | `/report:costs`, `/report:weekly` |
 
@@ -643,10 +643,10 @@ Return a summary:
 
 | Command | Description |
 |---------|-------------|
-| `/create:skill <name>` | Create a new skill (technology, workflow, or project-type) |
-| `/create:agent <name>` | Create a new agent definition for OpenCode |
-| `/create:sub-agent <name>` | Create a new SDD-style sub-agent skill with envelope contract |
-| `/create:workflow <name>` | Create a new workflow command with skill mapping |
+| `/create-skill <name>` | Create a new skill (technology, workflow, or project-type) |
+| `/create-agent <name>` | Create a new agent definition for OpenCode |
+| `/create-sub-agent <name>` | Create a new SDD-style sub-agent skill with envelope contract |
+| `/create-workflow <name>` | Create a new workflow command with skill mapping |
 
 ---
 

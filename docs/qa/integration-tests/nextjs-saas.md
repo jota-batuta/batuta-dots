@@ -77,7 +77,7 @@ estos puntos ciegos funcionales.
 - **Test propuesto**: `test_no_duplicate_stack_awareness()` — verificar que la tabla Stack Awareness no esta duplicada, o que todas las copias son identicas
 - **Fix propuesto**: Centralizar Stack Awareness en un archivo referenciado (como un include) o generarlo via skill-sync
 
-#### H12: /sdd:continue no documenta el dependency graph
+#### H12: /sdd-continue no documenta el dependency graph
 - **Descripcion**: La logica de "next needed phase" no esta documentada. Claude debe inferirla por existencia de archivos
 - **Impacto**: Comportamiento impredecible si archivos parciales existen o estan corruptos
 - **Test propuesto**: `test_sdd_continue_dependency_graph_documented()` — verificar que pipeline-agent.md tiene tabla explicita de dependencias

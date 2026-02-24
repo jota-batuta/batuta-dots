@@ -24,7 +24,7 @@
 
 ## Resumen Ejecutivo
 
-La guia `guia-batuta-app.md` es funcionalmente correcta en sus partes principales. El flujo SDD de 15 pasos, los comandos centrales (`/sdd:init`, `/sdd:explore`, `/sdd:new`, `/sdd:continue`, `/sdd:apply`, `/sdd:verify`, `/sdd:archive`), los tres scope agents, el Execution Gate, y la auditoria de seguridad estan todos respaldados por archivos reales del ecosistema.
+La guia `guia-batuta-app.md` es funcionalmente correcta en sus partes principales. El flujo SDD de 15 pasos, los comandos centrales (`/sdd-init`, `/sdd-explore`, `/sdd-new`, `/sdd-continue`, `/sdd-apply`, `/sdd-verify`, `/sdd-archive`), los tres scope agents, el Execution Gate, y la auditoria de seguridad estan todos respaldados por archivos reales del ecosistema.
 
 Se identificaron **3 hallazgos**: 1 importante y 2 menores. Ninguno bloquea el uso de la guia. El hallazgo importante es una instruccion tecnica incorrecta que podria confundir a un usuario avanzado que compare la guia con el command `batuta-init.md`. Los dos hallazgos menores son descripciones de comportamiento inexactas que no afectan el flujo pero podrian crear expectativas erroneas.
 
@@ -69,7 +69,7 @@ bash "$BATUTA_DOTS_PATH/skills/setup.sh" --hooks
 
 ### MENORES
 
-#### HALLAZGO-02: El comando de emergencia `/sdd:continue` se describe como "ver el estado" cuando en realidad ejecuta la siguiente fase
+#### HALLAZGO-02: El comando de emergencia `/sdd-continue` se describe como "ver el estado" cuando en realidad ejecuta la siguiente fase
 
 **Paso afectado**: Seccion "Comandos de emergencia".
 
@@ -77,14 +77,14 @@ bash "$BATUTA_DOTS_PATH/skills/setup.sh" --hooks
 
 | Situacion | Que escribir |
 |---|---|
-| Quieres ver el estado del proyecto | `/sdd:continue batuta-app-dashboard` (te muestra donde quedamos) |
+| Quieres ver el estado del proyecto | `/sdd-continue batuta-app-dashboard` (te muestra donde quedamos) |
 
 **Lo que hace el ecosistema real** (`BatutaClaude/CLAUDE.md`, tabla SDD Commands):
 ```
-/sdd:continue [change-name]  →  pipeline → next needed phase
+/sdd-continue [change-name]  →  pipeline → next needed phase
 ```
 
-**Analisis**: `/sdd:continue` no es un comando de "ver estado" — es el comando que ejecuta la siguiente fase pendiente en el pipeline SDD. Si el usuario lo ejecuta pensando que solo vera informacion, Claude podria avanzar una fase que el usuario no estaba listo para ejecutar. El comando correcto para revisar estado seria leer `.batuta/session.md` o simplemente preguntar a Claude, no `/sdd:continue`.
+**Analisis**: `/sdd-continue` no es un comando de "ver estado" — es el comando que ejecuta la siguiente fase pendiente en el pipeline SDD. Si el usuario lo ejecuta pensando que solo vera informacion, Claude podria avanzar una fase que el usuario no estaba listo para ejecutar. El comando correcto para revisar estado seria leer `.batuta/session.md` o simplemente preguntar a Claude, no `/sdd-continue`.
 
 **Riesgo**: Bajo — el pipeline-agent pide confirmacion al usuario antes de avanzar cada fase, pero la descripcion crea una expectativa incorrecta sobre el comportamiento del comando.
 
@@ -120,7 +120,7 @@ bash "$BATUTA_DOTS_PATH/skills/setup.sh" --hooks
 | ID | Severidad | Descripcion | Prioridad | Archivo |
 |----|-----------|-------------|-----------|---------|
 | HALLAZGO-01 | IMPORTANTE | Opcion B del Paso 3 dice `setup.sh --all` pero `batuta-init.md` usa `--sync` + `--hooks` separados, y omite la creacion de `.batuta/` | Alta | `docs/guides/guia-batuta-app.md` linea ~144 |
-| HALLAZGO-02 | MENOR | `/sdd:continue` descrito como "ver estado del proyecto" cuando en realidad ejecuta la siguiente fase SDD | Media | `docs/guides/guia-batuta-app.md` seccion "Comandos de emergencia" |
+| HALLAZGO-02 | MENOR | `/sdd-continue` descrito como "ver estado del proyecto" cuando en realidad ejecuta la siguiente fase SDD | Media | `docs/guides/guia-batuta-app.md` seccion "Comandos de emergencia" |
 | HALLAZGO-03 | MENOR | Opcion A no explica el prerequisito de instalacion de commands ni como saber si estan disponibles | Baja | `docs/guides/guia-batuta-app.md` Paso 3 |
 
 ---
@@ -145,9 +145,9 @@ Las siguientes referencias de la guia fueron verificadas contra el ecosistema y 
 | Execution Gate con modo LIGHT y FULL | PASS | `BatutaClaude/CLAUDE.md` seccion Execution Gate |
 | `.batuta/session.md` y `.batuta/prompt-log.jsonl` creados por `/batuta-init` | PASS | `BatutaClaude/commands/batuta-init.md` Step 2.5 |
 | Skill Gap Detection en `infra-agent` con 3 opciones al usuario | PASS | `BatutaClaude/agents/infra-agent.md` |
-| `/sdd:new` crea proposal (sdd-explore → sdd-propose) | PASS | `BatutaClaude/CLAUDE.md` tabla SDD Commands |
-| `/sdd:continue` avanza al siguiente paso del pipeline | PASS | `BatutaClaude/CLAUDE.md` tabla SDD Commands |
-| `/sdd:apply` invoca pipeline + infra para Scope Rule | PASS | `BatutaClaude/CLAUDE.md` tabla SDD Commands |
+| `/sdd-new` crea proposal (sdd-explore → sdd-propose) | PASS | `BatutaClaude/CLAUDE.md` tabla SDD Commands |
+| `/sdd-continue` avanza al siguiente paso del pipeline | PASS | `BatutaClaude/CLAUDE.md` tabla SDD Commands |
+| `/sdd-apply` invoca pipeline + infra para Scope Rule | PASS | `BatutaClaude/CLAUDE.md` tabla SDD Commands |
 | Agent Teams: 3 niveles (Solo, Subagente, Agent Team) | PASS | `BatutaClaude/CLAUDE.md` tabla Team Routing |
 | Metricas de rendimiento en tabla de Agent Teams | PASS (estimaciones) | Documentadas como estimaciones en la guia |
 

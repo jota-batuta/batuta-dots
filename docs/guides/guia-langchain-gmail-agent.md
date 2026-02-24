@@ -128,7 +128,7 @@ Esto instala las instrucciones del chef (CLAUDE.md), los jefes de area (scope ag
 ## Paso 3 — Iniciar el proyecto
 
 ```
-/sdd:init
+/sdd-init
 ```
 
 | Pregunta | Tu respuesta |
@@ -156,7 +156,7 @@ Opcion 1 — Investiga y crea el skill acotado a nuestro proyecto
 ## Paso 5 — Explorar y proponer arquitectura
 
 ```
-/sdd:new batuta-email-classifier
+/sdd-new batuta-email-classifier
 ```
 
 Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
@@ -172,12 +172,12 @@ Aprobado, continua con el siguiente paso
 ## Paso 6 — Especificaciones, diseno y tareas
 
 ```
-/sdd:continue batuta-email-classifier
+/sdd-continue batuta-email-classifier
 ```
 
-Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd:ff batuta-email-classifier` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-ff batuta-email-classifier` ejecuta todas las fases pendientes de corrido sin pausas.
 
 Repite "Se ve bien, continua" para cada fase (specs, design, tasks).
 
@@ -186,7 +186,7 @@ Repite "Se ve bien, continua" para cada fase (specs, design, tasks).
 ## Paso 7 — Construir el agente
 
 ```
-/sdd:apply batuta-email-classifier
+/sdd-apply batuta-email-classifier
 ```
 
 Antes de escribir codigo, Claude ejecuta el **Execution Gate** — valida donde van los archivos, que impacto tienen y que todo siga las reglas del proyecto.
@@ -209,7 +209,7 @@ El token de Gmail (token.json) se va a generar la primera vez que ejecute el scr
 ## Paso 8 — Verificar
 
 ```
-/sdd:verify batuta-email-classifier
+/sdd-verify batuta-email-classifier
 ```
 
 Corrige si hay errores:
@@ -353,7 +353,7 @@ Verifica que el despliegue del agente en Coolify esta funcionando:
 ## Paso 14 — Archivar y celebrar
 
 ```
-/sdd:archive batuta-email-classifier
+/sdd-archive batuta-email-classifier
 ```
 
 Claude cierra el proyecto: verifica que todo esta completo, guarda las lecciones aprendidas, y actualiza `.batuta/session.md`.
@@ -371,7 +371,7 @@ Claude cierra el proyecto: verifica que todo esta completo, guarda las lecciones
 Para agregar mas categorias de clasificacion:
 
 ```
-/sdd:new email-classifier-new-categories
+/sdd-new email-classifier-new-categories
 
 Quiero agregar estas categorias al clasificador:
 - "recibo" — para comprobantes de pago

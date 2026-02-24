@@ -219,7 +219,7 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 **Que vamos a hacer**: Decirle a Claude que tipo de proyecto vamos a construir. Es como cuando un ingeniero registra formalmente el proyecto antes de empezar a planificar.
 
 ```
-/sdd:init
+/sdd-init
 ```
 
 Cuando Claude pregunte:
@@ -265,7 +265,7 @@ Esto puede pasar 2-4 veces. Cada vez, responde "Opcion 1". Claude va a investiga
 **Copia y pega este prompt**:
 
 ```
-/sdd:new batuta-data-pipeline
+/sdd-new batuta-data-pipeline
 ```
 
 Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
@@ -299,12 +299,12 @@ Aprobado, continua con el siguiente paso
 **Copia y pega este prompt**:
 
 ```
-/sdd:continue batuta-data-pipeline
+/sdd-continue batuta-data-pipeline
 ```
 
-Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd:ff batuta-data-pipeline` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-ff batuta-data-pipeline` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude va a ejecutar estas fases en orden:
 
@@ -342,7 +342,7 @@ Claude esta configurado para explicarte las cosas de forma que cualquier persona
 **Copia y pega este prompt**:
 
 ```
-/sdd:apply batuta-data-pipeline
+/sdd-apply batuta-data-pipeline
 ```
 
 **Que esperar**: Antes de escribir codigo, Claude ejecuta el **Execution Gate** — un checklist automatico que verifica:
@@ -488,7 +488,7 @@ con el nombre: datos_limpios_YYYY-MM-DD.csv (la fecha de hoy).
 **Copia y pega este prompt**:
 
 ```
-/sdd:verify batuta-data-pipeline
+/sdd-verify batuta-data-pipeline
 ```
 
 **Que esperar**: Claude va a verificar:
@@ -508,7 +508,7 @@ Si, corrige todos los problemas que encontraste
 Despues de las correcciones, ejecuta verify otra vez:
 
 ```
-/sdd:verify batuta-data-pipeline
+/sdd-verify batuta-data-pipeline
 ```
 
 **Cuando todo este verde (sin errores)**, continua al siguiente paso.
@@ -595,7 +595,7 @@ Necesito ambas opciones. El pipeline debe monitorear una carpeta de entrada
 **Para cerrar el proyecto:**
 
 ```
-/sdd:archive batuta-data-pipeline
+/sdd-archive batuta-data-pipeline
 ```
 
 Claude cierra el proyecto formalmente: verifica que todo esta completo, guarda las lecciones aprendidas, y actualiza `.batuta/session.md`.
@@ -615,7 +615,7 @@ Claude cierra el proyecto formalmente: verifica que todo esta completo, guarda l
 Cuando quieras agregar algo nuevo al pipeline, NO edites el codigo directamente. Usa el mismo proceso:
 
 ```
-/sdd:new nombre-del-cambio
+/sdd-new nombre-del-cambio
 
 Quiero agregar [descripcion de lo que quieres cambiar o agregar].
 ```
@@ -624,7 +624,7 @@ Quiero agregar [descripcion de lo que quieres cambiar o agregar].
 
 **Agregar una nueva fuente de datos (JSON):**
 ```
-/sdd:new agregar-fuente-json
+/sdd-new agregar-fuente-json
 
 Quiero que el pipeline tambien pueda leer archivos JSON ademas de CSV y Excel.
 El JSON puede tener estructura anidada (datos dentro de datos).
@@ -632,7 +632,7 @@ El JSON puede tener estructura anidada (datos dentro de datos).
 
 **Agregar una nueva transformacion:**
 ```
-/sdd:new nueva-transformacion-moneda
+/sdd-new nueva-transformacion-moneda
 
 Quiero agregar una transformacion que convierta montos en pesos colombianos
 a dolares usando una tasa de cambio configurable.
@@ -640,7 +640,7 @@ a dolares usando una tasa de cambio configurable.
 
 **Agregar una nueva validacion:**
 ```
-/sdd:new validacion-nit
+/sdd-new validacion-nit
 
 Quiero agregar una validacion para el campo "NIT" que verifique que
 tenga el formato correcto de NIT colombiano (numeros + digito de verificacion).
@@ -742,7 +742,7 @@ Claude analiza la bitacora de calidad y te dice:
 | Claude se trabo y no responde | Cierra la terminal, abrela de nuevo, escribe `claude` |
 | Quieres deshacer el ultimo cambio | `Deshaz el ultimo cambio que hiciste` |
 | No entiendes algo | `Explicame [lo que no entiendes] como si tuviera 15 anos` |
-| Quieres ver el estado del proyecto | `/sdd:continue batuta-data-pipeline` (te muestra donde quedamos) |
+| Quieres ver el estado del proyecto | `/sdd-continue batuta-data-pipeline` (te muestra donde quedamos) |
 | El pipeline falla con un archivo | `El pipeline falla con este archivo: [nombre]. El error es: [pega el error]` |
 
 ---
@@ -1031,7 +1031,7 @@ R: Con pandas, hasta ~500,000 filas comodamente en una PC normal. Para mas de 1 
 R: Si. El Paso 13 cubre esto. Puedes usar un scheduler de Python o un cron job del sistema operativo.
 
 **P: El pipeline puede leer datos de una API en vez de archivos?**
-R: No con la version basica, pero puedes pedirle a Claude que agregue un extractor de API. Usa el proceso SDD (`/sdd:new agregar-fuente-api`).
+R: No con la version basica, pero puedes pedirle a Claude que agregue un extractor de API. Usa el proceso SDD (`/sdd-new agregar-fuente-api`).
 
 **P: Puedo cerrar la terminal y continuar despues?**
 R: Si. Abre la terminal, navega a tu carpeta, escribe `claude`, y Claude automaticamente lee `.batuta/session.md` donde guardo en que quedo.
@@ -1048,31 +1048,31 @@ Tu (archivos CSV/Excel crudos)
  |
  +-- Paso 2:  Instalar ecosistema Batuta + crear .batuta/
  |
- +-- Paso 3:  /sdd:init ................... "Registrar el proyecto"
+ +-- Paso 3:  /sdd-init ................... "Registrar el proyecto"
  |
  |   [Claude detecta skills faltantes → Paso 4: "Opcion 1"]
  |
- +-- Paso 5:  /sdd:new .................... "Explorar + Propuesta: plano de la fabrica"
+ +-- Paso 5:  /sdd-new .................... "Explorar + Propuesta: plano de la fabrica"
  |     Tu: "Aprobado"
  |
- +-- Paso 6:  /sdd:continue ............... "Specs → Design → Tasks"
+ +-- Paso 6:  /sdd-continue ............... "Specs → Design → Tasks"
  |     Tu: "Continua" (3 veces)
  |
- +-- Paso 7:  /sdd:apply (Batch 1) ........ "Estacion 1: Ingestion"
+ +-- Paso 7:  /sdd-apply (Batch 1) ........ "Estacion 1: Ingestion"
  |     [Execution Gate valida antes de cada cambio]
  |
- +-- Paso 8:  /sdd:apply (Batch 2) ........ "Estacion 2: Transformacion"
+ +-- Paso 8:  /sdd-apply (Batch 2) ........ "Estacion 2: Transformacion"
  |
- +-- Paso 9:  /sdd:apply (Batch 3) ........ "Estacion 3: Validacion"
+ +-- Paso 9:  /sdd-apply (Batch 3) ........ "Estacion 3: Validacion"
  |
- +-- Paso 10: /sdd:apply (Batch 4) ........ "Estacion 4: Exportacion"
+ +-- Paso 10: /sdd-apply (Batch 4) ........ "Estacion 4: Exportacion"
  |
- +-- Paso 11: /sdd:verify ................. "Control de calidad final"
+ +-- Paso 11: /sdd-verify ................. "Control de calidad final"
  |
  +-- Paso 12: Probar con datos reales ..... "Arrancar la fabrica"
  |
  +-- Paso 13: Ejecucion automatica ........ "La fabrica trabaja sola"
- |             + /sdd:archive .............. "Cerrar y celebrar"
+ |             + /sdd-archive .............. "Cerrar y celebrar"
  |
  [Datos limpios, validados y exportados!]
 ```

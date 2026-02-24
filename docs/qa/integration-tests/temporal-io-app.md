@@ -10,19 +10,19 @@ La guia lleva al usuario de idea a producto con un flujo coherente y bien estruc
 
 ## Hallazgos
 
-### H1: Comando /sdd:new no ejecuta explore+propose sino solo propose
+### H1: Comando /sdd-new no ejecuta explore+propose sino solo propose
 - **Severidad**: IMPORTANTE
 - **Ubicacion**: Paso 6, linea ~186
-- **Lo que dice la guia**: `"/sdd:new batuta-workers-onboarding"` seguido de "Lee el resumen que Claude te muestra"
-- **Lo que hace el ecosistema**: Segun CLAUDE.md linea 104, `/sdd:new <change-name>` mapea a `pipeline -> sdd-explore -> sdd-propose`. Esto significa que `/sdd:new` ya incluye la fase de explore internamente. Sin embargo, en el Paso 4 la guia ya ejecuto `/sdd:explore batuta-workers-onboarding` explicitamente. El usuario ejecutaria explore DOS veces: una en Paso 4 con `/sdd:explore` y otra implicitamente dentro de `/sdd:new` en Paso 6.
-- **Impacto en el usuario**: Duplicacion de trabajo. El usuario esperaria que Paso 6 solo genere la propuesta ya que la exploracion se hizo en Paso 4, pero `/sdd:new` volveria a ejecutar explore. Esto no es un error critico porque el resultado final es correcto, pero consume tiempo y tokens innecesariamente.
+- **Lo que dice la guia**: `"/sdd-new batuta-workers-onboarding"` seguido de "Lee el resumen que Claude te muestra"
+- **Lo que hace el ecosistema**: Segun CLAUDE.md linea 104, `/sdd-new <change-name>` mapea a `pipeline -> sdd-explore -> sdd-propose`. Esto significa que `/sdd-new` ya incluye la fase de explore internamente. Sin embargo, en el Paso 4 la guia ya ejecuto `/sdd-explore batuta-workers-onboarding` explicitamente. El usuario ejecutaria explore DOS veces: una en Paso 4 con `/sdd-explore` y otra implicitamente dentro de `/sdd-new` en Paso 6.
+- **Impacto en el usuario**: Duplicacion de trabajo. El usuario esperaria que Paso 6 solo genere la propuesta ya que la exploracion se hizo en Paso 4, pero `/sdd-new` volveria a ejecutar explore. Esto no es un error critico porque el resultado final es correcto, pero consume tiempo y tokens innecesariamente.
 
-### H2: Paso 7 usa /sdd:continue que ejecuta la "siguiente fase necesaria", no las 3 fases secuenciales
+### H2: Paso 7 usa /sdd-continue que ejecuta la "siguiente fase necesaria", no las 3 fases secuenciales
 - **Severidad**: MENOR
 - **Ubicacion**: Paso 7, lineas ~199-208
-- **Lo que dice la guia**: `"/sdd:continue batuta-workers-onboarding"` y luego "Repite 'Se ve bien, continua' para cada fase (specs, design, tasks). Claude ejecuta estas 3 fases en orden"
-- **Lo que hace el ecosistema**: Segun CLAUDE.md linea 105, `/sdd:continue [change-name]` mapea a `pipeline -> next needed phase`. Esto ejecuta UNA fase a la vez (la siguiente que falte), no las 3 de golpe. El usuario tendria que ejecutar `/sdd:continue` tres veces separadas (una para specs, una para design, una para tasks) o usar `/sdd:ff` (fast-forward, linea 106) que si ejecuta `propose -> spec -> design -> tasks` de corrido.
-- **Impacto en el usuario**: Confusion menor. La guia dice "Repite", lo cual implica que el usuario entiende que debe ejecutar el comando varias veces. El flujo funciona, pero la explicacion podria ser mas clara sobre que debe ejecutar el comando 3 veces. Alternativamente, podria sugerir `/sdd:ff` para hacerlo de una sola vez.
+- **Lo que dice la guia**: `"/sdd-continue batuta-workers-onboarding"` y luego "Repite 'Se ve bien, continua' para cada fase (specs, design, tasks). Claude ejecuta estas 3 fases en orden"
+- **Lo que hace el ecosistema**: Segun CLAUDE.md linea 105, `/sdd-continue [change-name]` mapea a `pipeline -> next needed phase`. Esto ejecuta UNA fase a la vez (la siguiente que falte), no las 3 de golpe. El usuario tendria que ejecutar `/sdd-continue` tres veces separadas (una para specs, una para design, una para tasks) o usar `/sdd-ff` (fast-forward, linea 106) que si ejecuta `propose -> spec -> design -> tasks` de corrido.
+- **Impacto en el usuario**: Confusion menor. La guia dice "Repite", lo cual implica que el usuario entiende que debe ejecutar el comando varias veces. El flujo funciona, pero la explicacion podria ser mas clara sobre que debe ejecutar el comando 3 veces. Alternativamente, podria sugerir `/sdd-ff` para hacerlo de una sola vez.
 
 ### H3: Referencia cruzada a guia-batuta-app.md Paso 3 Opcion B es correcta pero fragil
 - **Severidad**: MENOR
@@ -108,11 +108,11 @@ La guia lleva al usuario de idea a producto con un flujo coherente y bien estruc
 ## Resumen de Acciones Recomendadas
 
 ### Prioridad Alta
-1. **H1**: Considerar cambiar Paso 6 para que use solo `/sdd:propose batuta-workers-onboarding` (sin re-ejecutar explore) o eliminar el Paso 4 separado y dejar que `/sdd:new` haga explore+propose de una vez. Alternativamente, documentar que la segunda exploracion es intencional (refinamiento).
+1. **H1**: Considerar cambiar Paso 6 para que use solo `/sdd-propose batuta-workers-onboarding` (sin re-ejecutar explore) o eliminar el Paso 4 separado y dejar que `/sdd-new` haga explore+propose de una vez. Alternativamente, documentar que la segunda exploracion es intencional (refinamiento).
 2. **H10**: Reemplazar `jota-batuta` con un placeholder generico `[tu-organizacion]` y agregar prerequisitos de GitHub CLI y Coolify.
 
 ### Prioridad Media
-3. **H2**: Aclarar que `/sdd:continue` se ejecuta una vez por fase (3 veces total) o sugerir `/sdd:ff` como alternativa rapida.
+3. **H2**: Aclarar que `/sdd-continue` se ejecuta una vez por fase (3 veces total) o sugerir `/sdd-ff` como alternativa rapida.
 
 ### Prioridad Baja
 4. **H3**: Considerar usar un deep link o ancla en la referencia cruzada.

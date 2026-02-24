@@ -126,7 +126,7 @@ Que tipo de proyecto es?
     → refactoring
 
   Ninguno aplica?
-    → Crea un template custom con /create:skill
+    → Crea un template custom con /create-skill
       (ver seccion siguiente)
 ```
 

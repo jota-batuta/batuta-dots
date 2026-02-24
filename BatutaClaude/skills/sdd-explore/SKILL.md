@@ -9,7 +9,7 @@ metadata:
   version: "1.0"
   created: "2026-02-20"
   scope: [pipeline]
-  auto_invoke: "Exploring codebase for changes, /sdd:explore"
+  auto_invoke: "Exploring codebase for changes, /sdd-explore"
 allowed-tools: Read, Glob, Grep, WebFetch, WebSearch
 ---
 
@@ -129,7 +129,7 @@ If there are multiple approaches, compare them:
 
 ### Step 4: Optionally Save Exploration
 
-If the orchestrator provided a change name (i.e., this exploration is part of `/sdd:new`), save your analysis to:
+If the orchestrator provided a change name (i.e., this exploration is part of `/sdd-new`), save your analysis to:
 
 ```
 openspec/changes/{change-name}/
@@ -138,7 +138,7 @@ openspec/changes/{change-name}/
 
 **File name is `explore.md`** (not `exploration.md`). This is the standardized name across all SDD artifacts.
 
-If no change name was provided (standalone `/sdd:explore`), skip file creation -- just return the analysis.
+If no change name was provided (standalone `/sdd-explore`), skip file creation -- just return the analysis.
 
 ### Step 5: Return Structured Analysis
 

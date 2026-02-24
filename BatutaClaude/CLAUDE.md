@@ -100,17 +100,17 @@ Full process: see `infra-agent` which has the evaluation → generalize → prop
 
 | Command | Scope |
 |---------|-------|
-| `/sdd:init` | pipeline → sdd-init |
-| `/sdd:explore <topic>` | pipeline → sdd-explore |
-| `/sdd:new <change-name>` | pipeline → sdd-explore → sdd-propose |
-| `/sdd:continue [change-name]` | pipeline → next needed phase |
-| `/sdd:ff [change-name]` | pipeline → propose → spec → design → tasks |
-| `/sdd:apply [change-name]` | pipeline → sdd-apply (+ infra for Scope Rule) |
-| `/sdd:verify [change-name]` | pipeline → sdd-verify |
-| `/sdd:archive [change-name]` | pipeline → sdd-archive |
-| `/create:skill <name>` | infra → ecosystem-creator |
-| `/create:sub-agent <name>` | infra → ecosystem-creator |
-| `/create:workflow <name>` | infra → ecosystem-creator |
+| `/sdd-init` | pipeline → sdd-init |
+| `/sdd-explore <topic>` | pipeline → sdd-explore |
+| `/sdd-new <change-name>` | pipeline → sdd-explore → sdd-propose |
+| `/sdd-continue [change-name]` | pipeline → next needed phase |
+| `/sdd-ff [change-name]` | pipeline → propose → spec → design → tasks |
+| `/sdd-apply [change-name]` | pipeline → sdd-apply (+ infra for Scope Rule) |
+| `/sdd-verify [change-name]` | pipeline → sdd-verify |
+| `/sdd-archive [change-name]` | pipeline → sdd-archive |
+| `/create-skill <name>` | infra → ecosystem-creator |
+| `/create-sub-agent <name>` | infra → ecosystem-creator |
+| `/create-workflow <name>` | infra → ecosystem-creator |
 | `/batuta-analyze-prompts` | observability → prompt-tracker (analysis mode) |
 | `/batuta-sync-skills` | infra → skill-sync (regenerate routing tables) |
 | `/batuta-init` | Setup Batuta ecosystem in current project |

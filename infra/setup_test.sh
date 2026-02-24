@@ -1086,6 +1086,81 @@ test_claude_md_has_doc_standard_rule() {
 }
 
 # ============================================================================
+# v9.4 Tests: SDD Command Wrappers + Colon-to-Hyphen Migration
+# ============================================================================
+
+test_fifteen_commands_synced() {
+    log_test "15 commands exist in BatutaClaude/commands/ (v9.4)"
+    local cmd_dir="$REPO_ROOT/BatutaClaude/commands"
+    local expected_commands=(
+        "batuta-analyze-prompts.md"
+        "batuta-init.md"
+        "batuta-sync-skills.md"
+        "batuta-update.md"
+        "sdd-init.md"
+        "sdd-explore.md"
+        "sdd-new.md"
+        "sdd-continue.md"
+        "sdd-ff.md"
+        "sdd-apply.md"
+        "sdd-verify.md"
+        "sdd-archive.md"
+        "create-skill.md"
+        "create-sub-agent.md"
+        "create-workflow.md"
+    )
+
+    local found=0
+    for cmd in "${expected_commands[@]}"; do
+        if [[ -f "$cmd_dir/$cmd" ]]; then
+            found=$((found + 1))
+        else
+            assert_file_exists "$cmd_dir/$cmd" "Command $cmd exists"
+        fi
+    done
+
+    if [[ $found -eq ${#expected_commands[@]} ]]; then
+        log_pass "All 15 command files exist in BatutaClaude/commands/"
+    fi
+}
+
+test_sdd_commands_use_hyphens_not_colons() {
+    log_test "No /sdd: or /create: references in BatutaClaude/ (v9.4)"
+    local has_colons=0
+
+    # Check all .md files in BatutaClaude/ for old colon format
+    while IFS= read -r -d '' file; do
+        if grep -q "/sdd:" "$file" 2>/dev/null || grep -q "/create:" "$file" 2>/dev/null; then
+            has_colons=1
+            log_fail "File still uses colon format: $file"
+        fi
+    done < <(find "$REPO_ROOT/BatutaClaude" -name "*.md" -print0)
+
+    if [[ $has_colons -eq 0 ]]; then
+        log_pass "No /sdd: or /create: references in BatutaClaude/"
+    fi
+}
+
+test_claude_md_commands_use_hyphens() {
+    log_test "CLAUDE.md SDD Commands table uses hyphens (v9.4)"
+    local claude_md="$REPO_ROOT/BatutaClaude/CLAUDE.md"
+
+    assert_file_contains "$claude_md" "/sdd-init" \
+        "CLAUDE.md has /sdd-init (hyphen format)"
+    assert_file_contains "$claude_md" "/sdd-new" \
+        "CLAUDE.md has /sdd-new (hyphen format)"
+    assert_file_contains "$claude_md" "/create-skill" \
+        "CLAUDE.md has /create-skill (hyphen format)"
+
+    # Verify NO colon format remains
+    if grep -q '`/sdd:' "$claude_md" 2>/dev/null; then
+        log_fail "CLAUDE.md still has /sdd: format (should be /sdd-)"
+    else
+        log_pass "CLAUDE.md has no /sdd: references"
+    fi
+}
+
+# ============================================================================
 # Run All Tests
 # ============================================================================
 
@@ -1173,6 +1248,11 @@ test_hooks_point_to_infra_directory
 test_no_guides_reference_old_skills_path
 test_sdd_apply_has_documentation_standard
 test_claude_md_has_doc_standard_rule
+
+# --- v9.4 tests: SDD Command Wrappers + Colon-to-Hyphen Migration ---
+test_fifteen_commands_synced
+test_sdd_commands_use_hyphens_not_colons
+test_claude_md_commands_use_hyphens
 
 # ============================================================================
 # Summary

@@ -61,43 +61,43 @@ Se analizaron las 10 guias de implementacion del ecosistema Batuta v9.1 contra l
 
 Estos son problemas que aparecen en 3+ guias. Corregir cada patron resuelve multiples hallazgos simultaneamente.
 
-### PS-1: `/sdd:new` duplica la fase de explore (8/10 guias)
+### PS-1: `/sdd-new` duplica la fase de explore (8/10 guias)
 
 **Guias afectadas**: cli-python, data-pipeline, ai-agent-adk, langchain-gmail-agent, n8n-automation, temporal-io-app, nextjs-saas, refactoring-legacy
 
 **El problema**: Todas las guias siguen el patron:
-1. Paso X: `/sdd:explore <nombre>` — explora requisitos
-2. Paso Y: `/sdd:new <nombre>` — crea propuesta
+1. Paso X: `/sdd-explore <nombre>` — explora requisitos
+2. Paso Y: `/sdd-new <nombre>` — crea propuesta
 
-Pero CLAUDE.md define `/sdd:new` como `sdd-explore -> sdd-propose`. El usuario ejecuta explore **DOS VECES**: una explicita y una dentro de `/sdd:new`.
+Pero CLAUDE.md define `/sdd-new` como `sdd-explore -> sdd-propose`. El usuario ejecuta explore **DOS VECES**: una explicita y una dentro de `/sdd-new`.
 
 **Impacto**: Desperdicio de 3-5 minutos y tokens por guia. Confusion cuando Claude "vuelve a investigar" algo que ya aprobo.
 
 **Fix propuesto (ecosistema)**: Dos opciones:
-- **Opcion A**: Que `/sdd:new` detecte si ya existe `explore.md` y salte al propose
-- **Opcion B**: Cambiar TODAS las guias para eliminar el `/sdd:explore` standalone y dejar que `/sdd:new` haga todo
+- **Opcion A**: Que `/sdd-new` detecte si ya existe `explore.md` y salte al propose
+- **Opcion B**: Cambiar TODAS las guias para eliminar el `/sdd-explore` standalone y dejar que `/sdd-new` haga todo
 
 **Esfuerzo**: Opcion A = cambio en pipeline-agent + sdd-explore. Opcion B = texto en 8 guias.
 
 ---
 
-### PS-2: `/sdd:continue` ejecuta 1 fase, no 3 automaticamente (8/10 guias)
+### PS-2: `/sdd-continue` ejecuta 1 fase, no 3 automaticamente (8/10 guias)
 
 **Guias afectadas**: refactoring-legacy, cli-python, fastapi-service, batuta-app, langchain-gmail-agent, n8n-automation, temporal-io-app, nextjs-saas
 
 **El problema**: Las guias dicen:
-> `/sdd:continue` — "Claude ejecuta Specs, Design y Tasks"
+> `/sdd-continue` — "Claude ejecuta Specs, Design y Tasks"
 
-Pero `/sdd:continue` ejecuta **UNA** fase (la siguiente pendiente). El usuario debe invocarlo 3 veces, aprobando cada resultado intermedio.
+Pero `/sdd-continue` ejecuta **UNA** fase (la siguiente pendiente). El usuario debe invocarlo 3 veces, aprobando cada resultado intermedio.
 
-Ademas, 3 guias (batuta-app, cli-python, nextjs-saas) describen `/sdd:continue` como "ver el estado del proyecto" en la seccion de Comandos de Emergencia, cuando en realidad **ejecuta** la siguiente fase.
+Ademas, 3 guias (batuta-app, cli-python, nextjs-saas) describen `/sdd-continue` como "ver el estado del proyecto" en la seccion de Comandos de Emergencia, cuando en realidad **ejecuta** la siguiente fase.
 
 **Impacto**: El usuario espera automatizacion completa y se confunde cuando Claude se detiene despues de una fase. En el caso de "ver estado", puede avanzar el pipeline accidentalmente.
 
 **Fix propuesto (guias)**:
-1. Aclarar que `/sdd:continue` ejecuta UNA fase y debe repetirse
-2. Mencionar `/sdd:ff` (fast-forward) como alternativa para ejecutar todas las fases de corrido
-3. Eliminar `/sdd:continue` de la seccion "ver estado" — reemplazar con "pregunta a Claude: En que fase estamos?"
+1. Aclarar que `/sdd-continue` ejecuta UNA fase y debe repetirse
+2. Mencionar `/sdd-ff` (fast-forward) como alternativa para ejecutar todas las fases de corrido
+3. Eliminar `/sdd-continue` de la seccion "ver estado" — reemplazar con "pregunta a Claude: En que fase estamos?"
 
 **Esfuerzo**: Texto en 8 guias.
 
@@ -170,7 +170,7 @@ El ecosistema real (sdd-verify) define:
 
 Seguridad y documentacion son verificaciones transversales, no capas de la piramide.
 
-**Impacto**: El usuario ejecuta `/sdd:verify` y ve un reporte con capas diferentes a las prometidas.
+**Impacto**: El usuario ejecuta `/sdd-verify` y ve un reporte con capas diferentes a las prometidas.
 
 **Fix propuesto**: Actualizar la tabla de la Piramide en las 3 guias para reflejar las 5 capas reales.
 
@@ -256,8 +256,8 @@ Los 7 hallazgos abiertos se resuelven con PS-1 (doble explore), PS-2 (continue c
 | # | Patron | Accion | Archivos | Esfuerzo |
 |---|--------|--------|----------|----------|
 | 1 | PS-3 | Cambiar Opcion B en 7 guias: `--all` → `--project <path>` | 7 guias | 30 min |
-| 2 | PS-1 | Eliminar `/sdd:explore` standalone de 8 guias (dejar que `/sdd:new` lo haga) | 8 guias | 45 min |
-| 3 | PS-2 | Aclarar que `/sdd:continue` = 1 fase; corregir "ver estado" | 8 guias | 30 min |
+| 2 | PS-1 | Eliminar `/sdd-explore` standalone de 8 guias (dejar que `/sdd-new` lo haga) | 8 guias | 45 min |
+| 3 | PS-2 | Aclarar que `/sdd-continue` = 1 fase; corregir "ver estado" | 8 guias | 30 min |
 | 4 | PS-8 | Reemplazar `jota-batuta` por placeholder | 3 guias | 5 min |
 
 ### Prioridad 1 — Corregir en la siguiente version (impacto medio)

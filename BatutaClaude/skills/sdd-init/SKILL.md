@@ -12,7 +12,7 @@ metadata:
   version: "1.0"
   created: "2025-01-01"
   scope: [pipeline]
-  auto_invoke: "Starting SDD workflow, /sdd:init"
+  auto_invoke: "Starting SDD workflow, /sdd-init"
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash
 ---
 
@@ -50,7 +50,7 @@ If the project directory is empty (no package.json, no source files, no config f
 3. Use the user's answers to populate `config.yaml` context
 4. Note in the config: `detected_from: user_input (empty project)`
 
-This is common for new projects initialized via `/batuta-init`. The user's description from `/sdd:explore` will provide the real context.
+This is common for new projects initialized via `/batuta-init`. The user's description from `/sdd-explore` will provide the real context.
 
 #### Project Type Detection Heuristics
 
@@ -187,7 +187,7 @@ Return a structured summary:
 - **Formats**: {list of formats}
 
 ### Next Steps
-Ready for /sdd:explore <topic> or /sdd:new <change-name>.
+Ready for /sdd-explore <topic> or /sdd-new <change-name>.
 ```
 
 ## Rules

@@ -10,7 +10,7 @@ metadata:
   version: "1.0"
   created: 2025-06-01
   scope: [pipeline]
-  auto_invoke: "Implementing task batches, /sdd:apply"
+  auto_invoke: "Implementing task batches, /sdd-apply"
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash
 ---
 
@@ -67,8 +67,8 @@ Before implementing, scan the assigned tasks for technologies or patterns that d
 IF task requires a technology/pattern (e.g., Temporal workers, LangGraph agents, RLS policies)
 AND no matching skill exists in the user's loaded skills:
 ├── ALERT the orchestrator in your return summary
-├── RECOMMEND: "Consider running `/create:skill {skill-name}` to codify patterns for {technology}"
-├── Example: "No `temporal-worker` skill found. Run `/create:skill temporal-worker` to establish
+├── RECOMMEND: "Consider running `/create-skill {skill-name}` to codify patterns for {technology}"
+├── Example: "No `temporal-worker` skill found. Run `/create-skill temporal-worker` to establish
 │   activity/workflow conventions before implementing Temporal tasks."
 └── CONTINUE implementation using best practices from your training, but flag this as a risk
 ```
@@ -208,7 +208,7 @@ FOR EACH TASK:
 ├── Read existing code patterns (match the project's style)
 ├── Check if a coding skill exists for the relevant technology
 │   ├── YES → Load and follow that skill's conventions
-│   └── NO  → Flag in summary, recommend `/create:skill {name}`, use best practices
+│   └── NO  → Flag in summary, recommend `/create-skill {name}`, use best practices
 ├── Write the code
 ├── Mark task as complete [x] in tasks.md
 ├── Write a brief "Implementation Note" explaining WHY this approach was chosen
@@ -266,7 +266,7 @@ If none, say "None."}
 
 ### Missing Skills Detected
 {List any technologies/patterns that lacked a dedicated coding skill.
-Format: "No `{skill-name}` skill found. Recommend `/create:skill {skill-name}` for {reason}."
+Format: "No `{skill-name}` skill found. Recommend `/create-skill {skill-name}` for {reason}."
 If none, say "All required skills were available."}
 
 ### Remaining Tasks
@@ -311,7 +311,7 @@ risks:
 - If a task is blocked by something unexpected, STOP and report back
 - NEVER implement tasks that were not assigned to you
 - Load and follow any relevant coding skills for the project stack (e.g., temporal-worker, langchain-agent, nextjs-app-router, postgres-rls) if available in the user's skill set
-- If a relevant coding skill does NOT exist, flag it and recommend creating one via `/create:skill`
+- If a relevant coding skill does NOT exist, flag it and recommend creating one via `/create-skill`
 - Apply any `rules.apply` from `openspec/config.yaml`
 - If the project uses TDD, write a failing test FIRST, then implement to make it pass, then refactor
 - Implement ONE batch at a time — complete it, verify it, then move to the next batch

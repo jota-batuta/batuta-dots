@@ -218,7 +218,7 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 **Copia y pega este prompt** (adaptalo a tu proyecto):
 
 ```
-/sdd:new refactoring-modernizacion
+/sdd-new refactoring-modernizacion
 
 Este es un proyecto existente que necesita modernizacion.
 Antes de proponer cambios, investiga el proyecto completo como un detective.
@@ -286,12 +286,12 @@ Aprobado, continua con el siguiente paso
 **Copia y pega este prompt**:
 
 ```
-/sdd:continue refactoring-modernizacion
+/sdd-continue refactoring-modernizacion
 ```
 
-Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd:ff refactoring-modernizacion` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-ff refactoring-modernizacion` ejecuta todas las fases pendientes de corrido sin pausas.
 
 Claude va a crear las especificaciones. Cuando te las muestre, verifica que incluya:
 
@@ -393,7 +393,7 @@ Se ve bien, continua
 **Copia y pega este prompt**:
 
 ```
-/sdd:apply refactoring-modernizacion
+/sdd-apply refactoring-modernizacion
 ```
 
 **Que esperar**: Claude ejecuta el **Execution Gate** y te muestra el plan:
@@ -537,7 +537,7 @@ Mensaje: "test: agregar tests para funciones criticas"
 **Copia y pega este prompt**:
 
 ```
-/sdd:verify refactoring-modernizacion
+/sdd-verify refactoring-modernizacion
 
 Ejecuta una verificacion COMPLETA:
 
@@ -590,7 +590,7 @@ Recuerda: los tests existentes NO se modifican — el codigo debe adaptarse a el
 Repite la verificacion hasta que todo pase:
 
 ```
-/sdd:verify refactoring-modernizacion
+/sdd-verify refactoring-modernizacion
 ```
 
 ---
@@ -602,7 +602,7 @@ Repite la verificacion hasta que todo pase:
 **Copia y pega este prompt**:
 
 ```
-/sdd:archive refactoring-modernizacion
+/sdd-archive refactoring-modernizacion
 ```
 
 Claude archivara el cambio y creara un archivo `lessons-learned.md` en `openspec/changes/archive/refactoring-modernizacion/`. Este archivo documenta las lecciones aprendidas durante el proceso.
@@ -662,7 +662,7 @@ Primero verifica que no hay conflictos, luego haz el merge.
 Ahora que tu proyecto esta organizado, los cambios futuros son mas faciles. Usa el proceso SDD:
 
 ```
-/sdd:new nombre-del-cambio
+/sdd-new nombre-del-cambio
 
 Quiero agregar [descripcion del cambio].
 ```
@@ -676,14 +676,14 @@ Claude va a crear los archivos en el lugar correcto automaticamente porque la Sc
 El refactoring no tiene que ser "todo o nada". Puedes seguir mejorando de a poco:
 
 ```
-/sdd:new mejorar-tests-modulo-X
+/sdd-new mejorar-tests-modulo-X
 
 Quiero agregar tests para el modulo de [nombre del modulo]
 que todavia no tiene buena cobertura.
 ```
 
 ```
-/sdd:new tipos-funciones-internas
+/sdd-new tipos-funciones-internas
 
 Quiero agregar type hints a las funciones internas del modulo [nombre].
 Ya tiene tipos en las funciones publicas, ahora faltan las internas.
@@ -711,7 +711,7 @@ Claude te dice como mejorar tus pedidos para futuras sesiones.
 | Un lote salio mal pero los anteriores estan bien | `git revert HEAD` (deshace el ultimo commit) |
 | Claude se trabo | Cierra la terminal, abrela de nuevo, escribe `claude` |
 | No entiendes algo | `Explicame [lo que no entiendes] como si tuviera 15 anos` |
-| Quieres ver donde quedamos | `/sdd:continue refactoring-modernizacion` |
+| Quieres ver donde quedamos | `/sdd-continue refactoring-modernizacion` |
 
 ---
 
@@ -1018,7 +1018,7 @@ Tu (proyecto desordenado)
  |
  +-- Paso 2:  Instalar ecosistema Batuta ... "Darle recetas al chef"
  |
- +-- Paso 3:  /sdd:new .................... "Investigar + Plan de renovacion"
+ +-- Paso 3:  /sdd-new .................... "Investigar + Plan de renovacion"
  |
  |   [Claude detecta skills faltantes → "Opcion 1"]
  |     Tu: "Aprobado"
@@ -1038,10 +1038,10 @@ Tu (proyecto desordenado)
  +-- Paso 9:  Batch 3 — Agregar tests ..... "Instalar alarmas"
  |     [Tests deben pasar → commit]
  |
- +-- Paso 10: /sdd:verify ................. "Inspeccion final"
+ +-- Paso 10: /sdd-verify ................. "Inspeccion final"
  |     [TODO debe pasar]
  |
- +-- Paso 11: /sdd:archive + merge ........ "Entregar la casa renovada"
+ +-- Paso 11: /sdd-archive + merge ........ "Entregar la casa renovada"
  |
  [Proyecto modernizado, organizado, con tipos y tests!]
 ```

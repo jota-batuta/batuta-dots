@@ -218,7 +218,7 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 **Copia y pega este prompt:**
 
 ```
-/sdd:init
+/sdd-init
 ```
 
 Cuando Claude pregunte:
@@ -237,7 +237,7 @@ Cuando Claude pregunte:
 
 **Que vamos a hacer**: Entender que pasa cuando Claude detecta que necesita aprender algo nuevo. Esto es como si un chef te dijera "no tengo la receta para ese plato, pero puedo investigarla".
 
-**MOMENTO IMPORTANTE**: Durante el proceso de desarrollo (especialmente al ejecutar `/sdd:new`), Claude probablemente detecte que necesita skills para varias tecnologias. Te va a preguntar que hacer para cada una.
+**MOMENTO IMPORTANTE**: Durante el proceso de desarrollo (especialmente al ejecutar `/sdd-new`), Claude probablemente detecte que necesita skills para varias tecnologias. Te va a preguntar que hacer para cada una.
 
 **Cuando Claude diga algo como:**
 > "No tengo un skill documentado para Next.js App Router... Te propongo:
@@ -277,7 +277,7 @@ Claude va a investigar usando Context7 (su base de conocimiento actualizada) y c
 **Copia y pega este prompt:**
 
 ```
-/sdd:new mi-saas-app
+/sdd-new mi-saas-app
 ```
 
 Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
@@ -311,12 +311,12 @@ Aprobado, continua con el siguiente paso
 **Copia y pega este prompt:**
 
 ```
-/sdd:continue mi-saas-app
+/sdd-continue mi-saas-app
 ```
 
-Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd:ff mi-saas-app` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-ff mi-saas-app` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude va a ejecutar las siguientes fases una por una:
 
@@ -354,7 +354,7 @@ Claude esta configurado para explicarte las cosas de forma que cualquier persona
 **Copia y pega este prompt:**
 
 ```
-/sdd:apply mi-saas-app
+/sdd-apply mi-saas-app
 
 Empieza por el Batch 1: estructura del proyecto y base de datos.
 Incluye:
@@ -615,7 +615,7 @@ Implementa:
 **Copia y pega este prompt:**
 
 ```
-/sdd:verify mi-saas-app
+/sdd-verify mi-saas-app
 ```
 
 **Que esperar**: Claude va a verificar:
@@ -638,7 +638,7 @@ Si, corrige todos los problemas que encontraste
 Despues de las correcciones, ejecuta verify otra vez:
 
 ```
-/sdd:verify mi-saas-app
+/sdd-verify mi-saas-app
 ```
 
 **Cuando todo este verde (sin errores)**, continua al siguiente paso.
@@ -1086,7 +1086,7 @@ Si algo sale muy mal y quieres recuperarte rapido:
 Cuando quieras agregar algo nuevo o cambiar algo, NO edites el codigo directamente. Usa el mismo proceso:
 
 ```
-/sdd:new nombre-del-cambio
+/sdd-new nombre-del-cambio
 
 Quiero agregar [descripcion de lo que quieres cambiar o agregar].
 Por ejemplo: integracion con Stripe para cobrar suscripciones reales.
@@ -1133,13 +1133,13 @@ Una vez que tu SaaS basico esta funcionando, estas son las funcionalidades que p
 
 | Funcionalidad | Que decirle a Claude | Complejidad |
 |---------------|---------------------|-------------|
-| Pagos con Stripe | `/sdd:new stripe-integration` — Integrar Stripe Checkout para cobrar suscripciones reales | Alta (Agent Team recomendado) |
-| Invitaciones por email | `/sdd:new email-invitations` — Enviar invitaciones por email real con SendGrid o Resend | Media |
-| Notificaciones in-app | `/sdd:new notifications` — Sistema de notificaciones dentro de la app | Media |
-| Modo oscuro | `/sdd:new dark-mode` — Agregar toggle de modo oscuro/claro | Baja |
-| Exportar datos | `/sdd:new export-data` — Exportar datos del dashboard a CSV o PDF | Media |
-| API publica | `/sdd:new public-api` — API para que los clientes se integren con tu SaaS | Alta (Agent Team recomendado) |
-| Multi-idioma | `/sdd:new i18n` — Soporte para espanol e ingles | Media |
+| Pagos con Stripe | `/sdd-new stripe-integration` — Integrar Stripe Checkout para cobrar suscripciones reales | Alta (Agent Team recomendado) |
+| Invitaciones por email | `/sdd-new email-invitations` — Enviar invitaciones por email real con SendGrid o Resend | Media |
+| Notificaciones in-app | `/sdd-new notifications` — Sistema de notificaciones dentro de la app | Media |
+| Modo oscuro | `/sdd-new dark-mode` — Agregar toggle de modo oscuro/claro | Baja |
+| Exportar datos | `/sdd-new export-data` — Exportar datos del dashboard a CSV o PDF | Media |
+| API publica | `/sdd-new public-api` — API para que los clientes se integren con tu SaaS | Alta (Agent Team recomendado) |
+| Multi-idioma | `/sdd-new i18n` — Soporte para espanol e ingles | Media |
 
 ---
 
@@ -1277,17 +1277,17 @@ Tu (carpeta vacia)
  |
  +-- Paso 1-2:  Crear carpeta + Instalar Batuta + crear .batuta/
  |
- +-- Paso 3:    /sdd:init ................... "Configurar proyecto SDD"
+ +-- Paso 3:    /sdd-init ................... "Configurar proyecto SDD"
  |
  |   [Claude detecta skills faltantes → Paso 4: "Opcion 1"]
  |
- +-- Paso 5:    /sdd:new .................... "Explorar + Propuesta formal"
+ +-- Paso 5:    /sdd-new .................... "Explorar + Propuesta formal"
  |     Tu: "Aprobado"
  |
- +-- Paso 6:    /sdd:continue ............... "Specs → Design → Tasks"
+ +-- Paso 6:    /sdd-continue ............... "Specs → Design → Tasks"
  |     Tu: "Continua" (3 veces)
  |
- +-- Paso 7:    /sdd:apply (Batch 1) ........ "Base de datos + Prisma"
+ +-- Paso 7:    /sdd-apply (Batch 1) ........ "Base de datos + Prisma"
  |     [Execution Gate valida antes de cada cambio]
  |
  +-- Paso 8:    Batch 2 ..................... "Autenticacion (login/registro)"
@@ -1300,7 +1300,7 @@ Tu (carpeta vacia)
  |
  +-- Paso 12:   Batch 6 ..................... "Panel de administracion"
  |
- +-- Paso 13:   /sdd:verify ................ "Revisar que todo funcione"
+ +-- Paso 13:   /sdd-verify ................ "Revisar que todo funcione"
  |
  +-- Paso 14:   Probar en tu PC ............ "localhost:3000"
  |

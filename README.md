@@ -273,16 +273,16 @@ When new skills are created in a project, Claude proposes propagating them back 
 |---------|-------------|-------------|
 | `/batuta-init [name]` | — | Import Batuta ecosystem into a project |
 | `/batuta-update` | — | Update ecosystem from latest batuta-dots |
-| `/sdd:init` | pipeline | Initialize orchestration context |
-| `/sdd:explore <topic>` | pipeline | Explore idea and constraints |
-| `/sdd:new <change-name>` | pipeline | Start change proposal flow |
-| `/sdd:continue [change-name]` | pipeline | Run next dependency-ready phase |
-| `/sdd:apply [change-name]` | pipeline + infra | Implement tasks in batches |
-| `/sdd:verify [change-name]` | pipeline | Validate implementation |
-| `/sdd:archive [change-name]` | pipeline | Close and persist final state |
-| `/create:skill <name>` | infra | Create a new skill |
-| `/create:sub-agent <name>` | infra | Create a new sub-agent |
-| `/create:workflow <name>` | infra | Create a new workflow command |
+| `/sdd-init` | pipeline | Initialize orchestration context |
+| `/sdd-explore <topic>` | pipeline | Explore idea and constraints |
+| `/sdd-new <change-name>` | pipeline | Start change proposal flow |
+| `/sdd-continue [change-name]` | pipeline | Run next dependency-ready phase |
+| `/sdd-apply [change-name]` | pipeline + infra | Implement tasks in batches |
+| `/sdd-verify [change-name]` | pipeline | Validate implementation |
+| `/sdd-archive [change-name]` | pipeline | Close and persist final state |
+| `/create-skill <name>` | infra | Create a new skill |
+| `/create-sub-agent <name>` | infra | Create a new sub-agent |
+| `/create-workflow <name>` | infra | Create a new workflow command |
 | `/batuta:analyze-prompts` | observability | Analyze satisfaction log and generate recommendations |
 | `/batuta:sync-skills` | infra | Regenerate routing tables from skill frontmatters |
 
@@ -333,7 +333,7 @@ Step-by-step execution guides covering the full lifecycle: ecosystem installatio
 
 ### Adding a New Skill
 
-1. Run `/create:skill <name>` — the ecosystem-creator guides you through frontmatter (scope, auto_invoke, allowed-tools)
+1. Run `/create-skill <name>` — the ecosystem-creator guides you through frontmatter (scope, auto_invoke, allowed-tools)
 2. Or manually create `BatutaClaude/skills/<name>/SKILL.md` with complete frontmatter
 3. Run `bash BatutaClaude/skills/skill-sync/assets/sync.sh` to update routing tables
 4. Run `./infra/setup.sh --all`

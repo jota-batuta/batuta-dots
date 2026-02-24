@@ -86,7 +86,7 @@ Esto significa que entre spec, design y tasks hay al menos dos pausas donde Clau
 
 **Donde**: Paso 12, lineas 647-659 de la guia. El prompt instruye:
 ```
-/sdd:archive refactoring-modernizacion
+/sdd-archive refactoring-modernizacion
 
 Ademas del archivo normal, genera un documento "CHANGELOG-refactoring.md" que incluya:
 1. RESUMEN: Que se hizo (en espanol simple, para no-tecnicos)
@@ -131,22 +131,22 @@ El `observability-agent` no maneja calidad de codigo — eso lo hace `sdd-verify
 
 ---
 
-#### H5 — Paso 3: argumento de `/sdd:explore` activa creacion de archivo inesperada
+#### H5 — Paso 3: argumento de `/sdd-explore` activa creacion de archivo inesperada
 
 **Donde**: Paso 3, lineas 218-219 de la guia:
 ```
-/sdd:explore refactoring-modernizacion
+/sdd-explore refactoring-modernizacion
 ```
 
 **Que dice el ecosistema real**: El skill `sdd-explore` tiene esta regla:
-> "If no change name was provided (standalone `/sdd:explore`), skip file creation — just return the analysis."
-> "If the orchestrator provided a change name (i.e., this exploration is part of /sdd:new), save your analysis to openspec/changes/{change-name}/explore.md"
+> "If no change name was provided (standalone `/sdd-explore`), skip file creation — just return the analysis."
+> "If the orchestrator provided a change name (i.e., this exploration is part of /sdd-new), save your analysis to openspec/changes/{change-name}/explore.md"
 
 Al pasar `refactoring-modernizacion` como argumento en el Paso 3, el skill interpreta que es un change name y crea `openspec/changes/refactoring-modernizacion/explore.md`. En el contexto del Paso 3 (diagnostico puro, sin intension de crear un change aun), esto genera un folder de SDD prematuro antes de que el usuario haya aprobado la propuesta en el Paso 4.
 
-**Impacto**: Bajo — el folder se crea de todas formas cuando el usuario ejecuta `/sdd:new` en el Paso 4. Sin embargo, el usuario en el Paso 3 no esta intentando iniciar el pipeline SDD, solo quiere un reporte de diagnostico. Puede generar confusion sobre para que sirve el folder `openspec/`.
+**Impacto**: Bajo — el folder se crea de todas formas cuando el usuario ejecuta `/sdd-new` en el Paso 4. Sin embargo, el usuario en el Paso 3 no esta intentando iniciar el pipeline SDD, solo quiere un reporte de diagnostico. Puede generar confusion sobre para que sirve el folder `openspec/`.
 
-**Fix propuesto**: Cambiar el Paso 3 para usar `/sdd:explore` sin argumentos, o bien explicar explicitamente que este comando inicia el folder del proyecto SDD que se usara en los pasos siguientes. Alternativa: usar el prompt libre sin slash command para el diagnostico inicial y reservar `/sdd:explore` para cuando el nombre del cambio ya esta decidido.
+**Fix propuesto**: Cambiar el Paso 3 para usar `/sdd-explore` sin argumentos, o bien explicar explicitamente que este comando inicia el folder del proyecto SDD que se usara en los pasos siguientes. Alternativa: usar el prompt libre sin slash command para el diagnostico inicial y reservar `/sdd-explore` para cuando el nombre del cambio ya esta decidido.
 
 **Archivo fuente**: `BatutaClaude/skills/sdd-explore/SKILL.md` (Step 4, lineas 132-141)
 
@@ -184,7 +184,7 @@ El formato real incluye `{file list}` en una sola linea y `Nivel recomendado` �
 | H2 | IMPORTANTE | Paso 6 promete avance automatico; pipeline-agent siempre pide confirmacion entre fases | Alta | guia linea 368 | `agents/pipeline-agent.md` L32 |
 | H3 | IMPORTANTE | Paso 12 espera `CHANGELOG-refactoring.md` en raiz; sdd-archive genera `lessons-learned.md` en archive | Alta | guia lineas 647-659 | `skills/sdd-archive/SKILL.md` L122-160 |
 | H4 | MENOR | Glosario describe observability-agent como agente de "calidad" — es agente de sesion/observabilidad | Baja | guia linea 37 | `agents/observability-agent.md`, `CLAUDE.md` |
-| H5 | MENOR | Paso 3 usa `/sdd:explore` con argumento, lo que crea folder SDD prematuro | Baja | guia lineas 218-219 | `skills/sdd-explore/SKILL.md` L132-141 |
+| H5 | MENOR | Paso 3 usa `/sdd-explore` con argumento, lo que crea folder SDD prematuro | Baja | guia lineas 218-219 | `skills/sdd-explore/SKILL.md` L132-141 |
 | H6 | MENOR | Ejemplo del Execution Gate en Paso 8 no incluye `Nivel recomendado` ni `{file list}` | Baja | guia lineas 441-449 | `BatutaClaude/CLAUDE.md` (Gate FULL) |
 
 ---

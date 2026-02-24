@@ -149,7 +149,7 @@ Las correcciones mas significativas de v9.1 fueron: `setup.sh --hooks` (nuevo fl
 
 ---
 
-### H12 (original): /sdd:continue no documenta el dependency graph
+### H12 (original): /sdd-continue no documenta el dependency graph
 - **Estado**: CORREGIDO
 - **Evidencia**:
   - `pipeline-agent.md` ahora documenta el SDD Dependency Graph (lineas 24-30):
@@ -175,13 +175,13 @@ Las correcciones mas significativas de v9.1 fueron: `setup.sh --hooks` (nuevo fl
 
 ---
 
-### N2: /sdd:continue descrito como "ver estado del proyecto" en Comandos de Emergencia
+### N2: /sdd-continue descrito como "ver estado del proyecto" en Comandos de Emergencia
 - **Severidad**: IMPORTANTE
 - **Ubicacion**: Seccion "Comandos de emergencia" (linea 1118)
 - **Lo que dice la guia**:
-  | Quieres ver el estado del proyecto | `/sdd:continue mi-saas-app` (te muestra donde quedamos) |
-- **Lo que hace el ecosistema**: Segun CLAUDE.md linea 105: `/sdd:continue [change-name]` -> `pipeline -> next needed phase`. Segun pipeline-agent.md: el comando ejecuta la SIGUIENTE fase pendiente del dependency graph (`proposal -> [specs || design] -> tasks -> apply -> verify -> archive`). No es un comando de consulta — es un comando de EJECUCION.
-- **Impacto en el usuario**: Un usuario no tecnico que quiere "ver donde quedo" ejecuta `/sdd:continue` y Claude avanza una fase del pipeline SDD que el usuario no estaba listo para ejecutar. Esto podria crear artifacts no deseados o avanzar el pipeline prematuramente. El comando correcto para ver estado seria leer `.batuta/session.md` o preguntar a Claude directamente.
+  | Quieres ver el estado del proyecto | `/sdd-continue mi-saas-app` (te muestra donde quedamos) |
+- **Lo que hace el ecosistema**: Segun CLAUDE.md linea 105: `/sdd-continue [change-name]` -> `pipeline -> next needed phase`. Segun pipeline-agent.md: el comando ejecuta la SIGUIENTE fase pendiente del dependency graph (`proposal -> [specs || design] -> tasks -> apply -> verify -> archive`). No es un comando de consulta — es un comando de EJECUCION.
+- **Impacto en el usuario**: Un usuario no tecnico que quiere "ver donde quedo" ejecuta `/sdd-continue` y Claude avanza una fase del pipeline SDD que el usuario no estaba listo para ejecutar. Esto podria crear artifacts no deseados o avanzar el pipeline prematuramente. El comando correcto para ver estado seria leer `.batuta/session.md` o preguntar a Claude directamente.
 - **Nota**: Este mismo problema fue encontrado en los integration tests de guia-batuta-app (HALLAZGO-02) y guia-cli-python (hallazgo 3), pero NO fue corregido en guia-nextjs-saas.
 
 ---
@@ -190,10 +190,10 @@ Las correcciones mas significativas de v9.1 fueron: `setup.sh --hooks` (nuevo fl
 - **Severidad**: MENOR
 - **Ubicacion**: Paso 3 (lineas 218-232) y Paso 5 (lineas 330-333)
 - **Lo que dice la guia**:
-  - Paso 3: "Primero, inicializa el proyecto SDD: `/sdd:init`". Luego: "Ahora, explora los requisitos: `/sdd:explore mi-saas-app`"
-  - Paso 5: "Copia y pega: `/sdd:new mi-saas-app`"
-- **Lo que hace el ecosistema**: Segun CLAUDE.md linea 104: `/sdd:new <change-name>` -> `pipeline -> sdd-explore -> sdd-propose`. Es decir, `/sdd:new` INCLUYE una exploracion automatica seguida de la propuesta. Si el usuario ya ejecuto `/sdd:explore` en Paso 3, el `/sdd:new` en Paso 5 re-ejecutaria la exploracion.
-- **Impacto en el usuario**: El usuario pierde 3-5 minutos en una exploracion duplicada. No rompe nada, pero es ineficiente y puede confundir al usuario que ya vio la exploracion. El fix seria: (a) en Paso 5, usar directamente el skill sdd-propose en vez de /sdd:new, o (b) documentar que /sdd:new re-usa la exploracion existente si ya hay un `explore.md`, o (c) en Paso 3 no usar /sdd:explore por separado y dejar que /sdd:new lo haga todo.
+  - Paso 3: "Primero, inicializa el proyecto SDD: `/sdd-init`". Luego: "Ahora, explora los requisitos: `/sdd-explore mi-saas-app`"
+  - Paso 5: "Copia y pega: `/sdd-new mi-saas-app`"
+- **Lo que hace el ecosistema**: Segun CLAUDE.md linea 104: `/sdd-new <change-name>` -> `pipeline -> sdd-explore -> sdd-propose`. Es decir, `/sdd-new` INCLUYE una exploracion automatica seguida de la propuesta. Si el usuario ya ejecuto `/sdd-explore` en Paso 3, el `/sdd-new` en Paso 5 re-ejecutaria la exploracion.
+- **Impacto en el usuario**: El usuario pierde 3-5 minutos en una exploracion duplicada. No rompe nada, pero es ineficiente y puede confundir al usuario que ya vio la exploracion. El fix seria: (a) en Paso 5, usar directamente el skill sdd-propose en vez de /sdd-new, o (b) documentar que /sdd-new re-usa la exploracion existente si ya hay un `explore.md`, o (c) en Paso 3 no usar /sdd-explore por separado y dejar que /sdd-new lo haga todo.
 
 ---
 
@@ -216,7 +216,7 @@ Las correcciones mas significativas de v9.1 fueron: `setup.sh --hooks` (nuevo fl
 | H3 | setup.sh --all no crea .batuta/ (Opcion B) | IMPORTANTE | Parcial |
 | H11 | Stack Awareness duplicado en 7 archivos (DRY) | MENOR | Persiste (mitigado con comentarios) |
 | N1 | Opcion B prompt manual no logra crear .batuta/ | IMPORTANTE | Nuevo |
-| N2 | /sdd:continue descrito como "ver estado" cuando ejecuta la siguiente fase | IMPORTANTE | Nuevo |
+| N2 | /sdd-continue descrito como "ver estado" cuando ejecuta la siguiente fase | IMPORTANTE | Nuevo |
 | N3 | Paso 3 + Paso 5 causan doble exploracion | MENOR | Nuevo |
 
 **Nota**: H2 parcial, H3 parcial, y N1 estan relacionados — todos apuntan al mismo problema: la Opcion B del Paso 2 usa `setup.sh --all` en vez de `setup.sh --project <path>`. Corregir N1 resolveria H2 parcial y H3 parcial simultaneamente.
@@ -226,7 +226,7 @@ Las correcciones mas significativas de v9.1 fueron: `setup.sh --hooks` (nuevo fl
 | Prioridad | Fix | Archivos | Esfuerzo |
 |-----------|-----|----------|----------|
 | P0 | Cambiar Opcion B prompt para usar `--project` o agregar pasos de .batuta/ | `docs/guides/guia-nextjs-saas.md` | Bajo |
-| P1 | Corregir entrada de /sdd:continue en Comandos de Emergencia | `docs/guides/guia-nextjs-saas.md` | Bajo |
+| P1 | Corregir entrada de /sdd-continue en Comandos de Emergencia | `docs/guides/guia-nextjs-saas.md` | Bajo |
 | P2 | Resolver doble exploracion Paso 3 + Paso 5 | `docs/guides/guia-nextjs-saas.md` | Bajo |
 | P3 | Evaluar centralizacion de Stack Awareness (DRY) | 7 skills | Alto |
 
@@ -238,6 +238,6 @@ El ecosistema v9.1 resolvio correctamente los 4 hallazgos criticos mas important
 
 El gap principal restante es que la **Opcion B de la guia** (prompt manual para primera vez) no aprovecha los nuevos flags de v9.1. Usa `--all` cuando deberia usar `--project <path>` o el command `/batuta-init`. Este es un problema de documentacion, no de codigo.
 
-El hallazgo N2 (`/sdd:continue` como "ver estado") es un problema recurrente detectado en 3 guias diferentes (batuta-app, cli-python, nextjs-saas) y aun no se ha corregido en ninguna de ellas.
+El hallazgo N2 (`/sdd-continue` como "ver estado") es un problema recurrente detectado en 3 guias diferentes (batuta-app, cli-python, nextjs-saas) y aun no se ha corregido en ninguna de ellas.
 
 La calidad general de la guia es alta: el glosario es excelente para usuarios no tecnicos, los pasos son claros y secuenciales, y las secciones de troubleshooting y seguridad agregan valor real. Los problemas pendientes son todos de baja complejidad de correccion.

@@ -14,7 +14,7 @@
 
 Se verificaron todos los pasos de la guia contra los archivos reales del ecosistema (skills, agents, commands). Se encontraron **9 hallazgos** (3 criticos, 4 importantes, 2 menores).
 
-El hallazgo mas grave es que **la descripcion de la Piramide de Validacion en Paso 12 es incorrecta**: las capas 4 y 5 no coinciden con lo que define el skill `sdd-verify`. Un usuario que ejecute `/sdd:verify` vera un resultado diferente al que la guia promete. Los demas hallazgos criticos son inconsistencias en el comando de setup (Opcion B, Paso 2) y en la descripcion del glosario para "Scope Agent".
+El hallazgo mas grave es que **la descripcion de la Piramide de Validacion en Paso 12 es incorrecta**: las capas 4 y 5 no coinciden con lo que define el skill `sdd-verify`. Un usuario que ejecute `/sdd-verify` vera un resultado diferente al que la guia promete. Los demas hallazgos criticos son inconsistencias en el comando de setup (Opcion B, Paso 2) y en la descripcion del glosario para "Scope Agent".
 
 Los pasos del flujo principal (Pasos 1-11, 13-16) estan alineados con el ecosistema real. Todos los commands referenciados existen y funcionan segun lo descrito.
 
@@ -37,7 +37,7 @@ Los pasos del flujo principal (Pasos 1-11, 13-16) estan alineados con el ecosist
 
 La seguridad se verifica en el **Step 4.7** de `sdd-verify` ("Cross-Layer Security Check") como un chequeo transversal entre capas, NO como la capa 4 de la piramide. La documentacion se verifica en el **Step 5** ("Documentation Verification") como verificacion independiente, no como capa 5.
 
-**Impacto**: Un usuario que ejecute `/sdd:verify` vera un reporte con "Code Review (HUMAN)" y "Manual Testing (HUMAN)" en las capas 4 y 5, diferente a lo que la guia prometio. Genera confusion y erosion de confianza en el sistema.
+**Impacto**: Un usuario que ejecute `/sdd-verify` vera un reporte con "Code Review (HUMAN)" y "Manual Testing (HUMAN)" en las capas 4 y 5, diferente a lo que la guia prometio. Genera confusion y erosion de confianza en el sistema.
 
 **Archivo fuente**: `BatutaClaude/skills/sdd-verify/SKILL.md` (lineas 40-46, tabla del AI Validation Pyramid)
 
@@ -112,13 +112,13 @@ Los tres agentes reales son:
 
 ### IMPORTANTES
 
-#### H4: Paso 7 referencia /sdd:continue pero no explica que es un comando orquestador
+#### H4: Paso 7 referencia /sdd-continue pero no explica que es un comando orquestador
 
 **Paso**: Paso 7 (Especificaciones y diseno)
 
-**Descripcion**: La guia instruye usar `/sdd:continue batuta-task-manager` para ejecutar automaticamente las fases Specs, Design, y Tasks. Segun CLAUDE.md, este comando existe y esta mapeado: `pipeline → next needed phase`. Sin embargo, no existe un skill `sdd-continue` como archivo — es el pipeline-agent quien decide cual sub-agente lanzar basandose en el estado actual del cambio.
+**Descripcion**: La guia instruye usar `/sdd-continue batuta-task-manager` para ejecutar automaticamente las fases Specs, Design, y Tasks. Segun CLAUDE.md, este comando existe y esta mapeado: `pipeline → next needed phase`. Sin embargo, no existe un skill `sdd-continue` como archivo — es el pipeline-agent quien decide cual sub-agente lanzar basandose en el estado actual del cambio.
 
-La guia describe que Claude "va a ejecutar las siguientes fases una por una", lo cual es correcto conceptualmente. El problema es que la tabla del Paso 7 muestra 3 fases que `/sdd:continue` ejecuta, pero en la practica el pipeline-agent puede ejecutar specs y design **en paralelo** (segun el dependency graph del pipeline-agent: `proposal → [specs ‖ design] → tasks`).
+La guia describe que Claude "va a ejecutar las siguientes fases una por una", lo cual es correcto conceptualmente. El problema es que la tabla del Paso 7 muestra 3 fases que `/sdd-continue` ejecuta, pero en la practica el pipeline-agent puede ejecutar specs y design **en paralelo** (segun el dependency graph del pipeline-agent: `proposal → [specs ‖ design] → tasks`).
 
 La guia indica al usuario "Tu respuesta cada vez: Se ve bien, continua" implicando ejecucion estrictamente secuencial, cuando el pipeline-agent puede ejecutarlas en paralelo.
 
@@ -154,15 +154,15 @@ La guia dice que la Opcion 1 es "acotado a nuestro proyecto" y el infra-agent di
 
 ---
 
-#### H6: Paso 3 — Descripcion de /sdd:init imprecisa sobre el pipeline-agent
+#### H6: Paso 3 — Descripcion de /sdd-init imprecisa sobre el pipeline-agent
 
 **Paso**: Paso 3 (Iniciar el proyecto con SDD), nota "Detalle tecnico (opcional)"
 
 **Descripcion**: La nota tecnica dice:
 
-> "Cuando ejecutas /sdd:init, Claude activa su pipeline-agent (el 'jefe de proceso') que coordina todo el desarrollo paso a paso."
+> "Cuando ejecutas /sdd-init, Claude activa su pipeline-agent (el 'jefe de proceso') que coordina todo el desarrollo paso a paso."
 
-Esto es tecnicamente impreciso. `/sdd:init` activa el **sub-agente `sdd-init`** (via el pipeline-agent como orquestador), no el pipeline-agent directamente. El pipeline-agent es el orquestador que DELEGA al sub-agente sdd-init. La distincion es relevante para usuarios avanzados.
+Esto es tecnicamente impreciso. `/sdd-init` activa el **sub-agente `sdd-init`** (via el pipeline-agent como orquestador), no el pipeline-agent directamente. El pipeline-agent es el orquestador que DELEGA al sub-agente sdd-init. La distincion es relevante para usuarios avanzados.
 
 Mas importante: el `sdd-init` bootstrapea el directorio `openspec/` y detecta el tipo de proyecto. No "coordina todo el desarrollo" — eso lo hace el pipeline-agent durante el flujo completo de SDD.
 
@@ -170,7 +170,7 @@ Mas importante: el `sdd-init` bootstrapea el directorio `openspec/` y detecta el
 
 **Archivo fuente**: `BatutaClaude/agents/pipeline-agent.md` (linea 35: "DELEGATE-ONLY: Never execute phase work inline"); `BatutaClaude/skills/sdd-init/SKILL.md` (Purpose)
 
-**Fix propuesto**: Actualizar la nota tecnica: "Cuando ejecutas /sdd:init, Claude delega al sub-agente sdd-init que bootstrapea la estructura del proyecto. El pipeline-agent coordina el flujo completo de SDD a traves de todos los pasos."
+**Fix propuesto**: Actualizar la nota tecnica: "Cuando ejecutas /sdd-init, Claude delega al sub-agente sdd-init que bootstrapea la estructura del proyecto. El pipeline-agent coordina el flujo completo de SDD a traves de todos los pasos."
 
 ---
 
@@ -241,9 +241,9 @@ El prompt de Opcion B incluye `skills/setup.sh --all` que segun el ecosystem-sna
 | H1 | CRITICO | Piramide de Validacion: capas 4 y 5 incorrectas (guia dice Seguridad/Documentacion; sdd-verify define Code Review/Manual Testing) | Alta | `guia-fastapi-service.md` Paso 12 |
 | H2 | CRITICO | Opcion B Paso 2: setup con `--all` no crea `.batuta/` ni instala hooks; discrepa con batuta-init.md real | Alta | `guia-fastapi-service.md` Paso 2 |
 | H3 | CRITICO | Glosario: "Scope Agent" define el tercer agente como "calidad"; el real es observability-agent (sesion + O.R.T.A.) | Media | `guia-fastapi-service.md` Glosario |
-| H4 | IMPORTANTE | Paso 7: /sdd:continue puede ejecutar specs y design en paralelo; guia implica ejecucion secuencial | Media | `guia-fastapi-service.md` Paso 7 |
+| H4 | IMPORTANTE | Paso 7: /sdd-continue puede ejecutar specs y design en paralelo; guia implica ejecucion secuencial | Media | `guia-fastapi-service.md` Paso 7 |
 | H5 | IMPORTANTE | Paso 5: opciones de skill gap no explican donde se guarda cada tipo (proyecto-local vs global) | Media | `guia-fastapi-service.md` Paso 5 |
-| H6 | IMPORTANTE | Paso 3 (nota tecnica): dice que /sdd:init activa el pipeline-agent; en realidad delega al sub-agente sdd-init | Baja | `guia-fastapi-service.md` Paso 3 |
+| H6 | IMPORTANTE | Paso 3 (nota tecnica): dice que /sdd-init activa el pipeline-agent; en realidad delega al sub-agente sdd-init | Baja | `guia-fastapi-service.md` Paso 3 |
 | H7 | IMPORTANTE | Glosario: definicion de SDD omite la fase de explorar (9 pasos reales vs "planear y construir") | Baja | `guia-fastapi-service.md` Glosario |
 | H8 | MENOR | Paso 15: prompt hardcodea organizacion `jota-batuta`; debe ser placeholder para el usuario | Media | `guia-fastapi-service.md` Paso 15 |
 | H9 | MENOR | Paso 2 nota final: promete que commands "quedan instalados" sin mecanismo de verificacion para el usuario | Baja | `guia-fastapi-service.md` Paso 2 |
@@ -256,7 +256,7 @@ La guia `guia-fastapi-service.md` esta bien estructurada y cubre el flujo comple
 
 Los tres hallazgos criticos requieren atencion antes de publicar la guia como definitiva:
 
-1. **H1 (Piramide de Validacion)** es el mas urgente porque afecta directamente la experiencia del usuario en un paso clave del flujo y genera confusion cuando el resultado real de `/sdd:verify` no coincide con lo prometido.
+1. **H1 (Piramide de Validacion)** es el mas urgente porque afecta directamente la experiencia del usuario en un paso clave del flujo y genera confusion cuando el resultado real de `/sdd-verify` no coincide con lo prometido.
 
 2. **H2 (Setup Opcion B)** es critico porque deja al usuario sin los mecanismos de continuidad de sesion y Execution Gate, degradando significativamente la experiencia del ecosistema.
 

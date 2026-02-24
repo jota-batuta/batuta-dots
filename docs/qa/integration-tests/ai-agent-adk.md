@@ -6,7 +6,7 @@
 
 ## Resumen Ejecutivo
 
-La guia es funcional y lleva a un usuario no tecnico desde cero hasta un agente de IA operativo. Sin embargo, contiene discrepancias en la sintaxis de comandos SDD (usa `/sdd:new` para proposal cuando el ecosistema define este comando como explore+propose, no solo propose), una referencia a un comando inexistente como slash command (`/batuta:analyze-prompts` vs el real `/batuta-analyze-prompts`), y la estructura de proyecto sugerida viola parcialmente la Scope Rule al poner `features/security/` separado de `features/agent/`. Son problemas menores e importantes pero ninguno es critico: el usuario puede completar el proyecto entero si Claude interpreta correctamente la intencion.
+La guia es funcional y lleva a un usuario no tecnico desde cero hasta un agente de IA operativo. Sin embargo, contiene discrepancias en la sintaxis de comandos SDD (usa `/sdd-new` para proposal cuando el ecosistema define este comando como explore+propose, no solo propose), una referencia a un comando inexistente como slash command (`/batuta:analyze-prompts` vs el real `/batuta-analyze-prompts`), y la estructura de proyecto sugerida viola parcialmente la Scope Rule al poner `features/security/` separado de `features/agent/`. Son problemas menores e importantes pero ninguno es critico: el usuario puede completar el proyecto entero si Claude interpreta correctamente la intencion.
 
 ## Hallazgos
 
@@ -31,18 +31,18 @@ La guia es funcional y lleva a un usuario no tecnico desde cero hasta un agente 
 - **Lo que hace el ecosistema**: `setup.sh --all` ejecuta `do_all()` que hace: sync_claude (skills + commands), sync_agents, run_skill_sync, install_hooks, generate_claude. Esto es correcto y completo. Sin embargo, la guia luego dice "Copia el archivo BatutaClaude/CLAUDE.md a la raiz de este proyecto como CLAUDE.md" como paso separado, pero `--all` ya hace eso (`generate_claude` al final). Paso redundante pero no danino.
 - **Impacto en el usuario**: El usuario ejecutaria una copia redundante del CLAUDE.md. Sin consecuencias negativas.
 
-### H4: /sdd:new en Paso 4 esta documentado para propose, pero el ecosistema lo define como explore + propose
+### H4: /sdd-new en Paso 4 esta documentado para propose, pero el ecosistema lo define como explore + propose
 - **Severidad**: IMPORTANTE
 - **Ubicacion**: Paso 4, linea 282
-- **Lo que dice la guia**: `/sdd:new batuta-ai-agent` — "Crea una propuesta que incluye que framework eligio y por que"
-- **Lo que hace el ecosistema**: En CLAUDE.md, la tabla SDD Commands dice: `/sdd:new <change-name>` -> `pipeline -> sdd-explore -> sdd-propose`. Es decir, `/sdd:new` NO solo crea la propuesta: primero ejecuta explore y LUEGO propose. Esto significa que si el usuario ya ejecuto `/sdd:explore` en el Paso 3, `/sdd:new` en el Paso 4 repetira la exploracion.
-- **Impacto en el usuario**: El usuario duplicaria la fase de exploracion. Claude ejecutaria explore de nuevo (gastando tokens y tiempo) y luego propose. La guia deberia usar `/sdd:continue batuta-ai-agent` en el Paso 4 (que ejecuta "next needed phase", es decir propose despues de explore) o directamente indicar que se salte el Paso 3 si se va a usar `/sdd:new` en el Paso 4.
+- **Lo que dice la guia**: `/sdd-new batuta-ai-agent` — "Crea una propuesta que incluye que framework eligio y por que"
+- **Lo que hace el ecosistema**: En CLAUDE.md, la tabla SDD Commands dice: `/sdd-new <change-name>` -> `pipeline -> sdd-explore -> sdd-propose`. Es decir, `/sdd-new` NO solo crea la propuesta: primero ejecuta explore y LUEGO propose. Esto significa que si el usuario ya ejecuto `/sdd-explore` en el Paso 3, `/sdd-new` en el Paso 4 repetira la exploracion.
+- **Impacto en el usuario**: El usuario duplicaria la fase de exploracion. Claude ejecutaria explore de nuevo (gastando tokens y tiempo) y luego propose. La guia deberia usar `/sdd-continue batuta-ai-agent` en el Paso 4 (que ejecuta "next needed phase", es decir propose despues de explore) o directamente indicar que se salte el Paso 3 si se va a usar `/sdd-new` en el Paso 4.
 
-### H5: /sdd:continue en Paso 5 es correcto y ejecuta las fases pendientes
+### H5: /sdd-continue en Paso 5 es correcto y ejecuta las fases pendientes
 - **Severidad**: (No es hallazgo negativo)
 - **Ubicacion**: Paso 5, linea 306
-- **Lo que dice la guia**: `/sdd:continue batuta-ai-agent` — "Ejecuta tres fases seguidas: Specs, Design, Tasks"
-- **Lo que hace el ecosistema**: CLAUDE.md: `/sdd:continue [change-name]` -> `pipeline -> next needed phase`. El pipeline-agent ejecuta las fases pendientes segun el dependency graph `proposal -> [specs || design] -> tasks`. Si proposal ya esta completa, ejecutara specs, design, y tasks. La guia es correcta.
+- **Lo que dice la guia**: `/sdd-continue batuta-ai-agent` — "Ejecuta tres fases seguidas: Specs, Design, Tasks"
+- **Lo que hace el ecosistema**: CLAUDE.md: `/sdd-continue [change-name]` -> `pipeline -> next needed phase`. El pipeline-agent ejecuta las fases pendientes segun el dependency graph `proposal -> [specs || design] -> tasks`. Si proposal ya esta completa, ejecutara specs, design, y tasks. La guia es correcta.
 - **Impacto en el usuario**: Positivo. Funciona como se describe.
 
 ### H6: Paso 6 describe Skill Gap Detection con "Opcion 1" pero el ecosistema tiene 3 opciones con texto distinto
@@ -52,11 +52,11 @@ La guia es funcional y lleva a un usuario no tecnico desde cero hasta un agente 
 - **Lo que hace el ecosistema**: El `infra-agent.md` dice que cuando se detecta un gap, el mensaje ofrece: "1. Investigar y crear el skill (...) 2. Crear un skill global (...) 3. Continuar sin skill". El `sdd-explore` SKILL.md dice: "(1) Proyecto local, (2) Global batuta-dots, (3) Continuar sin skill". El texto exacto que Claude presentara al usuario dice "Cual prefieres?" y las opciones son: 1 = skill acotado a Batuta, 2 = skill global generico, 3 = continuar sin skill.
 - **Impacto en el usuario**: El texto de la guia ("Opcion 1 -- Investiga y crea el skill acotado a nuestro proyecto") es una simplificacion valida. Sin embargo, el usuario necesita saber que Claude presentara las opciones con texto ligeramente distinto al de la guia. Si el usuario no lee el texto de Claude y solo dice "Opcion 1", funcionara correctamente. Impacto bajo pero la discrepancia en la descripcion podria confundir.
 
-### H7: /sdd:apply en Paso 7 es correcto
+### H7: /sdd-apply en Paso 7 es correcto
 - **Severidad**: (No es hallazgo negativo)
 - **Ubicacion**: Paso 7, linea 359
-- **Lo que dice la guia**: `/sdd:apply batuta-ai-agent` — "Antes de escribir codigo, ejecuta el Execution Gate"
-- **Lo que hace el ecosistema**: CLAUDE.md: `/sdd:apply [change-name]` -> `pipeline -> sdd-apply (+ infra for Scope Rule)`. El sdd-apply SKILL.md Step 0 dice "Verify Execution Gate ran for this task". El PreToolUse hook en settings.json valida con matcher `Write|Edit`. La descripcion es correcta.
+- **Lo que dice la guia**: `/sdd-apply batuta-ai-agent` — "Antes de escribir codigo, ejecuta el Execution Gate"
+- **Lo que hace el ecosistema**: CLAUDE.md: `/sdd-apply [change-name]` -> `pipeline -> sdd-apply (+ infra for Scope Rule)`. El sdd-apply SKILL.md Step 0 dice "Verify Execution Gate ran for this task". El PreToolUse hook en settings.json valida con matcher `Write|Edit`. La descripcion es correcta.
 - **Impacto en el usuario**: Positivo. Funciona como se describe.
 
 ### H8: Pasos 8-9-10 usan prompts en lenguaje natural en lugar de comandos SDD
@@ -73,11 +73,11 @@ La guia es funcional y lleva a un usuario no tecnico desde cero hasta un agente 
 - **Lo que hace el ecosistema**: Existe el skill `security-audit` con 10 puntos (no 5), un Threat Model Template, Secrets Scanning Protocol, Dependency Audit Protocol, y Claude Security section. El security-audit es un skill formal con auto_invoke triggers como "Security review or audit of code". Claude deberia auto-invocar el skill cuando el usuario pida una auditoria de seguridad.
 - **Impacto en el usuario**: El prompt manual de 5 puntos funcionara pero es menos completo que el security-audit skill (10 puntos). Claude probablemente cargara el skill automaticamente dado el trigger, pero seguira las instrucciones del prompt del usuario que solo pide 5 puntos. El resultado sera una auditoria mas limitada de lo que el ecosistema puede ofrecer. Idealmente la guia deberia decir "Claude ejecutara su skill de seguridad automaticamente" o simplemente pedir "Ejecuta una auditoria de seguridad completa del proyecto".
 
-### H10: /sdd:verify en Paso 12 es correcto
+### H10: /sdd-verify en Paso 12 es correcto
 - **Severidad**: (No es hallazgo negativo)
 - **Ubicacion**: Paso 12, linea 574
-- **Lo que dice la guia**: `/sdd:verify batuta-ai-agent`
-- **Lo que hace el ecosistema**: CLAUDE.md: `/sdd:verify [change-name]` -> `pipeline -> sdd-verify`. El sdd-verify SKILL.md implementa el AI Validation Pyramid completo (5 capas), verificacion de specs, design, documentacion, y O.R.T.A. Correcto.
+- **Lo que dice la guia**: `/sdd-verify batuta-ai-agent`
+- **Lo que hace el ecosistema**: CLAUDE.md: `/sdd-verify [change-name]` -> `pipeline -> sdd-verify`. El sdd-verify SKILL.md implementa el AI Validation Pyramid completo (5 capas), verificacion de specs, design, documentacion, y O.R.T.A. Correcto.
 - **Impacto en el usuario**: Positivo. Funciona como se describe.
 
 ### H11: /batuta:analyze-prompts usa sintaxis diferente al comando real
@@ -108,18 +108,18 @@ La guia es funcional y lleva a un usuario no tecnico desde cero hasta un agente 
 - **Lo que hace el ecosistema**: El template `teams/templates/ai-agent.md` define file ownership con `src/agent/**`, `src/tools/**`, `src/chains/**`, `prompts/**`, `security/**`. Usa `src/` como prefijo, no `features/`. Si un usuario intenta combinar la guia + el template de equipo, vera discrepancias en las rutas.
 - **Impacto en el usuario**: Confusion si el usuario lee ambos documentos. La guia propone `features/`, el template propone `src/`. Claude resolvera esto con la Scope Rule que no usa `src/` como convencion. Menor porque pocos usuarios llegaran a usar Agent Teams como primera vez.
 
-### H15: /sdd:new en seccion "Despues de la entrega" es correcto para nuevas features
+### H15: /sdd-new en seccion "Despues de la entrega" es correcto para nuevas features
 - **Severidad**: (No es hallazgo negativo)
 - **Ubicacion**: Seccion "Despues de la entrega", linea 811
-- **Lo que dice la guia**: `/sdd:new ai-agent-translator` para agregar herramientas nuevas
-- **Lo que hace el ecosistema**: `/sdd:new` ejecuta explore + propose, correcto para una feature nueva. En este contexto (post-entrega, feature nueva), el uso es correcto.
+- **Lo que dice la guia**: `/sdd-new ai-agent-translator` para agregar herramientas nuevas
+- **Lo que hace el ecosistema**: `/sdd-new` ejecuta explore + propose, correcto para una feature nueva. En este contexto (post-entrega, feature nueva), el uso es correcto.
 - **Impacto en el usuario**: Positivo.
 
-### H16: Troubleshooting referencia /sdd:continue para "ver el estado del proyecto"
+### H16: Troubleshooting referencia /sdd-continue para "ver el estado del proyecto"
 - **Severidad**: MENOR
 - **Ubicacion**: Troubleshooting, linea 947
-- **Lo que dice la guia**: "Ver el estado del proyecto: /sdd:continue batuta-ai-agent"
-- **Lo que hace el ecosistema**: `/sdd:continue` ejecuta la SIGUIENTE fase pendiente del pipeline. No es un comando para "ver estado" — es un comando para EJECUTAR. Si el usuario lo usa para ver el estado, Claude avanzara al siguiente paso del pipeline. Para ver estado, el usuario deberia leer `.batuta/session.md` o simplemente preguntar "En que estado esta el proyecto?".
+- **Lo que dice la guia**: "Ver el estado del proyecto: /sdd-continue batuta-ai-agent"
+- **Lo que hace el ecosistema**: `/sdd-continue` ejecuta la SIGUIENTE fase pendiente del pipeline. No es un comando para "ver estado" — es un comando para EJECUTAR. Si el usuario lo usa para ver el estado, Claude avanzara al siguiente paso del pipeline. Para ver estado, el usuario deberia leer `.batuta/session.md` o simplemente preguntar "En que estado esta el proyecto?".
 - **Impacto en el usuario**: El usuario podria avanzar involuntariamente en el pipeline SDD cuando solo queria ver el estado actual. Podria ser sorpresivo pero Claude pedira confirmacion antes de ejecutar cambios.
 
 ## Metricas
@@ -136,7 +136,7 @@ La guia es funcional y lleva a un usuario no tecnico desde cero hasta un agente 
 
 | ID | Titulo | Recomendacion |
 |----|--------|---------------|
-| H4 | /sdd:new duplica explore si ya se ejecuto | Cambiar Paso 4 para usar `/sdd:continue` en lugar de `/sdd:new`, o eliminar el Paso 3 standalone |
+| H4 | /sdd-new duplica explore si ya se ejecuto | Cambiar Paso 4 para usar `/sdd-continue` en lugar de `/sdd-new`, o eliminar el Paso 3 standalone |
 | H6 | Texto de Skill Gap Detection simplificado | Alinear el texto de la guia con las 3 opciones reales o agregar nota de que Claude mostrara opciones similares |
 | H11 | /batuta:analyze-prompts vs /batuta-analyze-prompts | Verificar la sintaxis del slash command real en Claude Code y actualizar guia (y CLAUDE.md) para que coincidan |
 | H12 | Estructura de proyecto vs Scope Rule | Ajustar la estructura sugerida para que `tools/`, `memory/`, `security/` esten dentro de `features/agent/` si solo el agente los consume |

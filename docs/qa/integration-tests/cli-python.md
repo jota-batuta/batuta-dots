@@ -16,11 +16,11 @@ La guia `guia-cli-python.md` es funcionalmente solida. El flujo principal de 12 
 
 Se encontraron **5 discrepancias reales**:
 
-1. **CRITICO**: El comando `/sdd:new` que la guia usa en Paso 4 tiene una firma incorrecta. Segun CLAUDE.md, `/sdd:new <change-name>` ejecuta `sdd-explore → sdd-propose`. Pero la guia lo presenta como un comando de "propuesta formal" despues de que ya se hizo el explore en Paso 3, creando una doble exploracion no intencional.
+1. **CRITICO**: El comando `/sdd-new` que la guia usa en Paso 4 tiene una firma incorrecta. Segun CLAUDE.md, `/sdd-new <change-name>` ejecuta `sdd-explore → sdd-propose`. Pero la guia lo presenta como un comando de "propuesta formal" despues de que ya se hizo el explore en Paso 3, creando una doble exploracion no intencional.
 
-2. **IMPORTANTE**: El flujo del Paso 3 combina `/sdd:init` y `/sdd:explore` en un solo paso, pero el skill `sdd-init` crea la estructura `openspec/` — no pregunta nombre/tipo/descripcion como la guia anticipa en la tabla de respuestas. `sdd-init` detecta el stack automaticamente o pregunta si el proyecto esta vacio.
+2. **IMPORTANTE**: El flujo del Paso 3 combina `/sdd-init` y `/sdd-explore` en un solo paso, pero el skill `sdd-init` crea la estructura `openspec/` — no pregunta nombre/tipo/descripcion como la guia anticipa en la tabla de respuestas. `sdd-init` detecta el stack automaticamente o pregunta si el proyecto esta vacio.
 
-3. **IMPORTANTE**: La guia describe que `/sdd:continue` en Paso 5 ejecuta "Specs → Design → Tasks" de forma secuencial, pero `sdd-continue` no existe como skill propio — es un alias de routing en CLAUDE.md que invoca "el siguiente paso necesario". El comportamiento real puede variar.
+3. **IMPORTANTE**: La guia describe que `/sdd-continue` en Paso 5 ejecuta "Specs → Design → Tasks" de forma secuencial, pero `sdd-continue` no existe como skill propio — es un alias de routing en CLAUDE.md que invoca "el siguiente paso necesario". El comportamiento real puede variar.
 
 4. **MENOR**: La estructura de proyecto esperada al final de la guia coloca `core/config.py` e `core/history.py` en `core/`. Segun la Scope Rule real, `config.py` puede calificar como core (singleton de configuracion global), pero `history.py` deberia evaluarse segun quien lo use — si solo lo usa el comando `deshacer`, deberia ir en `features/organizer/`.
 
@@ -34,26 +34,26 @@ No se encontraron discrepancias en: skills SDD (todos existen y tienen los trigg
 
 ### CRITICOS
 
-#### C-01: `/sdd:new` provoca doble exploracion no intencional
+#### C-01: `/sdd-new` provoca doble exploracion no intencional
 
 **Paso afectado**: Paso 3 y Paso 4
 
 **Que dice la guia**:
-- Paso 3: Usar `/sdd:explore ordena-archivos-cli` para explorar requisitos
-- Paso 4: Usar `/sdd:new ordena-archivos-cli` para crear "propuesta formal"
+- Paso 3: Usar `/sdd-explore ordena-archivos-cli` para explorar requisitos
+- Paso 4: Usar `/sdd-new ordena-archivos-cli` para crear "propuesta formal"
 
 **Que hace el ecosistema real** (segun `BatutaClaude/CLAUDE.md`, tabla SDD Commands):
 ```
-/sdd:new <change-name>  →  pipeline → sdd-explore → sdd-propose
+/sdd-new <change-name>  →  pipeline → sdd-explore → sdd-propose
 ```
 
-El comando `/sdd:new` **siempre ejecuta sdd-explore primero**, luego sdd-propose. Si el usuario ya ejecuto `/sdd:explore` en el Paso 3, el Paso 4 con `/sdd:new` volvera a explorar el mismo topic, duplicando el trabajo y potencialmente produciendo una exploracion diferente a la que el usuario ya aprobo mentalmente.
+El comando `/sdd-new` **siempre ejecuta sdd-explore primero**, luego sdd-propose. Si el usuario ya ejecuto `/sdd-explore` en el Paso 3, el Paso 4 con `/sdd-new` volvera a explorar el mismo topic, duplicando el trabajo y potencialmente produciendo una exploracion diferente a la que el usuario ya aprobo mentalmente.
 
 **Impacto**: El usuario puede confundirse al ver que Claude "vuelve a investigar" en el Paso 4 cuando esperaba solo una propuesta. En el peor caso, la segunda exploracion puede divergir de la primera y producir decisiones tecnicas inconsistentes.
 
 **Correccion sugerida**: Una de dos opciones:
-- Opcion A: Eliminar el Paso 3 con `/sdd:explore` y dejar solo el Paso 4 con `/sdd:new` (que incluye explore internamente).
-- Opcion B: Cambiar el Paso 4 para usar el skill de propuesta directamente con el prompt: `"Crea la propuesta formal para ordena-archivos-cli basada en la exploracion anterior"` en lugar de `/sdd:new`.
+- Opcion A: Eliminar el Paso 3 con `/sdd-explore` y dejar solo el Paso 4 con `/sdd-new` (que incluye explore internamente).
+- Opcion B: Cambiar el Paso 4 para usar el skill de propuesta directamente con el prompt: `"Crea la propuesta formal para ordena-archivos-cli basada en la exploracion anterior"` en lugar de `/sdd-new`.
 
 **Archivo**: `docs/guides/guia-cli-python.md`, lineas 234-329
 
@@ -68,7 +68,7 @@ El comando `/sdd:new` **siempre ejecuta sdd-explore primero**, luego sdd-propose
 **Que dice la guia**:
 ```
 Primero, inicializa el proyecto SDD:
-/sdd:init
+/sdd-init
 
 Cuando Claude pregunte:
 | Si Claude pregunta...   | Tu respondes...         |
@@ -102,7 +102,7 @@ Una herramienta CLI en Python mas probablemente seria clasificada como `library`
 
 **Que dice la guia**:
 ```
-/sdd:continue ordena-archivos-cli
+/sdd-continue ordena-archivos-cli
 
 Que esperar: Claude ejecuta 3 fases:
 | Specs | Define exactamente que hace cada comando | 2-3 min |
@@ -112,10 +112,10 @@ Que esperar: Claude ejecuta 3 fases:
 
 **Que hace el ecosistema real** (segun `BatutaClaude/CLAUDE.md`):
 ```
-/sdd:continue [change-name]  →  pipeline → next needed phase
+/sdd-continue [change-name]  →  pipeline → next needed phase
 ```
 
-`/sdd:continue` no es un skill con logica propia — es una instruccion de routing que dice "ejecuta el siguiente paso necesario". Si el pipeline esta en el estado correcto despues del Paso 4, debia ejecutar spec → design → tasks secuencialmente con 3 invocaciones separadas de `/sdd:continue`, no en una sola ejecucion.
+`/sdd-continue` no es un skill con logica propia — es una instruccion de routing que dice "ejecuta el siguiente paso necesario". Si el pipeline esta en el estado correcto despues del Paso 4, debia ejecutar spec → design → tasks secuencialmente con 3 invocaciones separadas de `/sdd-continue`, no en una sola ejecucion.
 
 La guia presenta esto como si fuera una sola ejecucion que automaticamente encadena las 3 fases, mostrando:
 ```
@@ -124,9 +124,9 @@ Tu respuesta cada vez: "Se ve bien, continua"
 
 Esto implica 3 interacciones separadas del usuario, lo cual es correcto en comportamiento. Pero la descripcion "Claude ejecuta 3 fases" puede hacer creer que todo ocurre automaticamente sin intervencion.
 
-El comportamiento real es: `/sdd:continue` ejecuta **una** fase (la siguiente pendiente), muestra el resultado, y espera confirmacion del usuario. Para avanzar a la siguiente fase, el usuario debe escribir de nuevo (ya sea otro `/sdd:continue` o confirmar).
+El comportamiento real es: `/sdd-continue` ejecuta **una** fase (la siguiente pendiente), muestra el resultado, y espera confirmacion del usuario. Para avanzar a la siguiente fase, el usuario debe escribir de nuevo (ya sea otro `/sdd-continue` o confirmar).
 
-**Impacto**: El usuario puede esperar que con un solo `/sdd:continue` obtenga las 3 fases. Si solo obtiene specs y Claude se detiene, puede pensar que algo fallo cuando en realidad el flujo es correcto.
+**Impacto**: El usuario puede esperar que con un solo `/sdd-continue` obtenga las 3 fases. Si solo obtiene specs y Claude se detiene, puede pensar que algo fallo cuando en realidad el flujo es correcto.
 
 **Archivo**: `docs/guides/guia-cli-python.md`, lineas 340-363
 
@@ -156,7 +156,7 @@ El skill scope-rule dice explicitamente:
 
 Si `history.py` maneja el historial para el undone feature, es logica de feature, no infraestructura core.
 
-**Impacto**: Bajo. La guia es una referencia, no codigo ejecutado. Pero si el usuario sigue la estructura al pie de la letra, puede que en el Paso 8 (`/sdd:verify`) el sistema detecte una violacion de Scope Rule y pida mover `history.py`.
+**Impacto**: Bajo. La guia es una referencia, no codigo ejecutado. Pero si el usuario sigue la estructura al pie de la letra, puede que en el Paso 8 (`/sdd-verify`) el sistema detecte una violacion de Scope Rule y pida mover `history.py`.
 
 **Archivo**: `docs/guides/guia-cli-python.md`, lineas 939-974
 
@@ -185,7 +185,7 @@ La guia no hace referencia directa a este numero de version, pero `/batuta-init`
 
 | ID | Severidad | Descripcion | Prioridad | Archivo |
 |----|-----------|-------------|-----------|---------|
-| C-01 | CRITICO | `/sdd:new` re-ejecuta sdd-explore aunque ya se hizo en Paso 3, causando doble exploracion | Alta | `docs/guides/guia-cli-python.md` L234-329 |
+| C-01 | CRITICO | `/sdd-new` re-ejecuta sdd-explore aunque ya se hizo en Paso 3, causando doble exploracion | Alta | `docs/guides/guia-cli-python.md` L234-329 |
 | I-01 | IMPORTANTE | Tabla de preguntas de `sdd-init` no corresponde al behavior real; tipo `cli` no existe en skill | Media | `docs/guides/guia-cli-python.md` L221-232 |
 | I-02 | IMPORTANTE | `sdd-continue` no es una ejecucion automatica de 3 fases; es routing que ejecuta una fase por invocacion | Media | `docs/guides/guia-cli-python.md` L340-363 |
 | M-01 | MENOR | `history.py` en `core/` puede violar Scope Rule si solo lo usa el comando deshacer | Baja | `docs/guides/guia-cli-python.md` L939-974 |
@@ -214,9 +214,9 @@ Los siguientes elementos fueron verificados y estan correctos:
 | `.batuta/session.md` creado por batuta-init | `BatutaClaude/commands/batuta-init.md` Step 2.5 | PASS |
 | `.batuta/prompt-log.jsonl` creado por batuta-init | `BatutaClaude/commands/batuta-init.md` Step 2.5 | PASS |
 | Agent Teams descritos como innecesarios para este proyecto | `BatutaClaude/CLAUDE.md` (criterios Level 3) | PASS — correcto para 1 scope, menos de 4 archivos |
-| `/sdd:apply` contiene Execution Gate | `BatutaClaude/skills/sdd-apply/SKILL.md` Step 0 | PASS |
-| `/sdd:verify` incluye AI Validation Pyramid | `BatutaClaude/skills/sdd-verify/SKILL.md` | PASS — coincide con descripcion de la guia |
-| `/sdd:archive` cierra el ciclo como describe la guia | `BatutaClaude/skills/sdd-archive/SKILL.md` | PASS |
+| `/sdd-apply` contiene Execution Gate | `BatutaClaude/skills/sdd-apply/SKILL.md` Step 0 | PASS |
+| `/sdd-verify` incluye AI Validation Pyramid | `BatutaClaude/skills/sdd-verify/SKILL.md` | PASS — coincide con descripcion de la guia |
+| `/sdd-archive` cierra el ciclo como describe la guia | `BatutaClaude/skills/sdd-archive/SKILL.md` | PASS |
 | Scope Rule en estructura esperada es mayormente correcta | `BatutaClaude/skills/scope-rule/SKILL.md` | PASS (con excepcion de M-01) |
 
 ---
@@ -225,7 +225,7 @@ Los siguientes elementos fueron verificados y estan correctos:
 
 La guia `guia-cli-python.md` esta en buen estado. El 85% del contenido es preciso y el flujo general lleva al usuario correctamente por el pipeline SDD completo.
 
-El hallazgo critico (C-01) es el unico que puede causar confusion real durante la ejecucion: el usuario ejecutaria dos exploraciones del mismo tema porque la guia separa `/sdd:explore` y `/sdd:new` en pasos distintos sin advertir que `/sdd:new` internamente ejecuta explore nuevamente. La correccion es simple: consolidar los pasos 3 y 4, o usar `/sdd:new` directamente desde el inicio.
+El hallazgo critico (C-01) es el unico que puede causar confusion real durante la ejecucion: el usuario ejecutaria dos exploraciones del mismo tema porque la guia separa `/sdd-explore` y `/sdd-new` en pasos distintos sin advertir que `/sdd-new` internamente ejecuta explore nuevamente. La correccion es simple: consolidar los pasos 3 y 4, o usar `/sdd-new` directamente desde el inicio.
 
 Los hallazgos importantes (I-01, I-02) son imprecisiones de descripcion que no rompen el flujo pero si pueden generar confusion momentanea. El usuario probablemente los navegara sin problema, pero en una guia diseñada para personas sin experiencia tecnica, cada punto de confusion innecesario tiene peso.
 

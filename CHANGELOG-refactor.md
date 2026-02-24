@@ -14,8 +14,8 @@ Integration tests en las 10 guias del ecosistema con 10 agentes independientes (
 
 | ID | Patron | Fix |
 |----|--------|-----|
-| PS-1 | `/sdd:new` duplica explore (8/10) | Eliminado explore standalone, solo `/sdd:new` |
-| PS-2 | `/sdd:continue` = 1 fase (8/10) | Aclarado + nota `/sdd:ff` + fix "ver estado" |
+| PS-1 | `/sdd-new` duplica explore (8/10) | Eliminado explore standalone, solo `/sdd-new` |
+| PS-2 | `/sdd-continue` = 1 fase (8/10) | Aclarado + nota `/sdd-ff` + fix "ver estado" |
 | PS-3 | Opcion B `--all` → `--project` (7/10) | `setup.sh --project .` |
 | PS-4 | Colon → hyphen (7/10 + CLAUDE.md) | `/batuta-analyze-prompts` unificado |
 | PS-5 | Glosario observability (4/10) | "observabilidad y continuidad de sesion" |

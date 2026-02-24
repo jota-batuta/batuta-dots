@@ -168,7 +168,7 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 **Copia y pega este prompt**:
 
 ```
-/sdd:init
+/sdd-init
 ```
 
 **Que esperar**: Claude te va a hacer preguntas sobre el proyecto. Cuando te pregunte, responde asi:
@@ -182,7 +182,7 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 
 **Tip**: No te preocupes si no entiendes todo lo que Claude responde. Lo importante es que el "entienda" que queremos construir.
 
-> **Detalle tecnico (opcional)**: Cuando ejecutas `/sdd:init`, Claude activa su pipeline-agent
+> **Detalle tecnico (opcional)**: Cuando ejecutas `/sdd-init`, Claude activa su pipeline-agent
 > (el "jefe de cocina") que coordina todo el proceso de desarrollo.
 
 ---
@@ -191,7 +191,7 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 
 **Que vamos a hacer**: Entender que pasa cuando Claude detecta que necesita aprender algo nuevo. Esto es como si un chef te dijera "no tengo la receta para ese plato, pero puedo investigarla".
 
-**MOMENTO IMPORTANTE**: Durante el proceso de desarrollo (especialmente al ejecutar `/sdd:new`), Claude probablemente detecte que necesita skills para varias tecnologias. Te va a preguntar que hacer para cada una.
+**MOMENTO IMPORTANTE**: Durante el proceso de desarrollo (especialmente al ejecutar `/sdd-new`), Claude probablemente detecte que necesita skills para varias tecnologias. Te va a preguntar que hacer para cada una.
 
 **Cuando Claude diga algo como:**
 > "No tengo un skill documentado para Next.js... Te propongo:
@@ -231,7 +231,7 @@ Claude va a investigar usando Context7 (su base de conocimiento actualizada) y c
 **Copia y pega este prompt**:
 
 ```
-/sdd:new batuta-app-dashboard
+/sdd-new batuta-app-dashboard
 ```
 
 Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
@@ -265,12 +265,12 @@ Aprobado, continua con el siguiente paso
 **Copia y pega este prompt**:
 
 ```
-/sdd:continue batuta-app-dashboard
+/sdd-continue batuta-app-dashboard
 ```
 
-Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd:ff batuta-app-dashboard` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-ff batuta-app-dashboard` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude va a ejecutar las siguientes fases una por una:
 
@@ -308,7 +308,7 @@ Claude esta configurado para explicarte las cosas de forma que cualquier persona
 **Copia y pega este prompt**:
 
 ```
-/sdd:apply batuta-app-dashboard
+/sdd-apply batuta-app-dashboard
 ```
 
 **Que esperar**: Antes de empezar a escribir codigo, Claude va a ejecutar el **Execution Gate** — un checklist automatico que verifica:
@@ -383,7 +383,7 @@ Va a pedir instalar dependencias (librerias que el proyecto necesita). Di "yes".
 **Copia y pega este prompt**:
 
 ```
-/sdd:verify batuta-app-dashboard
+/sdd-verify batuta-app-dashboard
 ```
 
 **Que esperar**: Claude va a verificar:
@@ -403,7 +403,7 @@ Si, corrige todos los problemas que encontraste
 Despues de las correcciones, ejecuta verify otra vez:
 
 ```
-/sdd:verify batuta-app-dashboard
+/sdd-verify batuta-app-dashboard
 ```
 
 **Cuando todo este verde (sin errores)**, continua al siguiente paso.
@@ -543,7 +543,7 @@ Revisa los logs de los servicios y confirma que:
 **Copia y pega este prompt**:
 
 ```
-/sdd:archive batuta-app-dashboard
+/sdd-archive batuta-app-dashboard
 ```
 
 **Que esperar**: Claude va a:
@@ -567,7 +567,7 @@ Revisa los logs de los servicios y confirma que:
 Cuando quieras agregar algo nuevo o cambiar algo, NO edites el codigo directamente. Usa el mismo proceso:
 
 ```
-/sdd:new nombre-del-cambio
+/sdd-new nombre-del-cambio
 
 Quiero agregar [descripcion de lo que quieres cambiar o agregar].
 Por ejemplo: una nueva grafica que muestre los workflows mas usados de n8n.
@@ -663,7 +663,7 @@ R: Dile a Claude que use valores de ejemplo. Despues tu o alguien mas puede reem
 R: Si, Claude Code necesita internet para funcionar. Tambien necesitas internet para que las APIs de n8n y Google respondan.
 
 **P: Puedo usar esto para otros proyectos, no solo este?**
-R: Si. El ecosistema Batuta funciona para cualquier tipo de proyecto. Solo cambia la descripcion en el paso de `/sdd:init` y `/sdd:new`.
+R: Si. El ecosistema Batuta funciona para cualquier tipo de proyecto. Solo cambia la descripcion en el paso de `/sdd-init` y `/sdd-new`.
 
 **P: Que es el Execution Gate?**
 R: Es un checklist automatico que Claude ejecuta antes de escribir codigo. Verifica donde van los archivos, que impacto tienen los cambios, y que todo siga las reglas del proyecto. No lo ves directamente, pero trabaja en segundo plano protegiendote de errores.
@@ -680,21 +680,21 @@ Tu (carpeta vacia)
  |
  +-- Paso 3:  Instalar ecosistema Batuta + crear .batuta/
  |
- +-- Paso 4:  /sdd:init .............. "Que tipo de proyecto es?"
+ +-- Paso 4:  /sdd-init .............. "Que tipo de proyecto es?"
  |
  |   [Claude detecta skills faltantes → Paso 5: "Opcion 1"]
  |
- +-- Paso 6:  /sdd:new ............... "Explorar + Propuesta formal"
+ +-- Paso 6:  /sdd-new ............... "Explorar + Propuesta formal"
  |     Tu: "Aprobado"
  |
- +-- Paso 7:  /sdd:continue .......... "Specs → Design → Tasks"
+ +-- Paso 7:  /sdd-continue .......... "Specs → Design → Tasks"
  |     Tu: "Continua" (3 veces)
  |
- +-- Paso 8:  /sdd:apply ............. "Construir la app"
+ +-- Paso 8:  /sdd-apply ............. "Construir la app"
  |     [Execution Gate valida antes de cada cambio]
  |     Tu: "Si, continua" (por cada batch)
  |
- +-- Paso 9:  /sdd:verify ........... "Revisar que todo funcione"
+ +-- Paso 9:  /sdd-verify ........... "Revisar que todo funcione"
  |
  +-- Paso 10: Probar en tu PC ....... "localhost:3000"
  |
@@ -704,7 +704,7 @@ Tu (carpeta vacia)
  |
  +-- Paso 13: Verificar deploy ...... "App en internet"
  |
- +-- Paso 14: /sdd:archive .......... "Cerrar y celebrar"
+ +-- Paso 14: /sdd-archive .......... "Cerrar y celebrar"
  |
  [Tu app esta en internet!]
 ```

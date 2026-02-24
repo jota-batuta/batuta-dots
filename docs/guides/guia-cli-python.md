@@ -223,7 +223,7 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 **Copia y pega este prompt:**
 
 ```
-/sdd:init
+/sdd-init
 ```
 
 Cuando Claude pregunte:
@@ -245,7 +245,7 @@ Cuando Claude pregunte:
 **Copia y pega este prompt:**
 
 ```
-/sdd:new ordena-archivos-cli
+/sdd-new ordena-archivos-cli
 ```
 
 Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
@@ -277,12 +277,12 @@ Aprobado, continua con el siguiente paso
 **Copia y pega este prompt:**
 
 ```
-/sdd:continue ordena-archivos-cli
+/sdd-continue ordena-archivos-cli
 ```
 
-Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd:ff <nombre>` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-ff <nombre>` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude ejecuta 3 fases:
 
@@ -314,7 +314,7 @@ Explicame que significa eso en terminos simples.
 **Copia y pega este prompt:**
 
 ```
-/sdd:apply ordena-archivos-cli
+/sdd-apply ordena-archivos-cli
 
 Implementa todo el proyecto. Incluye:
 
@@ -432,7 +432,7 @@ No modifiques las pruebas, corrige el codigo de los comandos.
 **Copia y pega este prompt:**
 
 ```
-/sdd:verify ordena-archivos-cli
+/sdd-verify ordena-archivos-cli
 ```
 
 **Que esperar**: Claude verifica:
@@ -562,7 +562,7 @@ y dame las instrucciones para que yo lo haga manualmente.
 **Copia y pega este prompt:**
 
 ```
-/sdd:archive ordena-archivos-cli
+/sdd-archive ordena-archivos-cli
 ```
 
 Claude cierra el proyecto: verifica que todo esta completo, guarda las lecciones aprendidas, y actualiza `.batuta/session.md`.
@@ -852,7 +852,7 @@ Verifica:
 Para agregar una categoria nueva (ejemplo: archivos de diseno):
 
 ```
-/sdd:new ordena-categoria-diseno
+/sdd-new ordena-categoria-diseno
 
 Quiero agregar una categoria "Diseno" que incluya archivos:
 .psd, .ai, .sketch, .figma, .xd
@@ -861,7 +861,7 @@ Que los mueva a una carpeta llamada "Diseno/".
 Actualiza la configuracion por defecto y los tests.
 ```
 
-Y sigue el mismo flujo: propose → specs → design → tasks → apply → verify (el explore se ejecuta automaticamente dentro de `/sdd:new`).
+Y sigue el mismo flujo: propose → specs → design → tasks → apply → verify (el explore se ejecuta automaticamente dentro de `/sdd-new`).
 
 ---
 
@@ -953,22 +953,22 @@ Tu (carpeta vacia)
  |
  +-- Paso 1-2:  Crear carpeta + Instalar Batuta + crear .batuta/
  |
- +-- Paso 3:    /sdd:init .................. "Que tipo de proyecto es?"
+ +-- Paso 3:    /sdd-init .................. "Que tipo de proyecto es?"
  |
  |   [Claude puede detectar skills faltantes → "Opcion 1"]
  |
- +-- Paso 4:    /sdd:new ................... "Explora + Propuesta formal"
+ +-- Paso 4:    /sdd-new ................... "Explora + Propuesta formal"
  |     Tu: "Aprobado"
  |
- +-- Paso 5:    /sdd:continue .............. "Specs → Design → Tasks"
+ +-- Paso 5:    /sdd-continue .............. "Specs → Design → Tasks"
  |     Tu: "Continua" (3 veces)
  |
- +-- Paso 6:    /sdd:apply ................. "Framework CLI + comandos"
+ +-- Paso 6:    /sdd-apply ................. "Framework CLI + comandos"
  |     [Execution Gate valida antes de cada cambio]
  |
  +-- Paso 7:    Tests ...................... "Verificar con pytest"
  |
- +-- Paso 8:    /sdd:verify ................ "Revision final"
+ +-- Paso 8:    /sdd-verify ................ "Revision final"
  |
  +-- Paso 9:    pip install . .............. "Probar en tu PC"
  |
@@ -976,7 +976,7 @@ Tu (carpeta vacia)
  |
  +-- Paso 11:   (opcional) PyPI ............ "Publicar al mundo"
  |
- +-- Paso 12:   /sdd:archive ............... "Cerrar y celebrar"
+ +-- Paso 12:   /sdd-archive ............... "Cerrar y celebrar"
  |
  [Tu herramienta para organizar archivos esta lista!]
  |

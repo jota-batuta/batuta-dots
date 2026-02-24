@@ -104,7 +104,7 @@ Si no tienes el comando instalado, usa el prompt largo de la guia principal (`do
 ## Paso 3 — Iniciar el proyecto
 
 ```
-/sdd:init
+/sdd-init
 ```
 
 Cuando Claude pregunte:
@@ -141,7 +141,7 @@ Temporal.io es la tecnologia mas importante aqui. Claude va a investigar en Cont
 ## Paso 5 — Propuesta y aprobacion
 
 ```
-/sdd:new batuta-workers-onboarding
+/sdd-new batuta-workers-onboarding
 ```
 
 Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
@@ -157,12 +157,12 @@ Aprobado, continua con el siguiente paso
 ## Paso 6 — Especificaciones, diseno y tareas
 
 ```
-/sdd:continue batuta-workers-onboarding
+/sdd-continue batuta-workers-onboarding
 ```
 
-Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd:ff batuta-workers-onboarding` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-ff batuta-workers-onboarding` ejecuta todas las fases pendientes de corrido sin pausas.
 
 Repite "Se ve bien, continua" para cada fase. Claude ejecuta estas 3 fases en orden:
 
@@ -175,7 +175,7 @@ Repite "Se ve bien, continua" para cada fase. Claude ejecuta estas 3 fases en or
 ## Paso 7 — Construir la aplicacion
 
 ```
-/sdd:apply batuta-workers-onboarding
+/sdd-apply batuta-workers-onboarding
 ```
 
 Antes de escribir codigo, Claude ejecuta el **Execution Gate** — valida donde van los archivos, que impacto tienen y que todo siga las reglas del proyecto.
@@ -204,7 +204,7 @@ Para desarrollo local, usa estos valores:
 ## Paso 8 — Verificar que todo funcione
 
 ```
-/sdd:verify batuta-workers-onboarding
+/sdd-verify batuta-workers-onboarding
 ```
 
 Si hay errores, dile:
@@ -311,7 +311,7 @@ Claude te ayuda a diagnosticar y resolver cada uno.
 ## Paso 13 — Archivar y celebrar
 
 ```
-/sdd:archive batuta-workers-onboarding
+/sdd-archive batuta-workers-onboarding
 ```
 
 Claude cierra el proyecto formalmente: verifica que todo esta completo, guarda las lecciones aprendidas, y actualiza `.batuta/session.md`.
@@ -329,7 +329,7 @@ Claude cierra el proyecto formalmente: verifica que todo esta completo, guarda l
 Para agregar un nuevo workflow (ejemplo: procesamiento de pagos):
 
 ```
-/sdd:new batuta-workers-payments
+/sdd-new batuta-workers-payments
 
 Quiero agregar un workflow de procesamiento de pagos con estos pasos:
 1. Verificar fondos del cliente
@@ -386,7 +386,7 @@ batuta-workers/
 
 | Situacion | Que decirle a Claude |
 |-----------|---------------------|
-| Quieres agregar un nuevo workflow | `/sdd:new nombre-del-workflow` y describe los pasos |
+| Quieres agregar un nuevo workflow | `/sdd-new nombre-del-workflow` y describe los pasos |
 | Un workflow falla consistentemente | `El workflow X esta fallando en el paso Y. Muestra los logs y sugiere como arreglarlo` |
 | Quieres cambiar la politica de reintentos | `Cambia la retry policy del activity Z a maximo 5 intentos con backoff exponencial` |
 | Necesitas un workflow mas complejo | `Necesito un workflow que tenga pasos condicionales: si el paso 2 falla, ejecuta el paso 2B en lugar de reintentar` |

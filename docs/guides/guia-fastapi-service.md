@@ -205,7 +205,7 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 **Copia y pega este prompt**:
 
 ```
-/sdd:init
+/sdd-init
 ```
 
 **Que esperar**: Claude te va a hacer preguntas sobre el proyecto. Cuando te pregunte, responde asi:
@@ -219,7 +219,7 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 
 **Tip**: No te preocupes si no entiendes las tecnologias. Claude las conoce y sabe como usarlas. Tu solo le estas diciendo "quiero esto".
 
-> **Detalle tecnico (opcional)**: Cuando ejecutas `/sdd:init`, Claude activa su pipeline-agent
+> **Detalle tecnico (opcional)**: Cuando ejecutas `/sdd-init`, Claude activa su pipeline-agent
 > (el "jefe de proceso") que coordina todo el desarrollo paso a paso.
 
 ---
@@ -267,7 +267,7 @@ Claude va a investigar usando Context7 (su base de conocimiento actualizada) y c
 **Copia y pega este prompt**:
 
 ```
-/sdd:new batuta-task-manager
+/sdd-new batuta-task-manager
 ```
 
 Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
@@ -302,12 +302,12 @@ Aprobado, continua con el siguiente paso
 **Copia y pega este prompt**:
 
 ```
-/sdd:continue batuta-task-manager
+/sdd-continue batuta-task-manager
 ```
 
-Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd:ff <nombre>` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-ff <nombre>` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude va a ejecutar las siguientes fases una por una:
 
@@ -345,7 +345,7 @@ Claude esta configurado para explicarte las cosas como si tuvieras 15 anos.
 **Copia y pega este prompt**:
 
 ```
-/sdd:apply batuta-task-manager
+/sdd-apply batuta-task-manager
 
 Empieza por los modelos de base de datos y las migraciones con Alembic.
 
@@ -578,7 +578,7 @@ Repite hasta que todos pasen.
 **Copia y pega este prompt**:
 
 ```
-/sdd:verify batuta-task-manager
+/sdd-verify batuta-task-manager
 ```
 
 **Que esperar**: Claude va a verificar 5 capas, de abajo hacia arriba:
@@ -604,7 +604,7 @@ Si, corrige todos los problemas que encontraste
 Despues de las correcciones, ejecuta verify otra vez:
 
 ```
-/sdd:verify batuta-task-manager
+/sdd-verify batuta-task-manager
 ```
 
 **Cuando todo este verde (sin errores)**, continua al siguiente paso.
@@ -756,7 +756,7 @@ Revisa los logs y confirma que:
 **Cuando todo funcione**, archiva el proyecto:
 
 ```
-/sdd:archive batuta-task-manager
+/sdd-archive batuta-task-manager
 ```
 
 Claude cierra el proyecto formalmente: verifica que todo esta completo, guarda las lecciones aprendidas, y actualiza `.batuta/session.md`.
@@ -843,14 +843,14 @@ con el secreto viejo durante 24 horas mientras todos migran al nuevo.
 Cuando quieras agregar algo nuevo o cambiar algo, NO edites el codigo directamente. Usa el mismo proceso:
 
 ```
-/sdd:new nombre-del-cambio
+/sdd-new nombre-del-cambio
 
 Quiero agregar [descripcion].
 Por ejemplo: un campo de "etiquetas" a las tareas para poder
 organizarlas por temas (trabajo, personal, etc.)
 ```
 
-Y sigue el mismo flujo: propose, specs, design, tasks, apply, verify (el explore se ejecuta automaticamente dentro de `/sdd:new`).
+Y sigue el mismo flujo: propose, specs, design, tasks, apply, verify (el explore se ejecuta automaticamente dentro de `/sdd-new`).
 
 > **Importante**: Cada cambio pasa por el Execution Gate automaticamente.
 > Claude valida que el cambio siga las reglas del proyecto antes de escribir codigo.
@@ -862,7 +862,7 @@ Y sigue el mismo flujo: propose, specs, design, tasks, apply, verify (el explore
 Ejemplos de cosas que puedes agregar despues:
 
 ```
-/sdd:new task-tags
+/sdd-new task-tags
 
 Quiero agregar etiquetas (tags) a las tareas:
 - Cada tarea puede tener multiples tags
@@ -872,7 +872,7 @@ Quiero agregar etiquetas (tags) a las tareas:
 ```
 
 ```
-/sdd:new task-subtasks
+/sdd-new task-subtasks
 
 Quiero agregar subtareas:
 - Cada tarea puede tener una lista de subtareas (checklist)
@@ -968,7 +968,7 @@ Si algo sale muy mal y necesitas actuar rapido:
 | La base de datos se corrompio | `Borra la base de datos de desarrollo y recreala con las migraciones` |
 | Los tests no pasan | `Ejecuta los tests y corrige todos los que fallen` |
 | No entiendes algo | `Explicame [lo que no entiendes] como si tuviera 15 anos` |
-| Quieres ver el estado del proyecto | `/sdd:continue batuta-task-manager` |
+| Quieres ver el estado del proyecto | `/sdd-continue batuta-task-manager` |
 
 ---
 
@@ -1007,17 +1007,17 @@ Tu (carpeta vacia)
  |
  +-- Paso 2:  Instalar ecosistema Batuta + crear .batuta/
  |
- +-- Paso 3:  /sdd:init .............. "Que tipo de proyecto es?"
+ +-- Paso 3:  /sdd-init .............. "Que tipo de proyecto es?"
  |
  |   [Claude detecta skills faltantes → Paso 4: "Opcion 1"]
  |
- +-- Paso 5:  /sdd:new ............... "Explora + Propuesta formal"
+ +-- Paso 5:  /sdd-new ............... "Explora + Propuesta formal"
  |     Tu: "Aprobado"
  |
- +-- Paso 6:  /sdd:continue .......... "Specs → Design → Tasks"
+ +-- Paso 6:  /sdd-continue .......... "Specs → Design → Tasks"
  |     Tu: "Continua" (3 veces)
  |
- +-- Paso 7:  /sdd:apply ............. "Modelos de base de datos"
+ +-- Paso 7:  /sdd-apply ............. "Modelos de base de datos"
  |     [Execution Gate valida antes de cada cambio]
  |
  +-- Paso 8:  Autenticacion .......... "Register, login, JWT"
@@ -1026,7 +1026,7 @@ Tu (carpeta vacia)
  |
  +-- Paso 10: Tests con pytest ....... "21 tests automaticos"
  |
- +-- Paso 11: /sdd:verify ............ "Piramide de Validacion"
+ +-- Paso 11: /sdd-verify ............ "Piramide de Validacion"
  |
  +-- Paso 12: Probar en tu PC ........ "localhost:8000/docs"
  |

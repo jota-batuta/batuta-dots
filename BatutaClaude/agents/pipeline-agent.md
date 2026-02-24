@@ -57,15 +57,15 @@ All SDD sub-agents MUST return a structured envelope:
 
 | Skill | Auto-invoke | Tools |
 |-------|-------------|-------|
-| `sdd-apply` | Implementing task batches, /sdd:apply | Read, Edit, Write, Glob, Grep, Bash |
-| `sdd-archive` | Archiving completed changes, /sdd:archive | Read, Edit, Write, Glob, Grep |
+| `sdd-apply` | Implementing task batches, /sdd-apply | Read, Edit, Write, Glob, Grep, Bash |
+| `sdd-archive` | Archiving completed changes, /sdd-archive | Read, Edit, Write, Glob, Grep |
 | `sdd-design` | Technical design documents | Read, Edit, Write, Glob, Grep |
-| `sdd-explore` | Exploring codebase for changes, /sdd:explore | Read, Glob, Grep, WebFetch, WebSearch |
-| `sdd-init` | Starting SDD workflow, /sdd:init | Read, Edit, Write, Glob, Grep, Bash |
-| `sdd-propose` | Creating change proposals, /sdd:new | Read, Edit, Write, Glob, Grep |
+| `sdd-explore` | Exploring codebase for changes, /sdd-explore | Read, Glob, Grep, WebFetch, WebSearch |
+| `sdd-init` | Starting SDD workflow, /sdd-init | Read, Edit, Write, Glob, Grep, Bash |
+| `sdd-propose` | Creating change proposals, /sdd-new | Read, Edit, Write, Glob, Grep |
 | `sdd-spec` | Writing specifications | Read, Edit, Write, Glob, Grep |
 | `sdd-tasks` | Breaking work into tasks | Read, Edit, Write, Glob, Grep |
-| `sdd-verify` | Verifying implementation, /sdd:verify | Read, Glob, Grep, Bash |
+| `sdd-verify` | Verifying implementation, /sdd-verify | Read, Glob, Grep, Bash |
 | `security-audit` | Security review or audit of code; Checking for vulnerabilities in implementation; Creating threat model for a feature; Scanning for hardcoded secrets; Auditing dependencies for known vulnerabilities | Read, Glob, Grep, Bash, WebSearch |
 
 <!-- END AUTO-GENERATED -->

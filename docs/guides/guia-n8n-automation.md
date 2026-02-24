@@ -192,7 +192,7 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 **Copia y pega este prompt**:
 
 ```
-/sdd:init
+/sdd-init
 ```
 
 **Que esperar**: Claude te va a hacer preguntas sobre el proyecto. Cuando te pregunte, responde asi:
@@ -206,7 +206,7 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 
 **Tip**: No te preocupes si no entiendes todo lo que Claude responde. Lo importante es que el "entienda" que queremos construir.
 
-> **Detalle tecnico (opcional)**: Cuando ejecutas `/sdd:init`, Claude activa su pipeline-agent
+> **Detalle tecnico (opcional)**: Cuando ejecutas `/sdd-init`, Claude activa su pipeline-agent
 > (el "jefe de proceso") que coordina todo el desarrollo paso a paso.
 
 ---
@@ -256,7 +256,7 @@ Claude va a investigar usando Context7 (su base de conocimiento actualizada) y c
 **Copia y pega este prompt**:
 
 ```
-/sdd:new batuta-email-automator
+/sdd-new batuta-email-automator
 ```
 
 Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
@@ -291,12 +291,12 @@ Aprobado, continua con el siguiente paso
 **Copia y pega este prompt**:
 
 ```
-/sdd:continue batuta-email-automator
+/sdd-continue batuta-email-automator
 ```
 
-Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd:ff batuta-email-automator` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-ff batuta-email-automator` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude va a ejecutar las siguientes fases una por una:
 
@@ -334,7 +334,7 @@ Claude esta configurado para explicarte las cosas de forma que cualquier persona
 **Copia y pega este prompt**:
 
 ```
-/sdd:apply batuta-email-automator
+/sdd-apply batuta-email-automator
 
 Empieza por el servicio de clasificacion (el cerebro de la IA).
 Implementa primero este componente porque el workflow de n8n
@@ -548,7 +548,7 @@ Claude va a investigar y corregir el problema.
 **Copia y pega este prompt**:
 
 ```
-/sdd:verify batuta-email-automator
+/sdd-verify batuta-email-automator
 ```
 
 **Que esperar**: Claude va a verificar usando la Piramide de Validacion:
@@ -569,7 +569,7 @@ Si, corrige todos los problemas que encontraste
 Despues de las correcciones, ejecuta verify otra vez:
 
 ```
-/sdd:verify batuta-email-automator
+/sdd-verify batuta-email-automator
 ```
 
 **Cuando todo este verde (sin errores)**, continua al siguiente paso.
@@ -675,7 +675,7 @@ Revisa los logs de los servicios y confirma que:
 **Cuando todo funcione**, archiva el proyecto:
 
 ```
-/sdd:archive batuta-email-automator
+/sdd-archive batuta-email-automator
 ```
 
 Claude cierra el proyecto formalmente: verifica que todo esta completo, guarda las lecciones aprendidas, y actualiza `.batuta/session.md`.
@@ -768,7 +768,7 @@ Cambia el rate limit del webhook a 50 requests por minuto
 Cuando quieras modificar algo, NO edites el codigo directamente. Usa el mismo proceso:
 
 ```
-/sdd:new nombre-del-cambio
+/sdd-new nombre-del-cambio
 
 Quiero agregar [descripcion del cambio].
 Por ejemplo: una nueva categoria de clasificacion llamada "factura"
@@ -787,7 +787,7 @@ Y sigue el mismo flujo: explore, propose, specs, design, tasks, apply, verify.
 Para que la IA reconozca mas tipos de email:
 
 ```
-/sdd:new email-classifier-new-categories
+/sdd-new email-classifier-new-categories
 
 Quiero agregar estas categorias al clasificador:
 - "factura" — emails que contienen facturas o cobros
@@ -889,7 +889,7 @@ Si algo sale muy mal y necesitas actuar rapido:
 | El webhook esta recibiendo ataques | Desactiva el workflow en n8n (Workflows → click en el toggle para desactivar) |
 | Gastaste mucho en la API de IA | Revisa el dashboard del proveedor y pausa la key temporalmente |
 | No entiendes algo | `Explicame [lo que no entiendes] como si tuviera 15 anos` |
-| Quieres ver el estado del proyecto | `/sdd:continue batuta-email-automator` (te muestra donde quedamos) |
+| Quieres ver el estado del proyecto | `/sdd-continue batuta-email-automator` (te muestra donde quedamos) |
 
 ---
 
@@ -925,17 +925,17 @@ Tu (carpeta vacia)
  |
  +-- Paso 2:  Instalar ecosistema Batuta + crear .batuta/
  |
- +-- Paso 3:  /sdd:init .............. "Que tipo de proyecto es?"
+ +-- Paso 3:  /sdd-init .............. "Que tipo de proyecto es?"
  |
  |   [Claude detecta skills faltantes → Paso 4: "Opcion 1"]
  |
- +-- Paso 5:  /sdd:new ............... "Explora + Propuesta formal"
+ +-- Paso 5:  /sdd-new ............... "Explora + Propuesta formal"
  |     Tu: "Aprobado"
  |
- +-- Paso 6:  /sdd:continue .......... "Specs → Design → Tasks"
+ +-- Paso 6:  /sdd-continue .......... "Specs → Design → Tasks"
  |     Tu: "Continua" (3 veces)
  |
- +-- Paso 7:  /sdd:apply ............. "Construir el clasificador"
+ +-- Paso 7:  /sdd-apply ............. "Construir el clasificador"
  |     [Execution Gate valida antes de cada cambio]
  |
  +-- Paso 8:  Construir webhook ...... "La puerta de entrada"
@@ -944,7 +944,7 @@ Tu (carpeta vacia)
  |
  +-- Paso 10: Probar todo ............ "Emails de prueba"
  |
- +-- Paso 11: /sdd:verify ............ "Revisar que todo funcione"
+ +-- Paso 11: /sdd-verify ............ "Revisar que todo funcione"
  |
  +-- Paso 12: Deploy a Coolify ....... "Poner en internet"
  |

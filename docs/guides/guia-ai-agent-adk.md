@@ -195,7 +195,7 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 **Copia y pega este prompt**:
 
 ```
-/sdd:init
+/sdd-init
 ```
 
 Cuando Claude pregunte, responde asi:
@@ -215,7 +215,7 @@ Cuando Claude pregunte, responde asi:
 **Copia y pega este prompt**:
 
 ```
-/sdd:new batuta-ai-agent
+/sdd-new batuta-ai-agent
 ```
 
 Este comando primero explora tu proyecto y luego genera una propuesta automaticamente.
@@ -239,12 +239,12 @@ Aprobado, continua con el siguiente paso
 **Copia y pega este prompt**:
 
 ```
-/sdd:continue batuta-ai-agent
+/sdd-continue batuta-ai-agent
 ```
 
-Ejecuta `/sdd:continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
+Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd:ff batuta-ai-agent` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-ff batuta-ai-agent` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que hace Claude**: Ejecuta tres fases seguidas:
 
@@ -300,7 +300,7 @@ Esto puede pasar varias veces para Google ADK, Tavily, el LLM que elijas, etc. *
 **Copia y pega este prompt**:
 
 ```
-/sdd:apply batuta-ai-agent
+/sdd-apply batuta-ai-agent
 ```
 
 **Que hace Claude**: Antes de escribir codigo, ejecuta el Execution Gate (un checklist que verifica donde van los archivos y que impacto tienen los cambios). Te muestra algo como:
@@ -488,7 +488,7 @@ Claude activara su checklist de seguridad AI-First automaticamente, que incluye 
 **Copia y pega este prompt**:
 
 ```
-/sdd:verify batuta-ai-agent
+/sdd-verify batuta-ai-agent
 ```
 
 Si encuentra problemas:
@@ -725,7 +725,7 @@ otro optimice el rendimiento, y otro prepare la documentacion del API.
 ## Agregar nuevas herramientas
 
 ```
-/sdd:new ai-agent-translator
+/sdd-new ai-agent-translator
 
 Quiero agregar una herramienta de traduccion al agente:
 - El usuario dice "traduce esto al ingles: [texto]"
@@ -861,7 +861,7 @@ Diagnostica el problema y corrigelo.
 | Claude se trabo | Cierra la terminal, abrela de nuevo, escribe `claude` |
 | Deshacer el ultimo cambio | `Deshaz el ultimo cambio que hiciste` |
 | No entiendes algo | `Explicame [lo que no entiendes] como si tuviera 15 anios` |
-| Ver el estado del proyecto | `/sdd:continue batuta-ai-agent` |
+| Ver el estado del proyecto | `/sdd-continue batuta-ai-agent` |
 | Memoria del agente desde cero | `Borra los archivos de la carpeta data/ y crea los vacios de nuevo` |
 | Gasta demasiados tokens | `Reduce max_tokens a 2000 y busquedas web a 5 por sesion` |
 
@@ -907,17 +907,17 @@ Tu (carpeta vacia)
  |
  +-- Paso 2:  Instalar Batuta ......... CLAUDE.md + .batuta/
  |
- +-- Paso 3:  /sdd:init ............... "Que tipo de agente? Como hacerlo?"
+ +-- Paso 3:  /sdd-init ............... "Que tipo de agente? Como hacerlo?"
  |
- +-- Paso 4:  /sdd:new ................ "Explora + Propuesta formal: ADK o LangChain?"
+ +-- Paso 4:  /sdd-new ................ "Explora + Propuesta formal: ADK o LangChain?"
  |     Tu: "Aprobado"
  |
- +-- Paso 5:  /sdd:continue ........... "Specs, Design, Tasks"
+ +-- Paso 5:  /sdd-continue ........... "Specs, Design, Tasks"
  |     Tu: "Continua" (3 veces)
  |
  |   [Claude detecta skills faltantes, Paso 6: "Opcion 1"]
  |
- +-- Paso 7:  /sdd:apply .............. "Construir el nucleo del agente"
+ +-- Paso 7:  /sdd-apply .............. "Construir el nucleo del agente"
  |     [Execution Gate valida antes de cada cambio]
  |
  +-- Paso 8:  Implementar tools ....... Busqueda, notas, calculadora, documentos
@@ -928,7 +928,7 @@ Tu (carpeta vacia)
  |
  +-- Paso 11: Auditoria seguridad .... Injection, costos, PII, keys, salidas
  |
- +-- Paso 12: /sdd:verify + probar ... "Funciona?"
+ +-- Paso 12: /sdd-verify + probar ... "Funciona?"
  |
  +-- Paso 13: GitHub + deploy ........ "Codigo guardado y en internet"
  |

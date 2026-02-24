@@ -467,14 +467,14 @@ pedidos en el restaurante:
 | Que quieres | Que escribes |
 |-------------|-------------|
 | Instalar Batuta en un proyecto nuevo | `/batuta-init nombre-del-proyecto` |
-| Empezar a planear algo nuevo | `/sdd:init` |
-| Investigar como hacer algo | `/sdd:explore tema` |
-| Crear una propuesta formal | `/sdd:new nombre` |
-| Continuar al siguiente paso | `/sdd:continue` |
-| Construir lo que se planeo | `/sdd:apply` |
-| Verificar que todo funcione | `/sdd:verify` |
-| Cerrar y documentar | `/sdd:archive` |
-| Crear una receta nueva | `/create:skill nombre` |
+| Empezar a planear algo nuevo | `/sdd-init` |
+| Investigar como hacer algo | `/sdd-explore tema` |
+| Crear una propuesta formal | `/sdd-new nombre` |
+| Continuar al siguiente paso | `/sdd-continue` |
+| Construir lo que se planeo | `/sdd-apply` |
+| Verificar que todo funcione | `/sdd-verify` |
+| Cerrar y documentar | `/sdd-archive` |
+| Crear una receta nueva | `/create-skill nombre` |
 | Analizar como mejorar la comunicacion | `/batuta:analyze-prompts` |
 | Actualizar inventario de recetas | `/batuta:sync-skills` |
 
@@ -516,29 +516,29 @@ TU IDEA
    ↓
 /batuta-init → Instala el ecosistema + hooks + crea .batuta/
    ↓
-/sdd:init → Define el tipo de proyecto
+/sdd-init → Define el tipo de proyecto
    ↓
-/sdd:explore → Claude investiga como hacerlo
+/sdd-explore → Claude investiga como hacerlo
    ↓
 (Si falta un skill → lo crea automaticamente)
    ↓
-/sdd:new → Claude te muestra el plan
+/sdd-new → Claude te muestra el plan
    ↓
 TU APRUEBAS
    ↓
-/sdd:continue → Specs + Diseno + Tareas
+/sdd-continue → Specs + Diseno + Tareas
    ↓
 Execution Gate → Verifica antes de construir
    ↓
-/sdd:apply → Claude construye la app
+/sdd-apply → Claude construye la app
    ↓
-/sdd:verify → Claude verifica que funcione
+/sdd-verify → Claude verifica que funcione
    ↓
 Pruebas en tu computadora
    ↓
 Deploy a internet (Coolify)
    ↓
-/sdd:archive → Documenta y cierra
+/sdd-archive → Documenta y cierra
    ↓
 APP LISTA EN INTERNET
 ```
@@ -551,10 +551,10 @@ APP LISTA EN INTERNET
 R: No. Solo necesitas saber copiar y pegar los comandos de las guias. Claude programa por ti.
 
 **P: Que pasa si Claude hace algo mal?**
-R: El paso de `/sdd:verify` revisa todo automaticamente. Si encuentra errores, te dice cuales son y los corrige.
+R: El paso de `/sdd-verify` revisa todo automaticamente. Si encuentra errores, te dice cuales son y los corrige.
 
 **P: Puedo usar esto para cualquier tipo de proyecto?**
-R: Si. El sistema funciona para aplicaciones web, automatizaciones, agentes de IA, infraestructura, y mas. Solo cambia la descripcion en `/sdd:init`.
+R: Si. El sistema funciona para aplicaciones web, automatizaciones, agentes de IA, infraestructura, y mas. Solo cambia la descripcion en `/sdd-init`.
 
 **P: Cuanto cuesta?**
 R: Claude Code tiene un costo de suscripcion. Las APIs de Google (Gmail, Gemini) son practicamente gratis para uso normal. Coolify puede correr en tu propio servidor.

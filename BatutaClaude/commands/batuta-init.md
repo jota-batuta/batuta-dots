@@ -109,12 +109,12 @@ Skills sincronizados a ~/.claude/skills/ (X skills)
 Hooks instalados en ~/.claude/settings.json (5 hooks + permissions)
 
 Comandos disponibles:
-- /sdd:init          — Iniciar proyecto con SDD
-- /sdd:explore       — Explorar una idea
-- /sdd:new           — Crear propuesta de cambio
-- /create:skill      — Crear un skill nuevo
+- /sdd-init          — Iniciar proyecto con SDD
+- /sdd-explore       — Explorar una idea
+- /sdd-new           — Crear propuesta de cambio
+- /create-skill      — Crear un skill nuevo
 
-Siguiente paso recomendado: /sdd:init
+Siguiente paso recomendado: /sdd-init
 ```
 
-If a project name was provided as argument ($ARGUMENTS), mention it in the confirmation and suggest using it for `/sdd:init`.
+If a project name was provided as argument ($ARGUMENTS), mention it in the confirmation and suggest using it for `/sdd-init`.

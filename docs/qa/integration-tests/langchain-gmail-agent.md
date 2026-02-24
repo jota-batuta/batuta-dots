@@ -6,7 +6,7 @@
 
 ## Resumen Ejecutivo
 
-La guia lleva a un usuario no tecnico desde cero hasta un agente de IA en produccion que clasifica correos de Gmail. El flujo general es correcto y los comandos SDD referenciados existen y producen los resultados esperados. Se identificaron 8 hallazgos: 1 critico (comando `/batuta-init` invocado con argumento pero el command real espera el argumento de forma diferente), 3 importantes (comando `/sdd:new` vs la tabla de comandos real, flujo `sdd:continue` que agrupa 3 fases sin explicar la interaccion, referencia a comando con formato inconsistente), y 4 menores.
+La guia lleva a un usuario no tecnico desde cero hasta un agente de IA en produccion que clasifica correos de Gmail. El flujo general es correcto y los comandos SDD referenciados existen y producen los resultados esperados. Se identificaron 8 hallazgos: 1 critico (comando `/batuta-init` invocado con argumento pero el command real espera el argumento de forma diferente), 3 importantes (comando `/sdd-new` vs la tabla de comandos real, flujo `sdd:continue` que agrupa 3 fases sin explicar la interaccion, referencia a comando con formato inconsistente), y 4 menores.
 
 ## Hallazgos
 
@@ -24,18 +24,18 @@ La guia lleva a un usuario no tecnico desde cero hasta un agente de IA en produc
 - **Lo que hace el ecosistema**: El command `batuta-init.md` ejecuta `setup.sh --sync` (que copia skills + agents + commands a `~/.claude/`) y `setup.sh --hooks` (que instala hooks + permisos). Esto ES lo que la guia describe en lenguaje simplificado. La descripcion es correcta en sustancia pero simplifica que `--sync` no ejecuta `skill-sync` (regeneracion de tablas de routing), a diferencia de `--all` que si lo hace. Sin embargo, dado que batuta-dots ya tiene las tablas pre-generadas, esto no deberia causar problemas en la practica.
 - **Impacto en el usuario**: Ninguno significativo. La simplificacion es apropiada para la audiencia.
 
-### H3: El Paso 6 usa `/sdd:new` pero la tabla SDD Commands lo define como `sdd-explore` seguido de `sdd-propose`
+### H3: El Paso 6 usa `/sdd-new` pero la tabla SDD Commands lo define como `sdd-explore` seguido de `sdd-propose`
 - **Severidad**: IMPORTANTE
 - **Ubicacion**: Paso 6, linea 221
-- **Lo que dice la guia**: `/sdd:new batuta-email-classifier`
-- **Lo que hace el ecosistema**: En CLAUDE.md linea 104, `/sdd:new <change-name>` esta definido como `pipeline -> sdd-explore -> sdd-propose`. Esto significa que `/sdd:new` ejecuta exploracion Y propuesta en un solo comando. La guia usa `/sdd:new` despues de haber ejecutado `/sdd:explore` en el Paso 4. Esto implica que la exploracion se ejecutaria DOS VECES: una en Paso 4 con `/sdd:explore` (sin guardar archivo porque no tiene change-name), y otra en Paso 6 con `/sdd:new` que internamente invoca sdd-explore de nuevo. Esto es redundante y puede confundir a Claude si ya tiene el contexto de la exploracion previa.
-- **Impacto en el usuario**: El usuario ejecutaria la exploracion dos veces. La primera vez (Paso 4) genera Skill Gap Detection y posiblemente crea skills (Paso 5). La segunda vez (Paso 6 via `/sdd:new`) volveria a explorar el mismo tema. Esto no rompe el flujo pero desperdicia tiempo y tokens. El flujo optimo seria: Paso 4 usa `/sdd:new batuta-email-classifier` directamente (combina explore + propose), o Paso 6 usa `/sdd:continue batuta-email-classifier` si la exploracion ya se guardo.
+- **Lo que dice la guia**: `/sdd-new batuta-email-classifier`
+- **Lo que hace el ecosistema**: En CLAUDE.md linea 104, `/sdd-new <change-name>` esta definido como `pipeline -> sdd-explore -> sdd-propose`. Esto significa que `/sdd-new` ejecuta exploracion Y propuesta en un solo comando. La guia usa `/sdd-new` despues de haber ejecutado `/sdd-explore` en el Paso 4. Esto implica que la exploracion se ejecutaria DOS VECES: una en Paso 4 con `/sdd-explore` (sin guardar archivo porque no tiene change-name), y otra en Paso 6 con `/sdd-new` que internamente invoca sdd-explore de nuevo. Esto es redundante y puede confundir a Claude si ya tiene el contexto de la exploracion previa.
+- **Impacto en el usuario**: El usuario ejecutaria la exploracion dos veces. La primera vez (Paso 4) genera Skill Gap Detection y posiblemente crea skills (Paso 5). La segunda vez (Paso 6 via `/sdd-new`) volveria a explorar el mismo tema. Esto no rompe el flujo pero desperdicia tiempo y tokens. El flujo optimo seria: Paso 4 usa `/sdd-new batuta-email-classifier` directamente (combina explore + propose), o Paso 6 usa `/sdd-continue batuta-email-classifier` si la exploracion ya se guardo.
 
-### H4: El Paso 7 usa `/sdd:continue` y dice que cubre "specs, design, tasks" pero no explica la interaccion entre fases paralelas
+### H4: El Paso 7 usa `/sdd-continue` y dice que cubre "specs, design, tasks" pero no explica la interaccion entre fases paralelas
 - **Severidad**: IMPORTANTE
 - **Ubicacion**: Paso 7, linea 234-238
-- **Lo que dice la guia**: `/sdd:continue batuta-email-classifier` — "Repite 'Se ve bien, continua' para cada fase (specs, design, tasks)."
-- **Lo que hace el ecosistema**: En CLAUDE.md linea 105, `/sdd:continue` va a `pipeline -> next needed phase`. El pipeline-agent.md (linea 28-29) define que `specs` y `design` CAN run in parallel, y ambos MUST complete before `tasks`. El `/sdd:continue` es valido y ejecuta la siguiente fase pendiente. Sin embargo, la guia dice simplemente "repite para cada fase" sin explicar que specs y design pueden ocurrir en paralelo o que Claude podria pedir confirmacion en un orden diferente al listado. Para un usuario no tecnico, si Claude presenta design antes de specs (o en paralelo), puede causar confusion.
+- **Lo que dice la guia**: `/sdd-continue batuta-email-classifier` — "Repite 'Se ve bien, continua' para cada fase (specs, design, tasks)."
+- **Lo que hace el ecosistema**: En CLAUDE.md linea 105, `/sdd-continue` va a `pipeline -> next needed phase`. El pipeline-agent.md (linea 28-29) define que `specs` y `design` CAN run in parallel, y ambos MUST complete before `tasks`. El `/sdd-continue` es valido y ejecuta la siguiente fase pendiente. Sin embargo, la guia dice simplemente "repite para cada fase" sin explicar que specs y design pueden ocurrir en paralelo o que Claude podria pedir confirmacion en un orden diferente al listado. Para un usuario no tecnico, si Claude presenta design antes de specs (o en paralelo), puede causar confusion.
 - **Impacto en el usuario**: Confusion menor si el orden de las fases no coincide con lo que la guia lista. El usuario podria pensar que algo salio mal cuando Claude presenta "design" antes de "specs".
 
 ### H5: La guia referencia `/batuta:analyze-prompts` con formato inconsistente
@@ -82,16 +82,16 @@ La guia lleva a un usuario no tecnico desde cero hasta un agente de IA en produc
 |------|-------------------|---------------------|----------|-------|
 | 1 | Crear carpeta + `claude` | N/A (preparacion) | Si | Flujo correcto |
 | 2 | `/batuta-init` | batuta-init.md | Si (ver H1) | Argumento funcional pero contexto de directorio no explicito |
-| 3 | `/sdd:init` | sdd-init SKILL.md | Si | Parametros correctos (nombre, tipo `ai-agent`, descripcion) |
-| 4 | `/sdd:explore` | sdd-explore SKILL.md | Si | Skill Gap Detection se activara como describe la guia |
+| 3 | `/sdd-init` | sdd-init SKILL.md | Si | Parametros correctos (nombre, tipo `ai-agent`, descripcion) |
+| 4 | `/sdd-explore` | sdd-explore SKILL.md | Si | Skill Gap Detection se activara como describe la guia |
 | 5 | Skill Gap → Opcion 1 | ecosystem-creator SKILL.md | Si | Auto-Discovery flow correcto |
-| 6 | `/sdd:new` | CLAUDE.md SDD Commands | Si (ver H3) | Redundancia con explore previo |
-| 7 | `/sdd:continue` | CLAUDE.md SDD Commands | Si (ver H4) | specs/design/tasks en secuencia |
-| 8 | `/sdd:apply` | sdd-apply SKILL.md | Si | Execution Gate y batch pattern correctos |
-| 9 | `/sdd:verify` | sdd-verify SKILL.md | Si | AI Validation Pyramid aplicable |
+| 6 | `/sdd-new` | CLAUDE.md SDD Commands | Si (ver H3) | Redundancia con explore previo |
+| 7 | `/sdd-continue` | CLAUDE.md SDD Commands | Si (ver H4) | specs/design/tasks en secuencia |
+| 8 | `/sdd-apply` | sdd-apply SKILL.md | Si | Execution Gate y batch pattern correctos |
+| 9 | `/sdd-verify` | sdd-verify SKILL.md | Si | AI Validation Pyramid aplicable |
 | 10 | Ejecucion manual | N/A (codigo generado) | Si | Dry-run es buena practica |
 | 11 | Scheduler | N/A (codigo generado) | Si | APScheduler/cron mencionados correctamente |
 | 12 | Coolify deploy | N/A (codigo generado) | Si | Dockerfile + health check correcto |
 | 13 | GitHub + webhook | N/A (git ops) | Si | .gitignore incluye secretos |
 | 14 | Verificacion prod | N/A (operaciones) | Si | Checklist razonable |
-| 15 | `/sdd:archive` | sdd-archive SKILL.md | Si | Cierre completo con lessons learned |
+| 15 | `/sdd-archive` | sdd-archive SKILL.md | Si | Cierre completo con lessons learned |
