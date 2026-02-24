@@ -118,6 +118,22 @@ FOR EACH technology required by this change:
 
 **Do NOT silently continue when HIGH gaps exist.** The gap detection must be actionable, not just documented. This is the entry point for Auto-Update SPO — skills created here can later propagate to batuta-dots.
 
+### Step 2.7: Domain Expert Consultation
+
+If the project has an `openspec/domain-experts.md`, consult it to enrich your exploration with domain-specific knowledge:
+
+```
+DOMAIN EXPERT CHECK:
+├── Read openspec/domain-experts.md (if exists)
+├── For each expert relevant to this change:
+│   ├── Apply their validation criteria
+│   ├── Check domain-specific constraints
+│   └── Note terminology and business rules
+└── If no domain-experts.md exists → skip (no error)
+```
+
+Domain experts are configured per-project (not global). They provide business context that pure code analysis misses — e.g., a Finance expert knows that Colombian tax rules require specific rounding, or an HR expert knows that competency frameworks change per role type.
+
 ### Step 3: Analyze Options
 
 If there are multiple approaches, compare them:
@@ -140,6 +156,56 @@ openspec/changes/{change-name}/
 
 If no change name was provided (standalone `/sdd-explore`), skip file creation -- just return the analysis.
 
+### Step 4.5: Discovery Completeness (MANDATORY)
+
+Before advancing to proposal, answer these 5 questions. If any answer is "No" or "Unknown", the exploration is INCOMPLETE:
+
+1. **All case types identified?** — Not just the happy path. ALL variants including edge cases.
+2. **Exceptions documented?** — What breaks? What is handled differently? What has never been handled?
+3. **External categories mapped?** — APIs, regulations, third-party taxonomies — anything controlled outside our system.
+4. **All participants and data sources listed?** — Who executes? Who decides? Where does each piece of data come from?
+5. **All process branches covered?** — Every decision point has at least two paths documented.
+
+**If any answer is "No"**: Return to Step 2 and investigate the gap before continuing.
+**If any answer is "Unknown"**: Flag it explicitly in the output under Risks and recommend the user clarify before proposing.
+
+This check feeds **G0.5 (Discovery Complete)** in the pipeline-agent. The orchestrator will NOT advance to propose if these questions are unanswered.
+
+Include the Discovery Completeness results in your structured output:
+
+```markdown
+### Discovery Completeness
+| Question | Status | Notes |
+|----------|--------|-------|
+| All case types identified? | Yes/No/Unknown | {details} |
+| Exceptions documented? | Yes/No/Unknown | {details} |
+| External categories mapped? | Yes/No/Unknown | {details} |
+| All participants listed? | Yes/No/Unknown | {details} |
+| All branches covered? | Yes/No/Unknown | {details} |
+```
+
+### Step 4.6: Process Complexity Detection
+
+Evaluate whether the explored process needs deeper specialist analysis:
+
+| Signal | Threshold | Recommendation |
+|--------|-----------|----------------|
+| Distinct case types or variants | 3+ types | Suggest `/process-analyst` |
+| External taxonomies | Any detected | Suggest `/recursion-designer` |
+| Multiple actors with different roles | Per variant | Suggest `/process-analyst` (Actor Map) |
+| Exceptions requiring human judgment | Any detected | Suggest `/process-analyst` (Exception Catalog) |
+| Categories that change over time | Bank concepts, tax codes, SKUs | Suggest `/recursion-designer` (Learning Mechanisms) |
+
+When complexity is detected, include in your output:
+
+> **Proceso complejo detectado**: Se recomienda ejecutar `/process-analyst` para mapear el universo completo de variantes antes de proponer. Razones: {list}
+
+or:
+
+> **Taxonomias externas detectadas**: Se recomienda ejecutar `/recursion-designer` para disenar mecanismos de aprendizaje. Taxonomias: {list}
+
+These are **suggestions**, not blockers. The orchestrator and user decide whether to invoke them. But failing to DETECT and REPORT complexity is a quality failure.
+
 ### Step 5: Return Structured Analysis
 
 Return EXACTLY this format to the orchestrator (and write the same content to `explore.md` if saving). This is the **mandatory template** — all sections are required:
@@ -160,6 +226,18 @@ Return EXACTLY this format to the orchestrator (and write the same content to `e
 | {tech} | Yes / No | HIGH / MEDIUM / LOW / N/A | covered / created / skipped |
 
 {If HIGH gaps were detected and skills were created, note them here.}
+
+### Discovery Completeness
+| Question | Status | Notes |
+|----------|--------|-------|
+| All case types identified? | Yes/No/Unknown | {details} |
+| Exceptions documented? | Yes/No/Unknown | {details} |
+| External categories mapped? | Yes/No/Unknown | {details} |
+| All participants listed? | Yes/No/Unknown | {details} |
+| All branches covered? | Yes/No/Unknown | {details} |
+
+### Process Complexity
+{If complexity signals detected: recommendation to invoke /process-analyst or /recursion-designer with reasons. If not: "No complexity signals detected — standard process."}
 
 ### Stakeholder Impact
 - **Technical Team**: {How this affects developers, DevOps, QA}
@@ -210,6 +288,19 @@ SKILL GAP EXIT GATE:
 │   └── [ ] skill-sync ran if any skills were created
 ├── [ ] For MEDIUM/LOW gaps: documented but not blocking
 └── [ ] "Action Taken" column filled for every row in Skill Gap table
+
+DISCOVERY COMPLETENESS EXIT GATE:
+├── [ ] All 5 Discovery Completeness questions answered
+├── [ ] Discovery Completeness table included in output
+├── [ ] Any "No" answers → investigation was repeated or gap flagged
+├── [ ] Any "Unknown" answers → flagged under Risks
+└── [ ] Results ready to feed G0.5 validation in pipeline-agent
+
+PROCESS COMPLEXITY EXIT GATE:
+├── [ ] Complexity signals evaluated (5 signals checked)
+├── [ ] If signals detected → recommendation included in output
+├── [ ] Process Complexity section included in structured output
+└── [ ] Domain experts consulted (if openspec/domain-experts.md exists)
 ```
 
 **If the user chooses to skip ALL high gaps**, document the justification clearly in the output under "Skill Gap Analysis". The orchestrator will include this in the audit trail.

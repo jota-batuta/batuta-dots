@@ -118,6 +118,35 @@ Full process: see `infra-agent` which has the evaluation → generalize → prop
 
 ---
 
+## CTO Strategy Layer (v10.0)
+
+Strategic capabilities integrated from the CTO expert layer. These enrich the SDD pipeline with business analysis, compliance, and domain expertise:
+
+### Strategic Gates (in pipeline-agent)
+- **G0.5 — Discovery Complete**: 5 questions before proposing (all case types, exceptions, external categories, participants, branches)
+- **G1 — Solution Worth Building**: Scope, stakeholders, risks check before spec/design
+- **G2 — Ready for Production**: AI Pyramid, docs, rollback verified before archive
+
+### Specialist Skills (invoke when needed)
+| Skill | When to Use |
+|-------|-------------|
+| `process-analyst` | 3+ case variants, complex processes, multiple actors |
+| `recursion-designer` | External taxonomies, categories that change, learning systems |
+| `compliance-colombia` | Personal data, AI on personal data, international transfers, tax retention |
+| `data-pipeline-design` | ETL, ERP integrations, bank files, DIAN, data quality |
+| `llm-pipeline-design` | LLM classifiers, prompt engineering, confidence scoring, drift detection |
+| `worker-scaffold` | Temporal workers, Docker, Coolify deploy, monitoring |
+
+### Enriched SDD Phases
+- **sdd-explore**: Discovery Completeness (5 questions) + Domain Expert consultation + Process Complexity Detection
+- **sdd-propose**: Cost-Benefit Analysis (mandatory) + Client Communication (mandatory)
+- **sdd-design**: Conditional sections (LLM/Data/Infra) + Architecture Validation Checklist (7 items)
+- **sdd-verify**: Testing by solution type (Pure Auto / Auto+LLM / Agent)
+- **sdd-archive**: Learning Loop (6 questions for ecosystem improvement)
+- **sdd-init**: Domain experts template + Project-level hooks generation
+
+---
+
 ## Behavior
 - Always explain the WHY behind every technical decision
 - Use tradeoffs tables when presenting options

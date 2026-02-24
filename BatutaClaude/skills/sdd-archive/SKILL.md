@@ -158,6 +158,34 @@ This file captures team knowledge for future reference. Derive insights from the
 - If the verification report flagged warnings (non-critical), note them here as improvement areas
 - If this is a first-time pattern in the codebase, call it out so future contributors know it exists
 
+### Step 4.5: Learning Loop (Ecosystem Improvement)
+
+After compiling lessons learned, evaluate whether this change reveals improvements for the Batuta ecosystem itself. Answer these 6 questions:
+
+1. **Did we discover a reusable pattern?** — If yes, should it become a skill in batuta-dots?
+2. **Did a skill fail or produce poor output?** — If yes, what should be updated in the SKILL.md?
+3. **Did Discovery miss something important?** — If yes, should sdd-explore's questions be updated?
+4. **Did the cost estimate match reality?** — If off by >50%, note for improving sdd-propose's cost model.
+5. **Did testing catch the right things?** — If not, what test types should sdd-verify add?
+6. **Did a domain expert catch something code analysis missed?** — If yes, update domain-experts.md.
+
+For each "yes" answer, create an actionable item in the lessons-learned.md under a new section:
+
+```markdown
+## Ecosystem Improvement Triggers
+
+| # | Question | Answer | Action |
+|---|----------|--------|--------|
+| 1 | Reusable pattern? | Yes/No | {Create skill X / N/A} |
+| 2 | Skill failure? | Yes/No | {Update skill Y / N/A} |
+| 3 | Discovery gap? | Yes/No | {Add question Z to sdd-explore / N/A} |
+| 4 | Cost estimate accuracy? | {actual vs estimate} | {Update model / N/A} |
+| 5 | Testing gaps? | Yes/No | {Add check to sdd-verify / N/A} |
+| 6 | Domain expert value? | Yes/No | {Update domain-experts.md / N/A} |
+```
+
+If ANY action is identified, include it in the `next_recommended` field of the structured envelope so the orchestrator can route it appropriately.
+
 ### Step 5: Return Summary
 
 Return to the orchestrator:

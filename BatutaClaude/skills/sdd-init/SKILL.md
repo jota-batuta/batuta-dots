@@ -164,6 +164,59 @@ rules:
 | `data-pipeline` | `architecture-decision-records` | data-analysts, business-analysts | mermaid |
 | `library` | `sdk-docs` | external-developers | openapi |
 
+### Step 3.5: Generate Domain Experts (Optional)
+
+If the project involves domain-specific business logic (finance, HR, legal, etc.), offer to create a `domain-experts.md` file:
+
+```
+ASK USER: "Este proyecto tiene dominios de negocio especificos?
+  (1) Finanzas/Contabilidad  (2) RRHH/Seleccion  (3) Legal/Regulatorio
+  (4) Inventario/Logistica   (5) Otro             (6) No aplica"
+```
+
+If the user selects one or more, generate `openspec/domain-experts.md`:
+
+```markdown
+# Domain Experts — {Project Name}
+
+## Expert: {Domain Name}
+- **Scope**: What this expert validates
+- **Key rules**: Business rules the system must respect
+- **Terminology**: Domain-specific terms and their definitions
+- **Validation criteria**: How to verify domain correctness
+- **Approver**: Who decides when rules are ambiguous
+```
+
+Pre-configured templates available for Finance (Colombian tax, NIIF, NIT validation) and HR (competency frameworks, Colombian labor law basics).
+
+If user says "No aplica", skip this step entirely.
+
+### Step 3.7: Generate Project-Level Hooks (Recommended)
+
+Generate `.claude/settings.local.json` with deterministic hook enforcement:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Execution Gate: verify this change is within an approved SDD phase or user-confirmed scope. Respond {\"ok\": true} if approved, {\"ok\": false, \"reason\": \"...\"} if not."
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Why**: Without project-level hooks, the Execution Gate depends on Claude "remembering" the rules from CLAUDE.md — which is not deterministic. This hook makes enforcement automatic.
+
+If `.claude/settings.local.json` already exists, READ it first and MERGE (do not overwrite).
+
 ### Step 4: Return Summary
 
 Return a structured summary:

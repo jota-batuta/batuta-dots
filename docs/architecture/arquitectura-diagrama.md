@@ -1,4 +1,4 @@
-# Diagrama de Arquitectura — Ecosistema Batuta
+# Diagrama de Arquitectura — Ecosistema Batuta (v10.0)
 
 ## Vista General del Ecosistema
 
@@ -187,7 +187,7 @@ graph LR
     style D fill:#7AAFC4,color:#fff
 ```
 
-> **spec** y **design** pueden ejecutarse en paralelo. Ambos deben completarse antes de **tasks**.
+> **spec** y **design** en paralelo. Gates G0.5 (Discovery Complete), G1 (Solution Worth Building) y G2 (Production Ready) son checkpoints estrategicos v10.0. 6 specialist skills se invocan condicionalmente: process-analyst, recursion-designer, llm-pipeline-design, data-pipeline-design, worker-scaffold, compliance-colombia.
 
 ---
 
@@ -841,7 +841,7 @@ flowchart TD
     subgraph CLAUDE_DETAIL["BatutaClaude/"]
         CLAUDE_MD["CLAUDE.md (router)"]
         AGENTS["agents/<br/>pipeline, infra, observability"]
-        SKILLS_15["skills/ (15 skills)<br/>sdd-*, ecosystem, scope-rule,<br/>skill-sync, team-orchestrator,<br/>prompt-tracker, security-audit"]
+        SKILLS_24["skills/ (24 skills)<br/>sdd-*, ecosystem, scope-rule,<br/>skill-sync, team-orchestrator,<br/>prompt-tracker, security-audit,<br/>+ 6 CTO specialists (v10.0)"]
     end
 
     subgraph DOCS_DETAIL["docs/"]

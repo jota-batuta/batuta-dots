@@ -49,8 +49,7 @@ Cada **skill** es una receta especifica. Por ejemplo:
 | `temporal-worker` | Como cocinar platos que llevan muchos pasos y pueden fallar |
 | `nextjs-portal` | Como montar el plato para que se vea bonito (la cara que ve el cliente) |
 
-El chef tiene **15 recetas basicas** que siempre estan disponibles, y puede **aprender
-recetas nuevas** cuando las necesita.
+El chef tiene **24 recetas basicas** que siempre estan disponibles (incluyendo 6 recetas de estrategia CTO agregadas en v10.0), y puede **aprender recetas nuevas** cuando las necesita.
 
 **Detalle importante**: Las recetas NO se leen todas al empezar. El chef solo abre la
 receta que necesita para el plato que esta preparando. Esto se llama "carga bajo demanda"
@@ -93,6 +92,41 @@ Imagina que empiezas a cocinar sin receta:
 - "Ups, la salsa no combina con la carne" → empezar de cero
 
 Con los 9 pasos, todos esos problemas se detectan ANTES de empezar a cocinar.
+
+---
+
+## La Capa CTO (CTO Strategy Layer) — v10.0
+
+Imagina que antes tu restaurante tenia DOS manuales: uno para el equipo de cocina (como preparar los platos) y otro para el director del restaurante (como evaluar si un plato nuevo vale la pena ofrecerlo). El director leia su manual aparte y luego le daba instrucciones verbales al chef.
+
+**El problema**: A veces las instrucciones se perdian en la traduccion.
+
+**La solucion (v10.0)**: Ahora hay UN solo manual que integra ambas perspectivas. El chef no solo sabe COMO cocinar, sino tambien sabe hacer las preguntas estrategicas del director.
+
+### Los 3 puntos de control (Gates)
+
+Antes de ciertos pasos, el chef debe pasar un "control de calidad estrategico":
+
+| Control | Cuando | Que verifica |
+|---------|--------|-------------|
+| **G0.5 — Entiendo el problema?** | Antes de proponer una solucion | Que todas las variantes del plato estan identificadas, que los ingredientes especiales estan mapeados, que se sabe quien lo va a comer |
+| **G1 — Vale la pena?** | Antes de empezar a planear | Que el costo de hacer el plato no supera lo que van a pagar por el, que hay suficientes clientes que lo pedirian |
+| **G2 — Listo para servir?** | Antes de cerrar | Que todos los controles de calidad pasaron, que la receta esta documentada, que si algo sale mal se puede corregir |
+
+### Los consultores especializados (6 skills nuevos)
+
+El chef ahora puede llamar a **consultores** cuando necesita ayuda especializada:
+
+| Consultor | Cuando lo llama | Que hace |
+|-----------|---------------|---------|
+| **Analista de procesos** | Cuando el plato tiene muchas variantes | Mapea TODOS los casos: el plato normal, el vegetariano, el sin gluten, el para ninos... |
+| **Diseñador de aprendizaje** | Cuando los proveedores cambian sus productos | Diseña como el chef aprende nuevos ingredientes sin romper recetas existentes |
+| **Ingeniero de datos** | Cuando hay que conectar con el sistema del proveedor | Diseña como llegan los pedidos y como se transforman |
+| **Especialista LLM** | Cuando se usa inteligencia artificial | Diseña como la IA evalua, con que confianza, y como detectar cuando se equivoca |
+| **Ingeniero de infraestructura** | Cuando hay que montar una nueva cocina | Diseña los contenedores, el despliegue, el monitoreo |
+| **Oficial de cumplimiento** | Cuando hay datos personales o financieros | Verifica que se cumplan las normas colombianas de proteccion de datos |
+
+> **La clave**: Estos consultores NO se llaman siempre — solo cuando el plato lo requiere. Un plato simple no necesita al consultor de IA. Pero un plato que usa ingredientes de otro pais SI necesita al oficial de cumplimiento.
 
 ---
 
@@ -503,7 +537,9 @@ pedidos en el restaurante:
 | **Comandas precisas** | Contract-First Protocol (v9) | Contratos escritos que definen que recibe y que produce cada cocinero |
 | **Menus especializados** | Team Templates (v9) | Configuraciones pre-armadas de equipo para diferentes tipos de proyecto |
 | **Manual del mesero** | Playbook (v9) | Guia de cuando y como usar equipos temporales, errores comunes |
-| **Protocolo de higiene** | Security-Audit (v9) | Revision de seguridad en dos puntos: al disenar y al verificar |
+| **Protocolo de higiene** | Security-Audit (v9) | Revision de seguridad: al disenar y al verificar |
+| **Controles estrategicos** | Gates G0.5/G1/G2 (v10) | Entiendo? Vale la pena? Listo? |
+| **Consultores especializados** | 6 skills CTO (v10) | Procesos, IA, datos, infra, compliance |
 
 ---
 

@@ -25,6 +25,7 @@ Inspired by [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.
 - **Contract-First Protocol** — pre-spawn contracts define input/output/file-ownership per teammate.
 - **AI-First Security** — dedicated security-audit skill integrated in design and verify phases.
 - **Team Templates + Playbook** — pre-built team compositions per stack (Next.js, FastAPI, n8n, AI agent, data pipeline, refactoring).
+- **CTO Strategy Layer** — 3 strategic gates (G0.5, G1, G2) + 6 specialist skills (process-analyst, compliance, data-pipeline, LLM-pipeline, worker-scaffold, recursion-designer) integrated into the SDD pipeline.
 
 ---
 
@@ -253,7 +254,7 @@ When new skills are created in a project, Claude proposes propagating them back 
 
 ---
 
-## Available Skills (15 + 3 scope agents)
+## Available Skills (24 + 3 scope agents)
 
 | Skill | Scope | Description |
 |-------|-------|-------------|
@@ -305,7 +306,7 @@ The `--all` flag: syncs skills and agents → runs skill-sync → installs hooks
 
 ## Guides
 
-Step-by-step execution guides covering the full lifecycle: ecosystem installation → SDD pipeline → build → test → deploy → production → archive.
+Step-by-step execution guides (12 guides) covering the full lifecycle: ecosystem installation → SDD pipeline → build → test → deploy → production → archive.
 
 | Guide | Description |
 |-------|-------------|
@@ -319,6 +320,8 @@ Step-by-step execution guides covering the full lifecycle: ecosystem installatio
 | [Data Pipeline](docs/guides/guia-data-pipeline.md) | Build an ETL data pipeline with validation |
 | [Legacy Refactoring](docs/guides/guia-refactoring-legacy.md) | Modernize legacy code without breaking functionality |
 | [AI Agent (Google ADK)](docs/guides/guia-ai-agent-adk.md) | Build a conversational AI agent with Google ADK |
+| [Accounting Audit](docs/guides/guia-auditoria-contable.md) | Bank reconciliation — CTO v10.0 flow |
+| [Personnel Selection](docs/guides/guia-seleccion-personal.md) | Resume screening with LLM + compliance |
 
 ## Architecture & Design
 

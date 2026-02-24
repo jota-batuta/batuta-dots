@@ -26,6 +26,7 @@ Inspirado en [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman
 - **Contract-First Protocol** — contratos pre-spawn definen input/output/file-ownership por teammate.
 - **Seguridad AI-First** — skill security-audit dedicado, integrado en fases de diseno y verificacion.
 - **Team Templates + Playbook** — composiciones pre-armadas por stack (Next.js, FastAPI, n8n, agente IA, data pipeline, refactoring).
+- **CTO Strategy Layer (v10.0)** — 3 gates + 6 skills especialistas en el pipeline SDD.
 
 ---
 
@@ -276,7 +277,7 @@ Cuando se crean skills nuevos en un proyecto, Claude propone propagarlos de vuel
 
 ---
 
-## Skills Disponibles (15 + 3 agentes de scope)
+## Skills Disponibles (24 + 3 agentes de scope)
 
 | Skill | Scope | Descripcion |
 |-------|-------|-------------|
@@ -328,7 +329,7 @@ El flag `--all`: sincroniza skills y agentes → ejecuta skill-sync → instala 
 
 ## Guias
 
-Guias de ejecucion paso a paso cubriendo el ciclo completo: instalacion del ecosistema → pipeline SDD → construccion → pruebas → deploy → produccion → archive.
+Guias de ejecucion paso a paso (12 guias) cubriendo el ciclo completo: instalacion del ecosistema → pipeline SDD → construccion → pruebas → deploy → produccion → archive.
 
 | Guia | Descripcion |
 |------|-------------|
@@ -342,6 +343,8 @@ Guias de ejecucion paso a paso cubriendo el ciclo completo: instalacion del ecos
 | [Pipeline de Datos](docs/guides/guia-data-pipeline.md) | Construir pipeline ETL con validacion |
 | [Refactoring Legacy](docs/guides/guia-refactoring-legacy.md) | Modernizar codigo legacy sin romper funcionalidad |
 | [Agente IA (Google ADK)](docs/guides/guia-ai-agent-adk.md) | Construir agente conversacional con Google ADK |
+| [Auditoria Contable](docs/guides/guia-auditoria-contable.md) | Conciliacion bancaria — flujo CTO v10.0 completo |
+| [Seleccion de Personal](docs/guides/guia-seleccion-personal.md) | Evaluacion de CVs con LLM + compliance |
 
 ## Arquitectura y Diseno
 

@@ -117,7 +117,57 @@ Call out which parts of the Batuta stack are involved.}
 Identify assets, threat actors, attack vectors, mitigations, and residual risk.
 If the change handles user input, auth, file I/O, or external APIs, this section is MANDATORY.
 If not applicable (e.g., pure refactoring with no new attack surface), state "No new attack surface."}
+```
 
+#### Conditional Sections (include when applicable)
+
+The following sections are CONDITIONAL — include them when the change touches their domain. Omit entirely when not applicable, but NEVER skip when the domain IS involved.
+
+**If the change involves LLM/AI:**
+
+```markdown
+## LLM Pipeline Design
+
+- **Model selection**: {Which model(s) and why}
+- **Pipeline stages**: {e.g., intake → classify → extract → validate → output}
+- **Confidence scoring**: {Thresholds for reliable output}
+- **Fallback chain**: {Model downgrade? Human escalation?}
+- **Cost control**: {Budget ceiling, circuit breaker, batching}
+- **Drift detection**: {How to detect behavior changes over time}
+- **Prompt versioning**: {How prompts are tracked and rolled back}
+- **Langfuse integration**: {Tracing config, evaluation datasets}
+- **Presidio rules**: {PII detection for this pipeline}
+```
+
+**If the change involves data pipelines:**
+
+```markdown
+## Data Pipeline Design
+
+- **Source systems**: {ERP, bank, API, file — formats and frequencies}
+- **Transformation logic**: {Business rules, mapping tables, normalization}
+- **Data quality rules**: {Validation checks, acceptable error rates}
+- **Schema conventions**: {Naming, types, tenant isolation (RLS)}
+- **Idempotency**: {How to handle re-runs safely}
+- **Error handling**: {Dead letter queue, retry policy, alerting}
+- **Backfill strategy**: {How to process historical data}
+```
+
+**If the change involves infrastructure:**
+
+```markdown
+## Infrastructure Design
+
+- **Container strategy**: {Docker setup, base images, multi-stage builds}
+- **Deployment model**: {Coolify config, health checks, rollback}
+- **Environment management**: {Env vars, secrets, per-tenant config}
+- **Scaling considerations**: {Horizontal/vertical, resource limits}
+- **Monitoring**: {Health endpoints, alerting thresholds, logs}
+```
+
+#### Continue with core sections:
+
+```markdown
 ## Data Flow
 
 {Describe how data moves through the system for this change.
@@ -157,22 +207,31 @@ If not applicable, state "No migration required."}
 
 ## Documentation Plan
 
-{Every design must specify what documentation will be produced alongside the implementation.}
-
 | Document | Audience | Format | Location |
 |----------|----------|--------|----------|
 | {e.g., API Reference} | {e.g., Engineers} | {e.g., OpenAPI spec} | {e.g., docs/api/} |
 | {e.g., User Guide} | {e.g., End users} | {e.g., Markdown} | {e.g., docs/guides/} |
 | {e.g., Runbook} | {e.g., DevOps / On-call} | {e.g., Markdown} | {e.g., docs/runbooks/} |
-| {e.g., Architecture Overview} | {e.g., Stakeholders} | {e.g., Diagram + narrative} | {e.g., docs/architecture/} |
-| {e.g., Changelog Entry} | {e.g., All audiences} | {e.g., CHANGELOG.md} | {e.g., repo root} |
 
-{Guidelines for filling this table:
+{Guidelines:
 - Every design MUST have at least one entry targeting non-technical stakeholders.
 - If the change touches APIs, include an API reference entry.
-- If the change affects ops (deployments, monitoring, alerts), include a runbook entry.
-- If the change is user-facing, include a user guide entry.
-- Format should match the audience: stakeholders get narrative, engineers get specs.}
+- If the change affects ops, include a runbook entry.
+- If the change is user-facing, include a user guide entry.}
+
+## Architecture Validation Checklist
+
+Before finalizing, verify ALL 7 items:
+
+- [ ] **Scope Rule respected**: New files placed by WHO uses them (feature/shared/core/)
+- [ ] **No new shared state without justification**: Globals, singletons require ADR
+- [ ] **Interfaces defined before implementation**: Cross-module boundaries have contracts
+- [ ] **Error paths designed**: Every external call has timeout, retry, failure handling
+- [ ] **Tenant isolation verified**: RLS policies cover all new tables/queries (if multi-tenant)
+- [ ] **Observability planned**: Health checks, tracing/logging for key operations
+- [ ] **Rollback is possible**: Every change can be undone without data loss
+
+If any item fails → document as Open Question and flag to orchestrator.
 
 ## Open Questions
 
@@ -181,19 +240,11 @@ If not applicable, state "No migration required."}
 
 ## What This Means (Simply)
 
-{Write 3-8 sentences explaining this design to a non-technical stakeholder.
-No jargon. No code references. Answer these questions:
+{Write 3-8 sentences for a non-technical stakeholder:
 - What are we building or changing?
 - Why are we doing it this way?
 - What will be different when it's done?
-- Are there any risks they should know about?
-- How long might this take relative to the overall effort?
-
-Example tone: "We are adding a new way for the system to remember
-customer preferences across sessions. Instead of asking customers
-to re-enter their settings each time, the system will securely store
-them and load them automatically. This means faster onboarding and
-fewer support tickets about lost settings."}
+- Are there any risks they should know about?}
 ```
 
 ### Step 3: Return Summary
@@ -209,9 +260,11 @@ Return to the orchestrator:
 ### Summary
 - **Approach**: {one-line technical approach}
 - **Key Decisions**: {N decisions documented}
+- **Conditional Sections**: {LLM / Data / Infra / none}
 - **Files Affected**: {N new, M modified, K deleted}
 - **Testing Strategy**: {unit/integration/e2e coverage planned}
 - **Documentation Plan**: {N documents planned for M audiences}
+- **Architecture Checklist**: {N/7 passed, failures listed}
 
 ### Open Questions
 {List any unresolved questions, or "None"}
@@ -231,7 +284,7 @@ Return a structured envelope:
     {
       "type": "design",
       "path": "openspec/changes/{change-name}/design.md",
-      "description": "Technical design document with ADRs, data flow, and documentation plan."
+      "description": "Technical design with ADRs, conditional sections, and architecture checklist."
     }
   ],
   "next_recommended": "sdd-tasks",
@@ -253,6 +306,8 @@ Return a structured envelope:
 - If you have open questions that BLOCK the design, say so clearly — do not guess
 - The Documentation Plan table is MANDATORY — every design must specify what docs will be produced and for whom
 - The "What This Means (Simply)" section is MANDATORY — every design must be understandable by a non-technical stakeholder reading only that section
+- The Architecture Validation Checklist is MANDATORY — all 7 items must be evaluated. Failures are documented, not hidden
+- Conditional sections (LLM Pipeline, Data Pipeline, Infrastructure) MUST be included when their domain is involved — omitting them when applicable is a design quality failure
 - When referencing Batuta stack technologies, explain integration points and configuration implications
 - When a design introduces multi-tenant concerns, explicitly address RLS policies, tenant context propagation, and data isolation
 - Return a structured envelope with: `status`, `executive_summary`, `detailed_report` (optional), `artifacts`, `next_recommended`, and `risks`

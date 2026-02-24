@@ -87,6 +87,21 @@ If `openspec/specs/` has relevant specs, read them to understand current behavio
 |-----|----------------------|----------------|
 | {Role or person} | {Impact on their work or decisions} | {Before start / During / After completion} |
 
+## Client Communication
+
+{If this change is for an external client, write the message you would send them. Rules:}
+
+- **Language**: Match the client's language (Spanish for Colombian clients)
+- **Tone**: Professional, warm, no technical jargon
+- **Length**: 3-5 sentences maximum
+- **Structure**: What we will do + Why it matters to them + What they need to do (if anything)
+- **Never mention**: frameworks, databases, APIs, deployment tools, or internal processes
+
+Example format:
+> Vamos a [descripcion simple del cambio]. Esto les va a permitir [beneficio concreto para el cliente]. [Accion requerida del cliente, si aplica]. Esperamos tenerlo listo [timeline].
+
+If this is an internal change with no external client, write "Internal change — no client communication needed."
+
 ## Intent
 
 {What problem are we solving? Why does this change need to happen?
@@ -139,6 +154,23 @@ Consider stack-specific risks:
 - **AI/ML**: Prompt regression, model cost increase, PII exposure in traces
 - **Infrastructure**: Deployment downtime, environment variable drift across Coolify services
 
+## Cost-Benefit Analysis (MANDATORY)
+
+| Factor | Estimate | Notes |
+|--------|----------|-------|
+| Development effort | {hours/days} | {team size, skill requirements} |
+| Infrastructure cost | {$/month delta} | {new services, scaling, API calls} |
+| Maintenance burden | {Low/Med/High} | {ongoing monitoring, updates, support} |
+| Time to value | {days/weeks} | {when users see benefit} |
+| Risk cost if delayed | {impact description} | {what happens if we don't do this} |
+
+**ROI Summary**: {One sentence: "This change costs X effort and returns Y value because Z."}
+
+If this involves LLM/AI costs, include:
+- Estimated API calls per month and cost per call
+- Model tier (e.g., Haiku vs Sonnet vs Opus) and why
+- Cost ceiling / circuit breaker threshold
+
 ## Rollback Plan
 
 {How to revert if something goes wrong. Be specific.
@@ -171,12 +203,16 @@ Return to the orchestrator:
 ### Plain Language Summary
 {Copy the 3-sentence summary from the proposal so the orchestrator can surface it immediately}
 
+### Client Message
+{Copy the client communication message, or "Internal change" if N/A}
+
 ### Summary
 - **Intent**: {one-line summary}
 - **Scope**: {N deliverables in, M items deferred}
 - **Approach**: {one-line approach}
 - **Stack Layers Affected**: {e.g., Orchestration, Database, Frontend}
 - **Risk Level**: {Low/Medium/High}
+- **Cost-Benefit**: {ROI summary one-liner}
 - **Stakeholders to Inform**: {list of roles/people}
 
 ### Next Step
@@ -194,7 +230,7 @@ detailed_report: "Full markdown summary (optional, based on detail_level)"
 artifacts:
   - type: proposal
     path: "openspec/changes/{change-name}/proposal.md"
-    description: "Change proposal with plain language summary and stakeholder plan"
+    description: "Change proposal with plain language summary, cost-benefit, and stakeholder plan"
 next_recommended: "sdd-spec | sdd-design"
 risks:
   - description: "{risk summary}"
@@ -209,6 +245,8 @@ risks:
 - Keep the proposal CONCISE -- it is a thinking tool, not a novel
 - The Plain Language Summary is MANDATORY -- if you cannot explain it simply, the proposal is not ready
 - The Stakeholder Communication table is MANDATORY -- every change affects people, not just code
+- The Cost-Benefit Analysis is MANDATORY -- every change has a cost, even if small. No proposal advances without ROI justification
+- The Client Communication section is MANDATORY -- write "Internal change" if no external client, but the section must exist
 - Every proposal MUST have a rollback plan
 - Every proposal MUST have success criteria
 - Use concrete file paths in "Affected Areas" when possible
@@ -216,3 +254,4 @@ risks:
 - Apply any `rules.proposal` from `openspec/config.yaml`
 - Return a structured envelope with: `status`, `executive_summary`, `detailed_report` (optional), `artifacts`, `next_recommended`, and `risks`
 - Write with the voice of a CTO who respects their team's time: clear, direct, no unnecessary complexity
+- Client communication must be in the client's language — never assume English

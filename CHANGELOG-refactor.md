@@ -4,6 +4,14 @@
 
 ---
 
+## v10.0 — CTO Strategy Layer: Unificacion Desktop → Code (2026-02-23)
+
+### Contexto
+
+Antes de v10.0, se operaba con un va y ven entre Claude Desktop (16 CTO skills) y Claude Code (18 Batuta skills). Copiar directivas manualmente era insostenible. v10.0 unifica todo en Code: 6 skills nuevos, 3 gates, 6 skills enriquecidos, 2 guias. Skills nuevos: process-analyst, recursion-designer, compliance-colombia, data-pipeline-design, llm-pipeline-design, worker-scaffold. Gates: G0.5, G1, G2. Enriquecidos: sdd-explore, sdd-propose, sdd-design, sdd-verify, sdd-archive, sdd-init. Guias: guia-auditoria-contable, guia-seleccion-personal. Metricas: 18→24 skills, 0→3 gates, 10→12 guias. Rollback: `git revert <commit-hash>`.
+
+---
+
 ## v9.2 — Correccion Integral: 8 Patrones Sistemicos + 7 Hallazgos Individuales (2026-02-23)
 
 ### Contexto

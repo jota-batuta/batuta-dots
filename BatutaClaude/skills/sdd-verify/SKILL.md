@@ -226,6 +226,18 @@ SECURITY CHECK (cross-layer, automated by agent):
 
 This check integrates with the Threat Model from sdd-design: verify that all mitigations documented in the threat model are actually implemented.
 
+### Step 4.8: Testing Strategy by Solution Type
+
+Identify the solution type from design.md and apply additional checks:
+
+**Type A — Pure Automation** (no AI): Standard pyramid Layers 1-3 only.
+
+**Type B — Automation + LLM**: Type A plus golden dataset testing (N inputs, compare outputs), confidence score validation, cost verification vs proposal budget, prompt regression check.
+
+**Type C — Full Agent**: Type B plus behavior boundary testing (guardrails), escalation path testing (human handoff), drift detection baseline, multi-turn consistency.
+
+Report solution type and additional checks in the verification report under a "Solution Type Testing" section.
+
 ### Step 5: Documentation Verification
 
 Verify that ALL documentation promised or implied during the design phase was actually created or updated. Documentation is a first-class deliverable, not an afterthought.
