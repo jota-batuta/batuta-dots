@@ -1,0 +1,78 @@
+# Skills que tienes
+
+Batuta Dots tiene 24 skills — especialistas que se activan cuando los necesitas. El sistema los activa automaticamente, pero conocerlos te da poder para pedir exactamente lo que necesitas.
+
+---
+
+## Que es un skill
+
+Un archivo (`SKILL.md`) que le dice a Claude: que sabe hacer, cuando activarse, como hacerlo, y que herramientas usa. Como un manual de procedimientos para un empleado muy competente.
+
+---
+
+## Skills por categoria
+
+### Pipeline SDD (9 skills)
+
+| Skill | Que hace | Comando |
+|-------|---------|---------|
+| **sdd-init** | Prepara un proyecto para SDD | `/sdd-init` |
+| **sdd-explore** | Investiga problemas y opciones | `/sdd-explore` |
+| **sdd-propose** | Propuestas con costos y beneficios | Via `/sdd-new` |
+| **sdd-spec** | Requisitos exactos (Given/When/Then) | Via `/sdd-ff` |
+| **sdd-design** | Arquitectura y decisiones tecnicas | Via `/sdd-ff` |
+| **sdd-tasks** | Divide trabajo en tareas | Via `/sdd-ff` |
+| **sdd-apply** | Implementa codigo | `/sdd-apply` |
+| **sdd-verify** | Piramide de Validacion | `/sdd-verify` |
+| **sdd-archive** | Archiva y documenta | `/sdd-archive` |
+
+### Capa CTO — 6 especialistas
+
+| Skill | Que hace | Cuando se activa |
+|-------|---------|-----------------|
+| **process-analyst** | Mapea variantes de un proceso | 3+ tipos de caso |
+| **recursion-designer** | Sistemas que manejan cambio externo | Taxonomias que cambian |
+| **compliance-colombia** | Cumplimiento regulatorio colombiano | Datos personales, DIAN |
+| **data-pipeline-design** | Pipelines de datos y ETL | ERPs, archivos planos |
+| **llm-pipeline-design** | Pipelines de IA | Clasificadores, prompts |
+| **worker-scaffold** | Workers y deploy | Temporal, Docker, Coolify |
+
+### Infraestructura (5 skills)
+
+| Skill | Que hace | Comando |
+|-------|---------|---------|
+| **ecosystem-creator** | Crea skills, agentes, workflows | `/create-skill` |
+| **scope-rule** | Decide donde va cada archivo | Automatico |
+| **skill-sync** | Sincroniza tablas de ruteo | `/batuta-sync-skills` |
+| **team-orchestrator** | Solo, subagente, o equipo | Automatico |
+| **security-audit** | OWASP, secrets, amenazas | En design/verify |
+
+### Observabilidad (1 skill)
+
+| Skill | Que hace | Comando |
+|-------|---------|---------|
+| **prompt-tracker** | Registra y analiza calidad | `/batuta-analyze-prompts` |
+
+### Patrones reutilizables (3 skills)
+
+| Skill | Que hace |
+|-------|---------|
+| **fastapi-crud** | CRUD con FastAPI + SQLAlchemy |
+| **jwt-auth** | Autenticacion JWT con bcrypt |
+| **sqlalchemy-models** | Modelos BD con relaciones |
+
+---
+
+## Como se activan
+
+**Automatica**: Escribes `/sdd-explore` → pipeline-agent activa sdd-explore.
+**Por deteccion**: sdd-explore detecta 3+ variantes → sugiere process-analyst.
+**Manual**: "Necesito analizar variantes con process-analyst".
+
+## Si falta un skill
+
+El sistema detecta el gap, ofrece crearlo (local o global), o continuar sin el. El ecosistema crece contigo.
+
+---
+
+→ [Agentes y equipos](agentes-y-equipos.md) — Los coordinadores

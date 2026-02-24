@@ -346,6 +346,27 @@ Guias de ejecucion paso a paso (12 guias) cubriendo el ciclo completo: instalaci
 | [Auditoria Contable](docs/guides/guia-auditoria-contable.md) | Conciliacion bancaria — flujo CTO v10.0 completo |
 | [Seleccion de Personal](docs/guides/guia-seleccion-personal.md) | Evaluacion de CVs con LLM + compliance |
 
+## Academia (Manual de Capacitacion)
+
+Curso completo de Batuta Dots — desde cero hasta uso autonomo. 55 lecciones en 8 modulos, 20 casos de uso reales en 10 industrias.
+
+| Modulo | Contenido | Lecciones |
+|--------|-----------|-----------|
+| [00 — Bienvenida](academia/00-bienvenida/) | Que es Batuta, setup, mapa del curso | 3 |
+| [01 — Nivel Cero](academia/01-nivel-cero/) | Primer proyecto, comandos, pipeline SDD, gates | 4 |
+| [02 — Nivel Uno](academia/02-nivel-uno/) | Catalogo de skills, agentes, capa CTO, Scope Rule | 5 |
+| [03 — Nivel Dos](academia/03-nivel-dos/) | Depuracion, validacion, equipos, compliance, hooks | 5 |
+| [04 — Nivel Tres](academia/04-nivel-tres/) | Extender ecosistema, templates, infra, recursion | 4 |
+| [05 — Casos de Uso](academia/05-casos-de-uso/) | Casos reales por industria | 20 |
+| [06 — Referencia](academia/06-referencia/) | Comandos, skills, glosario, troubleshooting | 5 |
+| [07 — Verificacion](academia/07-verificacion/) | Quizzes por nivel + checklist de graduacion | 5 |
+
+**Industrias cubiertas**: Desarrollo web, Operaciones, Mantenimiento, Produccion, Supply chain, Logistica, Marketing, Finanzas, RRHH, Estudiantes.
+
+→ [Empezar el curso](academia/README.md)
+
+---
+
 ## Arquitectura y Diseno
 
 | Documento | Descripcion |

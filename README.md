@@ -323,6 +323,27 @@ Step-by-step execution guides (12 guides) covering the full lifecycle: ecosystem
 | [Accounting Audit](docs/guides/guia-auditoria-contable.md) | Bank reconciliation — CTO v10.0 flow |
 | [Personnel Selection](docs/guides/guia-seleccion-personal.md) | Resume screening with LLM + compliance |
 
+## Academia (Training Manual)
+
+Complete training course for Batuta Dots — from zero to autonomous usage. 55 lessons across 8 modules, 20 real-world use cases across 10 industries.
+
+| Module | Content | Lessons |
+|--------|---------|---------|
+| [00 — Welcome](academia/00-bienvenida/) | What is Batuta, setup, course map | 3 |
+| [01 — Level Zero](academia/01-nivel-cero/) | First project, commands, SDD pipeline, gates | 4 |
+| [02 — Level One](academia/02-nivel-uno/) | Skills catalog, agents, CTO layer, Scope Rule | 5 |
+| [03 — Level Two](academia/03-nivel-dos/) | Debugging, validation, teams, compliance, hooks | 5 |
+| [04 — Level Three](academia/04-nivel-tres/) | Extending ecosystem, templates, infra, recursion | 4 |
+| [05 — Use Cases](academia/05-casos-de-uso/) | Real-world cases by industry | 20 |
+| [06 — Reference](academia/06-referencia/) | Commands, skills, glossary, troubleshooting | 5 |
+| [07 — Verification](academia/07-verificacion/) | Quizzes per level + graduation checklist | 5 |
+
+**Industries covered**: Web development, Operations, Maintenance, Production, Supply chain, Logistics, Marketing, Finance, HR, Students.
+
+→ [Start the course](academia/README.md)
+
+---
+
 ## Architecture & Design
 
 | Document | Description |

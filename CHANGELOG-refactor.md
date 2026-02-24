@@ -4,6 +4,34 @@
 
 ---
 
+## v10.1 -- Academia: Manual de Capacitacion Completo (2026-02-24)
+
+### Contexto
+
+Batuta Dots v10.0 tenia 24 skills, 3 agentes, 12 guias, y documentacion tecnica completa pero faltaba un manual de uso progresivo para usuarios de todos los niveles. La academia cierra ese gap: un curso completo que lleva al usuario desde "que es esto" hasta "puedo extender el ecosistema".
+
+### Contenido creado
+
+- 55 archivos en academia/ organizados en 8 modulos
+- 20 casos de uso reales en 10 industrias (operaciones, mantenimiento, produccion, supply chain, logistica, marketing, finanzas, RRHH, estudiantes, desarrollo web)
+- 4 niveles progresivos: Cero (fundamentos), Uno (ecosistema), Dos (flujos avanzados), Tres (extension)
+- 4 rutas recomendadas: Estudiante, Desarrollador, Operaciones/Industria, CTO/Lider tecnico
+- 5 quizzes de autoevaluacion + checklist de graduacion
+- Modulo de referencia completo: comandos, fichas tecnicas de 24 skills, glosario A-Z, troubleshooting, comparativa vs alternativas
+
+### Archivos modificados
+
+- README.md: +seccion Academia con tabla de modulos
+- README.es.md: +seccion Academia (version espanol)
+- CHANGELOG-refactor.md: +entrada v10.1
+- academia/ (55 archivos nuevos): curso completo
+
+### Rollback
+
+git revert del commit, o rm -rf academia/ y revertir READMEs.
+
+---
+
 ## v10.0 — CTO Strategy Layer: Unificacion Desktop → Code (2026-02-23)
 
 ### Contexto
