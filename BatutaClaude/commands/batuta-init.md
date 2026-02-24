@@ -63,8 +63,8 @@ touch .batuta/prompt-log.jsonl
 Run the setup script to sync skills and install hooks:
 
 ```bash
-bash "$BATUTA_DOTS_PATH/skills/setup.sh" --sync
-bash "$BATUTA_DOTS_PATH/skills/setup.sh" --hooks
+bash "$BATUTA_DOTS_PATH/infra/setup.sh" --sync
+bash "$BATUTA_DOTS_PATH/infra/setup.sh" --hooks
 ```
 
 The `--hooks` flag installs the 5 native hooks (Execution Gate, session continuity, O.R.T.A.) and permissions to `~/.claude/settings.json`. It backs up existing settings before merging.

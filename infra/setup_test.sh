@@ -692,7 +692,7 @@ test_team_orchestrator_skill_exists() {
 
 test_orta_hooks_exist() {
     log_test "O.R.T.A. hooks for Agent Teams exist (v7)"
-    local hooks_dir="$REPO_ROOT/skills/hooks"
+    local hooks_dir="$REPO_ROOT/infra/hooks"
 
     assert_dir_exists "$hooks_dir"
     assert_file_exists "$hooks_dir/orta-teammate-idle.sh"
@@ -915,13 +915,13 @@ test_infra_agent_has_security() {
 
 test_setup_has_install_hooks() {
     log_test "setup.sh has install_hooks function"
-    assert_file_contains "$REPO_ROOT/skills/setup.sh" "install_hooks" \
+    assert_file_contains "$REPO_ROOT/infra/setup.sh" "install_hooks" \
         "setup.sh should contain install_hooks function"
 }
 
 test_setup_has_hooks_flag() {
     log_test "setup.sh accepts --hooks flag"
-    assert_file_contains "$REPO_ROOT/skills/setup.sh" "\-\-hooks" \
+    assert_file_contains "$REPO_ROOT/infra/setup.sh" "\-\-hooks" \
         "setup.sh should accept --hooks flag"
 }
 

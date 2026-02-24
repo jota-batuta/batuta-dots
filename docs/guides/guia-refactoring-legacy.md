@@ -193,7 +193,7 @@ Necesito configurar este proyecto con el ecosistema Batuta.
 
 Haz lo siguiente:
 1. Clona el repositorio github.com/jota-batuta/batuta-dots en una carpeta temporal
-2. Ejecuta el script: bash <ruta-a-batuta-dots>/skills/setup.sh --project .
+2. Ejecuta el script: bash <ruta-a-batuta-dots>/infra/setup.sh --project .
 3. Confirma cuando todo este listo
 
 IMPORTANTE: Este proyecto YA EXISTE y tiene codigo. No borres ni modifiques

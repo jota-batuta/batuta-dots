@@ -18,13 +18,13 @@ Se ejecutaron las 3 guias con mas problemas documentados en la auditoria de inte
 ## Bugs del Sistema Encontrados y Corregidos
 
 ### 1. setup.sh — Path Resolution (CRITICAL)
-- **Archivo**: `skills/setup.sh`
+- **Archivo**: `infra/setup.sh`
 - **Problema**: `SCRIPT_DIR` fallaba en Windows Git Bash con rutas relativas
 - **Correccion**: Fallback con `cd` + `pwd`
 - **Estado**: Corregido en sesion anterior, validado en las 3 guias
 
 ### 2. setup.sh — Python Merge Logic (CRITICAL)
-- **Archivo**: `skills/setup.sh`
+- **Archivo**: `infra/setup.sh`
 - **Problema**: Merge de hooks en settings.json sobreescribia en lugar de mergear
 - **Correccion**: Python merge logic corregida para arrays
 - **Estado**: Corregido en sesion anterior, validado en las 3 guias

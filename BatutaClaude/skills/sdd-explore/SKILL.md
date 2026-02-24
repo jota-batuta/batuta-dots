@@ -194,6 +194,30 @@ Return EXACTLY this format to the orchestrator (and write the same content to `e
 {A plain-language summary for non-technical readers. No jargon, no code references.}
 ```
 
+## Exit Checklist (MANDATORY)
+
+Before returning to the orchestrator, verify ALL of the following. This checklist is NOT optional — incomplete explorations block the pipeline:
+
+```
+SKILL GAP EXIT GATE:
+├── [ ] All technologies required by this change identified
+├── [ ] Each technology checked against ~/.claude/skills/
+├── [ ] Skill Gap Analysis table completed in output
+├── [ ] For each HIGH gap:
+│   ├── [ ] User was asked: create skill or skip?
+│   ├── [ ] If create: ecosystem-creator was invoked
+│   ├── [ ] If skip: justification documented in output
+│   └── [ ] skill-sync ran if any skills were created
+├── [ ] For MEDIUM/LOW gaps: documented but not blocking
+└── [ ] "Action Taken" column filled for every row in Skill Gap table
+```
+
+**If the user chooses to skip ALL high gaps**, document the justification clearly in the output under "Skill Gap Analysis". The orchestrator will include this in the audit trail.
+
+**If skills were created**, list them in the structured envelope `artifacts` array so the orchestrator can track new ecosystem additions.
+
+---
+
 ## Rules
 
 - The ONLY file you MAY create is `exploration.md` inside the change folder (if a change name is provided)

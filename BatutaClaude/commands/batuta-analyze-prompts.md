@@ -68,12 +68,12 @@ If the user wants to apply recommendations:
 **For CLAUDE.md behavior updates:**
 - Edit `BatutaClaude/CLAUDE.md` in the batuta-dots repo
 - Show the diff before applying
-- After applying, suggest running `./skills/setup.sh --claude` to propagate
+- After applying, suggest running `./infra/setup.sh --claude` to propagate
 
 **For sub-agent rule updates:**
 - Edit the specific `SKILL.md` in `BatutaClaude/skills/{skill}/`
 - Show the diff before applying
-- After applying, suggest running `./skills/setup.sh --sync` to propagate
+- After applying, suggest running `./infra/setup.sh --sync` to propagate
 
 **For user prompting guide:**
 - Generate or update `.batuta/prompting-guide.md` in the current project

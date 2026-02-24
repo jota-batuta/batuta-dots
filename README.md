@@ -36,13 +36,13 @@ git clone https://github.com/jota-batuta/batuta-dots.git
 cd batuta-dots
 
 # 2. Full setup: sync skills + agents + skill-sync + hooks + copy CLAUDE.md
-./skills/setup.sh --all
+./infra/setup.sh --all
 
 # 3. Verify everything is set up correctly
-./skills/setup.sh --verify
+./infra/setup.sh --verify
 ```
 
-Or run `./skills/setup.sh` with no arguments for an interactive menu.
+Or run `./infra/setup.sh` with no arguments for an interactive menu.
 
 ---
 
@@ -159,7 +159,7 @@ CLAUDE.md (router — ~186 lines)
 
 Need other platforms later?
 ```bash
-./skills/replicate-platform.sh --all   # Generates GEMINI.md, CODEX.md, copilot-instructions.md
+./infra/replicate-platform.sh --all   # Generates GEMINI.md, CODEX.md, copilot-instructions.md
 ```
 
 ---
@@ -336,7 +336,7 @@ Step-by-step execution guides covering the full lifecycle: ecosystem installatio
 1. Run `/create:skill <name>` — the ecosystem-creator guides you through frontmatter (scope, auto_invoke, allowed-tools)
 2. Or manually create `BatutaClaude/skills/<name>/SKILL.md` with complete frontmatter
 3. Run `bash BatutaClaude/skills/skill-sync/assets/sync.sh` to update routing tables
-4. Run `./skills/setup.sh --all`
+4. Run `./infra/setup.sh --all`
 
 ### Adding a New Scope Agent
 

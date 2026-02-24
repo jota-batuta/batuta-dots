@@ -168,7 +168,7 @@ Y listo. Claude configura todo automaticamente.
 Ejecuta en la terminal (fuera de Claude Code):
 
 ```
-bash <ruta-a-batuta-dots>/skills/setup.sh --project .
+bash <ruta-a-batuta-dots>/infra/setup.sh --project .
 ```
 
 Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en tu proyecto.

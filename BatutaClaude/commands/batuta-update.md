@@ -42,7 +42,7 @@ NEVER overwrite `.batuta/` contents during update. Project context is sacred.
 ### Step 2: Re-sync skills, agents, and routing tables
 
 ```bash
-bash "$BATUTA_DOTS_PATH/skills/setup.sh" --all
+bash "$BATUTA_DOTS_PATH/infra/setup.sh" --all
 ```
 
 This syncs skills + scope agents + commands to `~/.claude/`, runs skill-sync to regenerate routing tables, installs hooks + permissions to `~/.claude/settings.json`, and copies the updated CLAUDE.md to the project root.

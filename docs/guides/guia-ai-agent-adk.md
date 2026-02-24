@@ -179,7 +179,7 @@ claude
 **Si no tienes el comando /batuta-init**, copia y pega esto en su lugar:
 
 ```
-bash <ruta-a-batuta-dots>/skills/setup.sh --project .
+bash <ruta-a-batuta-dots>/infra/setup.sh --project .
 ```
 
 Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en tu proyecto.

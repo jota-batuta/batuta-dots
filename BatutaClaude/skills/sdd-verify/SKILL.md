@@ -140,6 +140,37 @@ LAYER 1 CHECK (automated by agent):
 
 **This step is NOT optional.** The Validation Pyramid principle: automate the base layers to catch problems before they reach human reviewers. If a build/lint/type-check command is not available, note as WARNING and recommend adding one.
 
+### Step 3.7: Pyramid Layer 1d — Code Documentation Check (MANDATORY)
+
+Verify that generated code meets Batuta's documentation standard (DOCUMENTATION > CODE):
+
+```
+LAYER 1d CHECK (automated by agent):
+├── For each source file in the change:
+│   ├── Has module docstring? (first line with """ or // or /*)
+│   ├── Count public functions/methods
+│   ├── Count documented public functions (with docstring)
+│   └── Calculate documentation ratio
+│
+├── Aggregate metrics:
+│   ├── Total files: {N}
+│   ├── Files with module docstring: {M}
+│   ├── Total public functions: {P}
+│   ├── Documented public functions: {D}
+│   ├── Documentation ratio: {D/P * 100}%
+│   └── Security comments present: {count of # SECURITY: lines}
+│
+├── Thresholds:
+│   ├── Module docstrings < 100% of files → WARNING
+│   ├── Function doc ratio < 80% → WARNING ("documentation incomplete")
+│   ├── Function doc ratio < 50% → CRITICAL ("code without documentation is incomplete code")
+│   └── Zero security comments on auth/crypto code → WARNING
+│
+└── Report: Include documentation metrics in Layer 1 results
+```
+
+This check ensures the Batuta philosophy (DOCUMENTATION > CODE) is enforced automatically, not left to human discipline.
+
 ### Step 4: Pyramid Layer 2 — Unit Tests
 
 Verify test coverage for spec scenarios (automated by agent):

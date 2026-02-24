@@ -10,12 +10,12 @@
 # replicate what you build in Claude Code to any other platform.
 #
 # Usage:
-#   ./skills/replicate-platform.sh --gemini     # Generate GEMINI.md
-#   ./skills/replicate-platform.sh --copilot    # Generate .github/copilot-instructions.md
-#   ./skills/replicate-platform.sh --codex      # Generate CODEX.md
-#   ./skills/replicate-platform.sh --opencode   # Sync to OpenCode config
-#   ./skills/replicate-platform.sh --all        # All of the above
-#   ./skills/replicate-platform.sh --help       # Show help
+#   ./infra/replicate-platform.sh --gemini     # Generate GEMINI.md
+#   ./infra/replicate-platform.sh --copilot    # Generate .github/copilot-instructions.md
+#   ./infra/replicate-platform.sh --codex      # Generate CODEX.md
+#   ./infra/replicate-platform.sh --opencode   # Sync to OpenCode config
+#   ./infra/replicate-platform.sh --all        # All of the above
+#   ./infra/replicate-platform.sh --help       # Show help
 #
 # Platform: Windows (Git Bash / MSYS2 / MINGW) and native Unix
 # ============================================================================
@@ -89,7 +89,7 @@ generate_gemini() {
 # Gemini CLI Instructions
 
 > **Auto-generated from CLAUDE.md** - Do not edit directly.
-> Run `./skills/replicate-platform.sh --gemini` to regenerate.
+> Run `./infra/replicate-platform.sh --gemini` to regenerate.
 
 HEADER
 
@@ -112,7 +112,7 @@ generate_codex() {
 # OpenAI Codex Instructions
 
 > **Auto-generated from CLAUDE.md** - Do not edit directly.
-> Run `./skills/replicate-platform.sh --codex` to regenerate.
+> Run `./infra/replicate-platform.sh --codex` to regenerate.
 
 HEADER
 
@@ -138,7 +138,7 @@ generate_copilot() {
 # GitHub Copilot Instructions
 
 > **Auto-generated from CLAUDE.md** - Do not edit directly.
-> Run `./skills/replicate-platform.sh --copilot` to regenerate.
+> Run `./infra/replicate-platform.sh --copilot` to regenerate.
 
 HEADER
 
@@ -148,7 +148,6 @@ HEADER
 
 sync_opencode() {
     local opencode_user_dir="$HOME_DIR/.config/opencode/skill"
-    local opencode_repo_dir="$REPO_ROOT/BatutaOpenCode/skill"
     local skills_src="$REPO_ROOT/BatutaClaude/skills"
 
     log_info "Syncing skills to OpenCode config..."
@@ -159,12 +158,10 @@ sync_opencode() {
     fi
 
     mkdir -p "$opencode_user_dir"
-    mkdir -p "$opencode_repo_dir"
 
     if [[ -f "$REPO_ROOT/CLAUDE.md" ]]; then
         cp "$REPO_ROOT/CLAUDE.md" "$opencode_user_dir/CLAUDE.md"
-        cp "$REPO_ROOT/CLAUDE.md" "$opencode_repo_dir/CLAUDE.md"
-        log_info "  -> Copied CLAUDE.md to OpenCode (user + repo)"
+        log_info "  -> Copied CLAUDE.md to OpenCode user config"
     fi
 
     local count=0
@@ -176,12 +173,9 @@ sync_opencode() {
         if [[ -f "$skill_dir/SKILL.md" ]]; then
             mkdir -p "$opencode_user_dir/$skill_name"
             cp -f "$skill_dir/SKILL.md" "$opencode_user_dir/$skill_name/SKILL.md"
-            mkdir -p "$opencode_repo_dir/$skill_name"
-            cp -f "$skill_dir/SKILL.md" "$opencode_repo_dir/$skill_name/SKILL.md"
 
             if [[ -d "$skill_dir/assets" ]]; then
                 cp -rf "$skill_dir/assets" "$opencode_user_dir/$skill_name/"
-                cp -rf "$skill_dir/assets" "$opencode_repo_dir/$skill_name/"
             fi
 
             log_info "  -> Copied $skill_name"
@@ -192,7 +186,7 @@ sync_opencode() {
     if [[ $count -eq 0 ]]; then
         log_warning "No skills found in $skills_src"
     else
-        log_success "Synced $count skills to OpenCode (user config + BatutaOpenCode/)"
+        log_success "Synced $count skills to OpenCode (~/.config/opencode/)"
     fi
 }
 
@@ -220,19 +214,19 @@ Batuta.Dots — Platform Replication Script
 Replicates CLAUDE.md and skills to non-Claude AI coding assistants.
 The main setup.sh is Claude-only. Use this script to extend to other platforms.
 
-Usage: ./skills/replicate-platform.sh [OPTIONS]
+Usage: ./infra/replicate-platform.sh [OPTIONS]
 
 Generation Options:
   --gemini      Generate GEMINI.md from CLAUDE.md
   --copilot     Generate .github/copilot-instructions.md from CLAUDE.md
   --codex       Generate CODEX.md from CLAUDE.md
-  --opencode    Sync skills to OpenCode config (BatutaOpenCode/ + ~/.config/opencode/)
+  --opencode    Sync skills to OpenCode config (~/.config/opencode/)
   --all         Generate all of the above at once
   --help, -h    Show this help message
 
 Examples:
-  ./skills/replicate-platform.sh --gemini    # Just Gemini
-  ./skills/replicate-platform.sh --all       # Everything
+  ./infra/replicate-platform.sh --gemini    # Just Gemini
+  ./infra/replicate-platform.sh --all       # Everything
 EOF
 }
 

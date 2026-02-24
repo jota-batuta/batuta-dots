@@ -17,13 +17,13 @@
 ## System Fixes Applied
 
 ### Fix 1: setup.sh — Path Resolution Bug (CRITICAL)
-- **File**: `skills/setup.sh`
+- **File**: `infra/setup.sh`
 - **Issue**: `SCRIPT_DIR` resolution failed on Windows Git Bash when called with relative path
 - **Fix**: Added `cd` + `pwd` fallback for path resolution
 - **Impact**: Without fix, setup.sh would fail to find CLAUDE.md template
 
 ### Fix 2: setup.sh — Python Merge Bug (CRITICAL)
-- **File**: `skills/setup.sh`
+- **File**: `infra/setup.sh`
 - **Issue**: Python merge fallback for settings.json didn't handle existing hooks correctly
 - **Fix**: Corrected Python merge logic to properly merge arrays
 - **Impact**: Without fix, hooks would overwrite instead of merge

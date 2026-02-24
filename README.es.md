@@ -37,13 +37,13 @@ git clone https://github.com/jota-batuta/batuta-dots.git
 cd batuta-dots
 
 # 2. Setup completo: sync skills + agentes + skill-sync + hooks + copiar CLAUDE.md
-./skills/setup.sh --all
+./infra/setup.sh --all
 
 # 3. Verificar
-./skills/setup.sh --verify
+./infra/setup.sh --verify
 ```
 
-O ejecuta `./skills/setup.sh` sin argumentos para un menu interactivo.
+O ejecuta `./infra/setup.sh` sin argumentos para un menu interactivo.
 
 ---
 
@@ -170,7 +170,7 @@ CLAUDE.md (personalidad + reglas — ~186 lineas)
 ### Otras plataformas (futuro)
 
 ```bash
-./skills/replicate-platform.sh --all    # Genera GEMINI.md, CODEX.md, copilot-instructions.md
+./infra/replicate-platform.sh --all    # Genera GEMINI.md, CODEX.md, copilot-instructions.md
 ```
 
 ---
@@ -359,7 +359,7 @@ Guias de ejecucion paso a paso cubriendo el ciclo completo: instalacion del ecos
 1. Ejecutar `/create:skill <nombre>` — el ecosystem-creator guia el proceso (frontmatter: scope, auto_invoke, allowed-tools)
 2. O manualmente: crear `BatutaClaude/skills/<nombre>/SKILL.md` con frontmatter completo
 3. Ejecutar `bash BatutaClaude/skills/skill-sync/assets/sync.sh` para actualizar tablas de routing
-4. Ejecutar `./skills/setup.sh --all`
+4. Ejecutar `./infra/setup.sh --all`
 
 ### Agregar un Agente de Scope Nuevo
 
