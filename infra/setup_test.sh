@@ -2,7 +2,7 @@
 # ============================================================================
 # Batuta.Dots setup.sh — Automated Tests (Claude Code focused)
 # ============================================================================
-# Run:  ./skills/setup_test.sh
+# Run:  ./infra/setup_test.sh
 #
 # Tests verify:
 #   Foundation:
@@ -37,6 +37,14 @@
 #   - docs/qa/ directory exists with quality reports
 #   - BatutaClaude/VERSION file exists
 #   - teams/ directory exists with templates and playbook
+#   v9.3 (Post-Smoke-Test Corrections):
+#   - All 18 skills have ## Purpose section
+#   - New skills (fastapi-crud, jwt-auth, sqlalchemy-models) have valid frontmatter
+#   - 7 team templates (including temporal-io-app)
+#   - settings.json hooks point to infra/ (not skills/)
+#   - No guides reference old skills/setup.sh path
+#   - sdd-apply has Code Documentation Standard section
+#   - CLAUDE.md has code documentation enforcement rule
 #
 # Platform: Windows (Git Bash / MSYS2 / MINGW) and native Unix
 # ============================================================================
@@ -345,7 +353,7 @@ test_claude_md_has_v4_sections() {
     assert_file_contains "$claude_src" "Prompt Tracking" "prompt tracking section"
     assert_file_contains "$claude_src" "Execution Gate" "execution gate (v5, replaces Follow Questions)"
     assert_file_contains "$claude_src" "prompt-tracker" "prompt-tracker in skills table"
-    assert_file_contains "$claude_src" "batuta:analyze-prompts" "analyze-prompts in commands table"
+    assert_file_contains "$claude_src" "batuta-analyze-prompts" "analyze-prompts in commands table"
 }
 
 test_prompt_tracker_in_sync() {
@@ -647,11 +655,16 @@ test_qa_directory_exists() {
     assert_dir_exists "$qa_dir"
 
     local report_count=0
+    local subdir_count=0
     for f in "$qa_dir"/*.md; do
         [[ -f "$f" ]] && report_count=$((report_count + 1))
     done
+    for d in "$qa_dir"/*/; do
+        [[ -d "$d" ]] && subdir_count=$((subdir_count + 1))
+    done
+    local total=$((report_count + subdir_count))
 
-    [[ $report_count -ge 2 ]] && log_pass "$report_count quality reports in docs/qa/" || log_fail "Expected at least 2 reports in docs/qa/, found $report_count"
+    [[ $total -ge 2 ]] && log_pass "$total quality report items in docs/qa/ ($report_count files + $subdir_count subdirs)" || log_fail "Expected at least 2 report items in docs/qa/, found $total"
 }
 
 # ============================================================================
@@ -884,8 +897,8 @@ test_security_integration() {
 # 40. Total skill count is 15 (v9)
 # ============================================================================
 
-test_fifteen_skills_total() {
-    log_test "15 skills total in BatutaClaude/skills/ (v9)"
+test_eighteen_skills_total() {
+    log_test "18 skills total in BatutaClaude/skills/ (v9.3)"
     local skills_dir="$REPO_ROOT/BatutaClaude/skills"
 
     local skill_count=0
@@ -893,10 +906,10 @@ test_fifteen_skills_total() {
         [[ -d "$d" && -f "$d/SKILL.md" ]] && skill_count=$((skill_count + 1))
     done
 
-    if [[ $skill_count -eq 15 ]]; then
-        log_pass "$skill_count skills (expected 15)"
+    if [[ $skill_count -eq 18 ]]; then
+        log_pass "$skill_count skills (expected 18)"
     else
-        log_fail "Expected 15 skills, found $skill_count"
+        log_fail "Expected 18 skills, found $skill_count"
     fi
 }
 
@@ -968,6 +981,111 @@ test_commands_mention_hooks() {
 }
 
 # ============================================================================
+# v9.3 Tests: Doc Standards + Infra Rename + New Skills + Templates
+# ============================================================================
+
+test_all_skills_have_purpose_section() {
+    log_test "All 18 skills have ## Purpose section (v9.3)"
+    local skills_dir="$REPO_ROOT/BatutaClaude/skills"
+    local missing=0
+
+    for d in "$skills_dir"/*/; do
+        [[ ! -d "$d" || ! -f "$d/SKILL.md" ]] && continue
+        local skill_name
+        skill_name=$(basename "$d")
+        if ! grep -q "## Purpose" "$d/SKILL.md" 2>/dev/null; then
+            log_fail "Skill '$skill_name' missing ## Purpose section"
+            missing=$((missing + 1))
+        fi
+    done
+
+    [[ $missing -eq 0 ]] && log_pass "All skills have ## Purpose section"
+}
+
+test_new_skills_have_valid_frontmatter() {
+    log_test "New skills (fastapi-crud, jwt-auth, sqlalchemy-models) have valid frontmatter (v9.3)"
+    local skills_dir="$REPO_ROOT/BatutaClaude/skills"
+
+    for skill in fastapi-crud jwt-auth sqlalchemy-models; do
+        local skill_file="$skills_dir/$skill/SKILL.md"
+        assert_file_exists "$skill_file"
+        assert_file_contains "$skill_file" "^name:" "frontmatter name field in $skill"
+        assert_file_contains "$skill_file" "scope:" "frontmatter scope field in $skill"
+        assert_file_contains "$skill_file" "auto_invoke:" "frontmatter auto_invoke field in $skill"
+        assert_file_contains "$skill_file" "allowed-tools:" "frontmatter allowed-tools field in $skill"
+    done
+}
+
+test_seven_team_templates() {
+    log_test "7 team templates exist in teams/templates/ (v9.3)"
+    local templates_dir="$REPO_ROOT/teams/templates"
+    local template_count=0
+
+    for f in "$templates_dir"/*.md; do
+        [[ -f "$f" ]] && template_count=$((template_count + 1))
+    done
+
+    if [[ $template_count -ge 7 ]]; then
+        log_pass "$template_count team templates (expected >= 7)"
+    else
+        log_fail "Expected at least 7 templates, found $template_count"
+    fi
+
+    # Verify temporal-io-app template specifically exists
+    assert_file_exists "$templates_dir/temporal-io-app.md"
+    assert_file_contains "$templates_dir/temporal-io-app.md" "Composicion del Equipo" \
+        "temporal-io-app template has team composition section"
+}
+
+test_hooks_point_to_infra_directory() {
+    log_test "settings.json hooks point to infra/ directory (v9.3)"
+    local settings="$REPO_ROOT/BatutaClaude/settings.json"
+
+    assert_file_contains "$settings" "infra/hooks/" "hooks reference infra/ directory"
+    assert_file_not_contains "$settings" "skills/hooks/" "no legacy skills/hooks/ references"
+}
+
+test_no_guides_reference_old_skills_path() {
+    log_test "No active guides reference old skills/setup.sh path (v9.3)"
+    local guides_dir="$REPO_ROOT/docs/guides"
+    local found=0
+
+    for guide in "$guides_dir"/guia-*.md; do
+        [[ ! -f "$guide" ]] && continue
+        if grep -q "skills/setup\.sh" "$guide" 2>/dev/null; then
+            log_fail "$(basename "$guide") still references skills/setup.sh"
+            found=$((found + 1))
+        fi
+    done
+
+    [[ $found -eq 0 ]] && log_pass "No guides reference old skills/setup.sh path"
+}
+
+test_sdd_apply_has_documentation_standard() {
+    log_test "sdd-apply has Code Documentation Standard section (v9.3)"
+    local apply_file="$REPO_ROOT/BatutaClaude/skills/sdd-apply/SKILL.md"
+
+    assert_file_contains "$apply_file" "Code Documentation Standard" \
+        "sdd-apply has documentation standard section"
+    assert_file_contains "$apply_file" "module docstring" \
+        "sdd-apply mentions module docstrings"
+    assert_file_contains "$apply_file" "SECURITY:" \
+        "sdd-apply mentions SECURITY: prefix"
+}
+
+test_claude_md_has_doc_standard_rule() {
+    log_test "CLAUDE.md has code documentation enforcement rule (v9.3)"
+    local claude_md="$REPO_ROOT/BatutaClaude/CLAUDE.md"
+
+    assert_file_contains "$claude_md" "module docstring" \
+        "CLAUDE.md mentions module docstring requirement"
+    assert_file_contains "$claude_md" "SECURITY:" \
+        "CLAUDE.md mentions SECURITY: prefix"
+    assert_file_contains "$claude_md" "sdd-apply" \
+        "CLAUDE.md references sdd-apply for full standard"
+}
+
+# ============================================================================
 # Run All Tests
 # ============================================================================
 
@@ -1035,7 +1153,7 @@ test_team_playbook_exists
 test_ten_guides_exist
 test_contract_first_protocol
 test_security_integration
-test_fifteen_skills_total
+test_eighteen_skills_total
 test_infra_agent_has_security
 
 # --- v9.1 tests: Integration Test Findings ---
@@ -1046,6 +1164,15 @@ test_ecosystem_creator_has_destination_logic
 test_artifact_store_documented
 test_stack_awareness_cross_referenced
 test_commands_mention_hooks
+
+# --- v9.3 tests: Doc Standards + Infra Rename + New Skills + Templates ---
+test_all_skills_have_purpose_section
+test_new_skills_have_valid_frontmatter
+test_seven_team_templates
+test_hooks_point_to_infra_directory
+test_no_guides_reference_old_skills_path
+test_sdd_apply_has_documentation_standard
+test_claude_md_has_doc_standard_rule
 
 # ============================================================================
 # Summary

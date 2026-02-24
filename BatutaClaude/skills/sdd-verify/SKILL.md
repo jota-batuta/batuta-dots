@@ -162,8 +162,9 @@ LAYER 1d CHECK (automated by agent):
 │
 ├── Thresholds:
 │   ├── Module docstrings < 100% of files → WARNING
-│   ├── Function doc ratio < 80% → WARNING ("documentation incomplete")
-│   ├── Function doc ratio < 50% → CRITICAL ("code without documentation is incomplete code")
+│   ├── Function doc ratio 80-99% → WARNING ("documentation almost complete")
+│   ├── Function doc ratio < 80% → CRITICAL ("documentation incomplete — fix before proceeding")
+│   ├── Function doc ratio < 50% → CRITICAL + FAIL ("code without documentation is incomplete code — pyramid base broken")
 │   └── Zero security comments on auth/crypto code → WARNING
 │
 └── Report: Include documentation metrics in Layer 1 results
