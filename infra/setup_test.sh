@@ -1161,6 +1161,58 @@ test_claude_md_commands_use_hyphens() {
 }
 
 # ============================================================================
+# 48. Hooks use new matcher+hooks wrapper format (v9.4)
+# ============================================================================
+
+test_hooks_use_new_matcher_format() {
+    log_test "settings.json hooks use new matcher+hooks wrapper format (v9.4)"
+    local settings="$REPO_ROOT/BatutaClaude/settings.json"
+
+    # New format: each event array contains objects with a "hooks" array property
+    # Old format: objects with "type" directly in the event array (no wrapper)
+
+    if command -v python3 &>/dev/null; then
+        local result
+        result=$(python3 -c "
+import json, sys
+with open(sys.argv[1]) as f:
+    data = json.load(f)
+hooks = data.get('hooks', {})
+errors = []
+for event, entries in hooks.items():
+    if not isinstance(entries, list):
+        errors.append(f'{event}: not a list')
+        continue
+    for i, entry in enumerate(entries):
+        if 'hooks' not in entry:
+            errors.append(f'{event}[{i}]: missing hooks wrapper (old format?)')
+        elif not isinstance(entry['hooks'], list):
+            errors.append(f'{event}[{i}].hooks: not a list')
+if errors:
+    print('FAIL:' + ';'.join(errors))
+else:
+    print('PASS')
+" "$settings" 2>&1) || true
+
+        if [[ "$result" == "PASS" ]]; then
+            log_pass "All hook events use new matcher+hooks wrapper format"
+        else
+            log_fail "Hooks format validation: ${result#FAIL:}"
+        fi
+    elif command -v jq &>/dev/null; then
+        local bad_hooks
+        bad_hooks=$(jq -r '.hooks | to_entries[] | .key as $event | .value[] | select(.hooks == null) | $event' "$settings" 2>/dev/null)
+        if [[ -z "$bad_hooks" ]]; then
+            log_pass "All hook events use new matcher+hooks wrapper format"
+        else
+            log_fail "Hook events missing hooks wrapper: $bad_hooks"
+        fi
+    else
+        log_skip "Neither python3 nor jq available to validate hooks format"
+    fi
+}
+
+# ============================================================================
 # Run All Tests
 # ============================================================================
 
@@ -1253,6 +1305,9 @@ test_claude_md_has_doc_standard_rule
 test_fifteen_commands_synced
 test_sdd_commands_use_hyphens_not_colons
 test_claude_md_commands_use_hyphens
+
+# --- v9.4 tests: Hooks New Format (matcher + hooks wrapper) ---
+test_hooks_use_new_matcher_format
 
 # ============================================================================
 # Summary

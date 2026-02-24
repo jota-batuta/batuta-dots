@@ -9,39 +9,61 @@
   },
   "teammateMode": "in-process",
   "hooks": {
-    "SessionStart": [{
-      "type": "command",
-      "command": "bash infra/hooks/session-start.sh",
-      "description": "O.R.T.A. — Inject .batuta/session.md as context for session continuity"
-    }],
-    "PreToolUse": [{
-      "type": "prompt",
-      "prompt": "You are the Execution Gate for the Batuta ecosystem. A tool call is about to execute. Check if this code change has been validated by the Execution Gate (the user confirmed 'Procedo?' or this is within an approved SDD phase). If no gate approval exists for this change, respond with {\"decision\": \"deny\", \"reason\": \"Execution Gate: este cambio no fue validado. Ejecuta el gate primero.\"}. If the change is trivially approved (single-file edit within an active SDD task, or user already confirmed), respond with {\"decision\": \"allow\"}.",
-      "matcher": "Write|Edit",
-      "description": "O.R.T.A. — Execution Gate: validate code changes before writing"
-    }],
-    "Stop": [
+    "SessionStart": [
       {
-        "type": "command",
-        "command": "bash infra/hooks/session-save.sh",
-        "description": "O.R.T.A. — Log session end event to prompt-log.jsonl"
-      },
-      {
-        "type": "prompt",
-        "prompt": "Before stopping, check if .batuta/session.md exists in the project. If it does, and you performed significant work this session (completed an SDD phase, created/modified 3+ files, resolved a bug, or had 5+ exchanges), update .batuta/session.md with current state: active changes, phase status, recent decisions, discovered conventions. If no significant work was done, skip the update. Respond with {\"decision\": \"allow\"} after updating (or skipping).",
-        "description": "O.R.T.A. — Auto-save session context before stopping"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash infra/hooks/session-start.sh"
+          }
+        ]
       }
     ],
-    "TeammateIdle": [{
-      "type": "command",
-      "command": "bash infra/hooks/orta-teammate-idle.sh",
-      "description": "O.R.T.A. — Log teammate completion to prompt-log.jsonl"
-    }],
-    "TaskCompleted": [{
-      "type": "command",
-      "command": "bash infra/hooks/orta-task-gate.sh",
-      "description": "O.R.T.A. — Quality gate: verify task meets standards before marking complete"
-    }]
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "You are the Execution Gate for the Batuta ecosystem. A tool call is about to execute. Check if this code change has been validated by the Execution Gate (the user confirmed 'Procedo?' or this is within an approved SDD phase). If no gate approval exists for this change, respond with {\"ok\": false, \"reason\": \"Execution Gate: este cambio no fue validado. Ejecuta el gate primero.\"}. If the change is trivially approved (single-file edit within an active SDD task, or user already confirmed), respond with {\"ok\": true}."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash infra/hooks/session-save.sh"
+          },
+          {
+            "type": "prompt",
+            "prompt": "Before stopping, check if .batuta/session.md exists in the project. If it does, and you performed significant work this session (completed an SDD phase, created/modified 3+ files, resolved a bug, or had 5+ exchanges), update .batuta/session.md with current state: active changes, phase status, recent decisions, discovered conventions. If no significant work was done, skip the update. Respond with {\"ok\": true} after updating (or skipping)."
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash infra/hooks/orta-teammate-idle.sh"
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash infra/hooks/orta-task-gate.sh"
+          }
+        ]
+      }
+    ]
   },
   "permissions": {
     "deny": [
