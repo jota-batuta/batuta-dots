@@ -1,4 +1,4 @@
-# Diagrama de Arquitectura — Ecosistema Batuta (v10.1)
+# Diagrama de Arquitectura — Ecosistema Batuta (v10.2)
 
 ## Vista General del Ecosistema
 
@@ -17,7 +17,8 @@ flowchart TB
     subgraph SETUP["SCRIPTS"]
         SETUP_SH["setup.sh<br/>--claude | --sync | --all | --hooks | --verify"]
         SYNC_SH["skill-sync/sync.sh<br/>regenera routing tables"]
-        REPLICATE["replicate-platform.sh<br/>--gemini | --copilot | --codex<br/>(futuro)"]
+        REPLICATE["replicate-platform.sh<br/>--antigravity | --copilot | --codex"]
+        SYNC_BI["sync.sh<br/>--to-antigravity | --from-project"]
     end
 
     subgraph GENERADO["ARCHIVOS GENERADOS (gitignored)"]
@@ -825,16 +826,58 @@ flowchart TD
 
 ---
 
-## Folder Structure (v10.1)
+## Hub & Spoke: Sync Multi-Plataforma (v10.2)
+
+```mermaid
+flowchart TD
+    subgraph HUB["batuta-dots (HUB)"]
+        BC["BatutaClaude/<br/>skills/ (24)"]
+        BA["BatutaAntigravity/<br/>skills/ (22, filtrados)"]
+        SYNC["infra/sync.sh"]
+    end
+
+    subgraph SPOKE_CLAUDE["Proyecto A (Claude Code)"]
+        PC_SKILLS["~/.claude/skills/"]
+        PC_LOCAL[".claude/skills/<br/>(proyecto-local)"]
+        PC_ECO[".batuta/ecosystem.json"]
+    end
+
+    subgraph SPOKE_ANTIGRAVITY["Proyecto B (Antigravity)"]
+        PA_SKILLS[".agent/skills/"]
+        PA_ECO[".batuta/ecosystem.json"]
+    end
+
+    BC -->|"setup.sh --sync"| PC_SKILLS
+    BC -->|"sync.sh --to-antigravity"| BA
+    BA -->|"setup-antigravity.sh"| PA_SKILLS
+
+    PC_LOCAL -->|"sync.sh --from-project"| BC
+    PA_SKILLS -->|"sync.sh --from-project"| BC
+
+    PC_ECO -.->|"version check"| HUB
+    PA_ECO -.->|"version check"| HUB
+
+    style HUB fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
+    style SPOKE_CLAUDE fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style SPOKE_ANTIGRAVITY fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
+    style SYNC fill:#E8B84D,color:#000
+```
+
+> batuta-dots es el **hub central**. Los proyectos y plataformas son **spokes**. Skills fluyen: spoke → hub → all spokes. El campo `platforms` en SKILL.md filtra que skills van a cada plataforma. `ecosystem.json` detecta drift de version.
+
+---
+
+## Folder Structure (v10.2)
 
 ```mermaid
 flowchart TD
     subgraph ROOT["batuta-dots/"]
         CLAUDE_DIR["BatutaClaude/<br/>CLAUDE.md, settings.json,<br/>agents/, skills/, commands/"]
-        INFRA_DIR["infra/<br/>setup.sh, hooks/"]
+        ANTIGRAVITY_DIR["BatutaAntigravity/<br/>GEMINI.md, workflows/,<br/>setup-antigravity.sh"]
+        INFRA_DIR["infra/<br/>setup.sh, sync.sh, hooks/"]
         DOCS["docs/<br/>architecture/, guides/, qa/"]
         TEAMS["teams/<br/>templates/, playbook.md"]
-        ACADEMIA["academia/<br/>8 modulos, 53 lecciones"]
+        ACADEMIA["academia/<br/>8 modulos, 54 lecciones"]
         README["README.md, README.es.md"]
         CHANGELOG["CHANGELOG-refactor.md"]
     end
@@ -845,17 +888,25 @@ flowchart TD
         SKILLS_24["skills/ (24 skills)<br/>sdd-*, ecosystem, scope-rule,<br/>skill-sync, team-orchestrator,<br/>prompt-tracker, security-audit,<br/>+ 6 CTO specialists (v10.0)<br/>+ 3 technology skills"]
     end
 
+    subgraph ANTIGRAVITY_DETAIL["BatutaAntigravity/"]
+        GEMINI_MD["GEMINI.md (CTO brain)"]
+        WORKFLOWS["workflows/ (11)<br/>SDD + save-session +<br/>push-skill + batuta-update"]
+        SETUP_AG["setup-antigravity.sh"]
+    end
+
     subgraph DOCS_DETAIL["docs/"]
         ARCH["architecture/<br/>diagrama, para-no-tecnicos"]
-        GUIDES["guides/<br/>12 guias de uso"]
+        GUIDES["guides/<br/>13 guias de uso"]
         QA["qa/<br/>auditorias, correcciones,<br/>tests integracion, smoke tests"]
     end
 
     CLAUDE_DIR --> CLAUDE_DETAIL
+    ANTIGRAVITY_DIR --> ANTIGRAVITY_DETAIL
     DOCS --> DOCS_DETAIL
 
     style ROOT fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
     style CLAUDE_DETAIL fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style ANTIGRAVITY_DETAIL fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
     style DOCS_DETAIL fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
     style TEAMS fill:#E8B84D,color:#000
 ```

@@ -14,6 +14,7 @@ metadata:
     - "Regenerate scope-agent routing tables and validate skill inventory (sync.sh)"
     - "Troubleshoot why a skill is missing from routing tables"
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash
+platforms: [claude, antigravity]
 ---
 
 # Skill-Sync — Automatic Routing Table Generation
@@ -124,8 +125,16 @@ Every SKILL.md MUST have these fields for skill-sync to work:
 | `metadata.scope` | Inside metadata | Yes | `[pipeline]` |
 | `metadata.auto_invoke` | Inside metadata | Yes | String or YAML list |
 | `allowed-tools` | Top level | Yes | `Read, Edit, Write, Glob, Grep, Bash` |
+| `platforms` | Top level | Yes | `[claude, antigravity]` or `[claude]` |
 
 If `auto_invoke` is a YAML list, items are joined with "; " for display in the table.
+
+### Platforms Field
+
+The `platforms` field controls which platforms receive the skill during sync:
+- `[claude, antigravity]` — Default. Skill works on both Claude Code and Antigravity.
+- `[claude]` — Claude-only. Skill requires features not available in Antigravity (hooks, Agent Teams).
+- `infra/sync.sh --to-antigravity` uses this field to filter which skills are copied to `BatutaAntigravity/skills/`.
 
 ## Integration Points
 

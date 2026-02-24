@@ -13,6 +13,7 @@ metadata:
   scope: [infra]
   auto_invoke: "Implementing JWT authentication, login/register endpoints"
 allowed-tools: Read, Glob, Grep, Write, Edit
+platforms: [claude, antigravity]
 ---
 
 ## Purpose

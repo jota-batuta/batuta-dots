@@ -71,7 +71,18 @@ When finishing a project where new skills/sub-agents were created, ASK:
 >
 > Quieres que los propague al repositorio batuta-dots como skills globales?"
 
-If yes: evaluate → generalize → copy to batuta-dots → register → run skill-sync → commit.
+If yes, follow this flow:
+
+1. **Evaluate**: Is the skill project-specific or reusable? If it references hardcoded paths, tenant IDs, or project-specific config, generalize first.
+2. **Set platforms**: Add `platforms: [claude, antigravity]` (default) or `platforms: [claude]` if it requires Claude-only features (hooks, Agent Teams).
+3. **Copy to hub**: Copy the SKILL.md (and assets/ if any) to `batuta-dots/BatutaClaude/skills/{skill-name}/`
+4. **Run skill-sync**: `bash BatutaClaude/skills/skill-sync/assets/sync.sh` to update routing tables
+5. **Sync to Antigravity**: `bash infra/sync.sh --to-antigravity` to propagate platform-compatible skills
+6. **Commit**: Commit to batuta-dots with message `feat(skills): add {skill-name} from {project}`
+
+For pulling updates FROM batuta-dots into the current project:
+- `bash infra/sync.sh --from-project /path/to/project` detects local skills not in the hub
+- The `/batuta-update` command syncs latest skills from hub to current project
 
 ## Skill-Sync Integration
 

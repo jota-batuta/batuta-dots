@@ -91,6 +91,15 @@ batuta-dots/
 │           └── assets/
 │               ├── sync.sh
 │               └── sync_test.sh
+├── BatutaAntigravity/                 # Configuracion Antigravity IDE (Lite)
+│   ├── GEMINI.md                      # Cerebro CTO completo adaptado para Antigravity
+│   ├── setup-antigravity.sh           # Script de setup (--global / --workspace / --all)
+│   ├── settings-template.json         # Config recomendada para Antigravity
+│   └── workflows/                     # Prompts guardados (SDD + session + sync)
+│       ├── sdd-init.md ... sdd-archive.md  # Pipeline SDD (8 workflows)
+│       ├── save-session.md            # Guardar estado (reemplaza hook Stop)
+│       ├── push-skill.md             # Propagar skill local al hub
+│       └── batuta-update.md          # Actualizar desde hub
 ├── docs/                              # Toda la documentacion
 │   ├── architecture/                  # Arquitectura y diseno
 │   │   ├── arquitectura-diagrama.md   # Diagramas Mermaid de arquitectura (15+ diagramas)
@@ -127,7 +136,8 @@ batuta-dots/
 ├── academia/                          # Curso de capacitacion (8 modulos, 53 lecciones)
 └── infra/                             # Infraestructura y scripts de setup
     ├── setup.sh                       # Script principal (Claude Code)
-    ├── replicate-platform.sh          # Replicacion a otras plataformas (futuro)
+    ├── sync.sh                        # Sync bidireccional de skills (hub ↔ proyectos)
+    ├── replicate-platform.sh          # Replicacion a otras plataformas
     ├── setup_test.sh                  # Tests de verificacion (51 tests)
     └── hooks/                         # Hooks O.R.T.A. (nativos de Claude Code)
         ├── session-start.sh           # SessionStart — inyectar session.md como contexto
@@ -168,10 +178,30 @@ CLAUDE.md (personalidad + reglas — ~220 lineas)
     └──> Agent Team (Nivel 3) ──> spawn desde scope agents
 ```
 
-### Otras plataformas (futuro)
+### Multi-Plataforma: Claude Code + Antigravity
+
+Batuta soporta ejecucion en paralelo — Claude Code (Full) para proyectos complejos y Google Antigravity IDE (Lite) para tareas rapidas:
+
+| Aspecto | Claude Code (Full) | Antigravity (Lite) |
+|---------|-------------------|-------------------|
+| Cerebro | CTO completo via CLAUDE.md | CTO completo via GEMINI.md |
+| Comandos | Slash commands (nativos) | Workflows (prompts guardados) |
+| Hooks | Nativos (SessionStart, PreToolUse, Stop) | Reglas de comportamiento |
+| Skills | `~/.claude/skills/` | `.agent/skills/` o `~/.gemini/antigravity/skills/` |
+| Multi-agente | Agent Teams | Manager View |
+| Costo | Claude Max x20 ($200/mes) | Gratis (preview) |
+
+Los skills son agnósticos de plataforma (estándar abierto SKILL.md). El campo `platforms` en el frontmatter controla que plataformas reciben cada skill durante el sync. Ver [Guia de Antigravity](docs/guides/guia-batuta-antigravity.md).
 
 ```bash
-./infra/replicate-platform.sh --all    # Genera GEMINI.md, CODEX.md, copilot-instructions.md
+# Setup Antigravity en un proyecto
+bash BatutaAntigravity/setup-antigravity.sh --workspace
+
+# Sincronizar skills filtrados por tag platforms
+bash infra/sync.sh --to-antigravity
+
+# Otras plataformas (Gemini CLI, Codex, Copilot)
+./infra/replicate-platform.sh --all
 ```
 
 ---
@@ -328,8 +358,9 @@ Cuando se crean skills nuevos en un proyecto, Claude propone propagarlos de vuel
 |------|--------|
 | `--claude` | Copia CLAUDE.md a la raiz del proyecto |
 | `--sync` | Sincroniza skills + agentes + commands a ~/.claude/ |
-| `--all` | Setup completo: sync + skill-sync + hooks + copy (recomendado) |
+| `--all` | Setup completo: sync + skill-sync + hooks + copy + antigravity (recomendado) |
 | `--hooks` | Instala hooks + permisos en ~/.claude/settings.json |
+| `--antigravity` | Sincroniza skills compatibles con Antigravity a BatutaAntigravity/skills/ |
 | `--project <path>` | Setup de un proyecto destino (CLAUDE.md + .batuta/ + git + hooks) |
 | `--verify` | Verificacion completa (51 checks) |
 
@@ -366,7 +397,7 @@ Curso completo de Batuta Dots — desde cero hasta uso autonomo. 53 lecciones en
 | [01 — Nivel Cero](academia/01-nivel-cero/) | Primer proyecto, comandos, pipeline SDD, gates | 4 |
 | [02 — Nivel Uno](academia/02-nivel-uno/) | Catalogo de skills, agentes, capa CTO, Scope Rule | 5 |
 | [03 — Nivel Dos](academia/03-nivel-dos/) | Depuracion, validacion, equipos, compliance, hooks | 5 |
-| [04 — Nivel Tres](academia/04-nivel-tres/) | Extender ecosistema, templates, infra, recursion | 4 |
+| [04 — Nivel Tres](academia/04-nivel-tres/) | Extender ecosistema, templates, infra, recursion, multi-plataforma | 5 |
 | [05 — Casos de Uso](academia/05-casos-de-uso/) | Casos reales por industria | 21 |
 | [06 — Referencia](academia/06-referencia/) | Comandos, skills, glosario, troubleshooting | 5 |
 | [07 — Verificacion](academia/07-verificacion/) | Quizzes por nivel + checklist de graduacion | 5 |

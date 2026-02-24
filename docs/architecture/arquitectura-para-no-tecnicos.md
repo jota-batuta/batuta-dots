@@ -130,6 +130,30 @@ El chef ahora puede llamar a **consultores** cuando necesita ayuda especializada
 
 ---
 
+## Las Dos Cocinas (Multi-Plataforma) — v10.2
+
+Imagina que tu restaurante crece y ahora tienes DOS cocinas:
+
+| Cocina | Que es | Cuando se usa |
+|--------|--------|--------------|
+| **Cocina principal** (Claude Code) | La cocina completa del restaurante, con todo el equipamiento: hornos industriales, alarmas automaticas, equipo completo de chefs, inventario inteligente | Platos elaborados, banquetes, menus nuevos, todo lo que requiere planificacion seria |
+| **Cocina rapida** (Antigravity) | Una cocina satellite con el mismo recetario pero menos equipamiento: sin alarmas automaticas pero con un ayudante que le recuerda al chef los pasos | Sandwiches, ensaladas, pedidos simples, preparaciones rapidas |
+
+**Lo importante**: Ambas cocinas usan las MISMAS recetas (skills). Si un chef inventa una receta nueva en la cocina rapida, se copia al libro maestro y automaticamente esta disponible en la cocina principal. Y viceversa.
+
+```
+Cocina principal (Claude Code)  ←→  Libro maestro (batuta-dots)  ←→  Cocina rapida (Antigravity)
+```
+
+**Por que dos cocinas?** Porque la cocina principal es mas poderosa pero tiene costo ($200/mes), mientras que la cocina rapida es GRATIS. Usas la principal para lo importante y la rapida para lo mecanico. Ambas trabajan en paralelo — como tener dos turnos trabajando al mismo tiempo.
+
+**Diferencias tecnicas simplificadas**:
+- La cocina principal tiene alarmas automaticas (hooks) que le recuerdan al chef hacer el checklist. La cocina rapida tiene un letrero en la pared que dice "No olvides el checklist" (rules).
+- La cocina principal puede armar equipos temporales especiales (Agent Teams). La cocina rapida tiene un coordinador que maneja varios chefs al mismo tiempo (Manager View).
+- Ambas tienen las mismas 22 recetas. Solo 2 recetas son exclusivas de la cocina principal porque necesitan las alarmas automaticas.
+
+---
+
 ## La Regla de la Cocina (Scope Rule)
 
 En un restaurante organizado, cada cosa tiene su lugar:
@@ -540,6 +564,8 @@ pedidos en el restaurante:
 | **Protocolo de higiene** | Security-Audit (v9) | Revision de seguridad: al disenar y al verificar |
 | **Controles estrategicos** | Gates G0.5/G1/G2 (v10) | Entiendo? Vale la pena? Listo? |
 | **Consultores especializados** | 6 skills CTO (v10) | Procesos, IA, datos, infra, compliance |
+| **Cocina rapida** | Antigravity IDE (v10.2) | Segunda cocina con el mismo recetario, para pedidos rapidos y mecanicos |
+| **Libro maestro compartido** | batuta-dots hub (v10.2) | Todas las recetas en un solo lugar, sincronizadas entre ambas cocinas |
 
 ---
 

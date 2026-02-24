@@ -15,6 +15,7 @@ metadata:
   scope: [pipeline]
   auto_invoke: false
 allowed-tools: Read, Glob, Grep, WebSearch
+platforms: [claude, antigravity]
 ---
 
 # Data Pipeline Design — Integration Specialist

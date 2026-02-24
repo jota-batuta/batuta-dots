@@ -13,6 +13,7 @@ metadata:
   scope: [infra]
   auto_invoke: "Creating SQLAlchemy models, database relationships, ORM patterns"
 allowed-tools: Read, Glob, Grep, Write, Edit
+platforms: [claude, antigravity]
 ---
 
 ## Purpose

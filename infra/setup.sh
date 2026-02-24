@@ -180,6 +180,26 @@ SESSIONEOF
         log_info "prompt-log.jsonl already exists, skipping"
     fi
 
+    # WHY: ecosystem.json tracks batuta-dots version for sync drift detection
+    if [[ ! -f "$batuta_dir/ecosystem.json" ]]; then
+        local batuta_version="unknown"
+        if [[ -f "$REPO_ROOT/VERSION" ]]; then
+            batuta_version=$(<"$REPO_ROOT/VERSION")
+        fi
+        cat > "$batuta_dir/ecosystem.json" << ECOEOF
+{
+  "batuta_version": "$batuta_version",
+  "platform": "claude",
+  "last_sync": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "skills_local": [],
+  "skills_shared": []
+}
+ECOEOF
+        log_success "Created $batuta_dir/ecosystem.json"
+    else
+        log_info "ecosystem.json already exists, skipping"
+    fi
+
     # 3. Initialize git if not already a repo
     if [[ ! -d "$target_dir/.git" ]]; then
         (cd "$target_dir" && git init -q)
@@ -463,6 +483,63 @@ run_skill_sync() {
 }
 
 # ============================================================================
+# Sync Antigravity skills (filtered by platforms field)
+# ============================================================================
+
+sync_antigravity() {
+    local antigravity_src="$REPO_ROOT/BatutaAntigravity"
+    local skills_src="$REPO_ROOT/BatutaClaude/skills"
+
+    log_info "Syncing Antigravity-compatible skills to BatutaAntigravity/skills/ ..."
+
+    if [[ ! -d "$antigravity_src" ]]; then
+        log_warning "BatutaAntigravity/ directory not found — skipping"
+        return 0
+    fi
+
+    if [[ ! -d "$skills_src" ]]; then
+        log_error "Source skills directory not found: $skills_src"
+        return 1
+    fi
+
+    # WHY: Use infra/sync.sh if available (single source of truth for sync logic)
+    local sync_script="$REPO_ROOT/infra/sync.sh"
+    if [[ -f "$sync_script" ]]; then
+        bash "$sync_script" --to-antigravity
+        return $?
+    fi
+
+    # Fallback: inline sync (same logic as sync.sh --to-antigravity)
+    local target_dir="$antigravity_src/skills"
+    mkdir -p "$target_dir"
+
+    local count=0
+    for skill_dir in "$skills_src"/*/; do
+        [[ ! -d "$skill_dir" ]] && continue
+        local skill_name
+        skill_name=$(basename "$skill_dir")
+
+        if [[ -f "$skill_dir/SKILL.md" ]]; then
+            # WHY: Only copy skills tagged for antigravity platform
+            if grep -q 'platforms:.*antigravity' "$skill_dir/SKILL.md" 2>/dev/null; then
+                mkdir -p "$target_dir/$skill_name"
+                cp -f "$skill_dir/SKILL.md" "$target_dir/$skill_name/SKILL.md"
+                if [[ -d "$skill_dir/assets" ]]; then
+                    cp -rf "$skill_dir/assets" "$target_dir/$skill_name/"
+                fi
+                count=$((count + 1))
+            fi
+        fi
+    done
+
+    if [[ $count -eq 0 ]]; then
+        log_warning "No Antigravity-compatible skills found"
+    else
+        log_success "Synced $count skills to BatutaAntigravity/skills/"
+    fi
+}
+
+# ============================================================================
 # All: Copy + Sync
 # ============================================================================
 
@@ -474,6 +551,7 @@ do_all() {
     # 2. Run skill-sync to regenerate tables in BatutaClaude/ (source of truth)
     # 3. Install hooks + permissions to ~/.claude/settings.json
     # 4. Copy updated BatutaClaude/CLAUDE.md to project root (now with updated tables)
+    # 5. Sync Antigravity-compatible skills to BatutaAntigravity/skills/
 
     sync_claude
     echo ""
@@ -484,6 +562,8 @@ do_all() {
     install_hooks
     echo ""
     generate_claude
+    echo ""
+    sync_antigravity
 
     echo ""
     log_success "Claude Code fully configured!"
@@ -699,6 +779,8 @@ Options:
                   - Initializes git if not already a repo
                   - Creates .gitignore
                   - Installs hooks + permissions
+  --antigravity Sync Antigravity-compatible skills to BatutaAntigravity/skills/
+                  Filters by platforms field in SKILL.md frontmatter.
   --verify      Check that CLAUDE.md and skills are properly configured
   --help, -h    Show this help message
 
@@ -728,6 +810,7 @@ parse_args() {
         --sync)     sync_claude; sync_agents ;;
         --all)      do_all ;;
         --hooks)    install_hooks ;;
+        --antigravity) sync_antigravity ;;
         --project)  shift_done=true; setup_project "$2" ;;
         --verify)   verify ;;
         --help|-h)  show_help; exit 0 ;;
