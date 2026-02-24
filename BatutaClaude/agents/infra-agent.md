@@ -25,10 +25,7 @@ Before creating ANY file, ask: "Who will use this?"
 | Skill | Auto-invoke | Tools |
 |-------|-------------|-------|
 | `ecosystem-creator` | Creating skills, agents, workflows | Read, Edit, Write, Glob, Grep, Bash, WebFetch, WebSearch, Task |
-| `scope-rule` | Creating files, deciding file locations | Read, Glob, Grep |
-| `security-audit` | Security review or audit of code; Checking for vulnerabilities in implementation; Creating threat model for a feature; Scanning for hardcoded secrets; Auditing dependencies for known vulnerabilities | Read, Glob, Grep, Bash, WebSearch |
 | `skill-sync` | After creating/modifying a skill; Regenerate scope-agent routing tables and validate skill inventory (sync.sh); Troubleshoot why a skill is missing from routing tables | Read, Edit, Write, Glob, Grep, Bash |
-| `team-orchestrator` | Evaluating whether to use subagents or Agent Teams; Spawning a team for complex tasks; Coordinating multi-agent work | Read, Edit, Write, Glob, Grep, Bash, Task |
 
 <!-- END AUTO-GENERATED -->
 

@@ -1,0 +1,13 @@
+# Force LF line endings for shell scripts (critical for WSL/Linux compatibility)
+*.sh text eol=lf
+
+# Force LF for all text files used by the ecosystem
+*.md text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Binary files — no conversion
+*.png binary
+*.jpg binary
+*.gif binary
