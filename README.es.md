@@ -16,7 +16,7 @@ Inspirado en [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman
 - **Personalidad CTO/Mentor** que educa y documenta para personas no tecnicas.
 - **Regla de Alcance (Scope Rule)** que organiza archivos por quien los usa, no por tipo.
 - **Auto-deteccion de gaps en skills** con investigacion automatica via Context7.
-- **Carga lazy de skills** — Claude lee ~186 lineas al iniciar, el resto se carga bajo demanda.
+- **Carga lazy de skills** — Claude lee ~220 lineas al iniciar, el resto se carga bajo demanda.
 - **Routing nativo** — skills se auto-invocan por su campo `description`, agentes de scope con frontmatter nativo.
 - **Execution Gate** — pre-validacion obligatoria via hook `PreToolUse` (enforcement determinístico).
 - **Hooks nativos** — SessionStart, PreToolUse, Stop, TeammateIdle, TaskCompleted.
@@ -95,7 +95,7 @@ batuta-dots/
 │   ├── architecture/                  # Arquitectura y diseno
 │   │   ├── arquitectura-diagrama.md   # Diagramas Mermaid de arquitectura (15+ diagramas)
 │   │   └── arquitectura-para-no-tecnicos.md  # Guia sin tecnicismos (analogia restaurante, 15+ roles)
-│   ├── guides/                        # Guias de ejecucion paso a paso (10 guias, Espanol)
+│   ├── guides/                        # Guias de ejecucion paso a paso (12 guias, Espanol)
 │   │   ├── guia-batuta-app.md         # Dashboard app — guia ciclo completo
 │   │   ├── guia-temporal-io-app.md    # Temporal.io workflows — guia ciclo completo
 │   │   ├── guia-langchain-gmail-agent.md  # Agente LangChain + Gmail — guia ciclo completo
@@ -105,16 +105,15 @@ batuta-dots/
 │   │   ├── guia-cli-python.md         # Herramienta CLI en Python
 │   │   ├── guia-data-pipeline.md      # Pipeline de datos (ETL)
 │   │   ├── guia-refactoring-legacy.md # Refactoring de codigo legacy
-│   │   └── guia-ai-agent-adk.md       # Agente IA con Google ADK
+│   │   ├── guia-ai-agent-adk.md       # Agente IA con Google ADK
+│   │   ├── guia-auditoria-contable.md # Auditoria contable (CTO v10.0)
+│   │   └── guia-seleccion-personal.md # Seleccion de personal (CTO v10.0)
 │   └── qa/                            # Reportes de control de calidad
-│       ├── BatutaTestCalidadV5.md     # Reporte de calidad v5
-│       ├── BatutaTestCalidadV6.md     # Reporte de calidad v6
-│       ├── BatutaTestCalidadV7.md     # Reporte de calidad v7
-│       ├── BatutaTestCalidadV9.md     # Reporte de calidad v9
-│       ├── LogCorrecciones-V5.md      # Log de correcciones v5
-│       ├── LogCorrecciones-V6.md      # Log de correcciones v6
-│       ├── LogCorrecciones-V7.md      # Log de correcciones v7
-│       └── LogCorrecciones-V9.md      # Log de correcciones v9
+│       ├── README.md                  # Indice de QA
+│       ├── audits/                    # Reportes de auditoria de calidad (v5-v9)
+│       ├── corrections/               # Logs de correcciones (v5-v9.2)
+│       ├── integration-tests/         # Reportes de tests de integracion (12 guias)
+│       └── smoke-tests/              # Reportes de smoke tests (5 reportes)
 ├── teams/                             # Assets de Agent Teams
 │   ├── templates/                     # Composiciones pre-armadas por stack
 │   │   ├── nextjs-saas.md             # Template equipo Next.js SaaS
@@ -124,8 +123,9 @@ batuta-dots/
 │   │   ├── data-pipeline.md          # Template equipo pipeline de datos
 │   │   └── refactoring.md            # Template equipo refactoring legacy
 │   └── playbook.md                    # Patrones y mejores practicas de equipos
-├── CHANGELOG-refactor.md              # Documento de traza de refactorizaciones (v1-v9)
-└── skills/                            # Scripts del repositorio
+├── CHANGELOG-refactor.md              # Documento de traza de refactorizaciones (v1-v10.1)
+├── academia/                          # Curso de capacitacion (8 modulos, 53 lecciones)
+└── infra/                             # Infraestructura y scripts de setup
     ├── setup.sh                       # Script principal (Claude Code)
     ├── replicate-platform.sh          # Replicacion a otras plataformas (futuro)
     ├── setup_test.sh                  # Tests de verificacion (51 tests)
@@ -140,13 +140,13 @@ batuta-dots/
 
 ## Como funciona
 
-1. **CLAUDE.md** es el punto de entrada (~186 lineas). Define personalidad, reglas, Scope Rule, Execution Gate, y SDD commands.
+1. **CLAUDE.md** es el punto de entrada (~220 lineas). Define personalidad, reglas, Scope Rule, Execution Gate, y SDD commands.
 2. **Skills se auto-invocan** por Claude Code basandose en su campo `description`. No hay routing manual.
 3. **Hooks nativos** enfuerzan comportamientos criticos de forma deterministica (Execution Gate, session continuity).
 4. **setup.sh --all** sincroniza skills y agentes, ejecuta skill-sync para validar inventario, y copia CLAUDE.md a la raiz.
 
 ```
-CLAUDE.md (personalidad + reglas — ~186 lineas)
+CLAUDE.md (personalidad + reglas — ~220 lineas)
     │
     ├──> Hooks nativos (settings.json)
     │     ├── SessionStart → inyecta session.md como contexto
@@ -210,7 +210,7 @@ El agente principal actua como un router puro. Clasifica el scope de cada solici
 | `infra-agent` | Organizacion, ecosistema, seguridad | scope-rule, ecosystem-creator, skill-sync, team-orchestrator, security-audit |
 | `observability-agent` | Tracking de calidad | prompt-tracker |
 
-Esto mantiene al agente principal liviano (~186 lineas) y a cada agente de scope enfocado en su dominio. Los scope agents usan frontmatter nativo de Claude Code (`skills`, `memory: project`).
+Esto mantiene al agente principal liviano (~220 lineas) y a cada agente de scope enfocado en su dominio. Los scope agents usan frontmatter nativo de Claude Code (`skills`, `memory: project`).
 
 ### Execution Gate (Puerta de Ejecucion)
 
@@ -245,7 +245,7 @@ Antes de escribir codigo con una tecnologia, Claude verifica si existe un skill 
 
 | Nivel | Que se carga | Lineas |
 |-------|-------------|--------|
-| 1 | CLAUDE.md (personalidad + reglas) | ~186 |
+| 1 | CLAUDE.md (personalidad + reglas) | ~220 |
 | 2 | Agente de scope | ~80-120 |
 | 3 | Skill individual | ~200-500 |
 
@@ -288,6 +288,15 @@ Cuando se crean skills nuevos en un proyecto, Claude propone propagarlos de vuel
 | `security-audit` | infra, pipeline | Seguridad AI-first: OWASP + inyeccion de prompts + escaneo de secretos + auditoria de dependencias |
 | `sdd-init` a `sdd-archive` | pipeline | Pipeline SDD de 9 fases |
 | `prompt-tracker` | observability | Tracking de satisfaccion, compliance de gate, y analisis de patrones |
+| `process-analyst` | pipeline | Analisis de procesos complejos con 3+ variantes de caso |
+| `recursion-designer` | pipeline | Taxonomias externas, categorias que cambian, sistemas de aprendizaje |
+| `compliance-colombia` | pipeline | Proteccion de datos colombiana, retencion fiscal, compliance IA |
+| `data-pipeline-design` | pipeline | ETL, integraciones ERP, patrones de calidad de datos |
+| `llm-pipeline-design` | pipeline | Clasificadores LLM, prompt engineering, deteccion de drift |
+| `worker-scaffold` | pipeline | Workers Temporal, Docker, Coolify deploy, monitoreo |
+| `fastapi-crud` | pipeline | Patrones CRUD para FastAPI |
+| `jwt-auth` | pipeline | Patrones de autenticacion JWT |
+| `sqlalchemy-models` | pipeline | Patrones de modelos SQLAlchemy ORM |
 
 ---
 
@@ -301,6 +310,7 @@ Cuando se crean skills nuevos en un proyecto, Claude propone propagarlos de vuel
 | `/sdd-explore <tema>` | pipeline | Explorar idea y restricciones |
 | `/sdd-new <nombre>` | pipeline | Iniciar flujo de propuesta |
 | `/sdd-continue [nombre]` | pipeline | Ejecutar siguiente fase |
+| `/sdd-ff [nombre]` | pipeline | Fast-forward: propose → spec → design → tasks |
 | `/sdd-apply [nombre]` | pipeline + infra | Implementar en lotes |
 | `/sdd-verify [nombre]` | pipeline | Validar implementacion |
 | `/sdd-archive [nombre]` | pipeline | Cerrar y persistir estado final |
@@ -348,7 +358,7 @@ Guias de ejecucion paso a paso (12 guias) cubriendo el ciclo completo: instalaci
 
 ## Academia (Manual de Capacitacion)
 
-Curso completo de Batuta Dots — desde cero hasta uso autonomo. 55 lecciones en 8 modulos, 20 casos de uso reales en 10 industrias.
+Curso completo de Batuta Dots — desde cero hasta uso autonomo. 53 lecciones en 8 modulos, 21 casos de uso reales en 10 industrias.
 
 | Modulo | Contenido | Lecciones |
 |--------|-----------|-----------|
@@ -357,7 +367,7 @@ Curso completo de Batuta Dots — desde cero hasta uso autonomo. 55 lecciones en
 | [02 — Nivel Uno](academia/02-nivel-uno/) | Catalogo de skills, agentes, capa CTO, Scope Rule | 5 |
 | [03 — Nivel Dos](academia/03-nivel-dos/) | Depuracion, validacion, equipos, compliance, hooks | 5 |
 | [04 — Nivel Tres](academia/04-nivel-tres/) | Extender ecosistema, templates, infra, recursion | 4 |
-| [05 — Casos de Uso](academia/05-casos-de-uso/) | Casos reales por industria | 20 |
+| [05 — Casos de Uso](academia/05-casos-de-uso/) | Casos reales por industria | 21 |
 | [06 — Referencia](academia/06-referencia/) | Comandos, skills, glosario, troubleshooting | 5 |
 | [07 — Verificacion](academia/07-verificacion/) | Quizzes por nivel + checklist de graduacion | 5 |
 

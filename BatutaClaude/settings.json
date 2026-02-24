@@ -14,7 +14,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash infra/hooks/session-start.sh"
+            "command": "bash ~/.claude/hooks/session-start.sh"
           }
         ]
       }
@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash infra/hooks/session-save.sh"
+            "command": "bash ~/.claude/hooks/session-save.sh"
           },
           {
             "type": "prompt",
@@ -49,7 +49,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash infra/hooks/orta-teammate-idle.sh"
+            "command": "bash ~/.claude/hooks/orta-teammate-idle.sh"
           }
         ]
       }
@@ -59,7 +59,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash infra/hooks/orta-task-gate.sh"
+            "command": "bash ~/.claude/hooks/orta-task-gate.sh"
           }
         ]
       }

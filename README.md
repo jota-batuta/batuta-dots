@@ -16,7 +16,7 @@ Inspired by [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.
 - **CTO/Mentor personality** that educates and documents for non-technical stakeholders.
 - **Scope Rule** that organizes files by who uses them, not by type.
 - **Skill Gap Detection** with automatic research via Context7.
-- **Lazy skill loading** — Claude reads ~186 lines at startup, skills load on demand.
+- **Lazy skill loading** — Claude reads ~220 lines at startup, skills load on demand.
 - **Mix-of-Experts routing** — principal agent delegates to specialized scope agents.
 - **Execution Gate** — mandatory pre-validation before any code change.
 - **Skill-Sync** — routing tables auto-generated from skill frontmatters.
@@ -94,7 +94,7 @@ batuta-dots/
 │   ├── architecture/                  # Architecture and design
 │   │   ├── arquitectura-diagrama.md   # Mermaid architecture diagrams (15+ diagrams)
 │   │   └── arquitectura-para-no-tecnicos.md  # Non-technical guide (restaurant analogy, 15+ roles)
-│   ├── guides/                        # Step-by-step execution guides (10 guides, Spanish)
+│   ├── guides/                        # Step-by-step execution guides (12 guides, Spanish)
 │   │   ├── guia-batuta-app.md         # Dashboard app — full lifecycle guide
 │   │   ├── guia-temporal-io-app.md    # Temporal.io workflows — full lifecycle guide
 │   │   ├── guia-langchain-gmail-agent.md  # LangChain + Gmail agent guide
@@ -104,16 +104,15 @@ batuta-dots/
 │   │   ├── guia-cli-python.md         # Python CLI tool guide
 │   │   ├── guia-data-pipeline.md      # Data pipeline (ETL) guide
 │   │   ├── guia-refactoring-legacy.md # Legacy refactoring guide
-│   │   └── guia-ai-agent-adk.md       # AI agent (Google ADK) guide
+│   │   ├── guia-ai-agent-adk.md       # AI agent (Google ADK) guide
+│   │   ├── guia-auditoria-contable.md # Accounting audit (CTO v10.0) guide
+│   │   └── guia-seleccion-personal.md # Personnel selection (CTO v10.0) guide
 │   └── qa/                            # Quality assurance reports
-│       ├── BatutaTestCalidadV5.md     # Quality test report v5
-│       ├── BatutaTestCalidadV6.md     # Quality test report v6
-│       ├── BatutaTestCalidadV7.md     # Quality test report v7
-│       ├── BatutaTestCalidadV9.md     # Quality test report v9
-│       ├── LogCorrecciones-V5.md      # Corrections log v5
-│       ├── LogCorrecciones-V6.md      # Corrections log v6
-│       ├── LogCorrecciones-V7.md      # Corrections log v7
-│       └── LogCorrecciones-V9.md      # Corrections log v9
+│       ├── README.md                  # QA index
+│       ├── audits/                    # Quality audit reports (v5-v9)
+│       ├── corrections/               # Correction logs (v5-v9.2)
+│       ├── integration-tests/         # Integration test reports (12 guides)
+│       └── smoke-tests/              # Smoke test reports (5 reports)
 ├── teams/                             # Agent Team assets
 │   ├── templates/                     # Pre-built team compositions per stack
 │   │   ├── nextjs-saas.md             # Next.js SaaS team template
@@ -123,12 +122,13 @@ batuta-dots/
 │   │   ├── data-pipeline.md          # Data pipeline team template
 │   │   └── refactoring.md            # Legacy refactoring team template
 │   └── playbook.md                    # Team patterns and best practices
-├── CHANGELOG-refactor.md              # Refactoring trace document (v1-v9)
-└── skills/                            # Repository-level scripts
+├── CHANGELOG-refactor.md              # Refactoring trace document (v1-v10.1)
+├── academia/                          # Training course (8 modules, 53 lessons)
+└── infra/                             # Infrastructure & setup scripts
     ├── setup.sh                       # Claude Code setup (primary)
     ├── replicate-platform.sh          # Multi-platform replication (future)
     ├── setup_test.sh                  # Verification tests (51 tests)
-    └── hooks/                         # O.R.T.A. hooks for Agent Teams
+    └── hooks/                         # O.R.T.A. hooks (native Claude Code hooks)
         ├── session-start.sh           # SessionStart — inject session.md as context
         ├── session-save.sh            # Stop — log session end event
         ├── orta-teammate-idle.sh      # TeammateIdle — log teammate completion
@@ -141,10 +141,10 @@ batuta-dots/
 
 1. **CLAUDE.md** is the single entry point. It acts as a pure router using Mix-of-Experts: it classifies each request's scope and delegates to specialized scope agents.
 2. **setup.sh --all** syncs skills and agents, runs skill-sync to regenerate routing tables, installs hooks + permissions to `~/.claude/settings.json`, then copies the updated CLAUDE.md to root.
-3. **Claude Code** reads CLAUDE.md at conversation start (~186 lines), then uses 3-level lazy loading: principal agent → scope agent → skill.
+3. **Claude Code** reads CLAUDE.md at conversation start (~220 lines), then uses 3-level lazy loading: principal agent → scope agent → skill.
 
 ```
-CLAUDE.md (router — ~186 lines)
+CLAUDE.md (router — ~220 lines)
     │
     ├──> Execution Gate (validate → classify → route → log)
     │
@@ -199,7 +199,7 @@ The principal agent acts as a pure router. It classifies the scope of each reque
 | `infra-agent` | File organization, ecosystem, security | scope-rule, ecosystem-creator, skill-sync, team-orchestrator, security-audit |
 | `observability-agent` | Quality tracking | prompt-tracker |
 
-This keeps the principal agent lightweight (~186 lines) and each scope agent focused on its domain.
+This keeps the principal agent lightweight (~220 lines) and each scope agent focused on its domain.
 
 ### Execution Gate
 
@@ -222,7 +222,7 @@ Before writing code with any technology, Claude checks if an active skill exists
 
 | Level | What loads | Lines |
 |-------|-----------|-------|
-| 1 | CLAUDE.md (router) | ~186 |
+| 1 | CLAUDE.md (router) | ~220 |
 | 2 | Scope agent | ~80-120 |
 | 3 | Individual skill | ~200-500 |
 
@@ -265,6 +265,15 @@ When new skills are created in a project, Claude proposes propagating them back 
 | `security-audit` | infra, pipeline | AI-first security: OWASP + prompt injection + secrets scanning + dependency audit |
 | `sdd-init` through `sdd-archive` | pipeline | 9-phase SDD pipeline |
 | `prompt-tracker` | observability | Track prompt satisfaction, gate compliance, and analyze patterns |
+| `process-analyst` | pipeline | Complex process analysis with 3+ case variants |
+| `recursion-designer` | pipeline | External taxonomies, categories that change, learning systems |
+| `compliance-colombia` | pipeline | Colombian data protection, tax retention, AI compliance |
+| `data-pipeline-design` | pipeline | ETL, ERP integrations, data quality patterns |
+| `llm-pipeline-design` | pipeline | LLM classifiers, prompt engineering, drift detection |
+| `worker-scaffold` | pipeline | Temporal workers, Docker, Coolify deploy, monitoring |
+| `fastapi-crud` | pipeline | FastAPI CRUD patterns and best practices |
+| `jwt-auth` | pipeline | JWT authentication implementation patterns |
+| `sqlalchemy-models` | pipeline | SQLAlchemy ORM model patterns |
 
 ---
 
@@ -278,6 +287,7 @@ When new skills are created in a project, Claude proposes propagating them back 
 | `/sdd-explore <topic>` | pipeline | Explore idea and constraints |
 | `/sdd-new <change-name>` | pipeline | Start change proposal flow |
 | `/sdd-continue [change-name]` | pipeline | Run next dependency-ready phase |
+| `/sdd-ff [change-name]` | pipeline | Fast-forward: propose → spec → design → tasks |
 | `/sdd-apply [change-name]` | pipeline + infra | Implement tasks in batches |
 | `/sdd-verify [change-name]` | pipeline | Validate implementation |
 | `/sdd-archive [change-name]` | pipeline | Close and persist final state |
@@ -325,7 +335,7 @@ Step-by-step execution guides (12 guides) covering the full lifecycle: ecosystem
 
 ## Academia (Training Manual)
 
-Complete training course for Batuta Dots — from zero to autonomous usage. 55 lessons across 8 modules, 20 real-world use cases across 10 industries.
+Complete training course for Batuta Dots — from zero to autonomous usage. 53 lessons across 8 modules, 21 real-world use cases across 10 industries.
 
 | Module | Content | Lessons |
 |--------|---------|---------|
@@ -334,7 +344,7 @@ Complete training course for Batuta Dots — from zero to autonomous usage. 55 l
 | [02 — Level One](academia/02-nivel-uno/) | Skills catalog, agents, CTO layer, Scope Rule | 5 |
 | [03 — Level Two](academia/03-nivel-dos/) | Debugging, validation, teams, compliance, hooks | 5 |
 | [04 — Level Three](academia/04-nivel-tres/) | Extending ecosystem, templates, infra, recursion | 4 |
-| [05 — Use Cases](academia/05-casos-de-uso/) | Real-world cases by industry | 20 |
+| [05 — Use Cases](academia/05-casos-de-uso/) | Real-world cases by industry | 21 |
 | [06 — Reference](academia/06-referencia/) | Commands, skills, glossary, troubleshooting | 5 |
 | [07 — Verification](academia/07-verificacion/) | Quizzes per level + graduation checklist | 5 |
 

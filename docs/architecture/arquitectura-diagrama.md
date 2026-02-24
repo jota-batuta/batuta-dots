@@ -1,4 +1,4 @@
-# Diagrama de Arquitectura — Ecosistema Batuta (v10.0)
+# Diagrama de Arquitectura — Ecosistema Batuta (v10.1)
 
 ## Vista General del Ecosistema
 
@@ -62,7 +62,7 @@ flowchart TB
 flowchart TD
     USER["Usuario escribe prompt"]
     GATE["Execution Gate<br/>VALIDATE → CLASSIFY → ROUTE → LOG"]
-    ROUTER["CLAUDE.md (Router)<br/>~186 lineas: personalidad,<br/>reglas, routing table"]
+    ROUTER["CLAUDE.md (Router)<br/>~220 lineas: personalidad,<br/>reglas, routing table"]
 
     subgraph AGENTS["SCOPE AGENTS"]
         PIPELINE["pipeline-agent<br/>SDD Pipeline<br/>(9 skills)"]
@@ -196,7 +196,7 @@ graph LR
 ```mermaid
 flowchart TD
     START["Claude inicia conversacion"]
-    READ["Nivel 1: Lee CLAUDE.md<br/>(~186 lineas: personalidad,<br/>reglas, scope routing table)"]
+    READ["Nivel 1: Lee CLAUDE.md<br/>(~220 lineas: personalidad,<br/>reglas, scope routing table)"]
     TASK["Usuario pide tarea"]
     GATE["Execution Gate<br/>clasifica scope"]
     LOAD_AGENT["Nivel 2: Carga scope-agent<br/>(~80-120 lineas:<br/>reglas del scope)"]
@@ -216,7 +216,7 @@ flowchart TD
     style DIRECT fill:#666,color:#fff
 ```
 
-> Claude lee ~186 lineas al iniciar (Nivel 1). El scope agent agrega ~100 lineas (Nivel 2). El skill agrega ~200-500 lineas (Nivel 3). Solo se carga lo que se necesita.
+> Claude lee ~220 lineas al iniciar (Nivel 1). El scope agent agrega ~100 lineas (Nivel 2). El skill agrega ~200-500 lineas (Nivel 3). Solo se carga lo que se necesita.
 
 ---
 
@@ -825,15 +825,16 @@ flowchart TD
 
 ---
 
-## Folder Structure (v9)
+## Folder Structure (v10.1)
 
 ```mermaid
 flowchart TD
     subgraph ROOT["batuta-dots/"]
         CLAUDE_DIR["BatutaClaude/<br/>CLAUDE.md, settings.json,<br/>agents/, skills/, commands/"]
-        SKILLS_DIR["skills/<br/>setup.sh, hooks/"]
+        INFRA_DIR["infra/<br/>setup.sh, hooks/"]
         DOCS["docs/<br/>architecture/, guides/, qa/"]
         TEAMS["teams/<br/>templates/, playbook.md"]
+        ACADEMIA["academia/<br/>8 modulos, 53 lecciones"]
         README["README.md, README.es.md"]
         CHANGELOG["CHANGELOG-refactor.md"]
     end
@@ -841,13 +842,13 @@ flowchart TD
     subgraph CLAUDE_DETAIL["BatutaClaude/"]
         CLAUDE_MD["CLAUDE.md (router)"]
         AGENTS["agents/<br/>pipeline, infra, observability"]
-        SKILLS_24["skills/ (24 skills)<br/>sdd-*, ecosystem, scope-rule,<br/>skill-sync, team-orchestrator,<br/>prompt-tracker, security-audit,<br/>+ 6 CTO specialists (v10.0)"]
+        SKILLS_24["skills/ (24 skills)<br/>sdd-*, ecosystem, scope-rule,<br/>skill-sync, team-orchestrator,<br/>prompt-tracker, security-audit,<br/>+ 6 CTO specialists (v10.0)<br/>+ 3 technology skills"]
     end
 
     subgraph DOCS_DETAIL["docs/"]
         ARCH["architecture/<br/>diagrama, para-no-tecnicos"]
-        GUIDES["guides/<br/>10 guias de uso"]
-        QA["qa/<br/>auditorias v5-v9"]
+        GUIDES["guides/<br/>12 guias de uso"]
+        QA["qa/<br/>auditorias, correcciones,<br/>tests integracion, smoke tests"]
     end
 
     CLAUDE_DIR --> CLAUDE_DETAIL
