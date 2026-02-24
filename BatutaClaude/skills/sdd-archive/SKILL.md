@@ -11,6 +11,7 @@ metadata:
   scope: [pipeline]
   auto_invoke: "Archiving completed changes, /sdd-archive"
 allowed-tools: Read, Edit, Write, Glob, Grep
+platforms: [claude, antigravity]
 ---
 
 ## Purpose

@@ -190,6 +190,18 @@ sync_opencode() {
     fi
 }
 
+sync_antigravity() {
+    log_info "Syncing Antigravity via infra/sync.sh --to-antigravity"
+
+    local sync_script="$REPO_ROOT/infra/sync.sh"
+    if [[ -f "$sync_script" ]]; then
+        bash "$sync_script" --to-antigravity
+    else
+        log_error "infra/sync.sh not found. Run from batuta-dots root."
+        return 1
+    fi
+}
+
 generate_all() {
     log_header "Replicating to All Platforms"
 
@@ -197,6 +209,8 @@ generate_all() {
     generate_codex
     generate_copilot
     sync_opencode
+    echo ""
+    sync_antigravity
 
     echo ""
     log_success "All platforms replicated!"
@@ -217,16 +231,18 @@ The main setup.sh is Claude-only. Use this script to extend to other platforms.
 Usage: ./infra/replicate-platform.sh [OPTIONS]
 
 Generation Options:
-  --gemini      Generate GEMINI.md from CLAUDE.md
-  --copilot     Generate .github/copilot-instructions.md from CLAUDE.md
-  --codex       Generate CODEX.md from CLAUDE.md
-  --opencode    Sync skills to OpenCode config (~/.config/opencode/)
-  --all         Generate all of the above at once
-  --help, -h    Show this help message
+  --gemini        Generate GEMINI.md from CLAUDE.md (deprecated — use --antigravity)
+  --antigravity   Sync Antigravity-compatible skills to BatutaAntigravity/
+                    Uses dedicated GEMINI.md with full CTO brain adapted for Antigravity.
+  --copilot       Generate .github/copilot-instructions.md from CLAUDE.md
+  --codex         Generate CODEX.md from CLAUDE.md
+  --opencode      Sync skills to OpenCode config (~/.config/opencode/)
+  --all           Generate all of the above at once
+  --help, -h      Show this help message
 
 Examples:
-  ./infra/replicate-platform.sh --gemini    # Just Gemini
-  ./infra/replicate-platform.sh --all       # Everything
+  ./infra/replicate-platform.sh --antigravity  # Antigravity (recommended)
+  ./infra/replicate-platform.sh --all          # Everything
 EOF
 }
 
@@ -236,7 +252,12 @@ EOF
 
 parse_args() {
     case "$1" in
-        --gemini)    generate_gemini ;;
+        --gemini)
+            log_warning "--gemini is deprecated. GEMINI.md for Gemini CLI is a verbatim copy."
+            log_info "For Antigravity, use --antigravity (dedicated GEMINI.md + filtered skills)."
+            generate_gemini
+            ;;
+        --antigravity) sync_antigravity ;;
         --copilot)   generate_copilot ;;
         --codex)     generate_codex ;;
         --opencode)  sync_opencode ;;

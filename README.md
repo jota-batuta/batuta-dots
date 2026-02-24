@@ -90,6 +90,15 @@ batuta-dots/
 │           └── assets/
 │               ├── sync.sh
 │               └── sync_test.sh
+├── BatutaAntigravity/                 # Antigravity IDE configuration (Lite)
+│   ├── GEMINI.md                      # Full CTO brain adapted for Antigravity
+│   ├── setup-antigravity.sh           # Setup script (--global / --workspace / --all)
+│   ├── settings-template.json         # Recommended Antigravity config
+│   └── workflows/                     # Saved prompts (SDD + session + sync)
+│       ├── sdd-init.md ... sdd-archive.md  # SDD pipeline (8 workflows)
+│       ├── save-session.md            # Save state (replaces Stop hook)
+│       ├── push-skill.md             # Propagate local skill to hub
+│       └── batuta-update.md          # Update from hub
 ├── docs/                              # All documentation
 │   ├── architecture/                  # Architecture and design
 │   │   ├── arquitectura-diagrama.md   # Mermaid architecture diagrams (15+ diagrams)
@@ -126,7 +135,8 @@ batuta-dots/
 ├── academia/                          # Training course (8 modules, 53 lessons)
 └── infra/                             # Infrastructure & setup scripts
     ├── setup.sh                       # Claude Code setup (primary)
-    ├── replicate-platform.sh          # Multi-platform replication (future)
+    ├── sync.sh                        # Bidirectional skill sync (hub ↔ projects)
+    ├── replicate-platform.sh          # Multi-platform replication
     ├── setup_test.sh                  # Verification tests (51 tests)
     └── hooks/                         # O.R.T.A. hooks (native Claude Code hooks)
         ├── session-start.sh           # SessionStart — inject session.md as context
@@ -158,9 +168,30 @@ CLAUDE.md (router — ~220 lines)
               └── TaskCompleted hook → quality gate
 ```
 
-Need other platforms later?
+### Multi-Platform: Claude Code + Antigravity
+
+Batuta supports parallel execution across platforms — Claude Code (Full) for complex projects and Google Antigravity IDE (Lite) for quick wins:
+
+| Aspect | Claude Code (Full) | Antigravity (Lite) |
+|--------|-------------------|-------------------|
+| Brain | Full CTO via CLAUDE.md | Full CTO via GEMINI.md |
+| Commands | Slash commands (native) | Workflows (saved prompts) |
+| Hooks | Native (SessionStart, PreToolUse, Stop) | Behavioral rules |
+| Skills | `~/.claude/skills/` | `.agent/skills/` or `~/.gemini/antigravity/skills/` |
+| Multi-agent | Agent Teams | Manager View |
+| Cost | Claude Max x20 ($200/mo) | Free (preview) |
+
+Skills are platform-agnostic (SKILL.md open standard). The `platforms` field in frontmatter controls which platforms receive each skill during sync. See the [Antigravity Guide](docs/guides/guia-batuta-antigravity.md).
+
 ```bash
-./infra/replicate-platform.sh --all   # Generates GEMINI.md, CODEX.md, copilot-instructions.md
+# Setup Antigravity in a project
+bash BatutaAntigravity/setup-antigravity.sh --workspace
+
+# Sync skills filtered by platforms tag
+bash infra/sync.sh --to-antigravity
+
+# Other platforms (Gemini CLI, Codex, Copilot)
+./infra/replicate-platform.sh --all
 ```
 
 ---
@@ -305,8 +336,9 @@ When new skills are created in a project, Claude proposes propagating them back 
 |------|--------|
 | `--claude` | Copy CLAUDE.md to project root |
 | `--sync` | Sync skills + agents + commands to ~/.claude/ |
-| `--all` | Full setup: sync + skill-sync + hooks + copy (recommended) |
+| `--all` | Full setup: sync + skill-sync + hooks + copy + antigravity (recommended) |
 | `--hooks` | Install hooks + permissions to ~/.claude/settings.json |
+| `--antigravity` | Sync Antigravity-compatible skills to BatutaAntigravity/skills/ |
 | `--project <path>` | Setup a target project (CLAUDE.md + .batuta/ + git + hooks) |
 | `--verify` | Verify setup (51 checks) |
 
@@ -343,7 +375,7 @@ Complete training course for Batuta Dots — from zero to autonomous usage. 53 l
 | [01 — Level Zero](academia/01-nivel-cero/) | First project, commands, SDD pipeline, gates | 4 |
 | [02 — Level One](academia/02-nivel-uno/) | Skills catalog, agents, CTO layer, Scope Rule | 5 |
 | [03 — Level Two](academia/03-nivel-dos/) | Debugging, validation, teams, compliance, hooks | 5 |
-| [04 — Level Three](academia/04-nivel-tres/) | Extending ecosystem, templates, infra, recursion | 4 |
+| [04 — Level Three](academia/04-nivel-tres/) | Extending ecosystem, templates, infra, recursion, multi-platform | 5 |
 | [05 — Use Cases](academia/05-casos-de-uso/) | Real-world cases by industry | 21 |
 | [06 — Reference](academia/06-referencia/) | Commands, skills, glossary, troubleshooting | 5 |
 | [07 — Verification](academia/07-verificacion/) | Quizzes per level + graduation checklist | 5 |

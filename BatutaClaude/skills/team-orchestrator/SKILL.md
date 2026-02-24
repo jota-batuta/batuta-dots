@@ -15,6 +15,7 @@ metadata:
     - "Spawning a team for complex tasks"
     - "Coordinating multi-agent work"
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash, Task
+platforms: [claude]
 ---
 
 # Team Orchestrator

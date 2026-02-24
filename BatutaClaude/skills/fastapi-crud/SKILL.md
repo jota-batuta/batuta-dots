@@ -13,6 +13,7 @@ metadata:
   scope: [infra]
   auto_invoke: "Creating FastAPI CRUD endpoints, REST API routes"
 allowed-tools: Read, Glob, Grep, Write, Edit
+platforms: [claude, antigravity]
 ---
 
 ## Purpose

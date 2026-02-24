@@ -4,6 +4,47 @@
 
 ---
 
+## v10.2 — Multi-Platform Support: BatutaAntigravity + Bidirectional Sync (2026-02-24)
+
+### Contexto
+
+El desarrollador usa Claude Code (Max x20, $200/mes) para proyectos complejos. Google Antigravity IDE es gratis durante preview con Gemini 3 Pro. La estrategia: ejecucion en paralelo — Claude Code para arquitectura y features complejas, Antigravity para scripts, automatizaciones y quick wins. Ambos comparten el mismo cerebro CTO y skills via batuta-dots como hub central.
+
+### Contenido creado
+
+- `BatutaAntigravity/` subfolder completo (GEMINI.md + 11 workflows + setup script + settings template)
+- `infra/sync.sh` — Motor de sync bidireccional (--to-antigravity, --from-project, --all)
+- Campo `platforms` en los 24 SKILL.md (22 = [claude, antigravity], 2 = [claude])
+- `.batuta/ecosystem.json` — version tracking para detectar drift entre hub y proyectos
+- `docs/guides/guia-batuta-antigravity.md` — Guia de uso multi-plataforma
+- `academia/04-nivel-tres/leccion-05-multi-plataforma.md` — Leccion academia
+
+### Archivos modificados
+
+- `BatutaClaude/CLAUDE.md`: +PORTABLE SKILLS en Philosophy, +ecosystem.json en Session Continuity
+- `BatutaClaude/agents/infra-agent.md`: Ecosystem Auto-Update implementado (era placeholder)
+- `BatutaClaude/skills/skill-sync/SKILL.md`: +platforms field documentation
+- `BatutaClaude/skills/*/SKILL.md` (24 archivos): +campo `platforms` en frontmatter
+- `infra/setup.sh`: +sync_antigravity(), +ecosystem.json generation, +--antigravity flag
+- `infra/hooks/session-start.sh`: +ecosystem.json version drift detection
+- `infra/replicate-platform.sh`: +--antigravity flag, deprecate --gemini
+- README.md, README.es.md: +seccion multi-platform, +BatutaAntigravity/ en directory tree
+- `docs/architecture/arquitectura-diagrama.md`: +Hub & Spoke diagram, +folder structure v10.2
+- `docs/architecture/arquitectura-para-no-tecnicos.md`: +analogia "Dos Cocinas"
+- CHANGELOG-refactor.md: +entrada v10.2
+
+### Principio de diseno
+
+- **PORTABLE SKILLS**: Skills son agnósticos de plataforma (estándar abierto SKILL.md). El campo `platforms` en frontmatter controla distribucion. batuta-dots es el hub; proyectos y plataformas son spokes.
+- **Full Brain, Adapted Body**: GEMINI.md conserva el 100% del cerebro CTO (filosofia, gates, skills, comportamiento). Solo adapta la ejecucion a lo que Antigravity puede hacer (rules en vez de hooks, workflows en vez de commands).
+- **Hub & Spoke Sync**: Flujo bidireccional — skills creados en cualquier proyecto/plataforma se propagan al hub, y del hub a todos los spokes.
+
+### Rollback
+
+git revert del commit, o rm -rf BatutaAntigravity/ y revertir cambios en los archivos listados.
+
+---
+
 ## v10.1 -- Academia: Manual de Capacitacion Completo (2026-02-24)
 
 ### Contexto

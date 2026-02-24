@@ -13,6 +13,7 @@ metadata:
   scope: [pipeline]
   auto_invoke: "Creating change proposals, /sdd-new"
 allowed-tools: Read, Edit, Write, Glob, Grep
+platforms: [claude, antigravity]
 ---
 
 ## Purpose

@@ -1,0 +1,486 @@
+#!/usr/bin/env bash
+# ============================================================================
+# Batuta.Dots — Antigravity (Gemini CLI) Setup Script
+# ============================================================================
+# Sets up the Batuta ecosystem for Google's Antigravity (Gemini CLI).
+# Copies GEMINI.md to the project root and syncs cross-platform skills
+# that declare `platforms:.*antigravity` in their SKILL.md frontmatter.
+#
+# WHY this exists as a separate script from infra/setup.sh:
+#   Antigravity has a different directory structure (~/.gemini/antigravity/
+#   for global, .agent/skills/ for workspace) and different entry-point
+#   file (GEMINI.md). Keeping it separate avoids bloating the Claude
+#   setup script with conditional logic for every platform.
+#
+# Usage:
+#   ./BatutaAntigravity/setup-antigravity.sh              # Interactive menu
+#   ./BatutaAntigravity/setup-antigravity.sh --global      # Install skills to ~/.gemini/antigravity/skills/
+#   ./BatutaAntigravity/setup-antigravity.sh --workspace   # Install skills to .agent/skills/
+#   ./BatutaAntigravity/setup-antigravity.sh --all         # Both global and workspace
+#   ./BatutaAntigravity/setup-antigravity.sh --help        # Show help
+#
+# Platform: Windows (Git Bash / MSYS2 / MINGW) and native Unix
+# ============================================================================
+
+set -e
+
+# ============================================================================
+# Colors
+# ============================================================================
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+BOLD='\033[1m'
+
+# ============================================================================
+# Path Resolution (Windows / Git Bash / MSYS / native Unix)
+# ============================================================================
+
+resolve_home() {
+    if [[ -n "$USERPROFILE" && ("$OSTYPE" == msys* || "$OSTYPE" == mingw* || "$OSTYPE" == cygwin*) ]]; then
+        local win_home
+        win_home=$(echo "$USERPROFILE" | sed 's|\\|/|g')
+        if [[ "$win_home" =~ ^([A-Za-z]): ]]; then
+            local drive_letter
+            drive_letter=$(echo "${BASH_REMATCH[1]}" | tr '[:upper:]' '[:lower:]')
+            win_home="/${drive_letter}${win_home:2}"
+        fi
+        echo "$win_home"
+    else
+        echo "$HOME"
+    fi
+}
+
+HOME_DIR="$(resolve_home)"
+
+# ============================================================================
+# Detect batuta-dots location
+# ============================================================================
+# WHY three fallback locations: Users may clone batuta-dots to ~/batuta-dots
+# (recommended), /tmp/batuta-dots (ephemeral/CI), or this script may be run
+# from within the repo itself. We check all three before giving up.
+
+detect_repo_root() {
+    # 1. If this script lives inside the repo, use that
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local candidate="$(cd "$script_dir/.." && pwd)"
+    if [[ -d "$candidate/BatutaAntigravity" && -d "$candidate/BatutaClaude" ]]; then
+        echo "$candidate"
+        return 0
+    fi
+
+    # 2. Check ~/batuta-dots
+    if [[ -d "$HOME_DIR/batuta-dots/BatutaAntigravity" ]]; then
+        echo "$HOME_DIR/batuta-dots"
+        return 0
+    fi
+
+    # 3. Check /tmp/batuta-dots (CI / ephemeral)
+    if [[ -d "/tmp/batuta-dots/BatutaAntigravity" ]]; then
+        echo "/tmp/batuta-dots"
+        return 0
+    fi
+
+    # 4. Clone from GitHub as last resort
+    log_warning "batuta-dots not found locally. Cloning from GitHub..."
+    if command -v git &>/dev/null; then
+        git clone --depth 1 https://github.com/batuta/batuta-dots.git "$HOME_DIR/batuta-dots" 2>/dev/null || {
+            log_error "Failed to clone batuta-dots. Please clone manually to ~/batuta-dots"
+            return 1
+        }
+        echo "$HOME_DIR/batuta-dots"
+        return 0
+    else
+        log_error "git not found and batuta-dots not in ~/batuta-dots or /tmp/batuta-dots"
+        return 1
+    fi
+}
+
+# ============================================================================
+# Utility Functions
+# ============================================================================
+
+log_info()    { printf "${CYAN}[INFO]${NC} %s\n" "$1"; }
+log_success() { printf "${GREEN}[OK]${NC} %s\n" "$1"; }
+log_warning() { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
+log_error()   { printf "${RED}[ERROR]${NC} %s\n" "$1"; }
+
+log_header() {
+    printf "\n${CYAN}${BOLD}================================================================${NC}\n"
+    printf "${CYAN}${BOLD}  %s${NC}\n" "$1"
+    printf "${CYAN}${BOLD}================================================================${NC}\n\n"
+}
+
+# ============================================================================
+# Copy GEMINI.md to project root
+# ============================================================================
+
+copy_gemini_md() {
+    local source_file="$REPO_ROOT/BatutaAntigravity/GEMINI.md"
+    local output_file="$REPO_ROOT/GEMINI.md"
+
+    log_info "Copying BatutaAntigravity/GEMINI.md to project root"
+
+    if [[ ! -f "$source_file" ]]; then
+        log_error "BatutaAntigravity/GEMINI.md not found at $source_file"
+        return 1
+    fi
+
+    cp -f "$source_file" "$output_file"
+    log_success "Created $output_file (direct copy from BatutaAntigravity/GEMINI.md)"
+}
+
+# ============================================================================
+# Filter skills by platform: antigravity
+# ============================================================================
+# WHY grep frontmatter instead of a config file: SKILL.md is the single source
+# of truth for each skill's metadata. A separate registry would drift out of
+# sync. Scanning frontmatter keeps the skill self-describing.
+
+get_antigravity_skills() {
+    local skills_dir="$1"
+    local matched_skills=()
+
+    for skill_dir in "$skills_dir"/*/; do
+        [[ ! -d "$skill_dir" ]] && continue
+        local skill_md="$skill_dir/SKILL.md"
+        [[ ! -f "$skill_md" ]] && continue
+
+        # Check if SKILL.md frontmatter declares antigravity as a platform
+        if grep -q "platforms:.*antigravity" "$skill_md" 2>/dev/null; then
+            matched_skills+=("$skill_dir")
+        fi
+    done
+
+    # WHY printf instead of echo: handles skill names with spaces or special
+    # characters safely, and produces one-per-line output for the caller.
+    printf '%s\n' "${matched_skills[@]}"
+}
+
+# ============================================================================
+# Install skills to a target directory
+# ============================================================================
+
+install_skills_to() {
+    local target_dir="$1"
+    local label="$2"
+    local skills_src="$REPO_ROOT/BatutaClaude/skills"
+
+    log_info "Syncing antigravity-compatible skills to $label ($target_dir)"
+
+    if [[ ! -d "$skills_src" ]]; then
+        log_error "Source skills directory not found: $skills_src"
+        return 1
+    fi
+
+    mkdir -p "$target_dir"
+
+    local count=0
+    for skill_dir in "$skills_src"/*/; do
+        [[ ! -d "$skill_dir" ]] && continue
+        local skill_md="$skill_dir/SKILL.md"
+        [[ ! -f "$skill_md" ]] && continue
+
+        # Only copy skills that declare antigravity platform support
+        if ! grep -q "platforms:.*antigravity" "$skill_md" 2>/dev/null; then
+            continue
+        fi
+
+        local skill_name
+        skill_name=$(basename "$skill_dir")
+
+        mkdir -p "$target_dir/$skill_name"
+
+        # Copy SKILL.md (ensure writable in case of previous read-only copy)
+        local dest_file="$target_dir/$skill_name/SKILL.md"
+        if [[ -f "$dest_file" ]]; then
+            chmod u+w "$dest_file" 2>/dev/null || true
+        fi
+        cp -f "$skill_md" "$dest_file"
+
+        # Copy assets directory if it exists
+        if [[ -d "$skill_dir/assets" ]]; then
+            chmod -R u+w "$target_dir/$skill_name/assets" 2>/dev/null || true
+            cp -rf "$skill_dir/assets" "$target_dir/$skill_name/"
+        fi
+
+        log_info "  -> Copied $skill_name"
+        count=$((count + 1))
+    done
+
+    # Also copy any skills already in BatutaAntigravity/skills/ (platform-native)
+    local antigravity_skills="$REPO_ROOT/BatutaAntigravity/skills"
+    if [[ -d "$antigravity_skills" ]]; then
+        for skill_dir in "$antigravity_skills"/*/; do
+            [[ ! -d "$skill_dir" ]] && continue
+            local skill_name
+            skill_name=$(basename "$skill_dir")
+
+            # WHY skip duplicates: if a skill was already copied from BatutaClaude,
+            # the BatutaClaude version is canonical. Antigravity-native skills only
+            # get copied if they don't exist in the hub.
+            if [[ -d "$target_dir/$skill_name" ]]; then
+                log_info "  -> Skipping $skill_name (already copied from hub)"
+                continue
+            fi
+
+            if [[ -f "$skill_dir/SKILL.md" ]]; then
+                mkdir -p "$target_dir/$skill_name"
+                cp -f "$skill_dir/SKILL.md" "$target_dir/$skill_name/SKILL.md"
+                if [[ -d "$skill_dir/assets" ]]; then
+                    cp -rf "$skill_dir/assets" "$target_dir/$skill_name/"
+                fi
+                log_info "  -> Copied $skill_name (antigravity-native)"
+                count=$((count + 1))
+            fi
+        done
+    fi
+
+    if [[ $count -eq 0 ]]; then
+        log_warning "No antigravity-compatible skills found"
+        log_info "Skills need 'platforms:.*antigravity' in their SKILL.md frontmatter"
+    else
+        log_success "Synced $count skills to $label"
+    fi
+}
+
+# ============================================================================
+# Install to global (~/.gemini/antigravity/skills/)
+# ============================================================================
+
+install_global() {
+    local global_dir="$HOME_DIR/.gemini/antigravity/skills"
+    install_skills_to "$global_dir" "~/.gemini/antigravity/skills/ (global)"
+}
+
+# ============================================================================
+# Install to workspace (.agent/skills/)
+# ============================================================================
+
+install_workspace() {
+    local workspace_dir="$REPO_ROOT/.agent/skills"
+    install_skills_to "$workspace_dir" ".agent/skills/ (workspace)"
+}
+
+# ============================================================================
+# Create .batuta/ directory with session template and ecosystem config
+# ============================================================================
+# WHY .batuta/ in the project root: this is the Batuta ecosystem's local state
+# directory, shared across all platforms (Claude, Antigravity, Copilot). It
+# holds session continuity data and ecosystem metadata.
+
+create_batuta_dir() {
+    local batuta_dir="$REPO_ROOT/.batuta"
+    mkdir -p "$batuta_dir"
+
+    # Session template
+    if [[ ! -f "$batuta_dir/session.md" ]]; then
+        local project_name
+        project_name=$(basename "$REPO_ROOT")
+        cat > "$batuta_dir/session.md" << SESSIONEOF
+# Session — $project_name
+
+## Project
+- **Name**: $project_name
+- **Type**: (pending detection)
+- **Description**: (pending)
+- **Status**: New project
+- **Platform**: Antigravity (Gemini CLI)
+
+## Current State
+- SDD Phase: not started
+- No active changes
+
+## Decisions
+- (none yet)
+
+## Conventions
+- Scope Rule enforced (features/{name}/{type}/)
+- SDD pipeline mandatory for all new features
+
+## Next Steps
+- Run /sdd-init to detect project type and bootstrap SDD
+SESSIONEOF
+        log_success "Created $batuta_dir/session.md"
+    else
+        log_info "session.md already exists, skipping"
+    fi
+
+    # Ecosystem config
+    if [[ ! -f "$batuta_dir/ecosystem.json" ]]; then
+        cat > "$batuta_dir/ecosystem.json" << 'ECOEOF'
+{
+  "platform": "antigravity",
+  "version": "1.0",
+  "hub": "batuta-dots",
+  "skills_source": "BatutaClaude/skills",
+  "entry_point": "GEMINI.md",
+  "sync": {
+    "filter": "platforms:.*antigravity",
+    "global_target": "~/.gemini/antigravity/skills/",
+    "workspace_target": ".agent/skills/"
+  }
+}
+ECOEOF
+        log_success "Created $batuta_dir/ecosystem.json"
+    else
+        log_info "ecosystem.json already exists, skipping"
+    fi
+}
+
+# ============================================================================
+# All: GEMINI.md + Global + Workspace + .batuta/
+# ============================================================================
+
+do_all() {
+    log_header "Batuta.Dots — Full Antigravity Setup"
+
+    # WHY this order: copy GEMINI.md first (entry point), then skills
+    # (dependencies), then .batuta/ (local state). This way if skills
+    # fail, the entry point is still usable.
+    copy_gemini_md
+    echo ""
+    install_global
+    echo ""
+    install_workspace
+    echo ""
+    create_batuta_dir
+
+    echo ""
+    log_success "Antigravity fully configured!"
+    log_info "Next: open Gemini CLI in your project and start with /sdd-init"
+}
+
+# ============================================================================
+# Interactive Menu
+# ============================================================================
+
+show_menu() {
+    log_header "Batuta.Dots — Antigravity Setup"
+
+    echo "This script configures Antigravity (Gemini CLI) with the Batuta ecosystem."
+    echo "GEMINI.md is the entry point. Skills are filtered by platform compatibility."
+    echo ""
+    printf "  ${CYAN}1)${NC} Copy GEMINI.md to project root\n"
+    printf "  ${CYAN}2)${NC} Install skills globally (~/.gemini/antigravity/skills/)\n"
+    printf "  ${CYAN}3)${NC} Install skills to workspace (.agent/skills/)\n"
+    printf "  ${CYAN}4)${NC} Full setup (GEMINI.md + global + workspace + .batuta/)\n"
+    printf "  ${CYAN}5)${NC} Create .batuta/ directory only\n"
+    printf "  ${CYAN}6)${NC} Help\n"
+    printf "  ${CYAN}0)${NC} Exit\n"
+    echo ""
+    printf "Enter choice [0-6]: "
+}
+
+handle_menu_choice() {
+    case "$1" in
+        1) copy_gemini_md ;;
+        2) install_global ;;
+        3) install_workspace ;;
+        4) do_all ;;
+        5) create_batuta_dir ;;
+        6) show_help ;;
+        0) log_info "Exiting..."; exit 0 ;;
+        *) log_error "Invalid choice: $1"; return 1 ;;
+    esac
+}
+
+interactive_menu() {
+    show_menu
+    read -r choice
+    handle_menu_choice "$choice"
+}
+
+# ============================================================================
+# Help
+# ============================================================================
+
+show_help() {
+    cat << 'EOF'
+Batuta.Dots — Antigravity (Gemini CLI) Setup
+==============================================
+
+Configures Antigravity (Gemini CLI) with the Batuta AI ecosystem.
+GEMINI.md is the entry point. Skills are filtered by platform compatibility.
+
+Usage: ./BatutaAntigravity/setup-antigravity.sh [OPTIONS]
+
+Options:
+  --global      Install antigravity-compatible skills to ~/.gemini/antigravity/skills/
+                  Global skills are available across all Gemini CLI projects.
+                  Only skills with 'platforms:.*antigravity' in SKILL.md are copied.
+  --workspace   Install antigravity-compatible skills to .agent/skills/
+                  Workspace skills are project-local (committed to repo).
+  --all         Full setup: copy GEMINI.md + global + workspace + .batuta/
+                  Recommended for first-time setup.
+  --help, -h    Show this help message
+
+Interactive Mode:
+  Run without arguments for a numbered menu
+
+Skill Filtering:
+  Only skills whose SKILL.md frontmatter contains 'platforms:.*antigravity'
+  are copied. To make a skill available in Antigravity, add to its frontmatter:
+    platforms: [claude, antigravity]
+
+Examples:
+  ./BatutaAntigravity/setup-antigravity.sh --all        # Full setup (recommended)
+  ./BatutaAntigravity/setup-antigravity.sh --global     # Global skills only
+  ./BatutaAntigravity/setup-antigravity.sh --workspace  # Workspace skills only
+  ./BatutaAntigravity/setup-antigravity.sh              # Interactive menu
+
+Related:
+  ./infra/setup.sh                    # Claude Code setup
+  ./infra/replicate-platform.sh       # Other platforms (Copilot, Codex, OpenCode)
+  ./infra/sync.sh                     # Bidirectional skill sync
+
+Platform: Windows (Git Bash / MSYS2 / MINGW64) and native Unix
+EOF
+}
+
+# ============================================================================
+# CLI Argument Parsing
+# ============================================================================
+
+parse_args() {
+    case "$1" in
+        --global)     install_global ;;
+        --workspace)  install_workspace ;;
+        --all)        do_all ;;
+        --help|-h)    show_help; exit 0 ;;
+        *)
+            log_error "Unknown option: $1"
+            echo ""
+            show_help
+            exit 1
+            ;;
+    esac
+}
+
+# ============================================================================
+# Main
+# ============================================================================
+
+main() {
+    REPO_ROOT="$(detect_repo_root)" || {
+        log_error "Could not locate batuta-dots repository"
+        exit 1
+    }
+
+    cd "$REPO_ROOT"
+    log_info "Using batuta-dots at: $REPO_ROOT"
+
+    if [[ $# -eq 0 ]]; then
+        interactive_menu
+    else
+        parse_args "$@"
+    fi
+
+    echo ""
+    log_success "Done!"
+}
+
+main "$@"

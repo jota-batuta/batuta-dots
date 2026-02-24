@@ -14,6 +14,7 @@ metadata:
   scope: [infra]
   auto_invoke: "Creating skills, agents, workflows"
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash, WebFetch, WebSearch, Task
+platforms: [claude, antigravity]
 ---
 
 ## Purpose

@@ -14,6 +14,7 @@ metadata:
   scope: [pipeline]
   auto_invoke: "Starting SDD workflow, /sdd-init"
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash
+platforms: [claude, antigravity]
 ---
 
 ## Purpose

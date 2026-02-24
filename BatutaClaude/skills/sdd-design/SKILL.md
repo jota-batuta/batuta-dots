@@ -12,6 +12,7 @@ metadata:
   scope: [pipeline]
   auto_invoke: "Technical design documents"
 allowed-tools: Read, Edit, Write, Glob, Grep
+platforms: [claude, antigravity]
 ---
 
 ## Purpose

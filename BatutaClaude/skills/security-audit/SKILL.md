@@ -20,6 +20,7 @@ metadata:
     - "Scanning for hardcoded secrets"
     - "Auditing dependencies for known vulnerabilities"
 allowed-tools: Read, Glob, Grep, Bash, WebSearch
+platforms: [claude, antigravity]
 ---
 
 # Security Audit — AI-First Security Practices

@@ -12,6 +12,7 @@ metadata:
   scope: [pipeline]
   auto_invoke: false
 allowed-tools: Read, Glob, Grep, WebSearch
+platforms: [claude, antigravity]
 ---
 
 # LLM Pipeline Design — Intelligence Specialist

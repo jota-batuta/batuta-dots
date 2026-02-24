@@ -15,6 +15,7 @@ metadata:
   scope: [infra]
   auto_invoke: "Creating files, deciding file locations"
 allowed-tools: Read, Glob, Grep
+platforms: [claude, antigravity]
 ---
 
 ## Purpose

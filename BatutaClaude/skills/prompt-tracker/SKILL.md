@@ -15,6 +15,7 @@ metadata:
   scope: [observability]
   auto_invoke: "Tracking satisfaction, analyzing patterns, execution gate"
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash
+platforms: [claude]
 ---
 
 ## Purpose

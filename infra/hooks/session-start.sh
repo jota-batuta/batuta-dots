@@ -82,10 +82,36 @@ Warning: $DAYS_AGO days since last session update. Consider running /batuta-upda
     fi
 fi
 
+# Check ecosystem.json for version drift
+ECOSYSTEM_WARNING=""
+if [[ -f "$BATUTA_DIR/ecosystem.json" ]]; then
+    # WHY: Compare local batuta_version with batuta-dots to detect stale installs
+    LOCAL_VERSION=""
+    case "$_JSON_CMD" in
+        jq)      LOCAL_VERSION=$(jq -r '.batuta_version // ""' "$BATUTA_DIR/ecosystem.json" 2>/dev/null) ;;
+        python3) LOCAL_VERSION=$(python3 -c "import json; d=json.load(open('$BATUTA_DIR/ecosystem.json')); print(d.get('batuta_version',''))" 2>/dev/null) ;;
+        python)  LOCAL_VERSION=$(python -c "import json; d=json.load(open('$BATUTA_DIR/ecosystem.json')); print(d.get('batuta_version',''))" 2>/dev/null) ;;
+    esac
+
+    # WHY: Check batuta-dots VERSION file if accessible (user may have it cloned)
+    BATUTA_DOTS_LOCATIONS=("$HOME/batuta-dots" "/tmp/batuta-dots")
+    for bd_path in "${BATUTA_DOTS_LOCATIONS[@]}"; do
+        if [[ -f "$bd_path/VERSION" ]]; then
+            HUB_VERSION=$(<"$bd_path/VERSION")
+            if [[ -n "$LOCAL_VERSION" && -n "$HUB_VERSION" && "$LOCAL_VERSION" != "$HUB_VERSION" ]]; then
+                ECOSYSTEM_WARNING="
+
+Note: Local Batuta version ($LOCAL_VERSION) differs from hub ($HUB_VERSION). Run /batuta-update to sync."
+            fi
+            break
+        fi
+    done
+fi
+
 # Build context string
 CONTEXT="## Batuta Session Context (auto-injected)
 
-$SESSION_CONTENT$FRESHNESS_WARNING"
+$SESSION_CONTENT$FRESHNESS_WARNING$ECOSYSTEM_WARNING"
 
 # Escape for JSON output
 CONTEXT_ESCAPED=$(echo "$CONTEXT" | json_escape)

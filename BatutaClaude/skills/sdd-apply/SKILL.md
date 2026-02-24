@@ -12,6 +12,7 @@ metadata:
   scope: [pipeline]
   auto_invoke: "Implementing task batches, /sdd-apply"
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash
+platforms: [claude, antigravity]
 ---
 
 ## Purpose

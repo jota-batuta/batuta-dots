@@ -12,6 +12,7 @@ metadata:
   scope: [pipeline]
   auto_invoke: "Breaking work into tasks"
 allowed-tools: Read, Edit, Write, Glob, Grep
+platforms: [claude, antigravity]
 ---
 
 ## Purpose

@@ -14,6 +14,7 @@ metadata:
   scope: [pipeline]
   auto_invoke: "Verifying implementation, /sdd-verify"
 allowed-tools: Read, Glob, Grep, Bash
+platforms: [claude, antigravity]
 ---
 
 ## Purpose

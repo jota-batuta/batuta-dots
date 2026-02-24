@@ -11,6 +11,7 @@ metadata:
   scope: [pipeline]
   auto_invoke: "Exploring codebase for changes, /sdd-explore"
 allowed-tools: Read, Glob, Grep, WebFetch, WebSearch
+platforms: [claude, antigravity]
 ---
 
 ## Purpose

@@ -1,0 +1,6 @@
+{
+  "agentMode": "agent-assisted",
+  "security": {
+    "denyPatterns": [".env", "*.pem", "*.key", "credentials*", "secrets*"]
+  }
+}
