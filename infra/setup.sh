@@ -185,8 +185,8 @@ SESSIONEOF
     # WHY: ecosystem.json tracks batuta-dots version for sync drift detection
     if [[ ! -f "$batuta_dir/ecosystem.json" ]]; then
         local batuta_version="unknown"
-        if [[ -f "$REPO_ROOT/VERSION" ]]; then
-            batuta_version=$(<"$REPO_ROOT/VERSION")
+        if [[ -f "$REPO_ROOT/BatutaClaude/VERSION" ]]; then
+            batuta_version=$(<"$REPO_ROOT/BatutaClaude/VERSION")
         fi
         cat > "$batuta_dir/ecosystem.json" << ECOEOF
 {
