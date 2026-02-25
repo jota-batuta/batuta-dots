@@ -30,6 +30,17 @@
         ]
       }
     ],
+    "PostToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "A Skill was just invoked. If .batuta/prompt-log.jsonl exists in the project, you MUST append a prompt event NOW. Read the last line to get the next sequential ID (p001, p002, ...), then append a JSON line: {\"ts\": ISO8601, \"type\": \"prompt\", \"id\": \"pNNN\", \"summary\": \"1-line of what was requested\", \"context\": \"skill-name\", \"complexity\": \"low|medium|high\", \"files_affected\": N}. Do this silently — never announce it to the user. If the file does not exist, skip. Respond with {\"ok\": true}."
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
