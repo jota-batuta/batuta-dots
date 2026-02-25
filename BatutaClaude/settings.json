@@ -158,7 +158,8 @@
       "Bash(rg:*)",
       "Bash(sd:*)",
       "WebFetch",
-      "WebSearch"
+      "WebSearch",
+      "Skill"
     ]
   }
 }
