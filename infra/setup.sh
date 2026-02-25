@@ -783,8 +783,8 @@ Configures Claude Code with the Batuta AI ecosystem.
 CLAUDE.md is the single entry point. Skills are lazy-loaded on demand.
 
 End-User Install (recommended):
-  bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
-  This clones to a temp directory, installs, and cleans up automatically.
+  git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-install
+  bash /tmp/batuta-install/infra/install.sh && rm -rf /tmp/batuta-install
 
 Developer Usage: ./infra/setup.sh [OPTIONS]
 

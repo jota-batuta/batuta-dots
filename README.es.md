@@ -32,12 +32,12 @@ Inspirado en [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman
 
 ## Inicio Rapido
 
-### Instalacion con un solo comando (Recomendado)
+### Instalacion (Recomendado)
 
 Instala Batuta con un solo comando — sin clon permanente:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
+git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-install && bash /tmp/batuta-install/infra/install.sh && rm -rf /tmp/batuta-install
 ```
 
 Esto hace:
@@ -51,28 +51,19 @@ Esto hace:
 
 ```bash
 # Solo Claude Code
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --claude
+git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-install && bash /tmp/batuta-install/infra/install.sh --claude && rm -rf /tmp/batuta-install
 
 # Solo Antigravity (Gemini CLI)
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --antigravity
-
-# Ambas plataformas
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --both
+git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-install && bash /tmp/batuta-install/infra/install.sh --antigravity && rm -rf /tmp/batuta-install
 ```
 
 **Windows:**
 
-> **Importante:** El `curl` de PowerShell es un alias de `Invoke-WebRequest` y no funciona. Usa una de estas opciones:
+> **Importante:** Usa WSL o Git Bash. PowerShell no es compatible (su `curl` es un alias de `Invoke-WebRequest`).
 
 ```bash
-# Opcion 1: WSL (recomendado si esta disponible)
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
-
-# Opcion 2: Git Bash
-curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh -o /tmp/batuta-install.sh && bash /tmp/batuta-install.sh
-
-# Opcion 3: PowerShell (descargar + ejecutar en Git Bash)
-curl.exe -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh -o $env:TEMP\batuta-install.sh; bash $env:TEMP\batuta-install.sh
+# WSL (recomendado) o Git Bash
+git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-install && bash /tmp/batuta-install/infra/install.sh && rm -rf /tmp/batuta-install
 ```
 
 ### Que se instala
