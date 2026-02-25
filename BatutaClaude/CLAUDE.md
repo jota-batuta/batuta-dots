@@ -87,9 +87,9 @@ For complex tasks, escalate from solo/subagent to Agent Teams:
 
 Full orchestration rules: see the `team-orchestrator` skill.
 
-### Skill Gap Detection (summary)
-Before writing code for a technology without a matching skill in `~/.claude/skills/`, STOP and offer to create one.
-Full flow: see `infra-agent` which has the complete detection protocol.
+### Skill Gap Detection (gate — not a suggestion)
+During `sdd-explore`, identify ALL technologies without a matching skill in `~/.claude/skills/`. If HIGH gaps exist, the explore phase is **NOT complete** until the user decides how to handle each gap: create skill, defer with justification, or continue without. This is a blocking gate — do not advance to `sdd-propose`.
+Full protocol: see `infra-agent`. Explore enforcement: see `sdd-explore` Step 2.5.
 
 ### Ecosystem Auto-Update (summary)
 At end of projects with new skills, ask if they should propagate to batuta-dots.

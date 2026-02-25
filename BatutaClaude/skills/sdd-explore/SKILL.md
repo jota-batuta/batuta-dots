@@ -117,6 +117,22 @@ FOR EACH technology required by this change:
 4. After creation, run `skill-sync` to register the new skill in routing tables
 5. Then continue the exploration with the new skill loaded
 
+⛔ **HARD GATE — DO NOT ADVANCE TO STEP 3 UNTIL RESOLVED**
+
+```
+IF high_gaps_detected:
+├── STOP execution
+├── Present gaps to user with options (create / defer / skip)
+├── WAIT for user response on EACH high gap
+├── DO NOT proceed to Step 3 (Analyze Options) until:
+│   ├── Every HIGH gap has a user decision recorded
+│   ├── Created skills are registered (if any)
+│   └── Skipped gaps have documented justification
+└── Set explore status = "blocked:skill-gaps" until resolved
+```
+
+**Why this is a gate, not a checklist item**: Documenting a problem is not the same as acting on it. Listing gaps in a table and writing "can be resolved inline" is NOT resolving the gate. The user must explicitly respond to each HIGH gap before the exploration advances.
+
 **Do NOT silently continue when HIGH gaps exist.** The gap detection must be actionable, not just documented. This is the entry point for Auto-Update SPO — skills created here can later propagate to batuta-dots.
 
 ### Step 2.7: Domain Expert Consultation
