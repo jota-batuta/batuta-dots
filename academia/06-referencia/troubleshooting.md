@@ -10,24 +10,27 @@ Problemas comunes al usar Batuta Dots y como resolverlos.
 **Causa**: Node.js no esta instalado o npm no esta en el PATH.
 **Solucion**: Instala Node.js desde nodejs.org, reinicia tu terminal, ejecuta `npm install -g @anthropic-ai/claude-code`.
 
-### "A parameter cannot be found that matches parameter name 'fsSL'" (Windows)
-**Causa**: Estas usando PowerShell. Su `curl` es un alias de `Invoke-WebRequest`, no el curl real.
-**Solucion**: Usa WSL o Git Bash en lugar de PowerShell. Si tienes WSL, haz click en la pestaña "wsl" de tu terminal.
+### El instalador pide autenticacion (Windows + WSL)
+**Causa**: WSL no comparte las credenciales de Git con Windows.
+**Solucion**: Usa **Git Bash** en lugar de WSL (ahi ya tienes git autenticado). O configura WSL para compartir credenciales:
+```bash
+git config --global credential.helper "/mnt/c/Program Files/Git/mingw64/bin/git-credential-manager.exe"
+```
 
 ### "Permission denied" al ejecutar el instalador
 **Causa**: Problemas de permisos en la terminal.
 **Solucion**:
-- Windows: Usa WSL o Git Bash (no PowerShell ni CMD)
-- Mac/Linux: Verifica que `curl` esta instalado: `curl --version`
+- Windows: Usa Git Bash (no PowerShell ni CMD)
+- Mac/Linux: Verifica que `git` esta instalado: `git --version`
 
 ### El instalador falla al descargar
 **Causa**: Sin conexion a internet o GitHub no accesible.
-**Solucion**: Verifica tu conexion. El instalador necesita acceso a GitHub para descargar el ecosistema.
+**Solucion**: Verifica tu conexion. Si el repo es privado, asegurate de tener acceso con `git clone`.
 
 ### Reinstalar desde cero
 **Solucion**: Ejecuta el instalador de nuevo — es idempotente:
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh)
+git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-install && bash /tmp/batuta-install/infra/install.sh && rm -rf /tmp/batuta-install
 ```
 
 ### Reinstalar hooks solamente (desarrolladores)
@@ -129,6 +132,6 @@ bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/mast
 
 ## Si nada funciona
 
-1. Reinstala con el instalador: `bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh) --claude`
+1. Reinstala con el instalador: `git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-install && bash /tmp/batuta-install/infra/install.sh --claude && rm -rf /tmp/batuta-install`
 2. Revisa la documentacion en `docs/guides/`
 3. Abre un issue en el repositorio

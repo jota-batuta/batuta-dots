@@ -75,10 +75,10 @@ Batuta Dots se instala encima de Claude Code. Es como instalar plugins en tu nav
 
 ### Opcion A: Instalacion automatica (recomendada)
 
-Ejecuta un solo comando desde la carpeta de tu proyecto:
+Ejecuta un solo comando desde la carpeta de tu proyecto (WSL o Git Bash):
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh)
+git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-install && bash /tmp/batuta-install/infra/install.sh && rm -rf /tmp/batuta-install
 ```
 
 El instalador:
@@ -88,17 +88,7 @@ El instalador:
 4. Configura tu directorio actual como proyecto Batuta
 5. Limpia todo automaticamente — no queda ninguna copia del repositorio
 
-**En Windows:**
-
-> **Importante:** No uses PowerShell directamente — su `curl` es un alias que no funciona. Usa WSL o Git Bash.
-
-```bash
-# WSL (recomendado — click en pestaña "wsl" de tu terminal)
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh)
-
-# Git Bash (si no tienes WSL)
-curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh -o /tmp/batuta-install.sh && bash /tmp/batuta-install.sh
-```
+**En Windows:** Usa WSL (pestaña "wsl" de tu terminal) o Git Bash. PowerShell no es compatible.
 
 ### Opcion B: Instalacion sin interaccion
 
@@ -106,13 +96,10 @@ Si ya sabes que plataforma quieres:
 
 ```bash
 # Solo Claude Code
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh) --claude
+git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-install && bash /tmp/batuta-install/infra/install.sh --claude && rm -rf /tmp/batuta-install
 
 # Solo Antigravity (Gemini CLI)
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh) --antigravity
-
-# Ambas plataformas
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh) --both
+git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-install && bash /tmp/batuta-install/infra/install.sh --antigravity && rm -rf /tmp/batuta-install
 ```
 
 ---

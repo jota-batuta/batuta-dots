@@ -3,23 +3,19 @@
 # Batuta.Dots — One-Liner Installer
 # ============================================================================
 # Installs Batuta ecosystem without leaving a permanent clone.
-# Clones to a temp directory, installs the chosen platform, cleans up.
 #
-# Usage (curl):
+# For PRIVATE repos (recommended):
+#   git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-install && bash /tmp/batuta-install/infra/install.sh && rm -rf /tmp/batuta-install
+#
+# For PUBLIC repos (curl one-liner):
 #   bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh)
 #
-# Usage (wget):
-#   bash <(wget -qO- https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh)
-#
 # Non-interactive:
-#   bash <(curl -fsSL URL) --claude        # Claude Code only
-#   bash <(curl -fsSL URL) --antigravity   # Antigravity (Gemini CLI) only
-#   bash <(curl -fsSL URL) --both          # Both platforms
+#   bash /tmp/batuta-install/infra/install.sh --claude
+#   bash /tmp/batuta-install/infra/install.sh --antigravity
+#   bash /tmp/batuta-install/infra/install.sh --both
 #
-# Windows (Git Bash):
-#   curl -fsSL URL -o /tmp/batuta-install.sh && bash /tmp/batuta-install.sh
-#
-# Platform: Windows (Git Bash / MSYS2 / MINGW) and native Unix
+# Platform: Windows (WSL / Git Bash / MSYS2) and native Unix
 # ============================================================================
 
 set -e
@@ -80,37 +76,62 @@ check_prerequisites() {
 }
 
 # ============================================================================
-# Temp Directory + Cleanup
+# Detect Repo Location
 # ============================================================================
+# The script can run in two modes:
+#   1. FROM A CLONE: user ran "git clone ... /tmp/X && bash /tmp/X/infra/install.sh"
+#      → REPO_DIR is detected from the script's own location
+#      → No temp dir needed, no cleanup (user manages the clone)
+#   2. VIA CURL: user ran "bash <(curl ...)"
+#      → Script is piped, no file location to detect
+#      → Must clone to a temp dir and clean up after
 
-INSTALL_DIR=""
+REPO_DIR=""
+NEEDS_CLEANUP=false
+
+detect_or_clone_repo() {
+    # Try to detect if this script lives inside a batuta-dots clone
+    local script_dir
+    if [[ -n "${BASH_SOURCE[0]}" && "${BASH_SOURCE[0]}" != "bash" && -f "${BASH_SOURCE[0]}" ]]; then
+        script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+        local candidate="$(cd "$script_dir/.." 2>/dev/null && pwd)"
+
+        if [[ -d "$candidate/BatutaClaude" && -d "$candidate/infra" ]]; then
+            REPO_DIR="$candidate"
+            log_info "Detected batuta-dots at: $REPO_DIR"
+            return 0
+        fi
+    fi
+
+    # Not running from inside a clone — need to clone
+    log_info "Cloning batuta-dots to temporary directory..."
+
+    local tmp_dir
+    tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/batuta-dots-install-XXXXXX")"
+    NEEDS_CLEANUP=true
+
+    if ! git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git "$tmp_dir/batuta-dots" 2>&1; then
+        log_error "Failed to clone batuta-dots."
+        log_info "If the repo is private, clone it first:"
+        log_info "  git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-install"
+        log_info "  bash /tmp/batuta-install/infra/install.sh"
+        log_info "  rm -rf /tmp/batuta-install"
+        rm -rf "$tmp_dir"
+        exit 1
+    fi
+
+    REPO_DIR="$tmp_dir/batuta-dots"
+    INSTALL_TEMP_DIR="$tmp_dir"
+    log_success "Repository cloned."
+}
 
 cleanup() {
-    if [[ -n "$INSTALL_DIR" && -d "$INSTALL_DIR" ]]; then
+    if [[ "$NEEDS_CLEANUP" == true && -n "$INSTALL_TEMP_DIR" && -d "$INSTALL_TEMP_DIR" ]]; then
         log_info "Cleaning up temporary directory..."
-        rm -rf "$INSTALL_DIR"
+        rm -rf "$INSTALL_TEMP_DIR"
     fi
 }
 trap cleanup EXIT INT TERM
-
-create_temp_dir() {
-    INSTALL_DIR="$(mktemp -d "${TMPDIR:-/tmp}/batuta-dots-install-XXXXXX")"
-    log_info "Using temporary directory: $INSTALL_DIR"
-}
-
-# ============================================================================
-# Clone Repository
-# ============================================================================
-
-clone_repo() {
-    log_info "Cloning batuta-dots (shallow)..."
-    if ! git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git "$INSTALL_DIR/batuta-dots" 2>&1; then
-        log_error "Failed to clone batuta-dots repository."
-        log_info "Check your internet connection and try again."
-        exit 1
-    fi
-    log_success "Repository cloned."
-}
 
 # ============================================================================
 # Platform Selection (interactive)
@@ -148,14 +169,12 @@ select_platform() {
 install_claude() {
     log_header "Installing BatutaClaude (Claude Code)"
 
-    local repo_dir="$INSTALL_DIR/batuta-dots"
-
     # 1. Global install: skills, agents, commands, hooks, output-styles → ~/.claude/
-    bash "$repo_dir/infra/setup.sh" --all
+    bash "$REPO_DIR/infra/setup.sh" --all
 
     # 2. Setup caller's current directory as a Batuta project
     log_info "Setting up current directory as Batuta project: $CALLER_DIR"
-    bash "$repo_dir/infra/setup.sh" --project "$CALLER_DIR"
+    bash "$REPO_DIR/infra/setup.sh" --project "$CALLER_DIR"
 }
 
 # ============================================================================
@@ -165,10 +184,8 @@ install_claude() {
 install_antigravity() {
     log_header "Installing BatutaAntigravity (Gemini CLI)"
 
-    local repo_dir="$INSTALL_DIR/batuta-dots"
-
     # Global + workspace install
-    bash "$repo_dir/BatutaAntigravity/setup-antigravity.sh" --all
+    bash "$REPO_DIR/BatutaAntigravity/setup-antigravity.sh" --all
 }
 
 # ============================================================================
@@ -177,12 +194,17 @@ install_antigravity() {
 
 show_help() {
     cat << 'EOF'
-Batuta.Dots — One-Liner Installer
-===================================
+Batuta.Dots — Installer
+=========================
 
 Installs the Batuta ecosystem without leaving a permanent clone.
 
-Usage:
+Usage (private repo — recommended):
+  git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-install
+  bash /tmp/batuta-install/infra/install.sh
+  rm -rf /tmp/batuta-install
+
+Usage (public repo):
   bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh)
 
 Options:
@@ -195,9 +217,6 @@ What gets installed:
   Claude Code     → ~/.claude/ (skills, agents, commands, hooks, output-styles, settings.json)
                   → Current directory gets CLAUDE.md + .batuta/
   Antigravity     → ~/.gemini/antigravity/ (skills, workflows, GEMINI.md)
-
-Windows (Git Bash):
-  curl -fsSL URL -o /tmp/batuta-install.sh && bash /tmp/batuta-install.sh
 
 After installation:
   Open Claude Code in your project and run /sdd-init to get started.
@@ -231,8 +250,7 @@ main() {
     done
 
     check_prerequisites
-    create_temp_dir
-    clone_repo
+    detect_or_clone_repo
 
     if [[ -n "$platform_arg" ]]; then
         PLATFORM="$platform_arg"
@@ -256,7 +274,10 @@ main() {
 
     echo ""
     log_success "Installation complete!"
-    log_info "Temporary files cleaned up automatically."
+
+    if [[ "$NEEDS_CLEANUP" == true ]]; then
+        log_info "Temporary files cleaned up automatically."
+    fi
 
     case "$PLATFORM" in
         claude|both)
