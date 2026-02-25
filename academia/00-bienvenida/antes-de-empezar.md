@@ -88,9 +88,15 @@ El instalador:
 4. Configura tu directorio actual como proyecto Batuta
 5. Limpia todo automaticamente — no queda ninguna copia del repositorio
 
-**En Windows (Git Bash):**
+**En Windows:**
+
+> **Importante:** No uses PowerShell directamente — su `curl` es un alias que no funciona. Usa WSL o Git Bash.
 
 ```bash
+# WSL (recomendado — click en pestaña "wsl" de tu terminal)
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
+
+# Git Bash (si no tienes WSL)
 curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh -o /tmp/batuta-install.sh && bash /tmp/batuta-install.sh
 ```
 

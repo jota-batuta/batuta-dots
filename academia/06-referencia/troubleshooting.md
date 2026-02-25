@@ -10,10 +10,14 @@ Problemas comunes al usar Batuta Dots y como resolverlos.
 **Causa**: Node.js no esta instalado o npm no esta en el PATH.
 **Solucion**: Instala Node.js desde nodejs.org, reinicia tu terminal, ejecuta `npm install -g @anthropic-ai/claude-code`.
 
+### "A parameter cannot be found that matches parameter name 'fsSL'" (Windows)
+**Causa**: Estas usando PowerShell. Su `curl` es un alias de `Invoke-WebRequest`, no el curl real.
+**Solucion**: Usa WSL o Git Bash en lugar de PowerShell. Si tienes WSL, haz click en la pestaña "wsl" de tu terminal.
+
 ### "Permission denied" al ejecutar el instalador
 **Causa**: Problemas de permisos en la terminal.
 **Solucion**:
-- Windows: Usa Git Bash (no PowerShell ni CMD)
+- Windows: Usa WSL o Git Bash (no PowerShell ni CMD)
 - Mac/Linux: Verifica que `curl` esta instalado: `curl --version`
 
 ### El instalador falla al descargar
