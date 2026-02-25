@@ -326,9 +326,9 @@ _merge_settings_python() {
 import json, sys
 
 try:
-    with open(sys.argv[1]) as f:
+    with open(sys.argv[1], encoding='utf-8') as f:
         src = json.load(f)
-    with open(sys.argv[2]) as f:
+    with open(sys.argv[2], encoding='utf-8') as f:
         tgt = json.load(f)
 
     # Replace hooks entirely
@@ -345,7 +345,7 @@ try:
         merged = list(dict.fromkeys(tgt_perms + src_perms))
         tgt.setdefault('permissions', {})[perm_type] = merged
 
-    with open(sys.argv[2], 'w') as f:
+    with open(sys.argv[2], 'w', encoding='utf-8') as f:
         json.dump(tgt, f, indent=2, ensure_ascii=False)
         f.write('\n')
 except Exception as e:
