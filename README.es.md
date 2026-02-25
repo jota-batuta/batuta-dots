@@ -60,10 +60,19 @@ bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main
 bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --both
 ```
 
-**Windows (Git Bash):**
+**Windows:**
+
+> **Importante:** El `curl` de PowerShell es un alias de `Invoke-WebRequest` y no funciona. Usa una de estas opciones:
 
 ```bash
+# Opcion 1: WSL (recomendado si esta disponible)
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
+
+# Opcion 2: Git Bash
 curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh -o /tmp/batuta-install.sh && bash /tmp/batuta-install.sh
+
+# Opcion 3: PowerShell (descargar + ejecutar en Git Bash)
+curl.exe -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh -o $env:TEMP\batuta-install.sh; bash $env:TEMP\batuta-install.sh
 ```
 
 ### Que se instala
