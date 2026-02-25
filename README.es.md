@@ -37,7 +37,7 @@ Inspirado en [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman
 Instala Batuta con un solo comando — sin clon permanente:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh)
 ```
 
 Esto hace:
@@ -51,13 +51,13 @@ Esto hace:
 
 ```bash
 # Solo Claude Code
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --claude
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh) --claude
 
 # Solo Antigravity (Gemini CLI)
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --antigravity
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh) --antigravity
 
 # Ambas plataformas
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --both
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh) --both
 ```
 
 **Windows:**
@@ -66,13 +66,13 @@ bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main
 
 ```bash
 # Opcion 1: WSL (recomendado si esta disponible)
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh)
 
 # Opcion 2: Git Bash
-curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh -o /tmp/batuta-install.sh && bash /tmp/batuta-install.sh
+curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh -o /tmp/batuta-install.sh && bash /tmp/batuta-install.sh
 
 # Opcion 3: PowerShell (descargar + ejecutar en Git Bash)
-curl.exe -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh -o $env:TEMP\batuta-install.sh; bash $env:TEMP\batuta-install.sh
+curl.exe -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh -o $env:TEMP\batuta-install.sh; bash $env:TEMP\batuta-install.sh
 ```
 
 ### Que se instala

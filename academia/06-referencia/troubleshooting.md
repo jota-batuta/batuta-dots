@@ -27,7 +27,7 @@ Problemas comunes al usar Batuta Dots y como resolverlos.
 ### Reinstalar desde cero
 **Solucion**: Ejecuta el instalador de nuevo — es idempotente:
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh)
 ```
 
 ### Reinstalar hooks solamente (desarrolladores)
@@ -129,6 +129,6 @@ bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main
 
 ## Si nada funciona
 
-1. Reinstala con el instalador: `bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --claude`
+1. Reinstala con el instalador: `bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh) --claude`
 2. Revisa la documentacion en `docs/guides/`
 3. Abre un issue en el repositorio

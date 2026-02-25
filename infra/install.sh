@@ -6,10 +6,10 @@
 # Clones to a temp directory, installs the chosen platform, cleans up.
 #
 # Usage (curl):
-#   bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
+#   bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh)
 #
 # Usage (wget):
-#   bash <(wget -qO- https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
+#   bash <(wget -qO- https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh)
 #
 # Non-interactive:
 #   bash <(curl -fsSL URL) --claude        # Claude Code only
@@ -183,7 +183,7 @@ Batuta.Dots — One-Liner Installer
 Installs the Batuta ecosystem without leaving a permanent clone.
 
 Usage:
-  bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
+  bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh)
 
 Options:
   --claude        Install BatutaClaude (Claude Code) only

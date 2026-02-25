@@ -63,7 +63,7 @@ La forma mas sencilla es usar el instalador:
 
 ```bash
 cd /path/to/mi-proyecto
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --antigravity
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh) --antigravity
 ```
 
 ### 2. Instalar Antigravity (desarrolladores con clon local)

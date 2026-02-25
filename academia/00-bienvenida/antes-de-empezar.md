@@ -78,7 +78,7 @@ Batuta Dots se instala encima de Claude Code. Es como instalar plugins en tu nav
 Ejecuta un solo comando desde la carpeta de tu proyecto:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh)
 ```
 
 El instalador:
@@ -94,10 +94,10 @@ El instalador:
 
 ```bash
 # WSL (recomendado — click en pestaña "wsl" de tu terminal)
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh)
 
 # Git Bash (si no tienes WSL)
-curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh -o /tmp/batuta-install.sh && bash /tmp/batuta-install.sh
+curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh -o /tmp/batuta-install.sh && bash /tmp/batuta-install.sh
 ```
 
 ### Opcion B: Instalacion sin interaccion
@@ -106,13 +106,13 @@ Si ya sabes que plataforma quieres:
 
 ```bash
 # Solo Claude Code
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --claude
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh) --claude
 
 # Solo Antigravity (Gemini CLI)
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --antigravity
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh) --antigravity
 
 # Ambas plataformas
-bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --both
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/master/infra/install.sh) --both
 ```
 
 ---
