@@ -86,7 +86,9 @@ generate_claude() {
     local source_file="$REPO_ROOT/BatutaClaude/CLAUDE.md"
     local output_file="$REPO_ROOT/CLAUDE.md"
 
-    log_info "Copying BatutaClaude/CLAUDE.md to project root"
+    log_info "Copying BatutaClaude/CLAUDE.md to repo root (developer use)"
+    log_warning "This copies CLAUDE.md to the batuta-dots repo root."
+    log_warning "For end-user projects, use: --project <path> or /batuta-init in Claude Code."
 
     if [[ ! -f "$source_file" ]]; then
         log_error "BatutaClaude/CLAUDE.md not found at $source_file"
@@ -462,11 +464,53 @@ sync_agents() {
 }
 
 # ============================================================================
+# Sync Output Styles to ~/.claude/output-styles/
+# ============================================================================
+
+sync_output_styles() {
+    local styles_src="$REPO_ROOT/BatutaClaude/output-styles"
+    local styles_dir="$HOME_DIR/.claude/output-styles"
+
+    log_info "Syncing output styles to ~/.claude/output-styles/ ..."
+
+    if [[ ! -d "$styles_src" ]]; then
+        log_warning "No output-styles directory found at $styles_src"
+        return 0
+    fi
+
+    mkdir -p "$styles_dir"
+
+    local count=0
+    for style_file in "$styles_src"/*.md; do
+        [[ ! -f "$style_file" ]] && continue
+        local style_name
+        style_name=$(basename "$style_file")
+        cp -f "$style_file" "$styles_dir/$style_name"
+        log_info "  -> Style: $style_name"
+        count=$((count + 1))
+    done
+
+    if [[ $count -gt 0 ]]; then
+        log_success "Synced $count output style(s) to ~/.claude/output-styles/"
+    else
+        log_warning "No output style files found in $styles_src"
+    fi
+}
+
+# ============================================================================
 # Run Skill-Sync (regenerate routing tables)
 # ============================================================================
 
 run_skill_sync() {
     local sync_script="$REPO_ROOT/BatutaClaude/skills/skill-sync/assets/sync.sh"
+
+    # WHY skip in temp installs: the agent files already have committed routing
+    # tables. Regenerating them in a temp clone is pointless since the clone
+    # will be deleted. Only run when inside a persistent checkout.
+    if [[ "$REPO_ROOT" == *"/tmp/"* || "$REPO_ROOT" == *"batuta-dots-install-"* ]]; then
+        log_info "Skipping skill-sync (running from temporary install directory)"
+        return 0
+    fi
 
     log_info "Running skill-sync to regenerate routing tables..."
 
@@ -550,8 +594,7 @@ do_all() {
     # 1. Sync skills, agents, commands to ~/.claude/
     # 2. Run skill-sync to regenerate tables in BatutaClaude/ (source of truth)
     # 3. Install hooks + permissions to ~/.claude/settings.json
-    # 4. Copy updated BatutaClaude/CLAUDE.md to project root (now with updated tables)
-    # 5. Sync Antigravity-compatible skills to BatutaAntigravity/skills/
+    # 4. Sync output styles to ~/.claude/output-styles/
 
     sync_claude
     echo ""
@@ -561,9 +604,7 @@ do_all() {
     echo ""
     install_hooks
     echo ""
-    generate_claude
-    echo ""
-    sync_antigravity
+    sync_output_styles
 
     echo ""
     log_success "Claude Code fully configured!"
@@ -587,34 +628,12 @@ verify() {
         log_success "BatutaClaude/CLAUDE.md exists (source)"
     fi
 
-    # Check root CLAUDE.md (copy)
-    local claude_file="$REPO_ROOT/CLAUDE.md"
-    if [[ ! -f "$claude_file" ]]; then
-        log_warning "CLAUDE.md does not exist at root (run --claude or --all first)"
-        errors=$((errors + 1))
+    # Check output-styles synced to ~/.claude/
+    local style_file="$HOME_DIR/.claude/output-styles/batuta.md"
+    if [[ -f "$style_file" ]]; then
+        log_success "Output style batuta.md installed at ~/.claude/output-styles/"
     else
-        log_success "CLAUDE.md exists at root"
-
-        if grep -q "Personality" "$claude_file" 2>/dev/null; then
-            log_success "CLAUDE.md includes personality content"
-        else
-            log_error "CLAUDE.md is missing personality content"
-            errors=$((errors + 1))
-        fi
-
-        if grep -q "Scope Rule" "$claude_file" 2>/dev/null; then
-            log_success "CLAUDE.md includes Scope Rule"
-        else
-            log_error "CLAUDE.md is missing Scope Rule"
-            errors=$((errors + 1))
-        fi
-
-        if grep -q "Skill Gap Detection" "$claude_file" 2>/dev/null; then
-            log_success "CLAUDE.md includes Skill Gap Detection"
-        else
-            log_error "CLAUDE.md is missing Skill Gap Detection"
-            errors=$((errors + 1))
-        fi
+        log_warning "~/.claude/output-styles/batuta.md not found (run --all to install)"
     fi
 
     # Check AGENTS.md is gone
@@ -684,14 +703,14 @@ verify() {
     fi
 
     # Check Execution Gate (v5)
-    if grep -q "Execution Gate" "$claude_file" 2>/dev/null; then
+    if grep -q "Execution Gate" "$source_file" 2>/dev/null; then
         log_success "Execution Gate present in CLAUDE.md"
     else
         log_warning "Execution Gate not found in CLAUDE.md"
     fi
 
     # Check Scope Routing Table (v5)
-    if grep -q "Scope Routing Table" "$claude_file" 2>/dev/null; then
+    if grep -q "Scope Routing Table" "$source_file" 2>/dev/null; then
         log_success "Scope Routing Table present in CLAUDE.md"
     else
         log_warning "Scope Routing Table not found in CLAUDE.md"
@@ -716,27 +735,30 @@ show_menu() {
     echo "This script configures Claude Code with the Batuta ecosystem."
     echo "CLAUDE.md is the single entry point. Skills are lazy-loaded."
     echo ""
-    printf "  ${CYAN}1)${NC} Copy CLAUDE.md to project root\n"
-    printf "  ${CYAN}2)${NC} Sync skills + agents to ~/.claude/\n"
-    printf "  ${CYAN}3)${NC} Full setup (sync + skill-sync + hooks + copy)\n"
-    printf "  ${CYAN}4)${NC} Install hooks + permissions only\n"
-    printf "  ${CYAN}5)${NC} Verify setup\n"
-    printf "  ${CYAN}6)${NC} Help\n"
+    printf "  ${CYAN}1)${NC} Full setup: skills + agents + hooks + output-styles (recommended)\n"
+    printf "  ${CYAN}2)${NC} Sync skills + agents + commands to ~/.claude/ only\n"
+    printf "  ${CYAN}3)${NC} Install hooks + permissions only\n"
+    printf "  ${CYAN}4)${NC} Copy CLAUDE.md to repo root (developer use)\n"
+    printf "  ${CYAN}5)${NC} Sync Antigravity-compatible skills\n"
+    printf "  ${CYAN}6)${NC} Verify setup\n"
+    printf "  ${CYAN}7)${NC} Help\n"
     printf "  ${CYAN}0)${NC} Exit\n"
     echo ""
-    echo "  Need other platforms? Run: ./infra/replicate-platform.sh --help"
+    echo "  End users: use infra/install.sh for one-liner installation."
+    echo "  Other platforms: ./infra/replicate-platform.sh --help"
     echo ""
-    printf "Enter choice [0-6]: "
+    printf "Enter choice [0-7]: "
 }
 
 handle_menu_choice() {
     case "$1" in
-        1) generate_claude ;;
+        1) do_all ;;
         2) sync_claude; sync_agents ;;
-        3) do_all ;;
-        4) install_hooks ;;
-        5) verify ;;
-        6) show_help ;;
+        3) install_hooks ;;
+        4) generate_claude ;;
+        5) sync_antigravity ;;
+        6) verify ;;
+        7) show_help ;;
         0) log_info "Exiting..."; exit 0 ;;
         *) log_error "Invalid choice: $1"; return 1 ;;
     esac
@@ -760,16 +782,18 @@ Batuta.Dots — Claude Code Setup
 Configures Claude Code with the Batuta AI ecosystem.
 CLAUDE.md is the single entry point. Skills are lazy-loaded on demand.
 
-Usage: ./infra/setup.sh [OPTIONS]
+End-User Install (recommended):
+  bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
+  This clones to a temp directory, installs, and cleans up automatically.
+
+Developer Usage: ./infra/setup.sh [OPTIONS]
 
 Options:
-  --claude      Copy BatutaClaude/CLAUDE.md to project root
-                  This is the file Claude Code reads automatically.
-                  It contains personality, rules, and skill routing.
+  --all         Full setup: sync skills + agents + commands + hooks + output-styles
+                  to ~/.claude/ (Claude Code platform only)
   --sync        Sync skills, agents, and commands to ~/.claude/
                   Copies all SKILL.md files, assets, scope agents,
                   and slash commands so Claude Code can route and load.
-  --all         Full setup: sync + skill-sync + hooks + copy CLAUDE.md (recommended)
   --hooks       Install hooks and permissions to ~/.claude/settings.json
                   Merges Batuta hooks (5), env vars, and permissions.
                   Backs up existing settings before merging.
@@ -779,9 +803,10 @@ Options:
                   - Initializes git if not already a repo
                   - Creates .gitignore
                   - Installs hooks + permissions
+  --claude      Copy BatutaClaude/CLAUDE.md to repo root (developer use only)
   --antigravity Sync Antigravity-compatible skills to BatutaAntigravity/skills/
                   Filters by platforms field in SKILL.md frontmatter.
-  --verify      Check that CLAUDE.md and skills are properly configured
+  --verify      Check that skills, agents, and hooks are properly configured
   --help, -h    Show this help message
 
 Interactive Mode:
@@ -792,9 +817,10 @@ Other Platforms:
   ./infra/replicate-platform.sh --all
 
 Examples:
-  ./infra/setup.sh --all          # Full setup (recommended)
-  ./infra/setup.sh --verify       # Check everything is correct
-  ./infra/setup.sh                # Interactive menu
+  ./infra/setup.sh --all                  # Full setup (developer)
+  ./infra/setup.sh --project /my/app      # Bootstrap a project
+  ./infra/setup.sh --verify               # Check everything is correct
+  ./infra/setup.sh                        # Interactive menu
 
 Platform: Windows (Git Bash / MSYS2 / MINGW64) and native Unix
 EOF

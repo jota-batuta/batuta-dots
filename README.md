@@ -31,19 +31,58 @@ Inspired by [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.
 
 ## Quick Start
 
+### One-Liner Install (Recommended)
+
+Install Batuta with a single command — no permanent clone needed:
+
 ```bash
-# 1. Clone the repository
-git clone https://github.com/jota-batuta/batuta-dots.git
-cd batuta-dots
-
-# 2. Full setup: sync skills + agents + skill-sync + hooks + copy CLAUDE.md
-./infra/setup.sh --all
-
-# 3. Verify everything is set up correctly
-./infra/setup.sh --verify
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
 ```
 
-Or run `./infra/setup.sh` with no arguments for an interactive menu.
+This will:
+1. Clone the repository to a temporary directory
+2. Ask which platform to install (**Claude Code** or **Antigravity**)
+3. Install the selected platform files to their global locations
+4. Set up your current directory as a Batuta project (Claude Code)
+5. Clean up the temporary clone
+
+**Non-interactive install:**
+
+```bash
+# Claude Code only
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --claude
+
+# Antigravity (Gemini CLI) only
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --antigravity
+
+# Both platforms
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --both
+```
+
+**Windows (Git Bash):**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh -o /tmp/batuta-install.sh && bash /tmp/batuta-install.sh
+```
+
+### What Gets Installed
+
+| Platform | Destination | Contents |
+|----------|-------------|----------|
+| **Claude Code** | `~/.claude/` | 24 skills, 3 agents, 14+ commands, 4 hooks, settings.json, output-styles |
+| **Claude Code** | Current directory | `CLAUDE.md` + `.batuta/` (session, prompt-log, ecosystem.json) |
+| **Antigravity** | `~/.gemini/antigravity/` | Antigravity-compatible skills, workflows, GEMINI.md |
+
+### Developer Setup
+
+If you want to contribute to batuta-dots itself:
+
+```bash
+git clone https://github.com/jota-batuta/batuta-dots.git
+cd batuta-dots
+./infra/setup.sh --all
+./infra/setup.sh --verify
+```
 
 ---
 

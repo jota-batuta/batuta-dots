@@ -32,19 +32,58 @@ Inspirado en [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman
 
 ## Inicio Rapido
 
+### Instalacion con un solo comando (Recomendado)
+
+Instala Batuta con un solo comando — sin clon permanente:
+
 ```bash
-# 1. Clonar el repositorio
-git clone https://github.com/jota-batuta/batuta-dots.git
-cd batuta-dots
-
-# 2. Setup completo: sync skills + agentes + skill-sync + hooks + copiar CLAUDE.md
-./infra/setup.sh --all
-
-# 3. Verificar
-./infra/setup.sh --verify
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
 ```
 
-O ejecuta `./infra/setup.sh` sin argumentos para un menu interactivo.
+Esto hace:
+1. Clona el repositorio en un directorio temporal
+2. Pregunta que plataforma instalar (**Claude Code** o **Antigravity**)
+3. Instala los archivos de la plataforma seleccionada
+4. Configura tu directorio actual como proyecto Batuta (Claude Code)
+5. Limpia el clon temporal automaticamente
+
+**Instalacion no interactiva:**
+
+```bash
+# Solo Claude Code
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --claude
+
+# Solo Antigravity (Gemini CLI)
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --antigravity
+
+# Ambas plataformas
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --both
+```
+
+**Windows (Git Bash):**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh -o /tmp/batuta-install.sh && bash /tmp/batuta-install.sh
+```
+
+### Que se instala
+
+| Plataforma | Destino | Contenido |
+|------------|---------|-----------|
+| **Claude Code** | `~/.claude/` | 24 skills, 3 agentes, 14+ comandos, 4 hooks, settings.json, output-styles |
+| **Claude Code** | Directorio actual | `CLAUDE.md` + `.batuta/` (session, prompt-log, ecosystem.json) |
+| **Antigravity** | `~/.gemini/antigravity/` | Skills compatibles, workflows, GEMINI.md |
+
+### Setup para desarrolladores
+
+Si quieres contribuir a batuta-dots:
+
+```bash
+git clone https://github.com/jota-batuta/batuta-dots.git
+cd batuta-dots
+./infra/setup.sh --all
+./infra/setup.sh --verify
+```
 
 ---
 

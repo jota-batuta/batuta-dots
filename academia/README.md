@@ -68,7 +68,7 @@ Quizzes y checklists para confirmar que dominas cada nivel.
 
 - Una computadora con Windows, macOS, o Linux
 - [Claude Code](https://claude.ai/claude-code) instalado
-- El ecosistema Batuta Dots configurado (`bash infra/setup.sh --all`)
+- El ecosistema Batuta Dots configurado (ver [Antes de empezar](00-bienvenida/antes-de-empezar.md) para instrucciones de instalacion)
 - Ganas de aprender
 
 ---

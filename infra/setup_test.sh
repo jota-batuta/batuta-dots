@@ -1213,6 +1213,58 @@ else:
 }
 
 # ============================================================================
+# v10.2 tests: One-Liner Installer + Output Styles
+# ============================================================================
+
+test_install_script_exists() {
+    log_test "infra/install.sh exists and is well-formed"
+    local install_script="$REPO_ROOT/infra/install.sh"
+
+    assert_file_exists "$install_script"
+    assert_file_contains "$install_script" "#!/usr/bin/env bash" "shebang"
+    assert_file_contains "$install_script" "cleanup()" "cleanup function"
+    assert_file_contains "$install_script" "trap cleanup" "cleanup trap"
+    assert_file_contains "$install_script" "mktemp" "temp directory creation"
+    assert_file_contains "$install_script" "select_platform" "platform selection"
+}
+
+test_output_styles_source_exists() {
+    log_test "BatutaClaude/output-styles/batuta.md exists"
+    assert_file_exists "$REPO_ROOT/BatutaClaude/output-styles/batuta.md"
+}
+
+test_do_all_does_not_call_generate_claude() {
+    log_test "do_all() does not call generate_claude"
+    # Extract the do_all function body and check it does NOT call generate_claude
+    local setup="$REPO_ROOT/infra/setup.sh"
+    if grep -A 20 '^do_all()' "$setup" | grep -q 'generate_claude'; then
+        log_fail "do_all() still calls generate_claude — should be removed"
+    else
+        log_pass "do_all() does not call generate_claude"
+    fi
+}
+
+test_do_all_does_not_call_sync_antigravity() {
+    log_test "do_all() does not call sync_antigravity"
+    local setup="$REPO_ROOT/infra/setup.sh"
+    if grep -A 20 '^do_all()' "$setup" | grep -q 'sync_antigravity'; then
+        log_fail "do_all() still calls sync_antigravity — should be removed"
+    else
+        log_pass "do_all() does not call sync_antigravity"
+    fi
+}
+
+test_do_all_calls_sync_output_styles() {
+    log_test "do_all() calls sync_output_styles"
+    local setup="$REPO_ROOT/infra/setup.sh"
+    if grep -A 20 '^do_all()' "$setup" | grep -q 'sync_output_styles'; then
+        log_pass "do_all() calls sync_output_styles"
+    else
+        log_fail "do_all() does not call sync_output_styles"
+    fi
+}
+
+# ============================================================================
 # Run All Tests
 # ============================================================================
 
@@ -1308,6 +1360,13 @@ test_claude_md_commands_use_hyphens
 
 # --- v9.4 tests: Hooks New Format (matcher + hooks wrapper) ---
 test_hooks_use_new_matcher_format
+
+# --- v10.2 tests: One-Liner Installer + Output Styles ---
+test_install_script_exists
+test_output_styles_source_exists
+test_do_all_does_not_call_generate_claude
+test_do_all_does_not_call_sync_antigravity
+test_do_all_calls_sync_output_styles
 
 # ============================================================================
 # Summary
