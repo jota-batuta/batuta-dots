@@ -33,7 +33,7 @@ Proyecto A (Claude Code)  ←→  batuta-dots (hub)  ←→  Proyecto B (Antigra
 **Flujo de skills**:
 1. Un skill se crea en cualquier spoke (proyecto/plataforma)
 2. Se propaga al hub (`sync.sh --from-project` o `/push-skill`)
-3. Del hub se distribuye a todos los spokes (`setup.sh --sync`, `setup-antigravity.sh`)
+3. Del hub se distribuye a todos los spokes (via `install.sh` para usuarios, o `setup.sh --sync` / `setup-antigravity.sh` para desarrolladores)
 
 El campo `platforms` en el frontmatter de SKILL.md determina que plataformas reciben cada skill:
 - `platforms: [claude, antigravity]` — va a ambas (22 de 24 skills)
@@ -57,16 +57,21 @@ Google Antigravity es un IDE agent-first (fork de VS Code/Windsurf). Durante el 
 
 ## Setup paso a paso
 
-### 1. Verificar que batuta-dots esta actualizado
+### 1. Instalar Antigravity (usuarios)
+
+La forma mas sencilla es usar el instalador:
 
 ```bash
-cd ~/batuta-dots
-git pull origin main
+cd /path/to/mi-proyecto
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --antigravity
 ```
 
-### 2. Instalar en un proyecto
+### 2. Instalar Antigravity (desarrolladores con clon local)
+
+Si tienes un clon persistente de batuta-dots:
 
 ```bash
+cd ~/batuta-dots && git pull origin main
 cd /path/to/mi-proyecto
 bash ~/batuta-dots/BatutaAntigravity/setup-antigravity.sh --all
 ```
@@ -200,7 +205,7 @@ bash ~/batuta-dots/infra/sync.sh --from-project /path/to/mi-proyecto
 
 3. **Verifica** que aparece en `batuta-dots/BatutaClaude/skills/mi-utilidad/SKILL.md`
 
-4. **Sincroniza a Claude Code**:
+4. **Sincroniza a Claude Code** (requiere clon local de batuta-dots):
 
 ```bash
 cd ~/batuta-dots && ./infra/setup.sh --sync

@@ -75,37 +75,38 @@ Batuta Dots se instala encima de Claude Code. Es como instalar plugins en tu nav
 
 ### Opcion A: Instalacion automatica (recomendada)
 
+Ejecuta un solo comando desde la carpeta de tu proyecto:
+
 ```bash
-# Clona el repositorio
-git clone https://github.com/jota-batuta/batuta-dots.git
-
-# Entra al directorio
-cd batuta-dots
-
-# Ejecuta el instalador
-bash infra/setup.sh --all
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
 ```
 
-El instalador hace todo por ti:
-- Copia la personalidad CTO a `~/.claude/`
-- Registra los 24 skills
-- Configura los 3 agentes
-- Instala los hooks de automatizacion
-- Verifica que todo funcione
+El instalador:
+1. Descarga el ecosistema en un directorio temporal
+2. Te pregunta que plataforma instalar (Claude Code o Antigravity)
+3. Instala los 24 skills, 3 agentes, hooks y configuracion en `~/.claude/`
+4. Configura tu directorio actual como proyecto Batuta
+5. Limpia todo automaticamente — no queda ninguna copia del repositorio
 
-### Opcion B: Instalacion paso a paso
-
-Si prefieres entender que se instala:
+**En Windows (Git Bash):**
 
 ```bash
-# Solo la configuracion de Claude
-bash infra/setup.sh --claude
+curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh -o /tmp/batuta-install.sh && bash /tmp/batuta-install.sh
+```
 
-# Sincronizar skills y agentes
-bash infra/setup.sh --sync
+### Opcion B: Instalacion sin interaccion
 
-# Verificar la instalacion
-bash infra/setup.sh --verify
+Si ya sabes que plataforma quieres:
+
+```bash
+# Solo Claude Code
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --claude
+
+# Solo Antigravity (Gemini CLI)
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --antigravity
+
+# Ambas plataformas
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --both
 ```
 
 ---
@@ -145,8 +146,9 @@ Despues de la instalacion, tu carpeta personal de Claude tendra esta estructura:
 
 ```
 ~/.claude/
-  CLAUDE.md           ← La personalidad CTO
   settings.json       ← Permisos y hooks
+  output-styles/
+    batuta.md         ← Estilo de salida personalizado
   agents/
     pipeline-agent.md ← Coordinador del flujo SDD
     infra-agent.md    ← Coordinador de infraestructura
@@ -165,11 +167,11 @@ Despues de la instalacion, tu carpeta personal de Claude tendra esta estructura:
 ### "claude: command not found"
 Node.js no esta instalado o npm no esta en el PATH. Reinstala Node.js y reinicia tu terminal.
 
-### "Permission denied" al ejecutar setup.sh
-En Windows, usa Git Bash (no PowerShell). En Mac/Linux, asegurate de tener permisos: `chmod +x infra/setup.sh`.
+### "Permission denied" al ejecutar el instalador
+En Windows, usa Git Bash (no PowerShell ni CMD). En Mac/Linux, verifica que `curl` esta instalado: `curl --version`.
 
-### El instalador no encuentra los archivos
-Asegurate de estar dentro del directorio `batuta-dots/` antes de ejecutar el setup.
+### El instalador falla al descargar
+Verifica tu conexion a internet. El instalador necesita acceso a GitHub para descargar el ecosistema.
 
 ### /sdd-init no responde
 Verifica tu conexion a internet — Claude Code necesita comunicarse con los servidores de Anthropic.

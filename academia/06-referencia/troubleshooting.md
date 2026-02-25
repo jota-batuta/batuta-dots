@@ -10,15 +10,24 @@ Problemas comunes al usar Batuta Dots y como resolverlos.
 **Causa**: Node.js no esta instalado o npm no esta en el PATH.
 **Solucion**: Instala Node.js desde nodejs.org, reinicia tu terminal, ejecuta `npm install -g @anthropic-ai/claude-code`.
 
-### "Permission denied" al ejecutar setup.sh
-**Causa**: El script no tiene permisos de ejecucion.
+### "Permission denied" al ejecutar el instalador
+**Causa**: Problemas de permisos en la terminal.
 **Solucion**:
 - Windows: Usa Git Bash (no PowerShell ni CMD)
-- Mac/Linux: `chmod +x infra/setup.sh && bash infra/setup.sh --all`
+- Mac/Linux: Verifica que `curl` esta instalado: `curl --version`
 
-### setup.sh no encuentra archivos
-**Causa**: No estas en el directorio correcto.
-**Solucion**: Asegurate de estar en la raiz de batuta-dots: `cd path/to/batuta-dots`
+### El instalador falla al descargar
+**Causa**: Sin conexion a internet o GitHub no accesible.
+**Solucion**: Verifica tu conexion. El instalador necesita acceso a GitHub para descargar el ecosistema.
+
+### Reinstalar desde cero
+**Solucion**: Ejecuta el instalador de nuevo — es idempotente:
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh)
+```
+
+### Reinstalar hooks solamente (desarrolladores)
+**Solucion**: Requiere un clon local de batuta-dots: `bash infra/setup.sh --hooks`
 
 ---
 
@@ -116,7 +125,6 @@ Problemas comunes al usar Batuta Dots y como resolverlos.
 
 ## Si nada funciona
 
-1. Verifica la instalacion: `bash infra/setup.sh --verify`
-2. Reinstala: `bash infra/setup.sh --all`
-3. Revisa la documentacion en `docs/guides/`
-4. Abre un issue en el repositorio
+1. Reinstala con el instalador: `bash <(curl -fsSL https://raw.githubusercontent.com/jota-batuta/batuta-dots/main/infra/install.sh) --claude`
+2. Revisa la documentacion en `docs/guides/`
+3. Abre un issue en el repositorio
