@@ -251,17 +251,31 @@ NEVER create root `utils/`, `helpers/`, `lib/`, or `components/` folders. Full d
 
 ### Spec-Driven Development (SDD)
 
-A 9-phase pipeline that enforces "understand before build":
+A 9-phase state machine that enforces "understand before build":
 
 ```
 init -> explore -> propose -> spec -> design -> tasks -> apply -> verify -> archive
+                                                          ↑ backtracks ↑
 ```
 
-Each phase is a dedicated sub-agent skill. The pipeline-agent orchestrates, delegates all heavy work, and only tracks state and user decisions.
+Each phase is a dedicated sub-agent skill. The pipeline-agent orchestrates as a **state machine** — phases can move forward (happy path) or backward (backtracks) when implementation reveals issues. The user interacts through **natural conversation** (auto-routing classifies intent), not slash commands. Commands remain as manual overrides.
+
+### Auto-Routing (Intent-Driven Pipeline)
+
+Users describe what they need in natural language. The agent classifies intent and routes automatically:
+
+| Intent | Route |
+|--------|-------|
+| Build / Feature / Problem | SDD Pipeline (auto-advance with checkpoints) |
+| Quick fix / Bug | Direct fix (skip SDD, Execution Gate LIGHT) |
+| Continue / Resume | Detect phase from artifacts, resume |
+| Backtrack / Rethink | Classify target phase, update artifact, re-advance |
+| Question / Explain | Answer directly |
+| Explicit `/sdd-*` command | Manual override |
 
 ### Mix-of-Experts
 
-The principal agent acts as a pure router. It classifies the scope of each request and delegates to specialized scope agents:
+The principal agent acts as a pure router with auto-routing. It classifies intent and delegates to specialized scope agents:
 
 | Scope Agent | Domain | Skills |
 |-------------|--------|--------|

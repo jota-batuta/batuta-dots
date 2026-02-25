@@ -26,11 +26,15 @@ Imagina que vas a preparar un banquete para 50 personas.
 
 ---
 
-## Las 9 fases
+## Las 9 fases (maquina de estados)
+
+El camino feliz (happy path) es lineal:
 
 ```
 init → explore → [G0.5] → propose → [G1] → spec → design → tasks → apply → verify → [G2] → archive
 ```
+
+Pero la realidad no siempre es lineal. A veces descubres en la fase de implementacion que falta algo en el spec, o que el diseno no soporta un caso. Por eso el pipeline es una **maquina de estados** — puedes retroceder a la fase que necesites corregir y luego re-avanzar:
 
 ### Fase 1: Init (Preparar la cocina)
 
@@ -111,7 +115,7 @@ init → explore → [G0.5] → propose → [G1] → spec → design → tasks �
 
 ---
 
-## Flujo visual
+## Flujo visual (maquina de estados)
 
 ```
 [Tu idea]
@@ -120,26 +124,26 @@ init → explore → [G0.5] → propose → [G1] → spec → design → tasks �
   INIT ───→ Prepara proyecto
     |
     v
-  EXPLORE ──→ Investiga problema
-    |
-   G0.5 ───→ Entendemos bien? (si/no)
-    |
-    v
-  PROPOSE ──→ Propone solucion
-    |
-   G1 ─────→ Vale la pena? (si/no)
-    |
-    v
-  SPEC ←──→ DESIGN (paralelo)
-    |
-    v
-  TASKS ───→ Divide trabajo
-    |
-    v
-  APPLY ───→ Escribe codigo
-    |
-    v
-  VERIFY ──→ Prueba todo
+  EXPLORE ──→ Investiga problema ◄──────────────┐
+    |                                            │
+   G0.5 ───→ Entendemos bien? (si/no)           │
+    |                                            │
+    v                                            │
+  PROPOSE ──→ Propone solucion ◄─────────┐      │
+    |                                    │      │
+   G1 ─────→ Vale la pena? (si/no)      │      │
+    |                                    │      │
+    v                                    │      │
+  SPEC ←──→ DESIGN (paralelo) ◄────┐    │      │
+    |                               │    │      │
+    v                               │    │      │
+  TASKS ───→ Divide trabajo         │    │      │
+    |                               │    │      │
+    v                               │    │      │
+  APPLY ───→ Escribe codigo ────────┴────┴──────┘
+    |            ↑                backtrack triggers
+    v            │
+  VERIFY ──→ Prueba todo ───→ issues? → APPLY (fix) o DESIGN (re-pensar)
     |
    G2 ─────→ Listo para produccion? (si/no)
     |
@@ -150,9 +154,47 @@ init → explore → [G0.5] → propose → [G1] → spec → design → tasks �
 [Software funcionando + documentado]
 ```
 
+### Retrocesos (backtracks)
+
+A veces en la cocina descubres que te falta un ingrediente que no estaba en la receta. En vez de empezar de cero, vuelves a corregir la receta y continuas desde ahi.
+
+| Estas en... | Descubres que... | Vuelves a... | Ejemplo |
+|-------------|------------------|-------------|---------|
+| APPLY | Falta un caso en el spec | SPEC | "Necesitamos manejar mensajes de audio" |
+| APPLY | La arquitectura no soporta algo | DESIGN | "pymssql no soporta async" |
+| APPLY | El problema es diferente | EXPLORE | "Hay un segundo servidor que no mapeamos" |
+| DESIGN | El alcance cambio | PROPOSE | "El cliente quiere incluir la Planta" |
+| VERIFY | Tests revelan fallo de diseno | DESIGN | "El retry no maneja desconexiones de VPN" |
+| VERIFY | Bug puntual | APPLY | "El query tiene un typo en el JOIN" |
+
+Los artefactos no se borran — se actualizan in-place. Git guarda el historial. Y cada retroceso se registra en `backtrack-log.md` para trazabilidad.
+
 ---
 
-## Atajos utiles
+## Auto-routing: conversacion natural
+
+No necesitas memorizar slash commands. Batuta detecta automaticamente que necesitas y ejecuta la fase correcta:
+
+| Tu dices... | Batuta hace... |
+|------------|----------------|
+| "Tengo un problema de inventarios negativos" | Detecta: problema nuevo → explora → propone solucion |
+| "El boton de login no funciona" | Detecta: bug puntual → fix directo (sin SDD) |
+| "Donde quedamos?" | Detecta: continuar → busca la fase actual y avanza |
+| "Esto no funciona como pense, falta manejar audios" | Detecta: backtrack → ajusta spec + re-avanza |
+| "Que es SDD?" | Detecta: pregunta → responde directamente |
+
+El flujo natural es:
+1. Tu describes el problema
+2. Batuta investiga y te presenta una propuesta
+3. Tu apruebas (o ajustas)
+4. Batuta disena, planifica e implementa
+5. Tu revisas el resultado
+
+**Los slash commands siguen existiendo** como override manual si quieres controlar cada paso directamente.
+
+---
+
+## Atajos utiles (override manual)
 
 | Quieres... | Usa | Que hace |
 |-----------|-----|---------|

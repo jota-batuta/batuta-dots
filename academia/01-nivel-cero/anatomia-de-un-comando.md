@@ -1,17 +1,42 @@
 # Anatomia de un comando
 
-Cuando escribes `/sdd-explore`, no estas ejecutando un programa simple. Estas activando una cadena de componentes que trabajan juntos. Entender esto te da control sobre el proceso.
+Normalmente no necesitas escribir comandos — Batuta detecta lo que necesitas y actua automaticamente (ver [auto-routing](el-pipeline-sdd.md#auto-routing-conversacion-natural)). Pero entender como funcionan internamente te da control total cuando quieras usarlos como override manual.
 
 ---
 
-## Que pasa cuando escribes /sdd-explore
+## Dos formas de activar una fase
+
+### Forma 1: Conversacion natural (auto-routing)
+
+```
+Tu escribes: "Necesito investigar la conciliacion bancaria"
+         |
+         v
+[0] CLAUDE.md clasifica tu intent (Auto-Routing)
+    → Intent: "Build / Feature / Problem"
+    → Estado: openspec existe, no hay change activo
+    → Accion: ejecutar sdd-explore automaticamente
+```
+
+### Forma 2: Comando explicito (override manual)
 
 ```
 Tu escribes: /sdd-explore conciliacion-bancaria
          |
          v
-[1] CLAUDE.md lee el comando
-    → Lo busca en la tabla "SDD Commands"
+[0] CLAUDE.md reconoce el slash command
+    → Override manual: ejecutar sdd-explore directamente
+```
+
+Ambas formas activan la misma cadena interna:
+
+## Que pasa internamente
+
+```
+Batuta decide ejecutar sdd-explore
+         |
+         v
+[1] CLAUDE.md identifica el scope
     → Determina: scope = pipeline
          |
          v
@@ -140,9 +165,10 @@ Permite escribir    Bloquea y pide
 
 ## Que significa esto para ti
 
-- **No necesitas memorizar** los internos — Batuta los maneja por ti
-- **Si necesitas entender** por que Batuta te pregunta ciertas cosas (los gates, el Execution Gate)
-- **Puedes confiar** en que cada comando sigue un proceso profesional
+- **No necesitas memorizar comandos** — describe lo que necesitas y Batuta actua
+- **Los comandos existen como override** — si quieres controlar un paso especifico, puedes usar el slash command directamente
+- **La cadena interna es la misma** — ya sea que hables naturalmente o uses un comando, el proceso es identico
+- **Si necesitas entender** por que Batuta te pregunta ciertas cosas (los gates, el Execution Gate), esta pagina lo explica
 
 ---
 

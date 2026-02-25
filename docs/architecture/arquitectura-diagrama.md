@@ -57,16 +57,16 @@ flowchart TB
 
 ---
 
-## Mix-of-Experts: Routing del Agente Principal (v5)
+## Mix-of-Experts: Routing del Agente Principal (v11)
 
 ```mermaid
 flowchart TD
     USER["Usuario escribe prompt"]
-    GATE["Execution Gate<br/>VALIDATE → CLASSIFY → ROUTE → LOG"]
-    ROUTER["CLAUDE.md (Router)<br/>~220 lineas: personalidad,<br/>reglas, routing table"]
+    AUTOROUTE["Auto-Routing<br/>Clasifica intent:<br/>Build | Fix | Continue | Backtrack | Question"]
+    ROUTER["CLAUDE.md (Router)<br/>~280 lineas: personalidad,<br/>reglas, routing table, auto-routing"]
 
     subgraph AGENTS["SCOPE AGENTS"]
-        PIPELINE["pipeline-agent<br/>SDD Pipeline<br/>(9 skills)"]
+        PIPELINE["pipeline-agent<br/>SDD State Machine<br/>(9 skills)"]
         INFRA["infra-agent<br/>Infraestructura<br/>(5 skills)"]
         OBS["observability-agent<br/>O.R.T.A.<br/>(1 skill)"]
     end
@@ -78,11 +78,15 @@ flowchart TD
     end
 
     RESULT["Resultado al usuario"]
+    DIRECT["Responde directo<br/>(preguntas simples)"]
+    GATE["Execution Gate<br/>LIGHT | FULL"]
 
-    USER --> ROUTER --> GATE
-    GATE -->|"scope: pipeline"| PIPELINE
-    GATE -->|"scope: infra"| INFRA
-    GATE -->|"scope: observability"| OBS
+    USER --> ROUTER --> AUTOROUTE
+    AUTOROUTE -->|"Build/Continue/Backtrack"| PIPELINE
+    AUTOROUTE -->|"scope: infra"| INFRA
+    AUTOROUTE -->|"scope: observability"| OBS
+    AUTOROUTE -->|"Question"| DIRECT
+    AUTOROUTE -->|"Quick fix"| GATE --> RESULT
     PIPELINE --> SDD
     INFRA --> ECO
     OBS --> PROMPT
@@ -91,13 +95,15 @@ flowchart TD
     PROMPT --> RESULT
 
     style ROUTER fill:#D4956A,color:#fff
-    style GATE fill:#E8B84D,color:#000
+    style AUTOROUTE fill:#E8B84D,color:#000
     style PIPELINE fill:#7AAFC4,color:#fff
     style INFRA fill:#8BB87A,color:#fff
     style OBS fill:#9B7AB8,color:#fff
+    style DIRECT fill:#666,color:#fff
+    style GATE fill:#E8B84D,color:#000
 ```
 
-> El agente principal es un **router puro**. No ejecuta trabajo pesado — clasifica el scope y delega al agente experto. Solo el resultado vuelve al usuario.
+> El agente principal es un **router puro** con **auto-routing**. Clasifica el intent del usuario (Build, Fix, Continue, Backtrack, Question) y delega automaticamente — el usuario no necesita escribir slash commands. Los comandos existen como override manual.
 
 ---
 
@@ -129,20 +135,20 @@ flowchart LR
 
 ---
 
-## Flujo de Trabajo SDD (Spec-Driven Development)
+## Flujo de Trabajo SDD (Spec-Driven Development) — v11 State Machine
 
 ```mermaid
 flowchart LR
     subgraph USUARIO["TU (el humano)"]
-        U_DECIDE["Decides que<br/>construir"]
-        U_APRUEBA["Apruebas<br/>cada fase"]
+        U_DESCRIBE["Describes el<br/>problema"]
+        U_APRUEBA["Apruebas en<br/>checkpoints"]
     end
 
-    subgraph ORQUESTADOR["AGENTE PRINCIPAL (orquestador)"]
-        ORC["Coordina, no ejecuta<br/>Rastrea estado<br/>Pide aprobacion"]
+    subgraph ORQUESTADOR["AGENTE PRINCIPAL (auto-routing)"]
+        ORC["Clasifica intent<br/>Avanza automaticamente<br/>Para en checkpoints"]
     end
 
-    subgraph PIPELINE["SUB-AGENTES SDD"]
+    subgraph PIPELINE["SUB-AGENTES SDD (state machine)"]
         direction LR
         INIT["sdd-init<br/>Tipo de<br/>proyecto"]
         EXPLORE["sdd-explore<br/>Investigar<br/>opciones"]
@@ -155,7 +161,7 @@ flowchart LR
         ARCHIVE["sdd-archive<br/>Archivar y<br/>documentar"]
     end
 
-    U_DECIDE --> ORC
+    U_DESCRIBE --> ORC
     ORC --> INIT --> EXPLORE --> PROPOSE
     PROPOSE --> SPEC
     PROPOSE --> DESIGN
@@ -164,15 +170,21 @@ flowchart LR
     TASKS --> APPLY --> VERIFY --> ARCHIVE
     ARCHIVE --> U_APRUEBA
 
-    ORC -.->|"delega"| PIPELINE
-    U_APRUEBA -.->|"entre cada fase"| ORC
+    APPLY -.->|"backtrack"| SPEC
+    APPLY -.->|"backtrack"| DESIGN
+    APPLY -.->|"backtrack"| EXPLORE
+    VERIFY -.->|"backtrack"| DESIGN
+    VERIFY -.->|"backtrack"| APPLY
+
+    ORC -.->|"auto-routing"| PIPELINE
+    U_APRUEBA -.->|"checkpoints"| ORC
 
     style USUARIO fill:#2d2d2d,stroke:#E8B84D,color:#F5EDE4
     style ORQUESTADOR fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
     style PIPELINE fill:#1a1a1a,stroke:#8BB87A,color:#F5EDE4
 ```
 
-### Dependencias entre fases
+### Dependencias entre fases (con backtracks)
 
 ```mermaid
 graph LR
@@ -184,11 +196,17 @@ graph LR
     A --> V[verify]
     V --> AR[archive]
 
+    A -.->|"caso faltante"| S
+    A -.->|"problema de arch"| D
+    A -.->|"problema nuevo"| P
+    V -.->|"fallo de diseno"| D
+    V -.->|"bug puntual"| A
+
     style S fill:#7AAFC4,color:#fff
     style D fill:#7AAFC4,color:#fff
 ```
 
-> **spec** y **design** en paralelo. Gates G0.5 (Discovery Complete), G1 (Solution Worth Building) y G2 (Production Ready) son checkpoints estrategicos v10.0. 6 specialist skills se invocan condicionalmente: process-analyst, recursion-designer, llm-pipeline-design, data-pipeline-design, worker-scaffold, compliance-colombia.
+> **spec** y **design** en paralelo. Lineas punteadas = backtracks (retrocesos cuando se descubren problemas). Gates G0.5 (Discovery Complete), G1 (Solution Worth Building) y G2 (Production Ready) son checkpoints estrategicos. Cada backtrack se registra en `backtrack-log.md` para trazabilidad. 6 specialist skills se invocan condicionalmente: process-analyst, recursion-designer, llm-pipeline-design, data-pipeline-design, worker-scaffold, compliance-colombia.
 
 ---
 
@@ -603,30 +621,38 @@ flowchart TD
 
 ---
 
-## Flujo Completo: Desde Carpeta Vacia hasta App en Internet
+## Flujo Completo: Desde Carpeta Vacia hasta App en Internet (v11)
 
 ```mermaid
 flowchart TD
     EMPTY["Carpeta vacia"]
     INIT_CMD["/batuta-init mi-app"]
     BATUTA_DIR["Crea .batuta/<br/>(session.md + prompt-log.jsonl)"]
-    SDD_INIT["/sdd-init"]
-    SDD_EXPLORE["/sdd-explore"]
+    DESCRIBE["Usuario describe:<br/>'Necesito una app que haga X'"]
+    AUTOROUTE["Auto-routing clasifica:<br/>Build → SDD Pipeline"]
+    SDD_AUTO["Batuta automaticamente:<br/>init → explore → propose"]
     GAP["Deteccion de gaps<br/>(crea skills si faltan)"]
-    SDD_NEW["/sdd-new"]
-    SDD_CONTINUE["/sdd-continue<br/>(spec + design + tasks)"]
-    SDD_APPLY["/sdd-apply<br/>(escribe codigo)"]
-    SDD_VERIFY["/sdd-verify"]
+    APPROVAL["Usuario aprueba propuesta"]
+    PLAN["Batuta planifica:<br/>spec → design → tasks"]
+    APPROVAL2["Usuario aprueba plan"]
+    SDD_APPLY["Batuta implementa:<br/>apply (por lotes)"]
+    BACKTRACK{"Problema<br/>descubierto?"}
+    RETHINK["Backtrack:<br/>ajustar spec/design<br/>→ re-avanzar"]
+    SDD_VERIFY["Batuta verifica"]
     TEST["Probar en localhost"]
     DEPLOY["Configurar Coolify"]
     PUSH["Push a GitHub"]
     LIVE["App en internet"]
-    SDD_ARCHIVE["/sdd-archive"]
+    SDD_ARCHIVE["Archiva cambio"]
     UPDATE{"Skills nuevos<br/>creados?"}
     PROPAGATE["Propagar a<br/>batuta-dots"]
 
-    EMPTY --> INIT_CMD --> BATUTA_DIR --> SDD_INIT --> SDD_EXPLORE --> GAP
-    GAP --> SDD_NEW --> SDD_CONTINUE --> SDD_APPLY --> SDD_VERIFY
+    EMPTY --> INIT_CMD --> BATUTA_DIR --> DESCRIBE --> AUTOROUTE
+    AUTOROUTE --> SDD_AUTO --> GAP --> APPROVAL
+    APPROVAL --> PLAN --> APPROVAL2 --> SDD_APPLY
+    SDD_APPLY --> BACKTRACK
+    BACKTRACK -->|"Si"| RETHINK --> SDD_APPLY
+    BACKTRACK -->|"No"| SDD_VERIFY
     SDD_VERIFY --> TEST --> DEPLOY --> PUSH --> LIVE
     LIVE --> SDD_ARCHIVE --> UPDATE
     UPDATE -->|"Si"| PROPAGATE
@@ -636,6 +662,9 @@ flowchart TD
     style LIVE fill:#8BB87A,color:#fff
     style GAP fill:#E8B84D,color:#000
     style PROPAGATE fill:#D4956A,color:#fff
+    style AUTOROUTE fill:#E8B84D,color:#000
+    style BACKTRACK fill:#D4956A,color:#fff
+    style RETHINK fill:#7AAFC4,color:#fff
 ```
 
 ---

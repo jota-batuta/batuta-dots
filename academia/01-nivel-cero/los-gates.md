@@ -88,6 +88,23 @@ Todo marcado → "si" y avanzas. Algo sin marcar → vuelves a completar.
 
 ---
 
+## Gates y retrocesos (backtracks)
+
+Los gates no son la unica forma de volver atras. A veces descubres problemas DURANTE la implementacion o verificacion. El pipeline SDD es una maquina de estados — puedes retroceder a cualquier fase anterior:
+
+| Estas en... | Descubres que... | Vuelves a... |
+|-------------|------------------|-------------|
+| APPLY | Falta un caso en el spec | SPEC |
+| APPLY | La arquitectura no soporta algo | DESIGN |
+| APPLY | El problema es diferente | EXPLORE |
+| VERIFY | Tests revelan fallo de diseno | DESIGN |
+
+Cada retroceso se registra en `backtrack-log.md` para que quede documentado QUE cambio y POR QUE. Los artefactos se actualizan in-place — git guarda el historial.
+
+> Los gates son **preventivos** (verifican ANTES de avanzar). Los backtracks son **correctivos** (arreglan DESPUES de descubrir un problema). Ambos son normales y saludables — no son señal de error.
+
+---
+
 | Gate | Cuando | Pregunta | Si falla |
 |------|--------|----------|----------|
 | G0.5 | explore → propose | Entendemos? | Volver a explore |

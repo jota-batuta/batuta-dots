@@ -64,7 +64,12 @@ cocinar de una. Sigue un proceso de 9 pasos:
 
 ### Los 9 pasos para crear un plato nuevo
 
+Lo mejor: no necesitas memorizar estos pasos. Le dices al chef "quiero un plato de pollo al horno para 20 personas" y el automaticamente sigue el proceso. Tu solo apruebas en los puntos clave.
+
 ```
+Tu dices: "Quiero un plato de pollo al horno para 20 personas"
+      ↓
+   EL CHEF AUTOMATICAMENTE:
 1. INIT        → "Que tipo de plato es?" (entrada, principal, postre)
 2. EXPLORE     → "Que ingredientes tenemos? Que tecnicas podemos usar?"
 3. PROPOSE     → "Esta es mi propuesta de plato. Te parece bien?"
@@ -82,6 +87,18 @@ cocinar de una. Sigue un proceso de 9 pasos:
 9. ARCHIVE     → "Documento la receta para que cualquiera pueda repetirla"
 ```
 
+### Que pasa si descubres un problema a mitad de camino?
+
+En un restaurante real, a veces descubres que falta un ingrediente cuando ya estas cocinando. El chef de Batuta no empieza de cero — **retrocede** a la receta, la corrige, y continua desde ahi.
+
+| El chef esta... | Descubre que... | Entonces... |
+|----------------|-----------------|-------------|
+| Cocinando (APPLY) | Falta un ingrediente en la receta | Vuelve a la receta (SPEC), la corrige, y sigue cocinando |
+| Cocinando (APPLY) | La tecnica no funciona | Vuelve al plan de cocina (DESIGN), lo ajusta, y replanifica |
+| Probando (VERIFY) | El plato no sabe como esperaba | Vuelve a cocinar (APPLY) si es un ajuste, o al plan (DESIGN) si hay que repensar |
+
+Cada retroceso queda anotado en una bitacora para que no se pierda el aprendizaje.
+
 ### Por que tantos pasos?
 
 Porque es MAS RAPIDO planear bien que arreglar errores despues.
@@ -91,7 +108,7 @@ Imagina que empiezas a cocinar sin receta:
 - "Ups, tenia que precalentar el horno hace 30 minutos" → esperar 30 minutos
 - "Ups, la salsa no combina con la carne" → empezar de cero
 
-Con los 9 pasos, todos esos problemas se detectan ANTES de empezar a cocinar.
+Con los 9 pasos, la mayoria de esos problemas se detectan ANTES de empezar a cocinar. Y si aparece uno nuevo durante la coccion, hay un proceso claro para manejarlo sin empezar de cero.
 
 ---
 
@@ -517,10 +534,23 @@ El protocolo de higiene se revisa en DOS momentos:
 
 ---
 
-## Los Comandos (Como le hablas al chef)
+## Como le hablas al chef
 
-No necesitas saber programar. Solo necesitas saber estos "comandos" que son como
-pedidos en el restaurante:
+No necesitas saber programar NI memorizar comandos. Simplemente describe lo que necesitas:
+
+| Que quieres | Que le dices a Batuta |
+|-------------|----------------------|
+| Construir algo nuevo | "Necesito una app que haga X" |
+| Investigar algo | "Como funciona el sistema de pagos?" |
+| Continuar donde quedaste | "Donde quedamos?" o "sigue con lo de ayer" |
+| Corregir un problema descubierto | "Esto no funciona, falta manejar el caso X" |
+| Arreglar un bug puntual | "El boton de login no funciona" |
+
+Batuta detecta que necesitas y ejecuta el proceso automaticamente. Tu solo apruebas en los momentos clave (la propuesta y el plan de tareas).
+
+### Comandos manuales (para los que quieren control total)
+
+Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
 
 | Que quieres | Que escribes |
 |-------------|-------------|
@@ -576,31 +606,33 @@ TU IDEA
    ↓
 "Quiero una app que haga X"
    ↓
-/batuta-init → Instala el ecosistema + hooks + crea .batuta/
+Batuta detecta: proyecto nuevo, necesita SDD
    ↓
-/sdd-init → Define el tipo de proyecto
-   ↓
-/sdd-explore → Claude investiga como hacerlo
+Automaticamente: instala ecosistema + investiga el problema
    ↓
 (Si falta un skill → lo crea automaticamente)
    ↓
-/sdd-new → Claude te muestra el plan
+Claude te presenta la propuesta
    ↓
 TU APRUEBAS
    ↓
-/sdd-continue → Specs + Diseno + Tareas
+Claude automaticamente: Specs + Diseno + Tareas
    ↓
-Execution Gate → Verifica antes de construir
+Claude te presenta el plan
    ↓
-/sdd-apply → Claude construye la app
+TU APRUEBAS
    ↓
-/sdd-verify → Claude verifica que funcione
+Claude construye la app (Execution Gate verifica cada archivo)
+   ↓
+(Si descubre un problema → retrocede, corrige, y sigue)
+   ↓
+Claude verifica que funcione
    ↓
 Pruebas en tu computadora
    ↓
 Deploy a internet (Coolify)
    ↓
-/sdd-archive → Documenta y cierra
+Claude documenta y cierra
    ↓
 APP LISTA EN INTERNET
 ```
@@ -610,7 +642,7 @@ APP LISTA EN INTERNET
 ## Preguntas frecuentes
 
 **P: Necesito saber programar para usar esto?**
-R: No. Solo necesitas saber copiar y pegar los comandos de las guias. Claude programa por ti.
+R: No. Solo necesitas describir lo que quieres en lenguaje natural. Claude programa por ti. Los comandos existen como opcion para control directo, pero no son necesarios.
 
 **P: Que pasa si Claude hace algo mal?**
 R: El paso de `/sdd-verify` revisa todo automaticamente. Si encuentra errores, te dice cuales son y los corrige.

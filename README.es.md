@@ -261,17 +261,31 @@ NUNCA se crean carpetas `utils/`, `helpers/`, `lib/` o `components/` en la raiz.
 
 ### Spec-Driven Development (SDD)
 
-Pipeline de 9 fases que fuerza "entender antes de construir":
+Maquina de estados de 9 fases que fuerza "entender antes de construir":
 
 ```
 init -> explore -> propose -> spec -> design -> tasks -> apply -> verify -> archive
+                                                          ↑ backtracks ↑
 ```
 
-Cada fase es un sub-agente especializado. El pipeline-agent orquesta, delega todo el trabajo pesado y solo rastrea estado y decisiones del usuario.
+Cada fase es un sub-agente especializado. El pipeline-agent orquesta como **maquina de estados** — las fases avanzan (happy path) o retroceden (backtracks) cuando la implementacion revela problemas. El usuario interactua con **conversacion natural** (auto-routing clasifica intent), no con slash commands. Los comandos permanecen como override manual.
+
+### Auto-Routing (Pipeline Dirigido por Intent)
+
+El usuario describe lo que necesita en lenguaje natural. El agente clasifica el intent y enruta automaticamente:
+
+| Intent | Ruta |
+|--------|------|
+| Construir / Feature / Problema | Pipeline SDD (auto-avance con checkpoints) |
+| Fix rapido / Bug | Fix directo (sin SDD, Execution Gate LIGHT) |
+| Continuar / Retomar | Detecta fase desde artefactos, retoma |
+| Backtrack / Repensar | Clasifica fase destino, actualiza artefacto, re-avanza |
+| Pregunta / Explicar | Responde directamente |
+| Comando `/sdd-*` explicito | Override manual |
 
 ### Mix-of-Experts
 
-El agente principal actua como un router puro. Clasifica el scope de cada solicitud y delega a agentes de scope especializados:
+El agente principal actua como un router puro con auto-routing. Clasifica el intent y delega a agentes de scope especializados:
 
 | Agente de Scope | Dominio | Skills |
 |-----------------|---------|--------|

@@ -160,6 +160,87 @@ Strategic capabilities integrated from the CTO expert layer. These enrich the SD
 
 ---
 
+## Auto-Routing (Intent-Driven Pipeline)
+
+When a user starts a conversation or introduces a new topic, classify their intent
+and route automatically. Do NOT ask the user to type slash commands — act on their behalf.
+Slash commands remain as manual overrides if the user types them explicitly.
+
+**Precondition**: Auto-routing is only active when `.batuta/` exists in the project
+(session.md was injected by SessionStart). In non-Batuta projects, respond normally.
+
+### Step 1: Read State
+
+At conversation start (session.md is already injected by SessionStart hook):
+- Parse **Active SDD Changes** from session.md → current phase
+- Check if `openspec/` exists → SDD initialized?
+- Always verify phase by checking actual artifacts in `openspec/changes/` —
+  session.md is a hint, not source of truth. The filesystem is the source of truth.
+
+### Step 2: Classify Intent
+
+| Intent | Examples | Route |
+|--------|----------|-------|
+| **Build / Feature / Problem** | "tengo un problema con inventario negativo", "necesito un dashboard", "build a notification system" | SDD Pipeline (Step 3a) |
+| **Quick fix / Bug** | "el boton no funciona", "fix the null check in utils.ts", "hay un typo" | Direct Fix (Step 3b) |
+| **Continue / Resume** | "donde quedamos?", "let's keep going", "continua con inventario" | SDD Continue (Step 3c) |
+| **Backtrack / Rethink** | "esto no funciona como pense", "falta un caso", "cambio el requisito", "la API no se comporta asi" | SDD Backtrack (Step 3d) |
+| **Question / Explain** | "que es SDD?", "how does auth work?", "should I use Redis?" | Answer directly |
+| **Explicit command** | "/sdd-explore", "/sdd-continue", any `/` command | Execute that command (manual override) |
+
+### Step 3a: SDD Pipeline (new work)
+
+Advance automatically, pausing at human checkpoints:
+
+1. `openspec/` missing → run sdd-init silently, then continue
+2. No change directory for this topic → run sdd-explore, summarize findings
+3. explore.md exists, no proposal.md → run sdd-propose, present to user
+4. **MANDATORY STOP**: Present the proposal. NEVER auto-advance past a proposal
+   without the user saying "go ahead", "proceed", "dale", "si", or equivalent.
+5. After approval → run sdd-spec, sdd-design (can parallel), sdd-tasks
+6. **STOP**: Present the task plan. Wait for "proceed" before sdd-apply.
+7. After approval → run sdd-apply per task batch
+
+Between phases, respect gates (G0.5, G1, G2) from pipeline-agent.
+When a gate requires confirmation, STOP and present the checklist.
+
+> The user should experience: describe problem → review proposal → approve plan → watch implementation.
+> NOT: describe problem → type command → type command → type command.
+
+### Step 3b: Direct Fix (small scope)
+
+If the fix involves < 3 files and has clear scope:
+- Skip SDD pipeline
+- Apply Execution Gate (LIGHT mode)
+- Implement directly
+
+If during investigation the fix grows (3+ files, architectural implications),
+inform the user and switch to SDD Pipeline route.
+
+### Step 3c: SDD Continue (resume work)
+
+If session.md shows an active change:
+- Detect phase using sdd-continue state machine (check artifacts on disk)
+- Tell user: "Retomamos {change-name} — esta en fase {phase}. Continuo con {next-phase}?"
+- If user's message clearly implies continuation ("dale", "sigue", "keep going"),
+  proceed without asking.
+
+### Step 3d: SDD Backtrack (rethink)
+
+When the user reports something that invalidates a previous phase:
+- Classify the backtrack target using pipeline-agent's backtrack trigger table
+- Inform: "Esto requiere ajustar el {spec/design/etc}. Lo actualizo?"
+- On approval: update the affected artifact, log in backtrack-log.md, re-run downstream phases as needed
+- Full backtrack rules are in pipeline-agent
+
+### Transparency Rule
+
+Tell the user what you are doing and why, but AFTER initiating — not as a request
+to type a command. Say "Voy a explorar el codebase para entender el problema..."
+not "Ejecuta /sdd-explore para comenzar."
+
+---
+
 > **Design Note**: The Execution Gate is defined here in the router (not as a separate skill) because it must execute BEFORE any code change. A `PreToolUse` prompt hook in settings.json enforces this deterministically.
 
 ## Execution Gate (Mandatory Pre-Validation)
