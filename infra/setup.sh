@@ -322,7 +322,9 @@ _merge_settings_python() {
     local target="$2"
     local merge_exit=0
 
-    python3 -c "
+    # WORKAROUND: On Windows (Git Bash/MSYS2), Python ignores encoding='utf-8'
+    # and falls back to charmap codec. PYTHONUTF8=1 forces UTF-8 mode globally.
+    PYTHONUTF8=1 python3 -c "
 import json, sys
 
 try:
