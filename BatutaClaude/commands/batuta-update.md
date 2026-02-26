@@ -15,16 +15,30 @@ Pull latest batuta-dots and update everything (global + project) in one shot.
 
 Check these locations in order:
 
-1. `E:/BATUTA PROJECTS/batuta-dots/`
-2. `~/batuta-dots/`
-3. `/tmp/batuta-dots/`
+1. `~/batuta-dots/`
+2. `/tmp/batuta-dots/`
 
-If found, do a `git pull` in that directory to get latest changes.
-If not found, clone: `git clone https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-dots`
+If not found in either location, clone it:
+```bash
+git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-dots
+```
 
 Store the path in `$BATUTA_DOTS_PATH`.
 
-### Step 2: Run full update (one command)
+### Step 2: Pull latest changes
+
+Tell the user: "Actualizando batuta-dots para obtener los últimos skills y configuración..."
+
+Run `git pull` in `$BATUTA_DOTS_PATH`. If it fails (dirty tree, wrong branch, conflict),
+**stop and explain the issue to the user**. Do NOT silently continue with stale files —
+the user needs to know they're not getting the latest version.
+
+Common failures and what to tell the user:
+- Dirty tree: "batuta-dots tiene cambios sin commit. Haz commit o stash antes de actualizar."
+- Wrong branch: "batuta-dots está en la rama X. Cambia a master para actualizar."
+- Network error: "No hay conexión. Verifica tu red."
+
+### Step 3: Run full update (one command)
 
 ```bash
 bash "$BATUTA_DOTS_PATH/infra/setup.sh" --update "$(pwd)"
@@ -51,7 +65,7 @@ This single command does everything:
 
 NEVER overwrite `.batuta/session.md` or `openspec/` contents. Project context is sacred.
 
-### Step 3: Report
+### Step 4: Report
 
 ```
 Ecosistema Batuta actualizado.
