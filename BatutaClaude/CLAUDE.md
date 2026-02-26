@@ -91,6 +91,17 @@ Full orchestration rules: see the `team-orchestrator` skill.
 During `sdd-explore`, identify ALL technologies without a matching skill in `~/.claude/skills/`. If HIGH gaps exist, the explore phase is **NOT complete** until the user decides how to handle each gap: create skill, defer with justification, or continue without. This is a blocking gate — do not advance to `sdd-propose`.
 Full protocol: see `infra-agent`. Explore enforcement: see `sdd-explore` Step 2.5.
 
+### MCP Discovery (active search — not just inventory)
+During `sdd-explore`, actively SEARCH for MCP servers that would benefit the
+project — both configured locally and available on the web. Map technologies
+to MCPs, recommend installations, and flag HIGH relevance MCPs for sdd-apply.
+During `sdd-apply`, consult active MCPs before implementing; use WebFetch as
+fallback for recommended but uninstalled MCPs.
+During `ecosystem-creator`, validate skill patterns against live docs via MCP
+or web; add `mcp_validated` metadata to created skills.
+Principle: "No busques lo que no sabes que tienes."
+Full protocol: see `sdd-explore` Step 2.6, `sdd-apply` Step 1.5, `ecosystem-creator` Step 4.5.
+
 ### Ecosystem Auto-Update (summary)
 At end of projects with new skills, ask if they should propagate to batuta-dots.
 Full process: see `infra-agent` which has the evaluation → generalize → propagate flow.

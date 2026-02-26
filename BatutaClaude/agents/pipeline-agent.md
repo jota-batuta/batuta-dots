@@ -106,6 +106,21 @@ Muestra el checklist al usuario y NO avances hasta que confirme.
 
 This gate exists because cognitive rules fail (GAP-02). The agent "knows" about skill gaps but forgets to enforce them across phases. This deterministic file-existence check cannot be rationalized away.
 
+### MCP Awareness (informational — between G0.25 and G0.5)
+
+After skill gaps are resolved, check MCP Discovery results from the exploration:
+
+1. Read `openspec/changes/{change-name}/explore.md`
+2. Find the "MCP Discovery Map" section
+3. If there are HIGH relevance MCPs that are **recommended but not installed**:
+   - Present them to the user during G0.5 confirmation:
+     "MCPs recomendados para este cambio: {list with reasons and install instructions}"
+   - This is informational — it does NOT block the pipeline
+   - The user can choose to install MCPs now (pause pipeline), or continue without them
+4. If all HIGH MCPs are already active: no action needed
+
+This ensures the user is aware of available tools before implementation begins. MCP installation decisions are user-driven — the pipeline only informs, never blocks on MCP availability.
+
 ### G0.5 — Discovery Complete (entre explore y propose)
 Pregunta: "Antes de proponer, confirma:"
 - [ ] Identificamos todos los tipos de caso/entidad?

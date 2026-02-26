@@ -135,6 +135,111 @@ IF high_gaps_detected:
 
 **Do NOT silently continue when HIGH gaps exist.** The gap detection must be actionable, not just documented. This is the entry point for Auto-Update SPO — skills created here can later propagate to batuta-dots.
 
+### Step 2.6: MCP Discovery (Active Search)
+
+After resolving skill gaps, discover MCP (Model Context Protocol) servers that can improve implementation quality. MCP servers provide live documentation, database access, deployment tools, and more — they are the difference between coding from stale training data and coding from current docs.
+
+**Principle**: "No busques lo que no sabes que tienes." — Just as Skill Gap Detection asks "are you missing a skill?", MCP Discovery asks "what tools exist that you're not using?"
+
+#### Phase 1 — Local Inventory
+
+Check what MCPs are already configured:
+
+```
+LOCAL MCP INVENTORY:
+├── Read project .mcp.json or .claude/settings (MCP configuration)
+├── Read mcp-servers.template.json (Batuta template, if exists)
+├── For each MCP found:
+│   ├── Is it active (configured + reachable)?
+│   ├── Which technology does it serve?
+│   └── Is it being used by the current project's stack?
+└── Compile Local MCP table
+```
+
+#### Phase 2 — Web Discovery
+
+Actively SEARCH for MCP servers that could benefit this project:
+
+```
+WEB MCP DISCOVERY:
+├── For each core technology in the project stack:
+│   ├── WebSearch: "{technology} MCP server model context protocol"
+│   ├── WebSearch: "Model Context Protocol servers for {domain}"
+│   │   (e.g., "for SQL databases", "for deployment", "for testing")
+│   └── Evaluate results:
+│       ├── Is it official or well-maintained? (GitHub stars, npm/pip downloads)
+│       ├── Does it have a package? (npm, pip, binary)
+│       └── Is it already configured locally?
+├── Compare web results against local inventory
+└── Compile Web Discovery table
+```
+
+#### Phase 3 — Recommendations
+
+Classify and recommend MCP installations:
+
+```
+MCP RECOMMENDATIONS:
+├── For the development agent (Batuta ecosystem):
+│   ├── MCPs that improve code quality (e.g., Context7 for live docs)
+│   ├── MCPs that enable testing (e.g., Playwright for E2E)
+│   ├── MCPs that give direct access (e.g., Postgres for queries)
+│   └── Classify: HIGH (core, prevents bugs) / MEDIUM (improves workflow) / LOW (nice to have)
+├── For the project being built:
+│   ├── Could the product itself use MCPs as part of its architecture?
+│   ├── (e.g., an AI agent project might need MCPs for tool calling)
+│   └── Document as "Project Architecture MCPs"
+└── For each HIGH recommendation:
+    ├── Show install command (npm/pip/binary)
+    ├── Show config snippet for .mcp.json
+    └── Explain WHY it matters for this specific change
+```
+
+#### MCP Discovery Exit Gate (advisory — does not block)
+
+```
+MCP DISCOVERY EXIT GATE:
+├── [ ] Web search executed for each core technology in the stack
+├── [ ] MCP Discovery Map table completed in output
+├── [ ] HIGH MCPs presented to user with installation instructions
+├── [ ] Recommendations for the project being built documented (if applicable)
+└── [ ] If user wants to install MCPs: pause for configuration before continuing
+```
+
+#### MCP Discovery Output Template
+
+Include this in explore.md under the Skill Gap Analysis:
+
+```markdown
+### MCP Discovery Map
+
+| Technology | MCP Configured | MCP Available (Web) | Relevance | Action |
+|-----------|---------------|--------------------|-----------|---------|
+| {tech} | {name} (active) | - | HIGH | Use for {purpose} |
+| {tech} | - | {name} ({package}) | HIGH | Recommend install |
+| {tech} | {name} (active) | - | MEDIUM | Available |
+| {tech} | - | {name} (found) | LOW | Optional |
+
+### MCP Installation Instructions (HIGH only)
+
+**{MCP name}** — {what it does}
+- Install: `{npm/pip command}`
+- Config (.mcp.json):
+  ```json
+  {
+    "{mcp-name}": {
+      "command": "{command}",
+      "args": ["{args}"]
+    }
+  }
+  ```
+- Why: {specific benefit for this change}
+
+### MCP Recommendations for Project Architecture
+{If the project being built could benefit from MCPs as part of its design,
+document them here. Otherwise: "No project-level MCP recommendations."}
+```
+
 ### Step 2.7: Domain Expert Consultation
 
 If the project has an `openspec/domain-experts.md`, consult it to enrich your exploration with domain-specific knowledge:
@@ -244,6 +349,13 @@ Return EXACTLY this format to the orchestrator (and write the same content to `e
 
 {If HIGH gaps were detected and skills were created, note them here.}
 
+### MCP Discovery Map
+| Technology | MCP Configured | MCP Available (Web) | Relevance | Action |
+|-----------|---------------|--------------------|-----------|---------|
+| {tech} | {name} (active) / - | {name} ({package}) / - | HIGH/MEDIUM/LOW | {action} |
+
+{If HIGH MCPs found: include installation instructions. See Step 2.6 output template.}
+
 ### Discovery Completeness
 | Question | Status | Notes |
 |----------|--------|-------|
@@ -305,6 +417,14 @@ SKILL GAP EXIT GATE:
 │   └── [ ] skill-sync ran if any skills were created
 ├── [ ] For MEDIUM/LOW gaps: documented but not blocking
 └── [ ] "Action Taken" column filled for every row in Skill Gap table
+
+MCP DISCOVERY EXIT GATE:
+├── [ ] Local MCP inventory completed (project .mcp.json / settings checked)
+├── [ ] Web search executed for each core technology in the stack
+├── [ ] MCP Discovery Map table included in output
+├── [ ] HIGH MCPs presented to user with install instructions
+├── [ ] Recommendations for project architecture documented (or "N/A")
+└── [ ] MCP Discovery Map section included in explore.md
 
 DISCOVERY COMPLETENESS EXIT GATE:
 ├── [ ] All 5 Discovery Completeness questions answered

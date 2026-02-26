@@ -196,6 +196,9 @@ allowed-tools: Read, Edit, Write, Glob, Grep, Bash
 | `metadata.created` | Yes | ISO date string (e.g., `"2026-02-20"`) |
 | `metadata.scope` | Yes | Scope category array (e.g., `[pipeline]`, `[infra]`, `[observability]`). Used by skill-sync for routing. |
 | `metadata.auto_invoke` | Yes | Human-readable trigger string or YAML list. When the AI should load this skill. |
+| `metadata.mcp_validated` | No | `true/false` — whether patterns were verified against live docs (MCP or web). Added by Step 4.5. |
+| `metadata.mcp_source` | No | `"Context7"` / `"WebFetch"` / `"WebSearch"` / `"none"` — validation source. |
+| `metadata.validated_date` | No | ISO date of last validation (e.g., `"2026-02-26"`). |
 | `allowed-tools` | Yes | Comma-separated tool list. Required for skill-sync routing tables. |
 
 ### Skill Content Guidelines
@@ -489,6 +492,25 @@ Skill Gap Detected: "{technology}" has no active skill
 │     Include: Stack Integration table (only relevant layers)
 │     Include: Anti-Patterns from research
 │     Include: "What This Means (Simply)" section
+│
+├─ 4.5. MCP VALIDATION — Cross-check patterns against live docs
+│     ├── If Context7 MCP is active:
+│     │   └── Query each critical pattern: resolve-library-id → query-docs
+│     ├── If Context7 is NOT active:
+│     │   ├── WebFetch official documentation for the technology
+│     │   └── WebSearch: "{technology} official docs API reference"
+│     ├── Compare skill patterns against live documentation
+│     │   ├── If patterns MATCH: mark as validated
+│     │   └── If patterns DIFFER: update skill with current patterns
+│     ├── Add metadata to skill frontmatter:
+│     │   mcp_validated: true/false
+│     │   mcp_source: "Context7" / "WebFetch" / "WebSearch" / "none"
+│     │   validated_date: "{YYYY-MM-DD}"
+│     ├── Search for technology-specific MCP server:
+│     │   └── WebSearch: "{technology} MCP server model context protocol"
+│     │   └── If found: add note in skill body:
+│     │       "MCP available: {name} — consider installing for live doc verification"
+│     └── Document validation results in creation summary
 │
 ├─ 5. REVIEW — Present draft to user for approval
 │     Show: Key patterns extracted
