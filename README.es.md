@@ -125,7 +125,7 @@ batuta-dots/
 │       └── security-audit/SKILL.md   # Seguridad AI-first (OWASP + amenazas + escaneo de secretos)
 ├── BatutaAntigravity/                 # Antigravity Lite (brainstorming y prototipado)
 │   ├── GEMINI.md                      # Cerebro CTO completo adaptado para Antigravity
-│   ├── setup-antigravity.sh           # Script de setup (--global / --workspace / --all)
+│   ├── setup-antigravity.sh           # Script de setup (--global / --workspace / --all / --update)
 │   ├── settings-template.json         # Config recomendada para Antigravity
 │   └── workflows/                     # Prompts guardados (SDD + session + sync)
 │       ├── sdd-init.md ... sdd-archive.md  # Pipeline SDD (8 workflows)
@@ -168,7 +168,7 @@ batuta-dots/
 ├── academia/                          # Curso de capacitacion (8 modulos, 53 lecciones)
 └── infra/                             # Infraestructura y scripts de setup
     ├── setup.sh                       # Script principal (Claude Code)
-    ├── sync.sh                        # Sync bidireccional de skills (hub ↔ proyectos)
+    ├── sync.sh                        # Sync bidireccional de skills (hub ↔ proyectos, --push para zero-friction)
     ├── replicate-platform.sh          # Replicacion a otras plataformas
     ├── setup_test.sh                  # Tests de verificacion (51 tests)
     └── hooks/                         # Hooks O.R.T.A. (nativos de Claude Code)
@@ -227,6 +227,9 @@ bash BatutaAntigravity/setup-antigravity.sh --workspace
 
 # Sincronizar skills filtrados por tag platforms
 bash infra/sync.sh --to-antigravity
+
+# Propagar skills locales al hub (import + cross-sync + commit + push)
+bash infra/sync.sh --push
 
 # Otras plataformas (Gemini CLI, Codex, Copilot)
 ./infra/replicate-platform.sh --all
@@ -391,6 +394,7 @@ Durante `/sdd-init`, solo los skills relevantes se copian de la libreria global 
 | `--hooks` | Instala hooks + permisos en ~/.claude/settings.json |
 | `--antigravity` | Sincroniza skills compatibles con Antigravity a BatutaAntigravity/skills/ |
 | `--project <path>` | Setup de un proyecto destino (CLAUDE.md + .batuta/ + git + hooks) |
+| `--update <path>` | Actualizar un proyecto existente (re-sync global + refrescar CLAUDE.md + ecosystem.json del proyecto) |
 | `--verify` | Verificacion completa (51 checks) |
 
 El flag `--all`: sincroniza skills y agentes → instala hooks + permisos → copia CLAUDE.md actualizado a la raiz.

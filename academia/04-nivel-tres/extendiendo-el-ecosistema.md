@@ -88,9 +88,15 @@ No siempre necesitas crear skills proactivamente. El sistema detecta gaps automa
 
 Si creas un skill en un proyecto y quieres que este disponible en todos:
 
-1. Al terminar el proyecto, Batuta pregunta: "Quieres propagar estos skills a batuta-dots?"
-2. Si dices si, el skill se copia al repositorio global
-3. En tu proximo proyecto, el skill ya esta disponible
+**Opcion rapida** (un solo comando):
+```bash
+bash ~/batuta-dots/infra/sync.sh --push /path/to/mi-proyecto
+```
+Esto importa skills nuevos al hub, cross-syncs a Antigravity, y hace commit + push automaticamente.
+
+**Opcion automatica**: Al terminar el proyecto, Batuta pregunta: "Quieres propagar estos skills a batuta-dots?" Si dices si, ejecuta el proceso por ti.
+
+En tu proximo proyecto, el skill ya esta disponible via `/batuta-update`.
 
 ---
 

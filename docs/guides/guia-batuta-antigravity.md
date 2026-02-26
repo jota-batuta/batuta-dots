@@ -57,7 +57,16 @@ cd /path/to/your/project
 bash /path/to/batuta-dots/BatutaAntigravity/setup-antigravity.sh --all
 ```
 
-Instala skills en ambas ubicaciones, copia GEMINI.md al proyecto, y crea `.batuta/` con session.md y ecosystem.json.
+Instala skills en ambas ubicaciones, copia GEMINI.md al proyecto y a `~/.gemini/GEMINI.md` (global), y crea `.batuta/` con session.md y ecosystem.json.
+
+### Opcion 4: Actualizar un proyecto existente
+
+```bash
+cd /path/to/your/project
+bash /path/to/batuta-dots/BatutaAntigravity/setup-antigravity.sh --update "$(pwd)"
+```
+
+Re-sincroniza skills y GEMINI.md (global + proyecto) sin tocar `.batuta/session.md` ni `openspec/`. Es lo que ejecuta `/batuta-update` internamente.
 
 ---
 
@@ -98,12 +107,18 @@ Los workflows son prompts guardados que se ejecutan con `/trigger` en Antigravit
 
 ### Propagar al hub
 
-Ejecuta el workflow `/push-skill`:
+**Opcion rapida** (recomendada): Un solo comando que importa, cross-syncs, commit y push:
+
+```bash
+bash /path/to/batuta-dots/infra/sync.sh --push /path/to/project
+```
+
+**Opcion interactiva**: Ejecuta el workflow `/push-skill` en Antigravity:
 1. Antigravity detecta skills locales no presentes en batuta-dots
 2. Te pregunta cuales propagar
 3. Los copia a `batuta-dots/BatutaClaude/skills/` con el campo `platforms` adecuado
 
-O manualmente:
+**Opcion manual** (solo importar, sin commit):
 ```bash
 bash /path/to/batuta-dots/infra/sync.sh --from-project /path/to/project
 ```

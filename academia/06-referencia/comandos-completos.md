@@ -152,8 +152,37 @@ Stack: Next.js, PostgreSQL, Redis
 **Cuando**: Primer uso en un proyecto.
 
 ### /batuta-update
-**Que hace**: Actualiza el ecosistema a la ultima version.
-**Cuando**: Hay una nueva version disponible.
+**Que hace**: Actualiza el ecosistema a la ultima version desde batuta-dots.
+**Cuando**: Hay una nueva version disponible o quieres los skills mas recientes.
+**Proceso**: Localiza batuta-dots (`~/batuta-dots/` o `/tmp/batuta-dots/`), hace `git pull` (bloqueante — si falla, se detiene y explica), y ejecuta `setup.sh --update "$(pwd)"` (Claude Code) o `setup-antigravity.sh --update "$(pwd)"` (Antigravity).
+
+```
+/batuta-update
+```
+
+**Importante**: El `git pull` es bloqueante por seguridad. Si falla (dirty tree, wrong branch, sin red), se detiene y te dice que hacer. NUNCA continua con archivos desactualizados.
+
+---
+
+## Comandos de desarrollador (terminal)
+
+Estos comandos se ejecutan directamente en terminal, no dentro de Claude Code ni Antigravity:
+
+### sync.sh --push
+**Que hace**: Propaga skills locales de un proyecto al hub batuta-dots. Un solo comando que importa, cross-syncs a Antigravity, commit y push.
+**Cuando**: Creaste skills nuevos en un proyecto y quieres que esten disponibles en todos los demas.
+
+```bash
+bash ~/batuta-dots/infra/sync.sh --push /path/to/mi-proyecto
+```
+
+### setup.sh --update
+**Que hace**: Actualiza un proyecto existente (re-sync global + refrescar CLAUDE.md + ecosystem.json). Es lo que `/batuta-update` ejecuta internamente.
+**Cuando**: Quieres actualizar manualmente sin pasar por Claude Code.
+
+```bash
+bash ~/batuta-dots/infra/setup.sh --update /path/to/mi-proyecto
+```
 
 ---
 
