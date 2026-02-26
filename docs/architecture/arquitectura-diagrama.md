@@ -15,9 +15,9 @@ flowchart TB
     end
 
     subgraph SETUP["SCRIPTS"]
-        SETUP_SH["setup.sh<br/>--claude | --sync | --all | --hooks | --verify"]
+        SETUP_SH["setup.sh<br/>--claude | --sync | --all | --hooks | --update | --verify"]
         REPLICATE["replicate-platform.sh<br/>--antigravity | --copilot | --codex"]
-        SYNC_BI["sync.sh<br/>--to-antigravity | --from-project"]
+        SYNC_BI["sync.sh<br/>--to-antigravity | --from-project | --push"]
     end
 
     subgraph GENERADO["ARCHIVOS GENERADOS (gitignored)"]
@@ -355,21 +355,17 @@ flowchart TD
     PROJECT["Proyecto X crea<br/>un skill nuevo"]
     Q1{"Es reutilizable<br/>en otros proyectos?"}
     STAYS["Se queda solo<br/>en Proyecto X"]
-    GENERALIZE["Generalizar:<br/>quitar referencias<br/>especificas del proyecto"]
-    COPY["Copiar a<br/>batuta-dots/BatutaClaude/skills/"]
-    REGISTER["Registrar en<br/>CLAUDE.md"]
-    SYNC["Ejecutar<br/>setup.sh --all"]
-    PUSH["Commit + push<br/>a batuta-dots"]
+    PUSH_CMD["sync.sh --push<br/>(import + cross-sync<br/>+ commit + push)"]
     BENEFIT["Todos los proyectos<br/>futuros se benefician"]
 
     PROJECT --> Q1
     Q1 -->|"No"| STAYS
-    Q1 -->|"Si"| GENERALIZE
-    GENERALIZE --> COPY --> REGISTER --> SYNC --> PUSH --> BENEFIT
+    Q1 -->|"Si"| PUSH_CMD --> BENEFIT
 
     style PROJECT fill:#7AAFC4,color:#fff
     style BENEFIT fill:#8BB87A,color:#fff
     style STAYS fill:#666,color:#fff
+    style PUSH_CMD fill:#E8B84D,color:#000
 ```
 
 ---
@@ -829,8 +825,8 @@ flowchart TD
     BC -->|"sync.sh --to-antigravity"| BA
     BA -->|"setup-antigravity.sh"| PA_SKILLS
 
-    PC_LOCAL -->|"sync.sh --from-project"| BC
-    PA_SKILLS -->|"sync.sh --from-project"| BC
+    PC_LOCAL -->|"sync.sh --push"| BC
+    PA_SKILLS -->|"sync.sh --push"| BC
 
     PC_ECO -.->|"version check"| HUB
     PA_ECO -.->|"version check"| HUB
@@ -841,7 +837,7 @@ flowchart TD
     style SYNC fill:#E8B84D,color:#000
 ```
 
-> batuta-dots es el **hub central**. Los proyectos y plataformas son **spokes**. Skills fluyen: spoke → hub → all spokes. El campo `platforms` en SKILL.md filtra que skills van a cada plataforma. `ecosystem.json` detecta drift de version.
+> batuta-dots es el **hub central**. Los proyectos y plataformas son **spokes**. Skills fluyen: spoke → hub → all spokes. `sync.sh --push` combina import + cross-sync + commit + push en un solo comando. El campo `platforms` en SKILL.md filtra que skills van a cada plataforma. `ecosystem.json` detecta drift de version.
 
 ---
 

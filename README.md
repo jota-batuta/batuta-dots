@@ -125,7 +125,7 @@ batuta-dots/
 │       └── security-audit/SKILL.md   # AI-first security practices (OWASP + threats)
 ├── BatutaAntigravity/                 # Antigravity Lite (brainstorming & prototyping)
 │   ├── GEMINI.md                      # Full CTO brain adapted for Antigravity
-│   ├── setup-antigravity.sh           # Setup script (--global / --workspace / --all)
+│   ├── setup-antigravity.sh           # Setup script (--global / --workspace / --all / --update)
 │   ├── settings-template.json         # Recommended Antigravity config
 │   └── workflows/                     # Saved prompts (SDD + session + sync)
 │       ├── sdd-init.md ... sdd-archive.md  # SDD pipeline (8 workflows)
@@ -168,7 +168,7 @@ batuta-dots/
 ├── academia/                          # Training course (8 modules, 53 lessons)
 └── infra/                             # Infrastructure & setup scripts
     ├── setup.sh                       # Claude Code setup (primary)
-    ├── sync.sh                        # Bidirectional skill sync (hub ↔ projects)
+    ├── sync.sh                        # Bidirectional skill sync (hub ↔ projects, --push for zero-friction)
     ├── replicate-platform.sh          # Multi-platform replication
     ├── setup_test.sh                  # Verification tests (51 tests)
     └── hooks/                         # O.R.T.A. hooks (native Claude Code hooks)
@@ -226,6 +226,9 @@ bash BatutaAntigravity/setup-antigravity.sh --workspace
 
 # Sync skills filtered by platforms tag
 bash infra/sync.sh --to-antigravity
+
+# Push local skills to hub (import + cross-sync + commit + push)
+bash infra/sync.sh --push
 
 # Other platforms (Gemini CLI, Codex, Copilot)
 ./infra/replicate-platform.sh --all
@@ -381,6 +384,7 @@ During `/sdd-init`, only relevant skills are copied from the global library to y
 | `--hooks` | Install hooks + permissions to ~/.claude/settings.json |
 | `--antigravity` | Sync Antigravity-compatible skills to BatutaAntigravity/skills/ |
 | `--project <path>` | Setup a target project (CLAUDE.md + .batuta/ + git + hooks) |
+| `--update <path>` | Update an existing project (re-sync global + refresh project CLAUDE.md + ecosystem.json) |
 | `--verify` | Verify setup (51 checks) |
 
 The `--all` flag: syncs skills and agents → installs hooks + permissions → copies updated CLAUDE.md to root.

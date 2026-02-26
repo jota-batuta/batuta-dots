@@ -33,7 +33,7 @@ Proyecto A (Claude Code)  ←→  batuta-dots (hub)  ←→  Proyecto B (Antigra
 **Flujo de skills**:
 1. Un skill se crea en cualquier spoke (proyecto/plataforma)
 2. Se propaga al hub (`sync.sh --from-project` o `/push-skill`)
-3. Del hub se distribuye a todos los spokes (via `install.sh` para usuarios, o `setup.sh --sync` / `setup-antigravity.sh` para desarrolladores)
+3. Del hub se distribuye a todos los spokes (via `install.sh` para usuarios, o `setup.sh --update` / `setup-antigravity.sh --update` para desarrolladores)
 
 El campo `platforms` en el frontmatter de SKILL.md determina que plataformas reciben cada skill:
 - `platforms: [claude, antigravity]` — va a ambas (20 de 22 skills)
@@ -122,18 +122,25 @@ bash infra/sync.sh --to-antigravity
 
 Esto lee el campo `platforms` de cada SKILL.md y solo copia los que incluyen `antigravity`.
 
-### De un proyecto al hub
+### De un proyecto al hub (zero-friction)
 
 ```bash
-# Detectar skills locales no presentes en batuta-dots
-bash infra/sync.sh --from-project /path/to/mi-proyecto
+# Un solo comando: importa skills, cross-syncs a Antigravity, commit + push
+bash infra/sync.sh --push /path/to/mi-proyecto
 ```
 
-El script escanea `.agent/skills/` y `.claude/skills/` en el proyecto, lista los que no estan en el hub, y te pregunta cuales importar.
+El script escanea `.agent/skills/` y `.claude/skills/` en el proyecto, importa los nuevos al hub, cross-syncs a Antigravity los que tienen `platforms: antigravity`, y hace commit + push automaticamente.
 
-### Todo a la vez
+### Opciones granulares (para control fino)
 
 ```bash
+# Solo importar del proyecto (sin commit ni push)
+bash infra/sync.sh --from-project /path/to/mi-proyecto
+
+# Solo cross-sync al subfolder Antigravity
+bash infra/sync.sh --to-antigravity
+
+# Ambos pasos juntos (sin commit ni push)
 bash infra/sync.sh --all --from-project /path/to/mi-proyecto
 ```
 
@@ -197,18 +204,21 @@ platforms: [claude, antigravity]
 Descripcion detallada del skill...
 ```
 
-2. **Propaga al hub**:
+2. **Propaga al hub** (un solo comando):
 
 ```bash
-bash ~/batuta-dots/infra/sync.sh --from-project /path/to/mi-proyecto
+bash ~/batuta-dots/infra/sync.sh --push /path/to/mi-proyecto
 ```
+
+Esto importa el skill al hub, cross-syncs a Antigravity, hace commit y push automaticamente.
 
 3. **Verifica** que aparece en `batuta-dots/BatutaClaude/skills/mi-utilidad/SKILL.md`
 
-4. **Sincroniza a Claude Code** (requiere clon local de batuta-dots):
+4. **Actualiza Claude Code** en cualquier proyecto:
 
 ```bash
-cd ~/batuta-dots && ./infra/setup.sh --sync
+# Ejecuta /batuta-update en Claude Code, o manualmente:
+bash ~/batuta-dots/infra/setup.sh --update /path/to/mi-otro-proyecto
 ```
 
 5. Abre Claude Code — el skill estara disponible globalmente.
