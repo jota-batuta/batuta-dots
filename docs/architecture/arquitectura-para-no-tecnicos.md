@@ -33,8 +33,7 @@ siempre cocina igual, siempre bien.
 - Como organizar la cocina (Scope Rule)
 - Que hacer cuando no tiene una receta (Skill Gap Detection)
 
-> **Regla importante**: Solo hay UN archivo de instrucciones. Si quieres cambiar algo,
-> cambias CLAUDE.md y todas las sucursales (proyectos) se actualizan.
+> **Regla importante**: Hay DOS niveles de instrucciones. Las **instrucciones generales del restaurante** (CLAUDE.md en la raiz) vienen del libro maestro y se actualizan automaticamente. Las **notas especiales de esta sucursal** (`.claude/CLAUDE.md`) son reglas propias del proyecto que NUNCA se sobreescriben. Es como tener el manual de la franquicia + las notas del chef local.
 
 ---
 
@@ -215,6 +214,8 @@ Esto es lo que pasa AUTOMATICAMENTE cuando Claude necesita usar una tecnologia p
 la que no tiene un skill documentado. Se detiene, te pregunta, y si quieres, investiga
 y aprende antes de empezar.
 
+**Mejora v12**: Antes, esto solo pasaba al abrir la cocina por primera vez. Ahora pasa en **cualquier momento** — si a mitad de cocinar el chef necesita una tecnica nueva, se detiene y la busca. Si la receta ya existe en el libro maestro pero no estaba en esta cocina, la copia silenciosamente. Si no existe en ninguna parte, te pregunta.
+
 **Por que esto importa**: Un skill de 5 minutos evita horas de arreglos despues.
 
 ---
@@ -244,7 +245,7 @@ que coordinan grupos de sub-chefs:
 | Jefe de area | Que coordina | Sub-chefs a su cargo |
 |-------------|-------------|----------------------|
 | **Jefe de Cocina** (pipeline) | Todo el proceso de crear platos nuevos | Los 9 sub-chefs del proceso SDD |
-| **Jefe de Almacen** (infra) | Organizacion, inventario, seguridad, recetas | Organizacion de ingredientes (scope-rule), creacion de recetas (ecosystem-creator), coordinador de equipo (team-orchestrator), protocolo de higiene (security-audit) |
+| **Jefe de Almacen** (infra) | Organizacion, inventario, seguridad, recetas | Organizacion de ingredientes (scope-rule), creacion de recetas (ecosystem-creator), ciclo de vida del restaurante (ecosystem-lifecycle), coordinador de equipo (team-orchestrator), protocolo de higiene (security-audit) |
 | **Jefe de Calidad** (observability) | Ciclo de sesion | (sin sub-chefs activos actualmente) |
 
 Los sub-chefs (skills) se asignan automaticamente a cada jefe de area basandose en su descripcion — no hace falta asignarlos manualmente.
@@ -311,25 +312,32 @@ Actualiza la lista del jefe de cocina (pipeline-agent)
 Listo — todos saben que ahora hay sushi disponible
 ```
 
+**Mejora v12**: Ahora puedes decirle al chef "sincroniza mis recetas con el libro maestro" (`/batuta-sync`). El chef maneja todo internamente — tu no necesitas recordar comandos de terminal. Es como tener un boton de "publicar al libro maestro" que el chef presiona por ti.
+
 **Por que esto importa**: Sin inventario automatico, alguien tendria que recordar
-actualizar el menu cada vez que se agrega una receta. Con sync.sh, es imposible
+actualizar el menu cada vez que se agrega una receta. Con sync automatico, es imposible
 que una receta quede "invisible" — siempre aparece en el inventario.
 
 ---
 
-## La Actualizacion de Recetas (Auto-Update SPO)
+## La Actualizacion de Recetas (Ecosystem Lifecycle) — v12
 
 Imagina que en una sucursal del restaurante, un chef inventa una receta nueva increible
 para "tacos de cochinita". Esa receta deberia llegar a TODAS las sucursales.
 
-Eso es lo que hace el Auto-Update SPO:
+Eso es lo que hace el Ecosystem Lifecycle:
 
 ```
-Sucursal A inventa receta → Un solo boton → Se copia al libro maestro
-→ Todas las sucursales la tienen
+Sucursal A inventa receta
+   ↓
+El chef evalua: es para TODAS las sucursales o solo para esta?
+   ↓
+Si es para todas → /batuta-sync (el chef maneja todo internamente)
+   ↓
+Todas las sucursales la tienen
 ```
 
-Ahora es un solo paso: el boton de publicar (`sync.sh --push`) toma las recetas nuevas del proyecto, las copia al libro maestro, las adapta para ambas cocinas (Claude Code y Antigravity), y las publica. Un solo boton en vez de tres pasos separados.
+El chef automaticamente clasifica cada receta nueva: si usa ingredientes genericos (como la tecnica de sushi), es para todas las sucursales. Si usa ingredientes unicos de esta cocina (la salsa secreta del chef local), se queda aqui. Tu solo apruebas la propagacion — el chef maneja bash internamente sin que toques la terminal.
 
 Al final de cada proyecto, Claude te pregunta:
 
@@ -542,6 +550,7 @@ Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
 | Verificar que todo funcione | `/sdd-verify` |
 | Cerrar y documentar | `/sdd-archive` |
 | Crear una receta nueva | `/create skill nombre` |
+| Sincronizar recetas al libro maestro | `/batuta-sync` |
 
 ---
 
@@ -560,6 +569,7 @@ Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
 | **Bitacora del turno** | .batuta/session.md | El cuaderno donde el chef anota en que quedo para el proximo turno |
 | **Inventario automatico** | sync.sh | Actualiza el inventario de recetas automaticamente |
 | **Aprendiz que investiga** | ecosystem-creator | Cuando falta una receta, investiga y la crea |
+| **Ciclo de vida del restaurante** | ecosystem-lifecycle (v12) | Clasifica recetas nuevas, corrige errores en las instrucciones, provisiona recetas a demanda |
 | **Equipo temporal** | Agent Teams (v7) | Cocineros extra para banquetes grandes — trabajan en paralelo, cada uno con su estacion |
 | **Coordinador de equipo** | team-orchestrator (v7) | Decide cuando armar equipo temporal y como repartir las tareas |
 | **Alarmas automaticas** | Native Hooks (SessionStart, Stop) | Alarmas que obligan al chef a seguir el proceso sin que pueda saltarselo |
@@ -572,6 +582,35 @@ Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
 | **Consultores especializados** | 6 skills CTO (v10) | Procesos, IA, datos, infra, compliance |
 | **Cocina rapida** | Antigravity Lite (v11.2) | Segunda cocina para brainstorming y prototipado rapido, con el mismo recetario |
 | **Libro maestro compartido** | batuta-dots hub (v11.0) | Todas las recetas en un solo lugar, sincronizadas entre ambas cocinas |
+| **Sincronizador inteligente** | /batuta-sync (v12) | Publica recetas al libro maestro sin tocar la terminal — el chef maneja todo internamente |
+| **Auto-correccion** | Self-Heal (v12) | Cuando el dueno señala un error en las instrucciones, el chef las corrige con aprobacion |
+
+---
+
+## Cuando el Chef se Equivoca (Self-Heal) — v12
+
+Imagina que el dueno del restaurante nota que el chef esta guardando los cuchillos en el lugar equivocado — violando las reglas de la cocina.
+
+Antes, el dueno tenia que corregir el manual el mismo. Ahora, el proceso es automatico:
+
+```
+Dueno dice: "Oye, estas violando la regla de organizacion"
+   ↓
+El chef revisa las instrucciones (CLAUDE.md)
+   ↓
+Identifica QUE regla se violo y POR QUE
+   ↓
+Propone una correccion concreta al manual
+   ↓
+STOP — "Esta es la correccion que propongo. La aplico?"
+   ↓
+Si el dueno aprueba:
+   → Actualiza las instrucciones de AMBAS cocinas (CLAUDE.md + GEMINI.md)
+   → Publica al libro maestro (git push)
+   → Re-instala las instrucciones para que tomen efecto
+```
+
+**Lo importante**: El chef NUNCA corrige las instrucciones por su cuenta. Siempre propone y espera tu aprobacion. Es como un chef que reconoce el error, explica como lo arreglaria, y espera el "dale" del dueno.
 
 ---
 

@@ -115,6 +115,7 @@ No todos los comandos funcionan igual:
 ```
 /create-skill     → infra-agent → ecosystem-creator
 /create-sub-agent → infra-agent → ecosystem-creator
+/batuta-sync      → infra-agent → ecosystem-lifecycle (sync skills al hub)
 ```
 
 ---

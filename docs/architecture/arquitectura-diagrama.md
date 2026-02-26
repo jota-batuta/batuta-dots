@@ -1,4 +1,4 @@
-# Diagrama de Arquitectura — Ecosistema Batuta (v11.3)
+# Diagrama de Arquitectura — Ecosistema Batuta (v12)
 
 ## Vista General del Ecosistema
 
@@ -26,6 +26,7 @@ flowchart TB
 
     subgraph SKILLS_LOCAL["~/.claude/skills/ (usuario)"]
         SK_ECO["ecosystem-creator"]
+        SK_LIFE["ecosystem-lifecycle"]
         SK_SCOPE["scope-rule"]
         SK_SDD["sdd-init...sdd-archive<br/>(9 sub-agentes)"]
         SK_PROJECT["skills de proyecto<br/>(creados bajo demanda)"]
@@ -51,7 +52,7 @@ flowchart TB
 
 ---
 
-## Scope Agents: Routing del Agente Principal (v11.3)
+## Scope Agents: Routing del Agente Principal (v12)
 
 ```mermaid
 flowchart TD
@@ -68,7 +69,7 @@ flowchart TD
 
     subgraph SKILLS["SKILLS (carga lazy)"]
         SDD["sdd-init...sdd-archive"]
-        ECO["ecosystem-creator<br/>scope-rule<br/>team-orchestrator<br/>security-audit"]
+        ECO["ecosystem-creator<br/>ecosystem-lifecycle<br/>scope-rule<br/>team-orchestrator<br/>security-audit"]
     end
 
     RESULT["Resultado al usuario"]
@@ -126,10 +127,12 @@ flowchart LR
 
 ---
 
-### Flujo de Provisioning de Skills (v11.3)
+### Flujo de Provisioning de Skills (v12 — Continuo)
 
 ```
 sdd-init → lee skill-provisions.yaml → detecta tech stack → copia skills relevantes a .claude/skills/
+   ...luego en CUALQUIER fase...
+sdd-apply → usa tech X → no hay skill? → auto-copia de global o Skill Gap Detection
 ```
 
 session-start.sh usa logica 3-way:
@@ -137,7 +140,7 @@ session-start.sh usa logica 3-way:
 - `.claude/skills/` sin manifest → locales + globales (backward compatible)
 - Sin skills locales → solo globales (backward compatible)
 
-> El provisioning permite que cada proyecto reciba exactamente los skills que necesita segun su tech stack, sin contaminar con skills irrelevantes. La logica 3-way garantiza compatibilidad hacia atras con proyectos existentes.
+> El provisioning es **circular**: se inicia en sdd-init pero continua en cualquier fase posterior via ecosystem-lifecycle. Si el agente necesita una tech sin skill, auto-copia desde global (silencioso) o lanza Skill Gap Detection (interactivo). La logica 3-way garantiza compatibilidad hacia atras.
 
 ---
 
@@ -348,24 +351,35 @@ flowchart TD
 
 ---
 
-## Auto-Update SPO (Propagacion de Skills)
+## Ecosystem Lifecycle (v12)
 
 ```mermaid
 flowchart TD
     PROJECT["Proyecto X crea<br/>un skill nuevo"]
-    Q1{"Es reutilizable<br/>en otros proyectos?"}
+    CLASSIFY["ecosystem-lifecycle<br/>clasifica: generico o<br/>especifico?"]
+    Q1{"Generico?"}
     STAYS["Se queda solo<br/>en Proyecto X"]
-    PUSH_CMD["sync.sh --push<br/>(import + cross-sync<br/>+ commit + push)"]
+    SYNC_CMD["/batuta-sync<br/>(agente maneja bash<br/>internamente)"]
     BENEFIT["Todos los proyectos<br/>futuros se benefician"]
 
-    PROJECT --> Q1
+    SELFHEAL["Usuario reporta<br/>violacion de regla"]
+    IDENTIFY["Identificar violacion<br/>en CLAUDE.md"]
+    PROPOSE["Proponer fix<br/>(diff concreto)"]
+    APPLY["Aplicar con<br/>autorizacion"]
+
+    PROJECT --> CLASSIFY --> Q1
     Q1 -->|"No"| STAYS
-    Q1 -->|"Si"| PUSH_CMD --> BENEFIT
+    Q1 -->|"Si"| SYNC_CMD --> BENEFIT
+
+    SELFHEAL --> IDENTIFY --> PROPOSE --> APPLY
 
     style PROJECT fill:#7AAFC4,color:#fff
     style BENEFIT fill:#8BB87A,color:#fff
     style STAYS fill:#666,color:#fff
-    style PUSH_CMD fill:#E8B84D,color:#000
+    style SYNC_CMD fill:#E8B84D,color:#000
+    style CLASSIFY fill:#D4956A,color:#fff
+    style SELFHEAL fill:#D47272,color:#fff
+    style PROPOSE fill:#9B7AB8,color:#fff
 ```
 
 ---
@@ -420,7 +434,7 @@ flowchart TD
 
 ---
 
-## Ciclo de Vida de un Agent Team (v11.3)
+## Ciclo de Vida de un Agent Team (v12)
 
 ```mermaid
 flowchart LR
@@ -448,7 +462,7 @@ flowchart LR
 
 ---
 
-## O.R.T.A. con Agent Teams (v11.3)
+## O.R.T.A. con Agent Teams (v12)
 
 ```mermaid
 flowchart TD
@@ -623,7 +637,7 @@ flowchart TD
 
 ---
 
-## Native Hooks: Deterministic Enforcement (v11.3)
+## Native Hooks: Deterministic Enforcement (v12)
 
 ```mermaid
 flowchart TD
@@ -800,7 +814,7 @@ flowchart TD
 
 ---
 
-## Hub & Spoke: Sync Multi-Plataforma (v11.3)
+## Hub & Spoke: Sync Multi-Plataforma (v12)
 
 ```mermaid
 flowchart TD
@@ -825,8 +839,8 @@ flowchart TD
     BC -->|"sync.sh --to-antigravity"| BA
     BA -->|"setup-antigravity.sh"| PA_SKILLS
 
-    PC_LOCAL -->|"sync.sh --push"| BC
-    PA_SKILLS -->|"sync.sh --push"| BC
+    PC_LOCAL -->|"/batuta-sync<br/>(agente interno)"| BC
+    PA_SKILLS -->|"/batuta-sync<br/>(agente interno)"| BC
 
     PC_ECO -.->|"version check"| HUB
     PA_ECO -.->|"version check"| HUB
@@ -837,11 +851,43 @@ flowchart TD
     style SYNC fill:#E8B84D,color:#000
 ```
 
-> batuta-dots es el **hub central**. Los proyectos y plataformas son **spokes**. Skills fluyen: spoke → hub → all spokes. `sync.sh --push` combina import + cross-sync + commit + push en un solo comando. El campo `platforms` en SKILL.md filtra que skills van a cada plataforma. `ecosystem.json` detecta drift de version.
+> batuta-dots es el **hub central**. Los proyectos y plataformas son **spokes**. Skills fluyen: spoke → hub → all spokes. `/batuta-sync` maneja la propagacion sin que el usuario toque bash — el agente ejecuta `sync.sh --push` internamente. El campo `platforms` en SKILL.md filtra que skills van a cada plataforma. `ecosystem.json` detecta drift de version.
 
 ---
 
-## Folder Structure (v11.3)
+## Two-Layer Configuration (v12)
+
+```mermaid
+flowchart TD
+    subgraph HUB_LAYER["CAPA HUB (siempre sobreescribible)"]
+        CLAUDE_ROOT["CLAUDE.md (raiz)<br/>Personalidad, reglas, routing<br/>Viene del hub batuta-dots"]
+        GEMINI_ROOT["GEMINI.md (raiz)<br/>Cerebro CTO para Antigravity<br/>Viene del hub batuta-dots"]
+    end
+
+    subgraph PROJECT_LAYER["CAPA PROYECTO (nunca tocada por updates)"]
+        CLAUDE_LOCAL[".claude/CLAUDE.md<br/>Customizaciones del proyecto<br/>Rules especificas, overrides"]
+        GEMINI_LOCAL[".gemini/GEMINI.md<br/>Customizaciones del proyecto<br/>Rules especificas, overrides"]
+    end
+
+    UPDATE["/batuta-update<br/>o setup.sh --update"]
+    MIGRATE{"Tiene seccion<br/>Project Customizations<br/>en CLAUDE.md raiz?"}
+
+    UPDATE --> MIGRATE
+    MIGRATE -->|"Si"| EXTRACT["Migra a .claude/CLAUDE.md<br/>antes de sobreescribir"]
+    MIGRATE -->|"No"| OVERWRITE["Sobreescribe CLAUDE.md raiz<br/>directamente"]
+    EXTRACT --> OVERWRITE
+
+    style HUB_LAYER fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
+    style PROJECT_LAYER fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
+    style UPDATE fill:#E8B84D,color:#000
+    style EXTRACT fill:#7AAFC4,color:#fff
+```
+
+> CLAUDE.md raiz se sobreescribe con cada update (hub layer). Las customizaciones del proyecto viven en `.claude/CLAUDE.md` (project layer) que NUNCA se toca. Si hay customizaciones en el archivo raiz, se migran automaticamente antes de sobreescribir. Claude Code lee ambos archivos.
+
+---
+
+## Folder Structure (v12)
 
 ```mermaid
 flowchart TD
@@ -859,7 +905,7 @@ flowchart TD
     subgraph CLAUDE_DETAIL["BatutaClaude/"]
         CLAUDE_MD["CLAUDE.md (router)"]
         AGENTS["agents/<br/>pipeline, infra, observability"]
-        SKILLS_22["skills/ (22 skills)<br/>sdd-*, ecosystem, scope-rule,<br/>team-orchestrator, security-audit,<br/>+ 6 CTO specialists<br/>+ 3 technology skills"]
+        SKILLS_23["skills/ (23 skills)<br/>sdd-*, ecosystem-creator,<br/>ecosystem-lifecycle, scope-rule,<br/>team-orchestrator, security-audit,<br/>+ 6 CTO specialists<br/>+ 3 technology skills"]
     end
 
     subgraph ANTIGRAVITY_DETAIL["BatutaAntigravity/ (Lite)"]

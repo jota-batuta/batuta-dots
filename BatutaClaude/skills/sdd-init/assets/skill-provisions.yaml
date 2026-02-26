@@ -12,6 +12,7 @@
 always:
   - scope-rule
   - ecosystem-creator
+  - ecosystem-lifecycle
   - security-audit
   - team-orchestrator
 

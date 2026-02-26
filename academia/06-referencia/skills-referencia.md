@@ -1,6 +1,6 @@
 # Skills — Referencia tecnica
 
-Ficha tecnica de cada uno de los 22 skills del ecosistema Batuta Dots v11.1.
+Ficha tecnica de cada uno de los 23 skills del ecosistema Batuta Dots v12.
 
 ---
 
@@ -108,7 +108,17 @@ Ficha tecnica de cada uno de los 22 skills del ecosistema Batuta Dots v11.1.
 - **Scope**: infra
 - **Auto-invoke**: Si (al crear skills/agentes/workflows)
 - **Tools**: Read, Edit, Write, Glob, Grep, Bash, WebFetch, WebSearch, Task
-- **Que hace**: Crea SKILL.md, agent .md, workflow definitions con frontmatter correcto. Step 5.5: RED-GREEN-REFACTOR para validar skills empiricamente antes de registrarlos
+- **Que hace**: Crea SKILL.md, agent .md, workflow definitions con frontmatter correcto. Step 5.5: RED-GREEN-REFACTOR para validar skills empiricamente antes de registrarlos. Step 7: Post-Creation Classification (invoca ecosystem-lifecycle para evaluar generico vs proyecto)
+
+### ecosystem-lifecycle
+- **Scope**: infra
+- **Auto-invoke**: Si (post-creacion, violacion de reglas, tech sin skill)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash, Task
+- **Que hace**: 4 comportamientos autonomos:
+  1. **Clasificacion post-creacion**: Evalua si un skill es generico o proyecto-especifico. Indicadores: rutas hardcoded, tenant-specific, tech generica
+  2. **Auto-propagacion**: Si se clasifica como generico y el usuario aprueba, copia al hub, cross-syncs a Antigravity, commit + push
+  3. **Self-heal**: Cuando el usuario reporta violacion de reglas, identifica el problema en CLAUDE.md, propone fix, aplica con autorizacion
+  4. **Provisioning continuo**: En cualquier fase SDD, si se detecta tech sin skill, auto-copia desde global o activa Skill Gap Detection
 
 ### scope-rule
 - **Scope**: infra

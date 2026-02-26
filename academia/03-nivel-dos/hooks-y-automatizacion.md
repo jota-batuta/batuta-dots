@@ -82,11 +82,26 @@ Ademas de los hooks globales, cada proyecto puede tener sus propios hooks en `.c
 
 ---
 
+## Comportamientos autonomos complementarios (v12)
+
+Ademas de los hooks, Batuta tiene comportamientos autonomos que complementan la automatizacion:
+
+| Comportamiento | Que hace | Se parece a un hook? |
+|----------------|---------|---------------------|
+| **Self-heal** | Cuando reportas una violacion de reglas, el agente identifica el problema en CLAUDE.md, propone un fix, y lo aplica con tu autorizacion | No es un hook — es una reaccion a tu feedback |
+| **Provisioning continuo** | Si a mitad de una tarea el agente necesita un skill que no tiene localmente, lo copia de la libreria global automaticamente | Similar al SessionStart pero ocurre en cualquier momento |
+| **Clasificacion post-creacion** | Despues de crear un skill, evalua si es generico o especifico del proyecto | Se dispara automaticamente despues de ecosystem-creator |
+
+Estos comportamientos refuerzan "La Regla" del bootstrap: no solo se asegura de que los skills se usen, sino que se auto-corrige cuando algo sale mal.
+
+---
+
 ## Lo que no necesitas hacer
 
-Los hooks funcionan automaticamente. Tu unica interaccion es:
+Los hooks y comportamientos autonomos funcionan automaticamente. Tu unica interaccion es:
 - **Responder al Execution Gate** cuando te pregunta "Procedo?"
 - **Esperar** cuando al inicio de sesion se restaura el contexto
+- **Aprobar** cuando el agente propone cambios a CLAUDE.md (self-heal)
 
 Todo lo demas pasa en segundo plano.
 

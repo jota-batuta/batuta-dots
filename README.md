@@ -103,9 +103,10 @@ batuta-dots/
 │   ├── commands/                      # Global slash commands
 │   │   ├── batuta-init.md             # /batuta-init — import ecosystem
 │   │   ├── batuta-update.md           # /batuta-update — pull latest
+│   │   ├── batuta-sync.md            # /batuta-sync — sync skills to hub
 │   ├── agents/                        # Scope agents (skills auto-discovered by description)
 │   │   ├── pipeline-agent.md          # SDD Pipeline specialist (9 skills)
-│   │   ├── infra-agent.md             # Infrastructure specialist (3 skills)
+│   │   ├── infra-agent.md             # Infrastructure specialist (5 skills)
 │   │   └── observability-agent.md     # O.R.T.A. engine (no active skills)
 │   └── skills/                        # Skill definitions (lazy-loaded)
 │       ├── ecosystem-creator/         # Bootstrap skill
@@ -121,6 +122,7 @@ batuta-dots/
 │       ├── sdd-apply/SKILL.md
 │       ├── sdd-verify/SKILL.md
 │       ├── sdd-archive/SKILL.md
+│       ├── ecosystem-lifecycle/SKILL.md # Autonomous lifecycle (classify, self-heal, provision)
 │       ├── team-orchestrator/SKILL.md # Agent Teams orchestration (when to escalate)
 │       └── security-audit/SKILL.md   # AI-first security practices (OWASP + threats)
 ├── BatutaAntigravity/                 # Antigravity Lite (brainstorming & prototyping)
@@ -131,7 +133,8 @@ batuta-dots/
 │       ├── sdd-init.md ... sdd-archive.md  # SDD pipeline (8 workflows)
 │       ├── save-session.md            # Save state (replaces Stop hook)
 │       ├── push-skill.md             # Propagate local skill to hub
-│       └── batuta-update.md          # Update from hub
+│       ├── batuta-update.md          # Update from hub
+│       └── batuta-sync.md           # Sync skills to hub (zero-bash)
 ├── docs/                              # All documentation
 │   ├── architecture/                  # Architecture and design
 │   │   ├── arquitectura-diagrama.md   # Mermaid architecture diagrams (15+ diagrams)
@@ -193,12 +196,12 @@ CLAUDE.md (personality + rules — ~220 lines)
     │
     ├──> Skills (auto-discovered by Claude Code via description)
     │     ├── pipeline: sdd-init...sdd-archive (9 skills)
-    │     ├── infra: scope-rule, ecosystem-creator, team-orchestrator, security-audit
+    │     ├── infra: scope-rule, ecosystem-creator, ecosystem-lifecycle, team-orchestrator, security-audit
     │     └── observability: (no active skills)
     │
     ├──> Scope Agents (skills auto-discovered by description field)
     │     ├── pipeline-agent (dependency graph, orchestrator rules)
-    │     ├── infra-agent (Skill Gap Detection, Ecosystem Auto-Update)
+    │     ├── infra-agent (Skill Gap Detection, Ecosystem Lifecycle)
     │     └── observability-agent (session lifecycle)
     │
     └──> Agent Team (Level 3) ──> spawn teammates from scope agents
@@ -281,7 +284,7 @@ Three scope agents organize skills by domain. Skills are auto-discovered by Clau
 | Scope Agent | Domain | Skills |
 |-------------|--------|--------|
 | `pipeline-agent` | Development lifecycle | 9 SDD skills (init through archive) |
-| `infra-agent` | File organization, ecosystem, security | scope-rule, ecosystem-creator, team-orchestrator, security-audit |
+| `infra-agent` | File organization, ecosystem, security | scope-rule, ecosystem-creator, ecosystem-lifecycle, team-orchestrator, security-audit |
 | `observability-agent` | Session lifecycle | (no active skills) |
 
 This keeps the principal agent lightweight (~220 lines) and each scope agent focused on its domain.
@@ -325,13 +328,22 @@ Batuta supports three execution levels. The system automatically evaluates which
 
 Agent Teams spawn real Claude Code sessions that work in parallel with a shared task list and bidirectional messaging.
 
-### Ecosystem Auto-Update
+### Ecosystem Lifecycle (v12)
 
-When new skills are created in a project, Claude proposes propagating them back to batuta-dots so other projects benefit.
+The ecosystem manages itself autonomously with 4 behaviors:
 
-### Project Skill Provisioning (v11.3)
+| Behavior | Trigger | User auth? |
+|----------|---------|------------|
+| **Post-creation classification** | After a skill is created | Yes (hub changes) |
+| **Self-heal** | User reports rule violation | Yes (CLAUDE.md changes) |
+| **Continuous provisioning** | Any phase detects tech without skill | No (local copy) |
+| **Hub sync** | User requests `/batuta-sync` | Yes (hub changes) |
 
-During `/sdd-init`, only relevant skills are copied from the global library to your project. The agent sees only what it needs, keeping context clean as the ecosystem grows to 100+ skills.
+CLAUDE.md uses a **two-layer system**: root CLAUDE.md = hub layer (always overwritable by updates), `.claude/CLAUDE.md` = project layer (never touched by updates). Same for GEMINI.md.
+
+### Project Skill Provisioning (v11.3+)
+
+Skills are provisioned **continuously**, not just at init. During any SDD phase, if the agent uses a technology without a matching skill, it auto-copies from `~/.claude/skills/` (silent) or triggers Skill Gap Detection (interactive) if the skill doesn't exist globally.
 
 ---
 
@@ -340,6 +352,7 @@ During `/sdd-init`, only relevant skills are copied from the global library to y
 | Skill | Scope | Description |
 |-------|-------|-------------|
 | `ecosystem-creator` | infra | Create new skills, agents, sub-agents, and workflows |
+| `ecosystem-lifecycle` | infra | Autonomous classification, self-heal, continuous provisioning, hub sync |
 | `scope-rule` | infra | Enforce scope-based file organization |
 | `team-orchestrator` | infra | Evaluate when to escalate to Agent Teams, spawn and coordinate |
 | `security-audit` | infra, pipeline | AI-first security: OWASP + prompt injection + secrets scanning + dependency audit |
@@ -362,6 +375,7 @@ During `/sdd-init`, only relevant skills are copied from the global library to y
 |---------|-------------|
 | `/batuta-init [name]` | Import Batuta ecosystem into a project |
 | `/batuta-update` | Update ecosystem from latest batuta-dots |
+| `/batuta-sync` | Sync local skills to hub (zero-bash, agent handles internally) |
 | `/sdd-init` | Initialize orchestration context |
 | `/sdd-explore <topic>` | Explore idea and constraints |
 | `/sdd-new <change-name>` | Start change proposal flow |

@@ -5,6 +5,7 @@ description: >
   maintenance (skill/agent/workflow creation), and skill gap detection.
 skills:
   - ecosystem-creator
+  - ecosystem-lifecycle
   - scope-rule
   - team-orchestrator
   - security-audit
@@ -55,26 +56,23 @@ Before writing code that uses a technology, framework, or pattern, CHECK if a sk
 - One-off scripts or prototypes explicitly marked as throwaway
 - Technology already has an active skill
 
-## Ecosystem Auto-Update
+## Ecosystem Lifecycle (v12)
 
-When finishing a project where new skills/sub-agents were created, ASK:
+Managed by the `ecosystem-lifecycle` skill. Autonomous behaviors:
 
-> "Durante este proyecto creamos los siguientes skills nuevos:
-> - {list}
->
-> Quieres que los propague al repositorio batuta-dots como skills globales?"
+| Trigger | Behavior | User Auth? |
+|---------|----------|------------|
+| After ecosystem-creator creates a skill | Classify generic vs project → offer propagation | YES (hub changes) |
+| User reports rule violation | Self-heal: identify, propose fix, apply with auth | YES (CLAUDE.md) |
+| Any phase detects tech without skill | Continuous provisioning from global library | NO (local copy) |
+| User requests sync | Hub sync via `/batuta-sync` (internal, no bash) | YES (hub changes) |
+| sdd-archive Learning Loop identifies reusable pattern | Evaluate for hub propagation | YES (hub changes) |
 
-If yes, follow this flow:
+**Key principle**: Changes to the batuta-dots hub ALWAYS require user authorization.
+Project-local operations (copying a skill from global to project) do NOT require authorization.
 
-1. **Evaluate**: Is the skill project-specific or reusable? If it references hardcoded paths, tenant IDs, or project-specific config, generalize first.
-2. **Set platforms**: Add `platforms: [claude, antigravity]` (default) or `platforms: [claude]` if it requires Claude-only features (hooks, Agent Teams).
-3. **Copy to hub**: Copy the SKILL.md (and assets/ if any) to `batuta-dots/BatutaClaude/skills/{skill-name}/`
-4. **Sync to Antigravity**: `bash infra/sync.sh --to-antigravity` to propagate platform-compatible skills
-5. **Commit**: Commit to batuta-dots with message `feat(skills): add {skill-name} from {project}`
-
-For pulling updates FROM batuta-dots into the current project:
-- `bash infra/sync.sh --from-project /path/to/project` detects local skills not in the hub
-- The `/batuta-update` command syncs latest skills from hub to current project
+The agent handles all bash operations internally — the user NEVER types bash commands.
+Full protocol: see `ecosystem-lifecycle` skill.
 
 ## O.R.T.A. Responsibilities
 
@@ -89,7 +87,7 @@ For pulling updates FROM batuta-dots into the current project:
 
 When spawning an infra-agent teammate in an Agent Team, use this prompt:
 
-> You are the Infrastructure specialist for the Batuta software factory. You handle file organization (Scope Rule), ecosystem maintenance (skill/agent/workflow creation), security auditing, and skill gap detection. Your skills: ecosystem-creator, scope-rule, team-orchestrator, security-audit. Enforce Scope Rule for ALL file placement. Trigger Skill Gap Detection when unknown technologies appear.
+> You are the Infrastructure specialist for the Batuta software factory. You handle file organization (Scope Rule), ecosystem maintenance (skill/agent/workflow creation), security auditing, and skill gap detection. Your skills: ecosystem-creator, ecosystem-lifecycle, scope-rule, team-orchestrator, security-audit. Enforce Scope Rule for ALL file placement. Trigger Skill Gap Detection when unknown technologies appear.
 
 ## Team Context
 

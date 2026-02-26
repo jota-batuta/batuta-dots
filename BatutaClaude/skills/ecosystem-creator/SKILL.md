@@ -560,6 +560,28 @@ If the newly created skill targets a specific technology (e.g., `redis-cache` ta
 
 **Skip if**: The skill is generic (not tied to a specific technology), or `skill-provisions.yaml` is not accessible.
 
+### Step 7: Post-Creation Classification (ecosystem-lifecycle)
+
+After registration is complete, invoke the `ecosystem-lifecycle` skill to classify and
+optionally propagate the newly created component:
+
+1. ecosystem-lifecycle evaluates: generic (reusable across projects) vs project-specific
+2. If **generic** → offers to propagate to the batuta-dots hub (with user authorization)
+3. If **project-specific** → stays local, no action needed
+4. If **ambiguous** → asks the user to decide
+
+**Why this matters**: Without this step, skills born in projects stay local forever.
+The user would need to remember bash commands to propagate them. With this step, the
+agent autonomously detects reusable components and offers propagation — the user only
+says "yes" or "no."
+
+**Skip if**:
+- The skill was created directly in batuta-dots (already in the hub)
+- The skill was copied from global to project (already exists in the hub)
+- The user explicitly said "solo para este proyecto" during creation
+
+Full classification protocol: see `ecosystem-lifecycle` skill, Behavior 1.
+
 ### Auto-Discovery Scope Options
 
 | Scope | What It Means | When to Use |

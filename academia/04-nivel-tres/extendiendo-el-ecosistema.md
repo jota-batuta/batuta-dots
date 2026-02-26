@@ -43,7 +43,7 @@ Defines:
 
 Ahora, cada vez que trabajes en un proyecto React Native, Batuta aplica automaticamente tus patrones estandarizados.
 
-> Cuando creas un skill nuevo, puedes registrarlo en `skill-provisions.yaml` para que se auto-provisione en futuros proyectos con la misma tecnologia (v11.3).
+> Cuando creas un skill nuevo, el sistema automaticamente lo evalua: es generico (util para cualquier proyecto) o especifico (solo para este proyecto)? Si es generico, te ofrece propagarlo al hub. Tambien puedes registrarlo en `skill-provisions.yaml` para que se auto-provisione en futuros proyectos con la misma tecnologia.
 
 ---
 
@@ -84,17 +84,37 @@ No siempre necesitas crear skills proactivamente. El sistema detecta gaps automa
 
 ---
 
+## Clasificacion automatica (v12)
+
+Despues de crear un skill, el sistema lo evalua automaticamente:
+
+| Indicador | Generico | Especifico del proyecto |
+|-----------|----------|------------------------|
+| Rutas hardcoded al proyecto? | No | Si |
+| Usa tecnologia comun (React, FastAPI, etc)? | Si | No necesariamente |
+| Tiene reglas de negocio especificas? | No | Si |
+
+Si es **generico** → te ofrece propagarlo al hub para todos los proyectos.
+Si es **especifico** → se queda en el proyecto local.
+Si es **ambiguo** → te pregunta.
+
 ## Propagando skills entre proyectos
 
 Si creas un skill en un proyecto y quieres que este disponible en todos:
 
-**Opcion rapida** (un solo comando):
+**Opcion recomendada** (zero-bash): Dile al agente "sincroniza mis skills al hub" o usa `/batuta-sync`. El agente maneja todo internamente:
+1. Escanea skills locales no presentes en el hub
+2. Clasifica cada uno (generico vs especifico)
+3. Te presenta un plan de sync
+4. Ejecuta la propagacion internamente
+5. Te pregunta: "Hago commit y push?"
+
+**Opcion automatica**: Al terminar el proyecto, Batuta pregunta: "Quieres propagar estos skills a batuta-dots?" Si dices si, ejecuta el proceso por ti.
+
+**Opcion terminal** (para desarrolladores del hub):
 ```bash
 bash ~/batuta-dots/infra/sync.sh --push /path/to/mi-proyecto
 ```
-Esto importa skills nuevos al hub, cross-syncs a Antigravity, y hace commit + push automaticamente.
-
-**Opcion automatica**: Al terminar el proyecto, Batuta pregunta: "Quieres propagar estos skills a batuta-dots?" Si dices si, ejecuta el proceso por ti.
 
 En tu proximo proyecto, el skill ya esta disponible via `/batuta-update`.
 

@@ -1,6 +1,6 @@
 # Skills que tienes
 
-Batuta Dots tiene 22 skills — especialistas que se activan cuando los necesitas. El sistema los activa automaticamente, pero conocerlos te da poder para pedir exactamente lo que necesitas.
+Batuta Dots tiene 23 skills — especialistas que se activan cuando los necesitas. El sistema los activa automaticamente, pero conocerlos te da poder para pedir exactamente lo que necesitas.
 
 ---
 
@@ -41,11 +41,12 @@ Cada skill tiene un campo `description` en su archivo que empieza con "Use when.
 | **llm-pipeline-design** | Pipelines de IA | Clasificadores, prompts |
 | **worker-scaffold** | Workers y deploy | Temporal, Docker, Coolify |
 
-### Infraestructura (4 skills)
+### Infraestructura (5 skills)
 
 | Skill | Que hace | Comando |
 |-------|---------|---------|
 | **ecosystem-creator** | Crea skills, agentes, workflows | `/create-skill` |
+| **ecosystem-lifecycle** | Clasifica skills, self-heal, provisioning continuo | Automatico / `/batuta-sync` |
 | **scope-rule** | Decide donde va cada archivo | Automatico |
 | **team-orchestrator** | Solo, subagente, o equipo | Automatico |
 | **security-audit** | OWASP, secrets, amenazas | En design/verify |
@@ -64,6 +65,7 @@ Cada skill tiene un campo `description` en su archivo que empieza con "Use when.
 
 **Automatica**: Escribes `/sdd-explore` → pipeline-agent activa sdd-explore.
 **Por deteccion**: sdd-explore detecta 3+ variantes → sugiere process-analyst.
+**Post-creacion**: ecosystem-creator crea un skill → ecosystem-lifecycle clasifica automaticamente (generico vs proyecto).
 **Manual**: "Necesito analizar variantes con process-analyst".
 
 ## Si falta un skill

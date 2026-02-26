@@ -66,7 +66,7 @@ cd /path/to/your/project
 bash /path/to/batuta-dots/BatutaAntigravity/setup-antigravity.sh --update "$(pwd)"
 ```
 
-Re-sincroniza skills y GEMINI.md (global + proyecto) sin tocar `.batuta/session.md` ni `openspec/`. Es lo que ejecuta `/batuta-update` internamente.
+Re-sincroniza skills y GEMINI.md (global + proyecto) sin tocar `.batuta/session.md` ni `openspec/`. Es lo que ejecuta `/batuta-update` internamente. **Preserva customizaciones**: si tu GEMINI.md tiene una seccion `## Project Customizations`, esa seccion se migra automaticamente a `.gemini/GEMINI.md` (capa proyecto) antes de sobreescribir el archivo raiz.
 
 ---
 
@@ -94,6 +94,7 @@ Los workflows son prompts guardados que se ejecutan con `/trigger` en Antigravit
 | `save-session.md` | `/save-session` | Guardar estado en .batuta/session.md (reemplaza hook Stop) |
 | `push-skill.md` | `/push-skill` | Propagar skill local al hub batuta-dots |
 | `batuta-update.md` | `/batuta-update` | Actualizar skills desde el hub |
+| `batuta-sync.md` | `/batuta-sync` | Sincronizar skills locales al hub (zero-bash) |
 
 ---
 
@@ -107,20 +108,21 @@ Los workflows son prompts guardados que se ejecutan con `/trigger` en Antigravit
 
 ### Propagar al hub
 
-**Opcion rapida** (recomendada): Un solo comando que importa, cross-syncs, commit y push:
-
-```bash
-bash /path/to/batuta-dots/infra/sync.sh --push /path/to/project
-```
+**Opcion recomendada** (zero-bash): Ejecuta `/batuta-sync` en Antigravity. El agente maneja todo internamente:
+1. Localiza el hub batuta-dots
+2. Escanea skills locales no presentes en el hub
+3. Te presenta un plan de sync
+4. Ejecuta la propagacion internamente (sync.sh --push)
+5. Te pregunta: "Hago commit y push?"
 
 **Opcion interactiva**: Ejecuta el workflow `/push-skill` en Antigravity:
 1. Antigravity detecta skills locales no presentes en batuta-dots
 2. Te pregunta cuales propagar
 3. Los copia a `batuta-dots/BatutaClaude/skills/` con el campo `platforms` adecuado
 
-**Opcion manual** (solo importar, sin commit):
+**Opcion terminal** (para desarrolladores del hub):
 ```bash
-bash /path/to/batuta-dots/infra/sync.sh --from-project /path/to/project
+bash /path/to/batuta-dots/infra/sync.sh --push /path/to/project
 ```
 
 ---
@@ -152,7 +154,15 @@ Claude Code usa hooks nativos (SessionStart, Stop) para leer/actualizar `.batuta
 
 Claude Code tiene `/command` como feature nativa. Antigravity usa workflows (prompts guardados).
 
-**Solucion**: Los 11 workflows en `BatutaAntigravity/workflows/` replican los commands mas importantes.
+**Solucion**: Los 12 workflows en `BatutaAntigravity/workflows/` replican los commands mas importantes.
+
+### 5. Two-Layer Configuration (v12)
+
+Igual que en Claude Code, GEMINI.md usa un sistema de dos capas:
+- **GEMINI.md (raiz)**: Capa hub — se sobreescribe con cada `--update`
+- **`.gemini/GEMINI.md`**: Capa proyecto — NUNCA se toca por updates
+
+Si tu GEMINI.md raiz tiene customizaciones (`## Project Customizations`), se migran automaticamente a `.gemini/GEMINI.md` antes de sobreescribir.
 
 ---
 

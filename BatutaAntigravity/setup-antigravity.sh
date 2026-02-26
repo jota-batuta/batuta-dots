@@ -150,8 +150,11 @@ copy_gemini_md_global() {
 # project-specific instructions. Both are useful.
 
 copy_gemini_md_project() {
+    # BUSINESS RULE: Two-layer system (v12). Root GEMINI.md is the hub layer
+    # (always overwritable). .gemini/GEMINI.md is the project layer (NEVER touched).
     local source_file="$REPO_ROOT/BatutaAntigravity/GEMINI.md"
     local output_file="$PROJECT_DIR/GEMINI.md"
+    local override_file="$PROJECT_DIR/.gemini/GEMINI.md"
 
     log_info "Copying GEMINI.md to project root ($PROJECT_DIR)"
 
@@ -160,8 +163,23 @@ copy_gemini_md_project() {
         return 1
     fi
 
+    # Migrate project customizations if they exist in root GEMINI.md
+    if [[ -f "$output_file" ]] && grep -q "^## Project Customizations" "$output_file" 2>/dev/null; then
+        if [[ ! -f "$override_file" ]]; then
+            mkdir -p "$PROJECT_DIR/.gemini"
+            sed -n '/^## Project Customizations/,$p' "$output_file" > "$override_file"
+            log_success "Migrated project customizations to .gemini/GEMINI.md"
+        else
+            log_info ".gemini/GEMINI.md already exists — project overrides preserved"
+        fi
+    fi
+
     cp -f "$source_file" "$output_file"
-    log_success "Created $output_file"
+    log_success "Created $output_file (hub layer)"
+
+    if [[ -f "$override_file" ]]; then
+        log_info "Project overrides preserved in .gemini/GEMINI.md"
+    fi
 }
 
 # ============================================================================

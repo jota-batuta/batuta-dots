@@ -1,6 +1,6 @@
 # Comandos completos
 
-Referencia rapida de todos los comandos disponibles en Batuta Dots v11.0.
+Referencia rapida de todos los comandos disponibles en Batuta Dots v12.
 
 > **Auto-routing**: Normalmente no necesitas escribir estos comandos. Batuta detecta
 > automaticamente lo que necesitas y ejecuta la fase correcta. Describe tu problema
@@ -142,6 +142,18 @@ Stack: Next.js, PostgreSQL, Redis
 /create-workflow deploy-production
 ```
 
+### /batuta-sync
+**Que hace**: Sincroniza skills locales del proyecto al hub batuta-dots. Escanea skills creados localmente, te muestra cuales son nuevos, y los propaga (con tu aprobacion).
+**Cuando**: Creaste skills nuevos en un proyecto y quieres que esten disponibles globalmente.
+**Proceso**: Localiza batuta-dots, escanea `.claude/skills/` y `.agent/skills/`, presenta plan de sync, copia al hub, cross-syncs a Antigravity, commit + push (con tu aprobacion).
+
+```
+/batuta-sync
+```
+
+O en lenguaje natural: "Sincroniza mis skills al hub".
+
+**Importante**: El agente ejecuta todo internamente — no necesitas abrir terminal ni recordar flags de bash.
 
 ---
 
@@ -165,6 +177,8 @@ Stack: Next.js, PostgreSQL, Redis
 ---
 
 ## Comandos de desarrollador (terminal)
+
+> **Nota v12**: La mayoria de usuarios no necesitan estos comandos. `/batuta-sync` y `/batuta-update` hacen lo mismo desde dentro del agente, sin abrir terminal. Estos comandos existen para desarrolladores del hub batuta-dots o para automatizaciones CI/CD.
 
 Estos comandos se ejecutan directamente en terminal, no dentro de Claude Code ni Antigravity:
 
@@ -199,3 +213,6 @@ bash ~/batuta-dots/infra/setup.sh --update /path/to/mi-proyecto
 | Cerrar cambio | "Archiva el cambio" | `/sdd-archive` |
 | Empezar proyecto | — | `/sdd-init` |
 | Crear skill | — | `/create-skill nombre` |
+| Sincronizar skills al hub | "Sincroniza mis skills" | `/batuta-sync` |
+| Actualizar ecosistema | "Actualiza Batuta" | `/batuta-update` |
+| Corregir regla violada | "Violaste el scope rule" | Self-heal automatico |

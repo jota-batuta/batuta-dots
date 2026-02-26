@@ -38,18 +38,38 @@ Common failures and what to tell the user:
 - Wrong branch: "batuta-dots está en la rama X. Cambia a master para actualizar."
 - Network error: "No hay conexión. Verifica tu red."
 
-### Step 3: Run full update (one command)
+### Step 3: Run full update (internal)
 
-```bash
-bash "$BATUTA_DOTS_PATH/infra/setup.sh" --update "$(pwd)"
-```
+Run internally (the user NEVER sees bash commands):
+`bash "$BATUTA_DOTS_PATH/infra/setup.sh" --update "$(pwd)"`
 
-This single command does everything:
+Tell the user: "Actualizando skills, agentes, y configuración..."
+
+This does:
 - Syncs skills, agents, commands, output-styles to `~/.claude/`
 - Cleans up orphan hooks and skills from `~/.claude/`
 - Installs hooks + permissions to `~/.claude/settings.json`
-- Copies updated CLAUDE.md to the current project
+- Copies updated CLAUDE.md to the current project (hub layer only)
 - Refreshes `.batuta/ecosystem.json` with version and skill lists
+
+### Step 3.5: Preserve project overrides
+
+If the project has `.claude/CLAUDE.md` (project-specific rules), this file is NEVER touched.
+The --update flag only overwrites the root CLAUDE.md (hub-managed layer).
+
+Tell the user: "Tu CLAUDE.md fue actualizado. Tus reglas de proyecto en .claude/CLAUDE.md no fueron tocadas."
+
+### Step 3.6: Check for new skills to provision
+
+After updating, check if any newly available skills should be provisioned for this project:
+
+1. Read updated skill list from `~/.claude/skills/`
+2. Compare against `.claude/skills/.provisions.json` (if it exists)
+3. Read `tech_detected` from `.provisions.json` to know this project's stack
+4. If new skills in global match the project's tech stack:
+   → Auto-copy to `.claude/skills/` and update `.provisions.json`
+   → Report: "Nuevos skills provisionados: {list}"
+5. If no new matches: skip silently
 
 ### What gets updated vs what stays
 
@@ -58,12 +78,13 @@ This single command does everything:
 | Skills, agents, commands | YES | ~/.claude/ |
 | Hooks + permissions | YES | ~/.claude/settings.json |
 | Orphan hooks/skills | CLEANED UP | ~/.claude/hooks/, ~/.claude/skills/ |
-| Project CLAUDE.md | YES | ./CLAUDE.md |
+| Project CLAUDE.md (hub layer) | YES | ./CLAUDE.md |
+| Project CLAUDE.md (overrides) | **NO — preserved** | .claude/CLAUDE.md |
 | Project ecosystem.json | YES | .batuta/ecosystem.json |
 | Project session state | **NO — stays local** | .batuta/session.md |
 | SDD artifacts | **NO — stays local** | openspec/ |
 
-NEVER overwrite `.batuta/session.md` or `openspec/` contents. Project context is sacred.
+NEVER overwrite `.claude/CLAUDE.md`, `.batuta/session.md`, or `openspec/` contents.
 
 ### Step 4: Report
 
