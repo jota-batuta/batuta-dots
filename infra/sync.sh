@@ -13,6 +13,7 @@
 # into the hub so they become available ecosystem-wide.
 #
 # Usage:
+#   ./infra/sync.sh --push [PATH]        # Import + cross-sync + commit + push (recommended)
 #   ./infra/sync.sh --to-antigravity     # Hub -> BatutaAntigravity/skills/
 #   ./infra/sync.sh --from-project PATH  # Project -> Hub (interactive)
 #   ./infra/sync.sh --all                # Both directions
@@ -336,6 +337,64 @@ sync_all() {
 }
 
 # ============================================================================
+# Push: Import + Cross-Sync + Commit (--push [path])
+# ============================================================================
+# WHY a single command: the previous workflow required 3 separate commands
+# (--from-project, --to-antigravity, git commit+push). That's too much
+# friction for non-technical users. --push combines all three steps.
+
+push_skills() {
+    local project_path="$1"
+
+    log_header "Batuta.Dots — Push Skills"
+    log_info "Project: $project_path"
+
+    # Step 1: Import from project → hub
+    sync_from_project "$project_path"
+
+    # Step 2: Cross-sync hub → BatutaAntigravity
+    echo ""
+    sync_to_antigravity
+
+    # Step 3: Check if anything actually changed in the repo
+    cd "$REPO_ROOT"
+    local changes
+    changes=$(git status --porcelain BatutaClaude/skills/ BatutaAntigravity/skills/ 2>/dev/null || true)
+
+    if [[ -z "$changes" ]]; then
+        echo ""
+        log_success "Hub already up to date. Nothing to commit."
+        return 0
+    fi
+
+    # Step 4: Show what changed and offer to commit
+    echo ""
+    log_info "Changes in batuta-dots:"
+    git status --short BatutaClaude/skills/ BatutaAntigravity/skills/
+    echo ""
+
+    printf "Commit and push these changes? [Y/n]: "
+    read -r response
+
+    if [[ "$response" == "n" || "$response" == "N" ]]; then
+        log_info "Changes staged but not committed. Run 'git add -A && git commit' manually."
+        return 0
+    fi
+
+    # Stage and commit
+    git add BatutaClaude/skills/ BatutaAntigravity/skills/
+    git commit -m "feat: sync skills from $(basename "$project_path")"
+
+    # Push if remote exists
+    if git remote get-url origin &>/dev/null; then
+        git push
+        log_success "Skills pushed to remote!"
+    else
+        log_success "Committed locally. No remote configured — push manually when ready."
+    fi
+}
+
+# ============================================================================
 # Help
 # ============================================================================
 
@@ -349,7 +408,14 @@ BatutaAntigravity, and imports project-local skills back into the hub.
 
 Usage: ./infra/sync.sh [OPTIONS]
 
-Sync Directions:
+Recommended:
+  --push [PATH]             One command to rule them all (recommended)
+                              1. Imports new skills from project to hub
+                              2. Cross-syncs hub -> BatutaAntigravity
+                              3. Commits and pushes to remote
+                              If PATH is omitted, uses current directory.
+
+Advanced:
   --to-antigravity          Hub -> BatutaAntigravity/skills/
                               Copies skills with 'platforms:.*antigravity'
                               from BatutaClaude/skills/ to BatutaAntigravity/skills/.
@@ -376,10 +442,11 @@ Skill Filtering:
     ---
 
 Examples:
-  ./infra/sync.sh --to-antigravity                      # Hub -> Antigravity
-  ./infra/sync.sh --from-project ~/my-app               # Import from project
-  ./infra/sync.sh --all --from-project ~/my-app          # Both directions
-  ./infra/sync.sh --all                                  # Hub -> Antigravity only
+  cd ~/my-app && /path/to/batuta-dots/infra/sync.sh --push  # Easiest
+  ./infra/sync.sh --push ~/my-app                           # Explicit path
+  ./infra/sync.sh --to-antigravity                          # Hub -> Antigravity
+  ./infra/sync.sh --from-project ~/my-app                   # Import only
+  ./infra/sync.sh --all --from-project ~/my-app             # Both directions
 
 Related:
   ./infra/setup.sh                              # Claude Code setup
@@ -397,6 +464,11 @@ EOF
 main() {
     cd "$REPO_ROOT"
 
+    # IMPORTANT: Save caller's directory BEFORE cd to REPO_ROOT.
+    # Relative paths and --push (no arg) need the caller's cwd.
+    local caller_dir
+    caller_dir="$(pwd)"
+
     # WHY pre-resolve project path: same pattern as setup.sh. Relative paths
     # must be resolved before cd to REPO_ROOT, otherwise "." would point to
     # the repo root instead of the user's current directory.
@@ -411,15 +483,31 @@ main() {
                 action="to-antigravity"
                 shift
                 ;;
+            --push)
+                action="push"
+                shift
+                if [[ -n "$1" && ! "$1" == --* ]]; then
+                    local raw_path="$1"
+                    if [[ "$raw_path" = /* || "$raw_path" =~ ^[A-Za-z]: ]]; then
+                        resolved_project_path="$raw_path"
+                    else
+                        resolved_project_path="$caller_dir/$raw_path"
+                    fi
+                    shift
+                else
+                    # No path given — use caller's directory
+                    resolved_project_path="$caller_dir"
+                fi
+                ;;
             --from-project)
                 has_from_project=true
                 shift
                 if [[ -n "$1" && ! "$1" == --* ]]; then
                     local raw_path="$1"
-                    if [[ ! "$raw_path" = /* && ! "$raw_path" =~ ^[A-Za-z]: ]]; then
-                        resolved_project_path="$(pwd)/$raw_path"
-                    else
+                    if [[ "$raw_path" = /* || "$raw_path" =~ ^[A-Za-z]: ]]; then
                         resolved_project_path="$raw_path"
+                    else
+                        resolved_project_path="$caller_dir/$raw_path"
                     fi
                     shift
                 else
@@ -463,6 +551,9 @@ main() {
             ;;
         all)
             sync_all "$resolved_project_path"
+            ;;
+        push)
+            push_skills "$resolved_project_path"
             ;;
     esac
 
