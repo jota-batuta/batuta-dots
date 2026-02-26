@@ -3,21 +3,27 @@
 # Batuta.Dots — Antigravity Setup Script
 # ============================================================================
 # Sets up the Batuta ecosystem for Google's Antigravity IDE.
-# Copies GEMINI.md to the project root and syncs cross-platform skills
-# that declare `platforms:.*antigravity` in their SKILL.md frontmatter.
+# Copies GEMINI.md and syncs cross-platform skills that declare
+# `platforms:.*antigravity` in their SKILL.md frontmatter.
 #
 # WHY this exists as a separate script from infra/setup.sh:
-#   Antigravity has a different directory structure (~/.gemini/antigravity/
-#   for global, .agent/skills/ for workspace) and different entry-point
-#   file (GEMINI.md). Keeping it separate avoids bloating the Claude
-#   setup script with conditional logic for every platform.
+#   Antigravity has a different directory structure (~/.gemini/ for global,
+#   .agent/skills/ for workspace) and different entry-point file (GEMINI.md).
+#   Keeping it separate avoids bloating the Claude setup script with
+#   conditional logic for every platform.
+#
+# IMPORTANT: This script distinguishes between two directories:
+#   REPO_ROOT   — where batuta-dots lives (source of skills and GEMINI.md)
+#   PROJECT_DIR — the user's project (target for workspace installs)
+#   These are NEVER the same directory (unless running inside batuta-dots itself).
 #
 # Usage:
-#   ./BatutaAntigravity/setup-antigravity.sh              # Interactive menu
-#   ./BatutaAntigravity/setup-antigravity.sh --global      # Install skills to ~/.gemini/antigravity/skills/
-#   ./BatutaAntigravity/setup-antigravity.sh --workspace   # Install skills to .agent/skills/
-#   ./BatutaAntigravity/setup-antigravity.sh --all         # Both global and workspace
-#   ./BatutaAntigravity/setup-antigravity.sh --help        # Show help
+#   ./BatutaAntigravity/setup-antigravity.sh                    # Interactive menu
+#   ./BatutaAntigravity/setup-antigravity.sh --global           # Skills + GEMINI.md to ~/.gemini/
+#   ./BatutaAntigravity/setup-antigravity.sh --workspace        # Skills + GEMINI.md to project (cwd)
+#   ./BatutaAntigravity/setup-antigravity.sh --all              # Global + workspace (cwd)
+#   ./BatutaAntigravity/setup-antigravity.sh --update <path>    # Full refresh for existing project
+#   ./BatutaAntigravity/setup-antigravity.sh --help             # Show help
 #
 # Platform: Windows (Git Bash / MSYS2 / MINGW) and native Unix
 # ============================================================================
@@ -115,14 +121,39 @@ log_header() {
 }
 
 # ============================================================================
+# Copy GEMINI.md to global location (~/.gemini/GEMINI.md)
+# ============================================================================
+# WHY global: Antigravity reads GEMINI.md from ~/.gemini/GEMINI.md as its
+# system-level instructions. Without this, the agent has no Batuta personality.
+
+copy_gemini_md_global() {
+    local source_file="$REPO_ROOT/BatutaAntigravity/GEMINI.md"
+    local global_dir="$HOME_DIR/.gemini"
+    local output_file="$global_dir/GEMINI.md"
+
+    log_info "Copying GEMINI.md to ~/.gemini/GEMINI.md (global)"
+
+    if [[ ! -f "$source_file" ]]; then
+        log_error "BatutaAntigravity/GEMINI.md not found at $source_file"
+        return 1
+    fi
+
+    mkdir -p "$global_dir"
+    cp -f "$source_file" "$output_file"
+    log_success "Created $output_file"
+}
+
+# ============================================================================
 # Copy GEMINI.md to project root
 # ============================================================================
+# WHY project-level: project GEMINI.md can override the global one with
+# project-specific instructions. Both are useful.
 
-copy_gemini_md() {
+copy_gemini_md_project() {
     local source_file="$REPO_ROOT/BatutaAntigravity/GEMINI.md"
-    local output_file="$REPO_ROOT/GEMINI.md"
+    local output_file="$PROJECT_DIR/GEMINI.md"
 
-    log_info "Copying BatutaAntigravity/GEMINI.md to project root"
+    log_info "Copying GEMINI.md to project root ($PROJECT_DIR)"
 
     if [[ ! -f "$source_file" ]]; then
         log_error "BatutaAntigravity/GEMINI.md not found at $source_file"
@@ -130,7 +161,7 @@ copy_gemini_md() {
     fi
 
     cp -f "$source_file" "$output_file"
-    log_success "Created $output_file (direct copy from BatutaAntigravity/GEMINI.md)"
+    log_success "Created $output_file"
 }
 
 # ============================================================================
@@ -248,20 +279,27 @@ install_skills_to() {
 }
 
 # ============================================================================
-# Install to global (~/.gemini/antigravity/skills/)
+# Install to global (~/.gemini/)
 # ============================================================================
+# WHY GEMINI.md + skills together: the global install must include the entry
+# point (GEMINI.md) alongside the skills it references. Installing skills
+# without the entry point leaves Antigravity without Batuta instructions.
 
 install_global() {
+    copy_gemini_md_global
     local global_dir="$HOME_DIR/.gemini/antigravity/skills"
     install_skills_to "$global_dir" "~/.gemini/antigravity/skills/ (global)"
 }
 
 # ============================================================================
-# Install to workspace (.agent/skills/)
+# Install to workspace (PROJECT_DIR/.agent/skills/)
 # ============================================================================
+# WHY PROJECT_DIR not REPO_ROOT: workspace skills belong in the user's project,
+# not inside batuta-dots. REPO_ROOT is the source, PROJECT_DIR is the target.
 
 install_workspace() {
-    local workspace_dir="$REPO_ROOT/.agent/skills"
+    copy_gemini_md_project
+    local workspace_dir="$PROJECT_DIR/.agent/skills"
     install_skills_to "$workspace_dir" ".agent/skills/ (workspace)"
 }
 
@@ -273,13 +311,13 @@ install_workspace() {
 # holds session continuity data and ecosystem metadata.
 
 create_batuta_dir() {
-    local batuta_dir="$REPO_ROOT/.batuta"
+    local batuta_dir="$PROJECT_DIR/.batuta"
     mkdir -p "$batuta_dir"
 
     # Session template
     if [[ ! -f "$batuta_dir/session.md" ]]; then
         local project_name
-        project_name=$(basename "$REPO_ROOT")
+        project_name=$(basename "$PROJECT_DIR")
         cat > "$batuta_dir/session.md" << SESSIONEOF
 # Session — $project_name
 
@@ -332,17 +370,16 @@ ECOEOF
 }
 
 # ============================================================================
-# All: GEMINI.md + Global + Workspace + .batuta/
+# All: Global + Workspace + .batuta/
 # ============================================================================
 
 do_all() {
     log_header "Batuta.Dots — Full Antigravity Setup"
+    log_info "Source: $REPO_ROOT"
+    log_info "Project: $PROJECT_DIR"
 
-    # WHY this order: copy GEMINI.md first (entry point), then skills
-    # (dependencies), then .batuta/ (local state). This way if skills
-    # fail, the entry point is still usable.
-    copy_gemini_md
-    echo ""
+    # WHY this order: global first (entry point + skills available everywhere),
+    # then workspace (project-local overrides), then .batuta/ (local state).
     install_global
     echo ""
     install_workspace
@@ -355,6 +392,33 @@ do_all() {
 }
 
 # ============================================================================
+# Update: Global + Project in one shot (--update <path>)
+# ============================================================================
+# WHY: Running --global + --workspace separately is high friction.
+# This combines all steps so /batuta-update and manual updates are one command.
+# Unlike --all, --update always overwrites GEMINI.md and skills (no skip).
+
+update_all() {
+    log_header "Batuta.Dots — Antigravity Update"
+    log_info "Source: $REPO_ROOT"
+    log_info "Project: $PROJECT_DIR"
+
+    # 1. Global refresh
+    install_global
+    echo ""
+
+    # 2. Project refresh
+    install_workspace
+    echo ""
+
+    # 3. Ensure .batuta/ exists (creates only if missing)
+    create_batuta_dir
+
+    echo ""
+    log_success "Antigravity updated!"
+}
+
+# ============================================================================
 # Interactive Menu
 # ============================================================================
 
@@ -364,25 +428,26 @@ show_menu() {
     echo "This script configures Antigravity IDE with the Batuta ecosystem."
     echo "GEMINI.md is the entry point. Skills are filtered by platform compatibility."
     echo ""
-    printf "  ${CYAN}1)${NC} Copy GEMINI.md to project root\n"
-    printf "  ${CYAN}2)${NC} Install skills globally (~/.gemini/antigravity/skills/)\n"
-    printf "  ${CYAN}3)${NC} Install skills to workspace (.agent/skills/)\n"
-    printf "  ${CYAN}4)${NC} Full setup (GEMINI.md + global + workspace + .batuta/)\n"
-    printf "  ${CYAN}5)${NC} Create .batuta/ directory only\n"
-    printf "  ${CYAN}6)${NC} Help\n"
+    echo "  Source:  $REPO_ROOT"
+    echo "  Project: $PROJECT_DIR"
+    echo ""
+    printf "  ${CYAN}1)${NC} Install globally (GEMINI.md + skills to ~/.gemini/)\n"
+    printf "  ${CYAN}2)${NC} Install to workspace (GEMINI.md + skills to project)\n"
+    printf "  ${CYAN}3)${NC} Full setup (global + workspace + .batuta/)\n"
+    printf "  ${CYAN}4)${NC} Create .batuta/ directory only\n"
+    printf "  ${CYAN}5)${NC} Help\n"
     printf "  ${CYAN}0)${NC} Exit\n"
     echo ""
-    printf "Enter choice [0-6]: "
+    printf "Enter choice [0-5]: "
 }
 
 handle_menu_choice() {
     case "$1" in
-        1) copy_gemini_md ;;
-        2) install_global ;;
-        3) install_workspace ;;
-        4) do_all ;;
-        5) create_batuta_dir ;;
-        6) show_help ;;
+        1) install_global ;;
+        2) install_workspace ;;
+        3) do_all ;;
+        4) create_batuta_dir ;;
+        5) show_help ;;
         0) log_info "Exiting..."; exit 0 ;;
         *) log_error "Invalid choice: $1"; return 1 ;;
     esac
@@ -409,13 +474,16 @@ GEMINI.md is the entry point. Skills are filtered by platform compatibility.
 Usage: ./BatutaAntigravity/setup-antigravity.sh [OPTIONS]
 
 Options:
-  --global      Install antigravity-compatible skills to ~/.gemini/antigravity/skills/
-                  Global skills are available across all Antigravity projects.
+  --global      Install GEMINI.md + skills to ~/.gemini/ (global)
+                  Available across all Antigravity projects.
                   Only skills with 'platforms:.*antigravity' in SKILL.md are copied.
-  --workspace   Install antigravity-compatible skills to .agent/skills/
-                  Workspace skills are project-local (committed to repo).
-  --all         Full setup: copy GEMINI.md + global + workspace + .batuta/
-                  Recommended for first-time setup.
+  --workspace   Install GEMINI.md + skills to current directory (project-local)
+                  Skills go to .agent/skills/ (committed to repo).
+  --all         Full setup: global + workspace + .batuta/
+                  Recommended for first-time setup. Uses cwd as project.
+  --update <path>
+                  Full refresh: global + workspace + .batuta/ for an existing
+                  project. Overwrites GEMINI.md and skills with latest versions.
   --help, -h    Show this help message
 
 Interactive Mode:
@@ -427,10 +495,11 @@ Skill Filtering:
     platforms: [claude, antigravity]
 
 Examples:
-  ./BatutaAntigravity/setup-antigravity.sh --all        # Full setup (recommended)
-  ./BatutaAntigravity/setup-antigravity.sh --global     # Global skills only
-  ./BatutaAntigravity/setup-antigravity.sh --workspace  # Workspace skills only
-  ./BatutaAntigravity/setup-antigravity.sh              # Interactive menu
+  cd /my/project
+  ./BatutaAntigravity/setup-antigravity.sh --all              # Full first-time setup
+  ./BatutaAntigravity/setup-antigravity.sh --global           # Global only
+  ./BatutaAntigravity/setup-antigravity.sh --workspace        # Project only
+  ./BatutaAntigravity/setup-antigravity.sh --update /my/app   # Update existing project
 
 Related:
   ./infra/setup.sh                    # Claude Code setup
@@ -450,6 +519,10 @@ parse_args() {
         --global)     install_global ;;
         --workspace)  install_workspace ;;
         --all)        do_all ;;
+        --update)
+            # PROJECT_DIR already resolved in main()
+            update_all
+            ;;
         --help|-h)    show_help; exit 0 ;;
         *)
             log_error "Unknown option: $1"
@@ -465,10 +538,31 @@ parse_args() {
 # ============================================================================
 
 main() {
+    # IMPORTANT: Save caller's directory BEFORE detecting repo root.
+    # CALLER_DIR is where the user ran the script from (their project).
+    # REPO_ROOT is where batuta-dots lives (the source of skills/GEMINI.md).
+    # These are different directories and must not be confused.
+    CALLER_DIR="$(pwd)"
+
     REPO_ROOT="$(detect_repo_root)" || {
         log_error "Could not locate batuta-dots repository"
         exit 1
     }
+
+    # Resolve PROJECT_DIR from arguments before cd
+    # WHY resolve before cd: relative paths like "." or "../my-app" must be
+    # resolved against CALLER_DIR, not REPO_ROOT.
+    PROJECT_DIR="$CALLER_DIR"
+    if [[ "$1" == "--update" && -n "$2" ]]; then
+        local raw_path="$2"
+        if [[ "$raw_path" = /* || "$raw_path" =~ ^[A-Za-z]: ]]; then
+            # Absolute path — use as-is
+            PROJECT_DIR="$raw_path"
+        else
+            # Relative path — resolve against caller's directory
+            PROJECT_DIR="$(cd "$CALLER_DIR" && cd "$raw_path" && pwd)"
+        fi
+    fi
 
     cd "$REPO_ROOT"
     log_info "Using batuta-dots at: $REPO_ROOT"
