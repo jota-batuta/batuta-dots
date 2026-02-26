@@ -359,14 +359,13 @@ test_claude_md_has_execution_gate() {
 # ============================================================================
 
 test_claude_md_has_scope_routing() {
-    log_test "CLAUDE.md has Scope Routing Table (v5)"
+    log_test "CLAUDE.md has Scope Routing (v11.1)"
     local claude_src="$REPO_ROOT/BatutaClaude/CLAUDE.md"
 
-    assert_file_contains "$claude_src" "Scope Routing Table" "scope routing table"
-    assert_file_contains "$claude_src" "pipeline-agent" "pipeline agent reference"
-    assert_file_contains "$claude_src" "infra-agent" "infra agent reference"
-    assert_file_contains "$claude_src" "observability-agent" "observability agent reference"
-    assert_file_contains "$claude_src" "You are the ROUTER" "router identity"
+    assert_file_contains "$claude_src" "Scope Routing" "scope routing section"
+    assert_file_contains "$claude_src" "pipeline" "pipeline scope reference"
+    assert_file_contains "$claude_src" "infra" "infra scope reference"
+    assert_file_contains "$claude_src" "observability" "observability scope reference"
 }
 
 # ============================================================================
@@ -681,13 +680,14 @@ test_orta_hooks_exist() {
 # ============================================================================
 
 test_settings_has_agent_teams() {
-    log_test "settings.json has Agent Teams config (v7)"
+    log_test "settings.json has Agent Teams config (v11.1)"
     local settings="$REPO_ROOT/BatutaClaude/settings.json"
 
     assert_file_contains "$settings" "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS" "Agent Teams feature flag"
     assert_file_contains "$settings" "teammateMode" "teammate mode setting"
-    assert_file_contains "$settings" "TeammateIdle" "TeammateIdle hook"
-    assert_file_contains "$settings" "TaskCompleted" "TaskCompleted hook"
+    # TeammateIdle and TaskCompleted hooks removed in v11.1
+    assert_file_not_contains "$settings" "TeammateIdle" "TeammateIdle hook (removed in v11.1)"
+    assert_file_not_contains "$settings" "TaskCompleted" "TaskCompleted hook (removed in v11.1)"
 }
 
 # ============================================================================
@@ -1090,15 +1090,15 @@ test_sdd_commands_use_hyphens_not_colons() {
 }
 
 test_claude_md_commands_use_hyphens() {
-    log_test "CLAUDE.md SDD Commands table uses hyphens (v9.4)"
+    log_test "CLAUDE.md SDD Commands table uses correct format (v11.1)"
     local claude_md="$REPO_ROOT/BatutaClaude/CLAUDE.md"
 
     assert_file_contains "$claude_md" "/sdd-init" \
         "CLAUDE.md has /sdd-init (hyphen format)"
     assert_file_contains "$claude_md" "/sdd-new" \
         "CLAUDE.md has /sdd-new (hyphen format)"
-    assert_file_contains "$claude_md" "/create-skill" \
-        "CLAUDE.md has /create-skill (hyphen format)"
+    assert_file_contains "$claude_md" "/create" \
+        "CLAUDE.md has /create command (unified in v11.1)"
 
     # Verify NO colon format remains
     if grep -q '`/sdd:' "$claude_md" 2>/dev/null; then
