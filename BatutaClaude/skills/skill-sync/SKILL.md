@@ -1,8 +1,7 @@
 ---
 name: skill-sync
 description: >
-  Syncs skill metadata to scope agent routing tables and validates skill inventory.
-  Trigger: When updating skill metadata, regenerating routing tables, or running sync.sh.
+  Use when syncing skill metadata to routing tables. /batuta-sync-skills
 license: MIT
 metadata:
   author: Batuta

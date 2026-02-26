@@ -1,12 +1,7 @@
 ---
 name: recursion-designer
 description: >
-  Designs mechanisms for automated systems to handle external change without breaking.
-  Unknown detection, human approval of new knowledge, controlled propagation, and
-  rule versioning. Use whenever a process uses categories controlled by someone outside
-  the system.
-  Trigger: cambio externo, categorias que cambian, diccionario dinamico, sistema que
-  aprende, versionado de reglas, aprobacion humana, propagacion retroactiva.
+  Use when external categories change over time (bank concepts, tax codes, SKUs).
 license: MIT
 metadata:
   author: Batuta

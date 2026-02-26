@@ -1,9 +1,7 @@
 ---
 name: sdd-design
 description: >
-  Create technical design document with architecture decisions, approach, and documentation plan.
-  Trigger: When the orchestrator launches you to write or update the technical design for a change.
-  Keywords: design, architecture, ADR, technical approach, data flow, file changes, documentation plan.
+  Use when creating architecture decisions and technical design. /sdd-ff
 license: MIT
 metadata:
   author: Batuta

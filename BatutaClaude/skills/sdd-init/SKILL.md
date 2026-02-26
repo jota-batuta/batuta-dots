@@ -1,11 +1,7 @@
 ---
 name: sdd-init
 description: >
-  Bootstrap the openspec/ directory structure for Spec-Driven Development in any project.
-  Detects project type (webapp, automation, ai-agent, infrastructure, data-pipeline, library)
-  and configures documentation strategy accordingly.
-  Trigger: When user wants to initialize SDD in a project, or says "sdd init", "iniciar sdd", "openspec init",
-  "bootstrap sdd", "setup specs", "init project specs".
+  Use when starting SDD in a new project, bootstrapping openspec/. /sdd-init
 license: MIT
 metadata:
   author: Batuta

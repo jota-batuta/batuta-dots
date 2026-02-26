@@ -1,12 +1,7 @@
 ---
 name: security-audit
 description: >
-  AI-first security practices for Claude-built applications. Covers OWASP top 10 for
-  AI-generated code, prompt injection defense, secrets scanning, dependency audit,
-  and threat modeling. Integrates with sdd-design (threat model) and sdd-verify
-  (security validation layer).
-  Trigger: Security review, threat model, secrets scan, dependency audit, OWASP check,
-  vulnerability assessment, security hardening.
+  Use when performing security review: OWASP, secrets, threat modeling.
 license: MIT
 metadata:
   author: Batuta

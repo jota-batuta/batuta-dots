@@ -1,11 +1,7 @@
 ---
 name: process-analyst
 description: >
-  Maps the complete universe of process variants BEFORE any automation is designed.
-  Prevents building systems that only handle the happy path. Use whenever a process has
-  multiple types of cases requiring different handling.
-  Trigger: variantes, tipos de caso, excepciones, ramas del proceso, mapear proceso,
-  arbol de decision, casos limite, flujo completo, universo del proceso, casos especiales.
+  Use when a process has 3+ case types requiring different handling.
 license: MIT
 metadata:
   author: Batuta

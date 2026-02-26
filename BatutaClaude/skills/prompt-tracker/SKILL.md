@@ -1,12 +1,7 @@
 ---
 name: prompt-tracker
 description: >
-  Tracks prompt satisfaction and analyzes patterns to improve agent behavior over time.
-  Part of the O.R.T.A. framework (Observability layer). Logs interactions, detects
-  correction patterns, and generates actionable recommendations.
-  Trigger: When tracking prompt satisfaction, analyzing prompt patterns, running
-  "/batuta:analyze-prompts", reviewing prompt history, "prompt log", "satisfaction",
-  "analyze prompts", "prompt patterns".
+  Use when tracking prompt satisfaction or generating O.R.T.A. reports. /batuta-analyze-prompts
 license: MIT
 metadata:
   author: Batuta

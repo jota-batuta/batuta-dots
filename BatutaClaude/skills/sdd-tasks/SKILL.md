@@ -1,9 +1,7 @@
 ---
 name: sdd-tasks
 description: >
-  Break down a change into an implementation task checklist with mandatory documentation phase.
-  Trigger: When the orchestrator launches you to create or update the task breakdown for a change.
-  Keywords: tasks, breakdown, plan, checklist, phases, implementation steps, task list, organize work
+  Use when breaking down a change into implementation tasks. /sdd-ff
 license: MIT
 metadata:
   author: Batuta

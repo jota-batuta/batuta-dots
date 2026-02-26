@@ -15,6 +15,10 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/session-start.sh"
+          },
+          {
+            "type": "prompt",
+            "prompt": "BATUTA BOOTSTRAP — THE RULE: If a skill applies to your current task, you MUST invoke it. No exceptions. If an MCP server is available and relevant, you MUST consult it before relying on training data.\n\nAvailable skills (24):\n- Pipeline SDD (9): sdd-init, sdd-explore, sdd-propose, sdd-spec, sdd-design, sdd-tasks, sdd-apply, sdd-verify, sdd-archive\n- CTO Layer (6): process-analyst, recursion-designer, compliance-colombia, data-pipeline-design, llm-pipeline-design, worker-scaffold\n- Infrastructure (5): ecosystem-creator, scope-rule, skill-sync, team-orchestrator, security-audit\n- Observability (1): prompt-tracker\n- Patterns (3): fastapi-crud, jwt-auth, sqlalchemy-models\n\nRed-flag rationalizations — if you catch yourself thinking any of these, STOP and load the relevant skill:\n- \"This is just something simple\" — Simple tasks still need team conventions.\n- \"I already know how to do this\" — Skills encode the TEAM way, not just knowledge.\n- \"I need more context first\" — Skill loading PRECEDES context gathering.\n- \"The skill is overkill for this\" — The skill defines minimum quality. Follow it.\n\nRespond with {\"ok\": true}."
           }
         ]
       }

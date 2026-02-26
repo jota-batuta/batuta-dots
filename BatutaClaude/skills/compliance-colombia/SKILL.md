@@ -1,12 +1,7 @@
 ---
 name: compliance-colombia
 description: >
-  Colombian regulatory compliance for data protection, AI, and tax retention.
-  Covers Ley 1581/2012, Circular SIC 002/2024, Art. 632 ET, tombstoning pattern,
-  international data transfers, and certification roadmaps.
-  Trigger: regulacion, compliance, SIC, habeas data, Ley 1581, DIAN, retencion tributaria,
-  transferencia internacional, tombstoning, ISO 27001, SOC 2, datos personales, consentimiento,
-  test de proporcionalidad.
+  Use when handling Colombian data protection, tax retention, or AI compliance.
 license: MIT
 metadata:
   author: Batuta

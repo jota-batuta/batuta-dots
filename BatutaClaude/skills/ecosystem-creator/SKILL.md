@@ -1,11 +1,7 @@
 ---
 name: ecosystem-creator
 description: >
-  Creates new skills, agents, sub-agents, and workflows for the Batuta AI ecosystem.
-  The bootstrap skill -- everything else in the ecosystem is built through this.
-  Trigger: When user asks to create a new skill, create an agent, add a sub-agent,
-  define a workflow, "create skill", "create agent", "new skill", "new agent",
-  "ecosystem", "add skill", "add agent", "register workflow".
+  Use when creating new skills, agents, sub-agents, or workflows. /create-skill
 license: MIT
 metadata:
   author: Batuta
@@ -150,8 +146,7 @@ Use the template from [assets/skill-template.md](assets/skill-template.md). The 
 ---
 name: {skill-name}
 description: >
-  {One-line description of what this skill does}.
-  Trigger: {When the AI should load this skill -- include natural language triggers}.
+  Use when {trigger conditions — when should this skill activate?}. /{command-if-any}
 license: MIT
 metadata:
   author: Batuta
@@ -189,7 +184,7 @@ allowed-tools: Read, Edit, Write, Glob, Grep, Bash
 | Field | Required | Description |
 |-------|----------|-------------|
 | `name` | Yes | Skill identifier (lowercase, hyphens) |
-| `description` | Yes | What + Trigger in one block. Include natural language triggers. |
+| `description` | Yes | Trigger-only (Superpowers convention). MUST start with "Use when..." and contain ONLY activation conditions. Never summarize the workflow — Claude will read the full skill body. Max 500 chars. |
 | `license` | Yes | `MIT` for Batuta ecosystem |
 | `metadata.author` | Yes | `Batuta` |
 | `metadata.version` | Yes | Semantic version as string (e.g., `"1.0"`) |
@@ -518,6 +513,24 @@ Skill Gap Detected: "{technology}" has no active skill
 │     Show: Proposed skill scope (project vs global)
 │     ASK: "¿Apruebas este skill o quieres ajustar algo?"
 │
+├─ 5.5. VALIDATE — RED-GREEN-REFACTOR for skills (Superpowers pattern)
+│     ├── RED: Run a representative task WITHOUT the skill loaded
+│     │   ├── Use a subagent (Task tool) with the skill NOT in context
+│     │   ├── Give it a task the skill should handle
+│     │   └── Document: what the agent does wrong or suboptimally
+│     ├── GREEN: Load the draft skill and re-run the SAME task
+│     │   ├── Use a subagent WITH the skill loaded
+│     │   ├── Give it the identical task
+│     │   └── Verify: the specific failures from RED are now corrected
+│     ├── REFACTOR: Test common rationalizations
+│     │   ├── "This is simple, I don't need the skill" → trigger still fires?
+│     │   ├── "I'll just do it quickly" → full process enforced?
+│     │   └── If bypassed → strengthen triggers or add enforcement rules
+│     └── Decision:
+│         ├── GREEN fixes RED → proceed to REGISTER
+│         ├── GREEN does NOT fix RED → revise skill, return to DRAFT
+│         └── SKIP if: pure reference skill or technology unavailable for testing
+│
 └─ 6. REGISTER — Follow full Registration Checklist
       Destination: Based on SCOPE DECISION — project-local (.claude/skills/), global (~/.claude/skills/), or batuta-repo (BatutaClaude/skills/)
       Ensure: SKILL.md has scope, auto_invoke, allowed-tools in frontmatter
@@ -656,7 +669,7 @@ Return a summary:
 - [ ] Name follows naming conventions for its type
 - [ ] Requirements are clear (or clarification has been requested)
 - [ ] Appropriate template is being used
-- [ ] Frontmatter is complete (description includes trigger keywords)
+- [ ] Frontmatter is complete (description starts with "Use when..." — trigger-only, no workflow summary)
 - [ ] Registration plan is clear (which files need updating)
 - [ ] If planned in roadmap, roadmap entry will be updated
 

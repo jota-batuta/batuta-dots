@@ -1,11 +1,7 @@
 ---
 name: data-pipeline-design
 description: >
-  Designs data extraction, transformation, and loading pipelines.
-  Specializes in Colombian ERP integrations (WorldOffice, Siigo, SAP B1, Alegra, Helisa),
-  DIAN interfaces, bank file processing, data quality, and PostgreSQL schema design with RLS.
-  Trigger: datos, extraccion, ETL, ERP, integracion, scraping, archivo plano, DIAN, banco,
-  data quality, conector, API del cliente, parsear, pipeline de datos, schema, migracion.
+  Use when designing ETL pipelines, ERP integrations, or data processing.
 license: MIT
 metadata:
   author: Batuta

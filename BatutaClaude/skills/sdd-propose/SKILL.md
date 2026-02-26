@@ -1,10 +1,7 @@
 ---
 name: sdd-propose
 description: >
-  Create a change proposal with intent, scope, and approach.
-  Includes a Plain Language Summary for non-technical stakeholders and Stakeholder Communication plan.
-  Trigger: When the orchestrator launches you to create or update a proposal for a change.
-  Keywords: propose, proposal, change request, plan, scope, approach, RFC
+  Use when creating or amending a change proposal. /sdd-new
 license: MIT
 metadata:
   author: Batuta

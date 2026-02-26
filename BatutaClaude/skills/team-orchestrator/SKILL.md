@@ -186,6 +186,33 @@ For changes spanning multiple architectural layers:
 
 Lead handles: integration points, API contracts, coordination.
 
+**Pattern E: Superpowers-Style Review (per-task quality loop)**
+For tasks evaluated as Level 2+ complexity during sdd-apply:
+
+```
+SUPERPOWERS REVIEW LOOP (per task batch):
+├── Implementer: sdd-apply (writes code for the task batch)
+├── Spec Reviewer: verifies implementation matches spec.md scenarios
+│   ├── Each Given/When/Then scenario accounted for?
+│   ├── Missing features? Extra features not in spec?
+│   └── If issues → return to implementer with specific feedback
+├── Code Quality Reviewer: verifies patterns, docs, security
+│   ├── Scope Rule followed? Documentation complete?
+│   ├── Anti-patterns from loaded skills avoided?
+│   └── If issues → return to implementer with specific feedback
+└── Loop: reviewers approve OR implementer re-implements → re-review
+```
+
+| Teammate | Role | Checks |
+|----------|------|--------|
+| implementer | pipeline-agent | Write code per tasks.md, follow sdd-apply |
+| spec-reviewer | pipeline-agent | Compare output vs spec.md scenarios |
+| quality-reviewer | infra-agent | Scope Rule, docs, security, skill compliance |
+
+**When to activate**: sdd-apply complexity Level 2+ (4+ files, multi-module, architectural decisions).
+**When NOT to**: Level 1 tasks (single-file, trivial edits).
+**Key constraint**: Spec review BEFORE code quality review (no point reviewing code quality on wrong implementation).
+
 ## SDD Pipeline as Task List
 
 Map SDD phases to team tasks with dependencies:

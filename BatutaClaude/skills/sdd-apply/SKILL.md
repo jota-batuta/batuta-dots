@@ -1,9 +1,7 @@
 ---
 name: sdd-apply
 description: >
-  Implement tasks from the change, writing actual code following the specs and design.
-  Trigger: When the orchestrator launches you to implement one or more tasks from a change.
-  Keywords: implement, apply, code, build, write code, execute tasks, sdd apply
+  Use when implementing tasks from a change, writing code. /sdd-apply
 license: MIT
 metadata:
   author: Batuta

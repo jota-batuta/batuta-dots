@@ -1,8 +1,7 @@
 ---
 name: sdd-spec
 description: >
-  Write specifications with requirements and scenarios (delta specs for changes).
-  Trigger: When the orchestrator launches you to write or update specs for a change.
+  Use when writing requirements and scenarios for a change. /sdd-ff
 license: MIT
 metadata:
   author: Batuta

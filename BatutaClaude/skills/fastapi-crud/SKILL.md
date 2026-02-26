@@ -1,10 +1,7 @@
 ---
 name: fastapi-crud
 description: >
-  FastAPI CRUD pattern with SQLAlchemy: models, schemas, services, routes.
-  Generates complete CRUD endpoints following Scope Rule structure.
-  Trigger: When building REST APIs with FastAPI, creating CRUD endpoints,
-  "fastapi", "crud", "api routes", "rest api", "endpoints".
+  Use when building REST APIs with FastAPI, creating CRUD endpoints.
 license: MIT
 metadata:
   author: Batuta

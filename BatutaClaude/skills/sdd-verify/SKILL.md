@@ -1,11 +1,7 @@
 ---
 name: sdd-verify
 description: >
-  Validate implementation using the AI Validation Pyramid: type checking/linting (Layer 1), unit tests (Layer 2),
-  integration/E2E tests (Layer 3), then flag items for human code review (Layer 4) and manual testing (Layer 5).
-  Checks specs, design, tasks, documentation, and O.R.T.A. operational standards.
-  Trigger: When the orchestrator launches you to verify a completed (or partially completed) change.
-  Keywords: verify, validate, check, review, audit, quality-gate, orta, documentation-check, validation-pyramid
+  Use when validating implementation via the AI Validation Pyramid. /sdd-verify
 license: MIT
 metadata:
   author: Batuta
