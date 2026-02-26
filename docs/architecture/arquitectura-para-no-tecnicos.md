@@ -329,7 +329,7 @@ Sucursal A inventa receta → Un solo boton → Se copia al libro maestro
 → Todas las sucursales la tienen
 ```
 
-Ahora es un solo paso: el comando `sync.sh --push` toma las recetas nuevas del proyecto, las copia al libro maestro, las adapta para ambas cocinas (Claude Code y Antigravity), y las publica. Un solo boton en vez de tres pasos separados.
+Ahora es un solo paso: el boton de publicar (`sync.sh --push`) toma las recetas nuevas del proyecto, las copia al libro maestro, las adapta para ambas cocinas (Claude Code y Antigravity), y las publica. Un solo boton en vez de tres pasos separados.
 
 Al final de cada proyecto, Claude te pregunta:
 
