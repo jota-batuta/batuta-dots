@@ -108,12 +108,42 @@ FOR EACH technology required by this change:
 └── Compile Skill Gap Report
 ```
 
-**When HIGH gaps are detected, ACTIVELY offer to create skills:**
+#### Gap Resolution with Project Provisioning
+
+When a HIGH gap is detected, first check if the skill already exists in the global library:
+
+```
+FOR EACH HIGH gap:
+├── Check: does ~/.claude/skills/{skill-name}/SKILL.md exist?
+│
+├── IF YES (skill exists globally but not in project):
+│   Present: "Skill **{skill-name}** existe en la libreria global pero no esta provisionado en este proyecto."
+│   Options:
+│   (1) **Copiar al proyecto** — Copy from ~/.claude/skills/{name}/ to .claude/skills/{name}/
+│       → Also update .claude/skills/.provisions.json: add to skills[] and reprovisioned[]
+│   (2) **Skip** — Continue without the skill (document justification)
+│
+├── IF NO (skill does not exist anywhere):
+│   Present: "No existe skill para **{technology}**."
+│   Options:
+│   (1) **Crear en proyecto** — Invoke ecosystem-creator, save to .claude/skills/{name}/
+│       → Update .provisions.json after creation
+│   (2) **Crear en global** — Invoke ecosystem-creator, save to ~/.claude/skills/{name}/
+│       → Then copy to .claude/skills/{name}/ for this project
+│   (3) **Skip** — Continue without (document justification)
+│
+└── HARD GATE: Do NOT advance to Step 3 until ALL HIGH gaps are resolved
+```
+
+**When HIGH gaps are detected, ACTIVELY offer resolution:**
 
 1. List all detected gaps with severity in the exploration output
-2. For each HIGH gap, ASK the user: "Detecto que no hay skill para {technology}. Quieres que lo cree? (1) Proyecto local, (2) Global batuta-dots, (3) Continuar sin skill"
-3. If user says "1" or "2", invoke `ecosystem-creator` skill to create the SKILL.md using Context7 research
-4. Then continue the exploration with the new skill loaded (auto-discovered by description)
+2. For each HIGH gap, first check if `~/.claude/skills/{skill-name}/SKILL.md` exists (global library check)
+3. If skill exists globally: ASK the user: "Skill **{name}** existe en la libreria global pero no esta provisionado. (1) Copiar al proyecto, (2) Skip"
+4. If skill does NOT exist anywhere: ASK the user: "No existe skill para {technology}. (1) Crear en proyecto, (2) Crear en global batuta-dots, (3) Skip"
+5. If user chooses to copy: replicate from `~/.claude/skills/{name}/` to `.claude/skills/{name}/` and update `.provisions.json`
+6. If user chooses to create: invoke `ecosystem-creator` skill to create the SKILL.md using Context7 research
+7. Then continue the exploration with the new skill loaded (auto-discovered by description)
 
 ⛔ **HARD GATE — DO NOT ADVANCE TO STEP 3 UNTIL RESOLVED**
 

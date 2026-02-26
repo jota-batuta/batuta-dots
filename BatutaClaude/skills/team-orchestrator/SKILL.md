@@ -236,9 +236,9 @@ The gate's FULL mode includes a "Team Assessment" step:
 - Single scope, focused change → LEVEL 1 or 2
 
 ### With O.R.T.A.
-- **TeammateIdle hook**: centralizes logging when teammates finish
-- **TaskCompleted hook**: quality gate before marking tasks done
+- **Session management**: SessionStart/Stop hooks handle context injection and persistence
 - **Plan approval**: lead reviews teammate plans (= Execution Gate for teams)
+- **Contract Diff**: lead verifies output vs contract before approving completion (replaces external quality gates)
 
 ### With Skill Gap Detection
 During team work, if a teammate encounters a technology without a skill:
@@ -261,7 +261,7 @@ At team CLOSE, the lead updates .batuta/session.md with:
 | Team vs solo ratio | Teams created / total sessions | 10-20% |
 | Teammate utilization | Active time / total time per teammate | > 70% |
 | Task completion rate | Completed / total tasks | > 90% |
-| Gate rejection rate | TaskCompleted rejections / completions | < 15% |
+| Contract rejection rate | Contract Diff rejections / completions | < 15% |
 | Skill gap discovery rate | New skills per team session | Track, no target |
 | Token efficiency | Result quality / tokens used (vs solo baseline) | > 1.5x quality for 3-5x tokens |
 

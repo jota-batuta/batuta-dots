@@ -147,26 +147,26 @@ El chef ahora puede llamar a **consultores** cuando necesita ayuda especializada
 
 ---
 
-## Las Dos Cocinas (Multi-Plataforma) — v11.0
+## Las Dos Cocinas (Multi-Plataforma) — v11.2
 
-Imagina que tu restaurante crece y ahora tienes DOS cocinas:
+Imagina que tu restaurante crece y ahora tienes DOS cocinas con roles distintos:
 
 | Cocina | Que es | Cuando se usa |
 |--------|--------|--------------|
-| **Cocina principal** (Claude Code) | La cocina completa del restaurante, con todo el equipamiento: hornos industriales, alarmas automaticas, equipo completo de chefs, inventario inteligente | Platos elaborados, banquetes, menus nuevos, todo lo que requiere planificacion seria |
-| **Cocina rapida** (Antigravity) | Una cocina satellite con el mismo recetario pero menos equipamiento: sin alarmas automaticas pero con un ayudante que le recuerda al chef los pasos | Sandwiches, ensaladas, pedidos simples, preparaciones rapidas |
+| **Cocina principal** (Claude Code) | La cocina completa del restaurante, con todo el equipamiento: hornos industriales, alarmas automaticas, equipo completo de chefs | Platos elaborados, banquetes, menus nuevos, todo lo que requiere planificacion seria y produccion |
+| **Cocina de ideas** (Antigravity Lite) | Una cocina satellite para experimentar: probar recetas nuevas, hacer bocetos de platos, preparaciones rapidas. Mismo recetario, sin alarmas automaticas | Brainstorming de menus, prototipos de platos, sandwiches, ensaladas, pedidos simples |
 
-**Lo importante**: Ambas cocinas usan las MISMAS recetas (skills). Si un chef inventa una receta nueva en la cocina rapida, se copia al libro maestro y automaticamente esta disponible en la cocina principal. Y viceversa.
+**Lo importante**: Ambas cocinas usan las MISMAS recetas (skills). Si un chef inventa una receta nueva en la cocina de ideas, se copia al libro maestro y automaticamente esta disponible en la cocina principal. Y viceversa.
 
 ```
-Cocina principal (Claude Code)  ←→  Libro maestro (batuta-dots)  ←→  Cocina rapida (Antigravity)
+Cocina principal (Claude Code)  ←→  Libro maestro (batuta-dots)  ←→  Cocina de ideas (Antigravity Lite)
 ```
 
-**Por que dos cocinas?** Porque la cocina principal es mas poderosa pero tiene costo ($200/mes), mientras que la cocina rapida es GRATIS. Usas la principal para lo importante y la rapida para lo mecanico. Ambas trabajan en paralelo — como tener dos turnos trabajando al mismo tiempo.
+**Por que dos cocinas?** Porque la cocina principal es para produccion seria pero tiene costo ($200/mes), mientras que la cocina de ideas es GRATIS y perfecta para explorar y prototipar. Usas la principal para lo que va a produccion y la de ideas para brainstorming y tareas mecanicas. Ambas trabajan en paralelo — como tener dos turnos trabajando al mismo tiempo.
 
 **Diferencias tecnicas simplificadas**:
-- La cocina principal tiene alarmas automaticas (hooks) que le recuerdan al chef hacer el checklist. La cocina rapida tiene un letrero en la pared que dice "No olvides el checklist" (rules).
-- La cocina principal puede armar equipos temporales especiales (Agent Teams). La cocina rapida tiene un coordinador que maneja varios chefs al mismo tiempo (Manager View).
+- La cocina principal tiene alarmas automaticas (hooks) que le recuerdan al chef hacer el checklist. La cocina de ideas no tiene alarmas — tiene un letrero en la pared que dice "No olvides el checklist" (rules).
+- La cocina principal puede armar equipos temporales especiales (Agent Teams). La cocina de ideas tiene un coordinador que maneja varios chefs al mismo tiempo (Manager View).
 - Ambas comparten las mismas recetas base. Solo algunas recetas son exclusivas de la cocina principal.
 
 ---
@@ -284,7 +284,7 @@ de cocinar y uno que improvisa. El checklist previene errores ANTES de que ocurr
 
 ---
 
-## El Inventario Automatico (Skill-Sync)
+## El Inventario Automatico (Sync)
 
 Imagina que cada vez que un chef agrega una receta nueva al libro, el sistema
 automaticamente actualiza:
@@ -568,7 +568,7 @@ Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
 | **Protocolo de higiene** | Security-Audit (v9) | Revision de seguridad: al disenar y al verificar |
 | **Controles estrategicos** | Gates G0.5/G1/G2 (v10) | Entiendo? Vale la pena? Listo? |
 | **Consultores especializados** | 6 skills CTO (v10) | Procesos, IA, datos, infra, compliance |
-| **Cocina rapida** | Antigravity IDE (v11.0) | Segunda cocina con el mismo recetario, para pedidos rapidos y mecanicos |
+| **Cocina rapida** | Antigravity Lite (v11.2) | Segunda cocina para brainstorming y prototipado rapido, con el mismo recetario |
 | **Libro maestro compartido** | batuta-dots hub (v11.0) | Todas las recetas en un solo lugar, sincronizadas entre ambas cocinas |
 
 ---

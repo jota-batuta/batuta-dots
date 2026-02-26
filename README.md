@@ -19,7 +19,6 @@ Inspired by [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.
 - **Lazy skill loading** — Claude reads ~220 lines at startup, skills load on demand.
 - **Scope agents** — 3 agents with skills auto-discovered by description field.
 - **Execution Gate** — mandatory pre-validation before any code change.
-- **Skill-Sync** — asset inventory auto-generated from skill frontmatters via sync.sh.
 - **Native hooks** — SessionStart, Stop.
 - **O.R.T.A. framework** (Observability, Repeatability, Traceability, Auto-supervision).
 - **Agent Teams** — orchestrate multiple Claude sessions in parallel for complex tasks.
@@ -124,7 +123,7 @@ batuta-dots/
 │       ├── sdd-archive/SKILL.md
 │       ├── team-orchestrator/SKILL.md # Agent Teams orchestration (when to escalate)
 │       └── security-audit/SKILL.md   # AI-first security practices (OWASP + threats)
-├── BatutaAntigravity/                 # Antigravity IDE configuration (Lite)
+├── BatutaAntigravity/                 # Antigravity Lite (brainstorming & prototyping)
 │   ├── GEMINI.md                      # Full CTO brain adapted for Antigravity
 │   ├── setup-antigravity.sh           # Setup script (--global / --workspace / --all)
 │   ├── settings-template.json         # Recommended Antigravity config
@@ -205,20 +204,21 @@ CLAUDE.md (personality + rules — ~220 lines)
     └──> Agent Team (Level 3) ──> spawn teammates from scope agents
 ```
 
-### Multi-Platform: Claude Code + Antigravity
+### Multi-Platform: Claude Code + Antigravity Lite
 
-Batuta supports parallel execution across platforms — Claude Code (Full) for complex projects and Google Antigravity IDE (Lite) for quick wins:
+Batuta supports two platforms with distinct roles — Claude Code for serious production work (full SDD pipeline) and Antigravity Lite as a brainstorming & quick prototyping companion:
 
-| Aspect | Claude Code (Full) | Antigravity (Lite) |
+| Aspect | Claude Code (Full) | Antigravity Lite |
 |--------|-------------------|-------------------|
+| Role | Production — full SDD pipeline, architecture, complex features | Exploration — brainstorming, quick prototyping, scripts, docs |
 | Brain | Full CTO via CLAUDE.md | Full CTO via GEMINI.md |
 | Commands | Slash commands (native) | Workflows (saved prompts) |
-| Hooks | Native (SessionStart, Stop) | Behavioral rules |
+| Hooks | Native (SessionStart, Stop) | No hooks — behavioral rules only |
 | Skills | `~/.claude/skills/` | `.agent/skills/` or `~/.gemini/antigravity/skills/` |
 | Multi-agent | Agent Teams | Manager View |
 | Cost | Claude Max x20 ($200/mo) | Free (preview) |
 
-Skills are platform-agnostic (SKILL.md open standard). The `platforms` field in frontmatter controls which platforms receive each skill during sync. See the [Antigravity Guide](docs/guides/guia-batuta-antigravity.md).
+Skills are platform-agnostic (SKILL.md open standard). The `platforms` field in frontmatter controls which platforms receive each skill during sync. See the [Antigravity Lite Guide](docs/guides/guia-batuta-antigravity.md).
 
 ```bash
 # Setup Antigravity in a project
@@ -292,10 +292,6 @@ Before any code change, a mandatory pre-validation runs. Cannot be skipped.
 | LIGHT | Single-file edit, simple fix | "Modifying {file} at {location}. Proceed?" |
 | FULL | New files, 2+ file changes, architecture | Location plan + impact + SDD/skill compliance |
 
-### Skill-Sync
-
-The asset inventory is auto-generated from SKILL.md frontmatters. Adding a skill = create SKILL.md with proper frontmatter → run sync.sh → inventory validated automatically.
-
 ### Skill Gap Detection
 
 Before writing code with any technology, Claude checks if an active skill exists. If not, it stops and offers to research via Context7 and create the skill before proceeding.
@@ -329,6 +325,10 @@ Agent Teams spawn real Claude Code sessions that work in parallel with a shared 
 ### Ecosystem Auto-Update
 
 When new skills are created in a project, Claude proposes propagating them back to batuta-dots so other projects benefit.
+
+### Project Skill Provisioning (v11.3)
+
+During `/sdd-init`, only relevant skills are copied from the global library to your project. The agent sees only what it needs, keeping context clean as the ecosystem grows to 100+ skills.
 
 ---
 

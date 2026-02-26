@@ -33,6 +33,7 @@ If not found, clone: `git clone https://github.com/jota-batuta/batuta-dots.git /
 | Commands (slash commands) | YES | ~/.claude/commands/ |
 | Routing tables (auto-generated) | YES | BatutaClaude/CLAUDE.md + agents/ |
 | Hooks + permissions | YES | ~/.claude/settings.json |
+| Orphan hooks/skills | CLEANED UP | ~/.claude/hooks/, ~/.claude/skills/ |
 | Project context (session state) | **NO — stays local** | .batuta/session.md |
 | SDD artifacts (specs, designs) | **NO — stays local** | openspec/ |
 

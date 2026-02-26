@@ -43,6 +43,8 @@ Defines:
 
 Ahora, cada vez que trabajes en un proyecto React Native, Batuta aplica automaticamente tus patrones estandarizados.
 
+> Cuando creas un skill nuevo, puedes registrarlo en `skill-provisions.yaml` para que se auto-provisione en futuros proyectos con la misma tecnologia (v11.3).
+
 ---
 
 ## Creando un agente

@@ -1,12 +1,12 @@
-# Guia: Batuta en Antigravity (Lite)
+# Guia: Batuta en Antigravity Lite
 
-> Guia para trabajar con Batuta en Google Antigravity IDE. Mismo cerebro CTO, ejecucion adaptada.
+> Guia para trabajar con Batuta en Google Antigravity IDE. Companion de brainstorming y prototipado rapido.
 
 ---
 
-## Que es Batuta Lite
+## Que es Antigravity Lite
 
-Batuta Lite es la version del ecosistema Batuta optimizada para Google Antigravity IDE. No es una version "recortada" — conserva el 100% del cerebro CTO (filosofia, gates estrategicos, 22 skills, reglas de comportamiento). Lo que cambia es la **ejecucion**: se adapta a las capacidades tecnicas de Antigravity.
+Antigravity Lite es el companion de exploracion rapida del ecosistema Batuta. Mientras Claude Code es para produccion seria (pipeline SDD completo, arquitectura, features complejas), Antigravity Lite es para **brainstorming, prototipado rapido, scripts, documentacion y tareas mecanicas**. Conserva el 100% del cerebro CTO (filosofia, gates estrategicos, 22 skills, reglas de comportamiento). Lo que cambia es el **rol**: exploracion y velocidad en lugar de precision y rigurosidad.
 
 **Antigravity** es el IDE agent-first de Google, un fork de VS Code/Windsurf. Durante el preview es **gratuito** con Gemini 3 Pro. Soporta Rules (GEMINI.md), Workflows (prompts guardados con /trigger), Skills (.agent/skills/), y Manager View para multi-agente.
 
@@ -14,19 +14,20 @@ Batuta Lite es la version del ecosistema Batuta optimizada para Google Antigravi
 
 ## Cuando usar cada plataforma
 
-| Aspecto | Claude Code (Full) | Antigravity (Lite) |
+| Aspecto | Claude Code (Full) | Antigravity Lite |
 |---------|-------------------|-------------------|
 | **Arquitectura y SDD completo** | Si | Solo fases individuales |
 | **Features complejas multi-modulo** | Si | No |
+| **Brainstorming y prototipado** | Posible | Ideal (gratis, rapido) |
 | **Scripts y automatizaciones** | Posible pero costoso | Ideal (gratis) |
 | **n8n workflows** | Posible | Ideal |
 | **Quick fixes y config** | Posible | Ideal |
 | **Documentacion** | Posible | Ideal |
 | **Agent Teams (paralelo)** | Si (nativo) | Manager View (nativo diferente) |
-| **Hooks automaticos** | Si (6 hooks nativos) | No (reglas de comportamiento) |
+| **Hooks automaticos** | Si (nativos: SessionStart, Stop) | No — solo reglas de comportamiento |
 | **Costo** | $200/mes (Max x20) | Gratis (preview) |
 
-**Estrategia**: Claude Code para lo que requiere potencia y precision. Antigravity para volumen y tareas mecanicas. Ambos en paralelo.
+**Estrategia**: Claude Code para produccion seria que requiere potencia y precision. Antigravity Lite para exploracion rapida, brainstorming, y tareas mecanicas de alto volumen. Ambos en paralelo.
 
 ---
 
@@ -113,11 +114,11 @@ bash /path/to/batuta-dots/infra/sync.sh --from-project /path/to/project
 
 ### 1. No hay hooks automaticos
 
-Claude Code tiene 6 hooks nativos (SessionStart, PreToolUse, PostToolUse, Stop, TeammateIdle, TaskCompleted). Antigravity no tiene hooks.
+Claude Code tiene 2 hooks nativos (SessionStart, Stop). Antigravity no tiene hooks.
 
-**Solucion**: GEMINI.md incluye reglas de comportamiento que replican los hooks mas criticos:
+**Solucion**: GEMINI.md incluye reglas de comportamiento que replican los hooks criticos:
 - "Al inicio de cada sesion, lee `.batuta/session.md`" (reemplaza SessionStart)
-- "Antes de escribir o editar, muestra los cambios y espera aprobacion" (reemplaza PreToolUse/Execution Gate)
+- "Antes de escribir o editar, muestra los cambios y espera aprobacion" (Execution Gate via regla)
 - El workflow `/save-session` reemplaza el hook Stop
 
 ### 2. No hay Agent Teams
@@ -171,4 +172,4 @@ Si el agente reporta que la version local esta desactualizada, ejecuta `/batuta-
 | Claude Code Max x20 | $200/mes | Claude Opus/Sonnet | 200K tokens |
 | Antigravity Preview | Gratis | Gemini 3 Pro | Generoso (preview) |
 
-**Estrategia recomendada**: Usa ambos en paralelo. Claude Code para los 20+ entregables que requieren arquitectura, SDD completo, y precision. Antigravity para scripts, configs, docs, y tareas mecanicas. El ahorro no es en dinero (Antigravity es gratis) sino en **throughput** — mas cosas hechas al mismo tiempo.
+**Estrategia recomendada**: Usa ambos en paralelo. Claude Code para produccion seria que requiere arquitectura, SDD completo, y precision. Antigravity Lite para brainstorming, prototipado rapido, scripts, configs, docs, y tareas mecanicas. El ahorro no es en dinero (Antigravity es gratis) sino en **throughput** — mas cosas hechas al mismo tiempo.

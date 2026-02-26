@@ -211,7 +211,7 @@ test_claude_md_contains_expected_content() {
     assert_file_contains "$REPO_ROOT/CLAUDE.md" "Personality" "personality section"
     assert_file_contains "$REPO_ROOT/CLAUDE.md" "Scope Rule" "scope rule section"
     assert_file_contains "$REPO_ROOT/CLAUDE.md" "Skill Gap Detection" "gap detection"
-    assert_file_contains "$REPO_ROOT/CLAUDE.md" "Scope Routing Table" "scope routing table (v5)"
+    assert_file_contains "$REPO_ROOT/CLAUDE.md" "Scope Routing" "scope routing section (v5)"
     assert_file_contains "$REPO_ROOT/CLAUDE.md" "SDD Commands" "SDD commands table"
 }
 
@@ -654,24 +654,26 @@ test_team_orchestrator_skill_exists() {
 # ============================================================================
 
 test_orta_hooks_exist() {
-    log_test "O.R.T.A. hooks for Agent Teams exist (v7)"
+    log_test "Session hooks exist, ORTA hooks removed (v11.2)"
     local hooks_dir="$REPO_ROOT/infra/hooks"
 
     assert_dir_exists "$hooks_dir"
-    assert_file_exists "$hooks_dir/orta-teammate-idle.sh"
-    assert_file_exists "$hooks_dir/orta-task-gate.sh"
+    # v11.2: orta-teammate-idle.sh and orta-task-gate.sh were eliminated (orphan hooks)
+    # Only session-start.sh and session-save.sh should remain
+    assert_file_exists "$hooks_dir/session-start.sh"
+    assert_file_exists "$hooks_dir/session-save.sh"
 
-    # Verify both have valid shebangs
-    if head -1 "$hooks_dir/orta-teammate-idle.sh" | grep -q '#!/usr/bin/env bash\|#!/bin/bash'; then
-        log_pass "orta-teammate-idle.sh has valid shebang"
+    # Verify eliminated hooks are gone
+    if [[ ! -f "$hooks_dir/orta-teammate-idle.sh" ]]; then
+        log_pass "orta-teammate-idle.sh correctly removed (v11.2)"
     else
-        log_fail "orta-teammate-idle.sh missing valid shebang"
+        log_fail "orta-teammate-idle.sh should have been removed in v11.2"
     fi
 
-    if head -1 "$hooks_dir/orta-task-gate.sh" | grep -q '#!/usr/bin/env bash\|#!/bin/bash'; then
-        log_pass "orta-task-gate.sh has valid shebang"
+    if [[ ! -f "$hooks_dir/orta-task-gate.sh" ]]; then
+        log_pass "orta-task-gate.sh correctly removed (v11.2)"
     else
-        log_fail "orta-task-gate.sh missing valid shebang"
+        log_fail "orta-task-gate.sh should have been removed in v11.2"
     fi
 }
 
@@ -989,11 +991,13 @@ test_seven_team_templates() {
         "temporal-io-app template has team composition section"
 }
 
-test_hooks_point_to_infra_directory() {
-    log_test "settings.json hooks point to infra/ directory (v9.3)"
+test_hooks_point_to_correct_directory() {
+    log_test "settings.json hooks point to ~/.claude/hooks/ directory (v11.2)"
     local settings="$REPO_ROOT/BatutaClaude/settings.json"
 
-    assert_file_contains "$settings" "infra/hooks/" "hooks reference infra/ directory"
+    # v11.2: hooks reference ~/.claude/hooks/ (installed location), not infra/hooks/ (source)
+    assert_file_contains "$settings" "hooks/session-start.sh" "hooks reference session-start"
+    assert_file_contains "$settings" "hooks/session-save.sh" "hooks reference session-save"
     assert_file_not_contains "$settings" "skills/hooks/" "no legacy skills/hooks/ references"
 }
 
@@ -1213,6 +1217,46 @@ test_do_all_calls_sync_output_styles() {
 }
 
 # ============================================================================
+# Project-Scoped Skill Provisioning Tests (v11.3)
+# ============================================================================
+
+test_skill_provisions_yaml_exists() {
+    log_test "skill-provisions.yaml exists in sdd-init assets"
+    local provisions_file="$REPO_ROOT/BatutaClaude/skills/sdd-init/assets/skill-provisions.yaml"
+    if [[ -f "$provisions_file" ]]; then
+        log_pass "File exists: skill-provisions.yaml"
+    else
+        log_fail "Expected $provisions_file to exist"
+    fi
+}
+
+test_skill_provisions_has_always_and_sdd() {
+    log_test "skill-provisions.yaml defines always and sdd categories"
+    local provisions_file="$REPO_ROOT/BatutaClaude/skills/sdd-init/assets/skill-provisions.yaml"
+    if [[ -f "$provisions_file" ]]; then
+        local has_always=$(grep -c "^always:" "$provisions_file" 2>/dev/null || echo "0")
+        local has_sdd=$(grep -c "^sdd:" "$provisions_file" 2>/dev/null || echo "0")
+        if [[ "$has_always" -ge 1 && "$has_sdd" -ge 1 ]]; then
+            log_pass "Both always: and sdd: sections present"
+        else
+            log_fail "Missing always: ($has_always) or sdd: ($has_sdd) sections"
+        fi
+    else
+        log_skip "provisions file not found"
+    fi
+}
+
+test_session_start_has_provisions_detection() {
+    log_test "session-start.sh has .provisions.json 3-way detection"
+    local hook_file="$REPO_ROOT/infra/hooks/session-start.sh"
+    if grep -q ".provisions.json" "$hook_file" 2>/dev/null; then
+        log_pass "session-start.sh has .provisions.json detection logic"
+    else
+        log_fail "session-start.sh missing .provisions.json detection logic"
+    fi
+}
+
+# ============================================================================
 # Run All Tests
 # ============================================================================
 
@@ -1293,7 +1337,7 @@ test_commands_mention_hooks
 test_all_skills_have_purpose_section
 test_new_skills_have_valid_frontmatter
 test_seven_team_templates
-test_hooks_point_to_infra_directory
+test_hooks_point_to_correct_directory
 test_no_guides_reference_old_skills_path
 test_sdd_apply_has_documentation_standard
 test_claude_md_has_doc_standard_rule
@@ -1312,6 +1356,11 @@ test_output_styles_source_exists
 test_do_all_does_not_call_generate_claude
 test_do_all_does_not_call_sync_antigravity
 test_do_all_calls_sync_output_styles
+
+# --- v11.3 tests: Project-Scoped Skill Provisioning ---
+test_skill_provisions_yaml_exists
+test_skill_provisions_has_always_and_sdd
+test_session_start_has_provisions_detection
 
 # ============================================================================
 # Summary

@@ -64,10 +64,23 @@ discover_skills() {
     declare -A scope_skills scope_counts seen_skills
     local total=0
 
-    # Project-local skills first (higher priority), then global
+    # 3-way skill resolution: provisioned > manual > global-only
     local search_dirs=()
-    [[ -d "$CWD/.claude/skills" ]] && search_dirs+=("$CWD/.claude/skills")
-    [[ -d "$HOME/.claude/skills" ]] && search_dirs+=("$HOME/.claude/skills")
+    if [[ -f "$CWD/.claude/skills/.provisions.json" ]]; then
+        # PROVISIONED: Project was provisioned by sdd-init Step 3.8.
+        # Use ONLY project-scoped skills — global already filtered during provisioning.
+        # WHY: Provisioning deliberately selected relevant skills. Scanning global
+        # would re-add the noise that provisioning removed.
+        search_dirs+=("$CWD/.claude/skills")
+    elif [[ -d "$CWD/.claude/skills" ]]; then
+        # MANUAL: Project has .claude/skills/ but no provisions manifest.
+        # Scan both local and global (backward compatible with pre-v11.3 behavior).
+        search_dirs+=("$CWD/.claude/skills")
+        [[ -d "$HOME/.claude/skills" ]] && search_dirs+=("$HOME/.claude/skills")
+    else
+        # NO LOCAL: No project skills. Use global library (backward compatible).
+        [[ -d "$HOME/.claude/skills" ]] && search_dirs+=("$HOME/.claude/skills")
+    fi
 
     [[ ${#search_dirs[@]} -eq 0 ]] && return
 
@@ -158,9 +171,16 @@ fi
 # Check freshness (warn if >7 days since last session update)
 FRESHNESS_WARNING=""
 if [[ -n "$SESSION_CONTENT" ]]; then
-    LAST_UPDATE=$(grep -oP 'Last updated.*?: \K\d{4}-\d{2}-\d{2}' "$BATUTA_DIR/session.md" 2>/dev/null || true)
+    # Extract ISO date from session.md (supports "date: YYYY-MM-DD" in frontmatter)
+    LAST_UPDATE=$(grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' "$BATUTA_DIR/session.md" 2>/dev/null | head -1 || true)
     if [[ -n "$LAST_UPDATE" ]]; then
-        LAST_EPOCH=$(date -d "$LAST_UPDATE" +%s 2>/dev/null || echo "0")
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            # macOS (BSD date)
+            LAST_EPOCH=$(date -j -f "%Y-%m-%d" "$LAST_UPDATE" "+%s" 2>/dev/null || echo "0")
+        else
+            # Linux (GNU date)
+            LAST_EPOCH=$(date -d "$LAST_UPDATE" +%s 2>/dev/null || echo "0")
+        fi
         NOW_EPOCH=$(date +%s)
         if [[ "$LAST_EPOCH" -gt 0 ]]; then
             DAYS_AGO=$(( (NOW_EPOCH - LAST_EPOCH) / 86400 ))
@@ -184,8 +204,11 @@ if [[ -n "$BATUTA_DIR" && -f "$BATUTA_DIR/ecosystem.json" ]]; then
         python)  LOCAL_VERSION=$(python -c "import json; d=json.load(open('$BATUTA_DIR/ecosystem.json')); print(d.get('batuta_version',''))" 2>/dev/null) ;;
     esac
 
-    # WHY: Check batuta-dots VERSION file if accessible (user may have it cloned)
-    BATUTA_DOTS_LOCATIONS=("$HOME/batuta-dots" "/tmp/batuta-dots")
+    # WHY: Check batuta-dots VERSION file — resolve relative to script location first,
+    # then fall back to well-known paths (user may have it cloned elsewhere)
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+    BATUTA_DOTS_LOCATIONS=("$REPO_ROOT/BatutaClaude" "$HOME/.claude" "$HOME/batuta-dots" "/tmp/batuta-dots")
     for bd_path in "${BATUTA_DOTS_LOCATIONS[@]}"; do
         if [[ -f "$bd_path/VERSION" ]]; then
             HUB_VERSION=$(<"$bd_path/VERSION")

@@ -20,7 +20,6 @@ Inspirado en [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman
 - **Scope agents** — 3 agentes con skills auto-descubiertos por campo `description`.
 - **Execution Gate** — pre-validacion obligatoria antes de cualquier cambio de codigo.
 - **Hooks nativos** — SessionStart, Stop.
-- **Skill-Sync** — inventario de assets auto-generado desde frontmatters de skills via sync.sh.
 - **Framework O.R.T.A.** (Observabilidad, Repetibilidad, Trazabilidad, Auto-supervision).
 - **Agent Teams** — orquestacion de multiples sesiones Claude en paralelo para tareas complejas.
 - **Contract-First Protocol** — contratos pre-spawn definen input/output/file-ownership por teammate.
@@ -124,7 +123,7 @@ batuta-dots/
 │       ├── sdd-archive/SKILL.md
 │       ├── team-orchestrator/SKILL.md # Orquestacion Agent Teams (cuando escalar)
 │       └── security-audit/SKILL.md   # Seguridad AI-first (OWASP + amenazas + escaneo de secretos)
-├── BatutaAntigravity/                 # Configuracion Antigravity IDE (Lite)
+├── BatutaAntigravity/                 # Antigravity Lite (brainstorming y prototipado)
 │   ├── GEMINI.md                      # Cerebro CTO completo adaptado para Antigravity
 │   ├── setup-antigravity.sh           # Script de setup (--global / --workspace / --all)
 │   ├── settings-template.json         # Config recomendada para Antigravity
@@ -206,20 +205,21 @@ CLAUDE.md (personalidad + reglas — ~220 lineas)
     └──> Agent Team (Nivel 3) ──> spawn desde scope agents
 ```
 
-### Multi-Plataforma: Claude Code + Antigravity
+### Multi-Plataforma: Claude Code + Antigravity Lite
 
-Batuta soporta ejecucion en paralelo — Claude Code (Full) para proyectos complejos y Google Antigravity IDE (Lite) para tareas rapidas:
+Batuta soporta dos plataformas con roles distintos — Claude Code para produccion seria (pipeline SDD completo) y Antigravity Lite como companion de brainstorming y prototipado rapido:
 
-| Aspecto | Claude Code (Full) | Antigravity (Lite) |
+| Aspecto | Claude Code (Full) | Antigravity Lite |
 |---------|-------------------|-------------------|
+| Rol | Produccion — pipeline SDD completo, arquitectura, features complejas | Exploracion — brainstorming, prototipado rapido, scripts, docs |
 | Cerebro | CTO completo via CLAUDE.md | CTO completo via GEMINI.md |
 | Comandos | Slash commands (nativos) | Workflows (prompts guardados) |
-| Hooks | Nativos (SessionStart, Stop) | Reglas de comportamiento |
+| Hooks | Nativos (SessionStart, Stop) | Sin hooks — solo reglas de comportamiento |
 | Skills | `~/.claude/skills/` | `.agent/skills/` o `~/.gemini/antigravity/skills/` |
 | Multi-agente | Agent Teams | Manager View |
 | Costo | Claude Max x20 ($200/mes) | Gratis (preview) |
 
-Los skills son agnósticos de plataforma (estándar abierto SKILL.md). El campo `platforms` en el frontmatter controla que plataformas reciben cada skill durante el sync. Ver [Guia de Antigravity](docs/guides/guia-batuta-antigravity.md).
+Los skills son agnosticos de plataforma (estandar abierto SKILL.md). El campo `platforms` en el frontmatter controla que plataformas reciben cada skill durante el sync. Ver [Guia de Antigravity Lite](docs/guides/guia-batuta-antigravity.md).
 
 ```bash
 # Setup Antigravity en un proyecto
@@ -302,10 +302,6 @@ Batuta usa hooks nativos de Claude Code para enforcement determinístico:
 | SessionStart | command | Inyecta `.batuta/session.md` como contexto automaticamente |
 | Stop | prompt + command | Actualiza session.md + logea fin de sesion |
 
-### Skill-Sync
-
-El inventario de skills se gestiona desde los frontmatters de SKILL.md. Agregar un skill = crear SKILL.md con frontmatter → ejecutar sync.sh → inventario validado automaticamente.
-
 ### Deteccion de Skills Faltantes
 
 Antes de escribir codigo con una tecnologia, Claude verifica si existe un skill activo en `~/.claude/skills/` (global) o `.claude/skills/` (local del proyecto). Si no existe en ninguna ubicacion, se detiene y ofrece investigar via Context7 y crear el skill antes de continuar.
@@ -339,6 +335,10 @@ Los Agent Teams crean sesiones reales de Claude Code que trabajan en paralelo co
 ### Auto-actualizacion del Ecosistema
 
 Cuando se crean skills nuevos en un proyecto, Claude propone propagarlos de vuelta a batuta-dots para que otros proyectos se beneficien.
+
+### Provisioning de Skills por Proyecto (v11.3)
+
+Durante `/sdd-init`, solo los skills relevantes se copian de la libreria global al proyecto. El agente solo ve lo que necesita, manteniendo el contexto limpio mientras el ecosistema crece a 100+ skills.
 
 ---
 

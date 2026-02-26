@@ -745,13 +745,13 @@ Ajusta el system prompt para que:
 
 ## Mejorar tus instrucciones
 
-Despues de 10+ interacciones con Claude:
+Despues de 10+ interacciones con Claude, pidele feedback directo:
 
 ```
-/batuta-analyze-prompts
+Como ha ido la comunicacion en este proyecto? Que tipo de errores has cometido y como puedo mejorar mis instrucciones?
 ```
 
-Claude revisa la bitacora de calidad y te dice que tipo de errores comete y como mejorar tus instrucciones.
+Claude revisa el contexto del proyecto y te dice que tipo de errores comete y como mejorar tus instrucciones.
 
 ## Estructura esperada del proyecto
 

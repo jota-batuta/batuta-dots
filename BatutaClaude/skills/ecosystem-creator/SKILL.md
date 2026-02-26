@@ -396,6 +396,7 @@ After creating ANY component, you MUST register it. This is the most commonly fo
 - [ ] For **global** or **batuta-repo** skills: Claude Code discovers skills by their `description` field — no manual routing table updates needed
 - [ ] If the skill was in the planned roadmap (CLAUDE.md "Planned project skills"), update status
 - [ ] If the skill has assets/, verify templates are present
+- [ ] If tech-specific: add detection rule to `sdd-init/assets/skill-provisions.yaml` for auto-provisioning
 
 ### Agent Registration Checklist
 
@@ -529,7 +530,35 @@ Skill Gap Detected: "{technology}" has no active skill
       Destination: Based on SCOPE DECISION — project-local (.claude/skills/), global (~/.claude/skills/), or batuta-repo (BatutaClaude/skills/)
       Ensure: SKILL.md has scope, auto_invoke, allowed-tools in frontmatter
       Verify: Skill description enables auto-discovery by Claude Code
+
+└─ 6.5. UPDATE PROVISIONING MAP — If tech-specific, register for auto-provisioning
+        If the newly created skill targets a specific technology:
+        ├── Check if sdd-init/assets/skill-provisions.yaml exists
+        │   (in hub BatutaClaude/skills/sdd-init/assets/ or ~/.claude/skills/sdd-init/assets/)
+        ├── If YES, add a new entry under tech_rules:
+        │     - detect:
+        │         content_pattern: "{technology_package_name}"
+        │       skills: [{new-skill-name}]
+        ├── This ensures future projects auto-provision the skill during /sdd-init
+        └── SKIP if: skill is generic (not tied to a specific technology),
+            or skill-provisions.yaml is not accessible
 ```
+
+### Step 6.5: Update Provisioning Map (if tech-specific)
+
+If the newly created skill targets a specific technology (e.g., `redis-cache` targets Redis, `stripe-payments` targets Stripe):
+
+1. Check if `sdd-init/assets/skill-provisions.yaml` exists (in hub or `~/.claude/skills/sdd-init/assets/`)
+2. If YES, add a new entry under `tech_rules`:
+   ```yaml
+   - detect:
+       content_pattern: "{technology_package_name}"
+       # Add file signals if applicable
+     skills: [{new-skill-name}]
+   ```
+3. This ensures future projects using that technology will auto-provision the skill during `/sdd-init`
+
+**Skip if**: The skill is generic (not tied to a specific technology), or `skill-provisions.yaml` is not accessible.
 
 ### Auto-Discovery Scope Options
 

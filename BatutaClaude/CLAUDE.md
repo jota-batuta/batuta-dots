@@ -90,6 +90,15 @@ Full orchestration rules: see the `team-orchestrator` skill.
 During `sdd-explore`, identify ALL technologies without a matching skill in `~/.claude/skills/`. If HIGH gaps exist, the explore phase is **NOT complete** until the user decides how to handle each gap: create skill, defer with justification, or continue without. This is a blocking gate — do not advance to `sdd-propose`.
 Full protocol: see `infra-agent`. Explore enforcement: see `sdd-explore` Step 2.5.
 
+### Project Skill Provisioning (auto-scope)
+During `sdd-init`, skills and MCPs are auto-provisioned based on detected technologies.
+Only relevant skills are copied from `~/.claude/skills/` to `.claude/skills/` (project-local).
+A `.provisions.json` manifest records what was provisioned and why.
+This keeps the agent's context focused — `session-start.sh` scans only project-local skills
+when a manifest exists. To add skills later, `sdd-explore` Skill Gap Detection can copy
+additional skills from the global library.
+Full provisioning map: see `sdd-init` Step 3.8 and `assets/skill-provisions.yaml`.
+
 ### MCP Discovery (active search — not just inventory)
 During `sdd-explore`, actively SEARCH for MCP servers that would benefit the
 project — both configured locally and available on the web. Map technologies

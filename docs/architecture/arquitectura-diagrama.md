@@ -1,4 +1,4 @@
-# Diagrama de Arquitectura — Ecosistema Batuta (v11.1)
+# Diagrama de Arquitectura — Ecosistema Batuta (v11.3)
 
 ## Vista General del Ecosistema
 
@@ -51,7 +51,7 @@ flowchart TB
 
 ---
 
-## Scope Agents: Routing del Agente Principal (v11.1)
+## Scope Agents: Routing del Agente Principal (v11.3)
 
 ```mermaid
 flowchart TD
@@ -100,7 +100,7 @@ flowchart TD
 
 ---
 
-## Skill-Sync: Inventario Automatico
+## Skill Inventory: Sync Automatico
 
 ```mermaid
 flowchart LR
@@ -123,6 +123,21 @@ flowchart LR
 ```
 
 > Agregar un skill nuevo = crear SKILL.md con frontmatter → correr sync.sh → inventario validado automaticamente.
+
+---
+
+### Flujo de Provisioning de Skills (v11.3)
+
+```
+sdd-init → lee skill-provisions.yaml → detecta tech stack → copia skills relevantes a .claude/skills/
+```
+
+session-start.sh usa logica 3-way:
+- `.provisions.json` existe → SOLO skills locales (proyecto provisionado)
+- `.claude/skills/` sin manifest → locales + globales (backward compatible)
+- Sin skills locales → solo globales (backward compatible)
+
+> El provisioning permite que cada proyecto reciba exactamente los skills que necesita segun su tech stack, sin contaminar con skills irrelevantes. La logica 3-way garantiza compatibilidad hacia atras con proyectos existentes.
 
 ---
 
@@ -409,7 +424,7 @@ flowchart TD
 
 ---
 
-## Ciclo de Vida de un Agent Team (v11.1)
+## Ciclo de Vida de un Agent Team (v11.3)
 
 ```mermaid
 flowchart LR
@@ -437,7 +452,7 @@ flowchart LR
 
 ---
 
-## O.R.T.A. con Agent Teams (v11.1)
+## O.R.T.A. con Agent Teams (v11.3)
 
 ```mermaid
 flowchart TD
@@ -612,7 +627,7 @@ flowchart TD
 
 ---
 
-## Native Hooks: Deterministic Enforcement (v11.1)
+## Native Hooks: Deterministic Enforcement (v11.3)
 
 ```mermaid
 flowchart TD
@@ -789,7 +804,7 @@ flowchart TD
 
 ---
 
-## Hub & Spoke: Sync Multi-Plataforma (v11.0)
+## Hub & Spoke: Sync Multi-Plataforma (v11.3)
 
 ```mermaid
 flowchart TD
@@ -805,7 +820,7 @@ flowchart TD
         PC_ECO[".batuta/ecosystem.json"]
     end
 
-    subgraph SPOKE_ANTIGRAVITY["Proyecto B (Antigravity)"]
+    subgraph SPOKE_ANTIGRAVITY["Proyecto B (Antigravity Lite)"]
         PA_SKILLS[".agent/skills/"]
         PA_ECO[".batuta/ecosystem.json"]
     end
@@ -830,13 +845,13 @@ flowchart TD
 
 ---
 
-## Folder Structure (v11.1)
+## Folder Structure (v11.3)
 
 ```mermaid
 flowchart TD
     subgraph ROOT["batuta-dots/"]
         CLAUDE_DIR["BatutaClaude/<br/>CLAUDE.md, settings.json,<br/>agents/, skills/, commands/"]
-        ANTIGRAVITY_DIR["BatutaAntigravity/<br/>GEMINI.md, workflows/,<br/>setup-antigravity.sh"]
+        ANTIGRAVITY_DIR["BatutaAntigravity/ (Lite)<br/>GEMINI.md, workflows/,<br/>setup-antigravity.sh"]
         INFRA_DIR["infra/<br/>setup.sh, sync.sh, hooks/"]
         DOCS["docs/<br/>architecture/, guides/, qa/"]
         TEAMS["teams/<br/>templates/, playbook.md"]
@@ -851,7 +866,7 @@ flowchart TD
         SKILLS_22["skills/ (22 skills)<br/>sdd-*, ecosystem, scope-rule,<br/>team-orchestrator, security-audit,<br/>+ 6 CTO specialists<br/>+ 3 technology skills"]
     end
 
-    subgraph ANTIGRAVITY_DETAIL["BatutaAntigravity/"]
+    subgraph ANTIGRAVITY_DETAIL["BatutaAntigravity/ (Lite)"]
         GEMINI_MD["GEMINI.md (CTO brain)"]
         WORKFLOWS["workflows/ (11)<br/>SDD + save-session +<br/>push-skill + batuta-update"]
         SETUP_AG["setup-antigravity.sh"]

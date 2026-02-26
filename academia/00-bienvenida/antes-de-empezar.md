@@ -131,6 +131,8 @@ Stack: ...
 Location: openspec/
 ```
 
+> Batuta automaticamente detecta tu stack y provee solo los skills necesarios (v11.3).
+
 ---
 
 ## Estructura despues de instalar
