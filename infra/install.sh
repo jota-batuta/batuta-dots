@@ -143,7 +143,7 @@ select_platform() {
     echo "Which platform do you want to install?"
     echo ""
     printf "  ${CYAN}1)${NC} BatutaClaude  — Claude Code (skills, agents, commands, hooks)\n"
-    printf "  ${CYAN}2)${NC} BatutaAntigravity — Gemini CLI (skills, workflows)\n"
+    printf "  ${CYAN}2)${NC} BatutaAntigravity — Antigravity IDE (skills, workflows)\n"
     printf "  ${CYAN}3)${NC} Both platforms\n"
     printf "  ${CYAN}0)${NC} Cancel\n"
     echo ""
@@ -178,14 +178,16 @@ install_claude() {
 }
 
 # ============================================================================
-# Install Antigravity (Gemini CLI)
+# Install Antigravity
 # ============================================================================
 
 install_antigravity() {
-    log_header "Installing BatutaAntigravity (Gemini CLI)"
+    log_header "Installing BatutaAntigravity (Antigravity IDE)"
 
-    # Global + workspace install
-    bash "$REPO_DIR/BatutaAntigravity/setup-antigravity.sh" --all
+    # WHY --update with CALLER_DIR: setup-antigravity.sh needs to know where
+    # the user's project is (for workspace skills, GEMINI.md, .batuta/).
+    # Without this, it would use its own cwd (which may be a temp clone).
+    bash "$REPO_DIR/BatutaAntigravity/setup-antigravity.sh" --update "$CALLER_DIR"
 }
 
 # ============================================================================
@@ -209,14 +211,15 @@ Usage (public repo):
 
 Options:
   --claude        Install BatutaClaude (Claude Code) only
-  --antigravity   Install BatutaAntigravity (Gemini CLI) only
+  --antigravity   Install BatutaAntigravity (Antigravity IDE) only
   --both          Install both platforms
   --help, -h      Show this help message
 
 What gets installed:
   Claude Code     → ~/.claude/ (skills, agents, commands, hooks, output-styles, settings.json)
                   → Current directory gets CLAUDE.md + .batuta/
-  Antigravity     → ~/.gemini/antigravity/ (skills, workflows, GEMINI.md)
+  Antigravity     → ~/.gemini/GEMINI.md + ~/.gemini/antigravity/skills/
+                  → Current directory gets GEMINI.md + .agent/skills/ + .batuta/
 
 After installation:
   Open Claude Code in your project and run /sdd-init to get started.

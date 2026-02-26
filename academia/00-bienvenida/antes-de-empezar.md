@@ -98,7 +98,7 @@ Si ya sabes que plataforma quieres:
 # Solo Claude Code
 git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-install && bash /tmp/batuta-install/infra/install.sh --claude && rm -rf /tmp/batuta-install
 
-# Solo Antigravity (Gemini CLI)
+# Solo Antigravity
 git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-install && bash /tmp/batuta-install/infra/install.sh --antigravity && rm -rf /tmp/batuta-install
 ```
 
