@@ -4,6 +4,68 @@
 
 ---
 
+## v11.0 — SDD Pipeline Hardening + Superpowers Adoption (2026-02-26)
+
+### Contexto
+
+Full audit of the SDD pipeline revealed 16 gaps (GAP-01→16). Simultaneously, analysis of the Superpowers framework (58k+ stars) identified 4 patterns worth adopting. This release hardens the pipeline, adds deterministic enforcement, and standardizes skill conventions.
+
+### GAP Fixes (16)
+
+- GAP-01: Skill Gap Detection as HARD GATE (blocking, not advisory)
+- GAP-02: Execution Gate deterministic via hook (not cognitive)
+- GAP-03: Auto-advance between gateless phases
+- GAP-04: Forward-only SDD transitions with explicit backtrack
+- GAP-05: Phase routing tables in pipeline-agent
+- GAP-06: Artifact loading by convention
+- GAP-07: Pipeline-agent DELEGATE-ONLY rule
+- GAP-08: session.md injection via SessionStart hook
+- GAP-09: Auto-routing rules in CLAUDE.md
+- GAP-10: Cost-benefit analysis mandatory in proposals
+- GAP-11: Discovery Completeness 5-question checklist
+- GAP-12: Documentation tasks mandatory in task breakdown
+- GAP-13: Amendment History in proposals
+- GAP-14: archive_ready flag in verify reports
+- GAP-15: ecosystem improvement triggers in archive
+- GAP-16: MCP Discovery Awareness (local + web search)
+
+### Superpowers Adoptions (4 of 5)
+
+- Batuta Bootstrap ("The Rule") — SessionStart prompt hook that enforces skill usage with red-flag rationalizations
+- 2-Stage Review (Pattern E) — spec + quality review loop per task for Level 2+ complexity
+- RED-GREEN-REFACTOR for skills — empirical skill validation before registration in ecosystem-creator
+- Description = Trigger Only — all 24 SKILL.md descriptions rewritten as "Use when..." (Superpowers convention)
+- Token Efficiency (A5) — DEFERRED to separate PR
+
+### Archivos modificados
+
+- `BatutaClaude/settings.json`: +Bootstrap prompt hook in SessionStart
+- `BatutaClaude/CLAUDE.md`: +THE RULE philosophy, +MCP Discovery summary, +G0.25 reference
+- `BatutaClaude/agents/pipeline-agent.md`: +Phase routing, +G0.25, +MCP Awareness, +GAP fixes
+- `BatutaClaude/skills/*/SKILL.md` (24 archivos): description rewrite + various GAP fixes
+- `BatutaClaude/skills/ecosystem-creator/SKILL.md`: +Step 5.5 RED-GREEN-REFACTOR, +MCP Validation, +description convention
+- `BatutaClaude/skills/team-orchestrator/SKILL.md`: +Pattern E (Superpowers-Style Review)
+- `BatutaClaude/skills/sdd-explore/SKILL.md`: +G0.25, +Discovery Completeness, +MCP Discovery, +Skill Gap hard gate
+- `BatutaClaude/skills/sdd-propose/SKILL.md`: +Cost-benefit mandatory, +Amendment History
+- `BatutaClaude/skills/sdd-tasks/SKILL.md`: +Documentation tasks mandatory
+- `BatutaClaude/skills/sdd-verify/SKILL.md`: +archive_ready flag
+- `BatutaClaude/skills/sdd-archive/SKILL.md`: +ecosystem improvement triggers
+- `BatutaClaude/skills/sdd-apply/SKILL.md`: +MCP Documentation Check
+
+~26 files in Superpowers commit + 15 files in GAP commits = ~41 files total.
+
+### Principio de diseno
+
+- **THE RULE**: If a skill applies, use it. If an MCP applies, consult it. No exceptions. Enforced deterministically via SessionStart hook, not cognitively via instructions.
+- **TRIGGER-ONLY DESCRIPTIONS**: Skill frontmatter description = activation conditions only. Workflow summaries go in ## Purpose. Prevents Claude from using description as shortcut.
+- **VALIDATE BEFORE SHIP**: RED-GREEN-REFACTOR for skills ensures they actually improve agent behavior before registration.
+
+### Rollback
+
+git revert the 4 commits in this branch (5dcc765, cab75fd, 65823e6, 27bf32c).
+
+---
+
 ## v10.2 — Multi-Platform Support: BatutaAntigravity + Bidirectional Sync (2026-02-24)
 
 ### Contexto

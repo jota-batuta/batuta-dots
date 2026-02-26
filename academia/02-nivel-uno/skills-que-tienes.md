@@ -8,6 +8,10 @@ Batuta Dots tiene 24 skills — especialistas que se activan cuando los necesita
 
 Un archivo (`SKILL.md`) que le dice a Claude: que sabe hacer, cuando activarse, como hacerlo, y que herramientas usa. Como un manual de procedimientos para un empleado muy competente.
 
+### Convencion de activacion (v11.0)
+
+Cada skill tiene un campo `description` en su archivo que empieza con "Use when..." — esto le dice a Claude **cuando** activar el skill, no **que** hace. Es como un cartel en la puerta: "Entrar cuando llueva" vs "Este es el departamento de paraguas". Las tablas de abajo describen que hace cada skill en lenguaje simple.
+
 ---
 
 ## Skills por categoria

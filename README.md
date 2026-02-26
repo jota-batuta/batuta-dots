@@ -26,6 +26,10 @@ Inspired by [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.
 - **AI-First Security** — dedicated security-audit skill integrated in design and verify phases.
 - **Team Templates + Playbook** — pre-built team compositions per stack (Next.js, FastAPI, n8n, AI agent, data pipeline, refactoring).
 - **CTO Strategy Layer** — 3 strategic gates (G0.5, G1, G2) + 6 specialist skills (process-analyst, compliance, data-pipeline, LLM-pipeline, worker-scaffold, recursion-designer) integrated into the SDD pipeline.
+- **Batuta Bootstrap** — "The Rule" enforcement via SessionStart hook: if a skill applies, you MUST use it.
+- **MCP Discovery** — active web search for beneficial MCP servers during explore phase.
+- **Superpowers-Style Review** — 2-stage review loop (spec + quality) for complex tasks.
+- **Trigger-Only Descriptions** — all 24 skill descriptions follow "Use when..." convention for reliable activation.
 
 ---
 

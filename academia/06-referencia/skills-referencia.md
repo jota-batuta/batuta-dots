@@ -1,6 +1,6 @@
 # Skills — Referencia tecnica
 
-Ficha tecnica de cada uno de los 24 skills del ecosistema Batuta Dots v10.0.
+Ficha tecnica de cada uno de los 24 skills del ecosistema Batuta Dots v11.0.
 
 ---
 
@@ -16,13 +16,13 @@ Ficha tecnica de cada uno de los 24 skills del ecosistema Batuta Dots v10.0.
 - **Scope**: pipeline
 - **Auto-invoke**: Si (al explorar)
 - **Tools**: Read, Glob, Grep, WebFetch, WebSearch
-- **Que hace**: Investiga codebase, compara opciones, detecta skill gaps, evalua Discovery Completeness (5 preguntas), detecta complejidad de proceso
+- **Que hace**: Investiga codebase, compara opciones, detecta skill gaps, evalua Discovery Completeness (5 preguntas), detecta complejidad de proceso. Incluye MCP Discovery (local + web) y G0.25 (skill gaps como gate bloqueante)
 
 ### sdd-propose
 - **Scope**: pipeline
 - **Auto-invoke**: Si (al proponer)
 - **Tools**: Read, Edit, Write, Glob, Grep
-- **Que hace**: Crea propuesta formal con scope, cost-benefit analysis (obligatorio), y Client Communication (lenguaje no-tecnico obligatorio)
+- **Que hace**: Crea propuesta formal con scope, cost-benefit analysis (obligatorio), y Client Communication (lenguaje no-tecnico obligatorio). Cost-benefit analysis obligatorio, Amendment History para seguimiento de cambios
 
 ### sdd-spec
 - **Scope**: pipeline
@@ -40,25 +40,25 @@ Ficha tecnica de cada uno de los 24 skills del ecosistema Batuta Dots v10.0.
 - **Scope**: pipeline
 - **Auto-invoke**: Si
 - **Tools**: Read, Edit, Write, Glob, Grep
-- **Que hace**: Divide trabajo en tareas con dependencias, fases, y estimaciones
+- **Que hace**: Divide trabajo en tareas con dependencias, fases, y estimaciones. Fase de documentacion obligatoria en task breakdown
 
 ### sdd-apply
 - **Scope**: pipeline + infra
 - **Auto-invoke**: Si (al implementar)
 - **Tools**: Read, Edit, Write, Glob, Grep, Bash
-- **Que hace**: Implementa codigo con Execution Gate, Scope Rule, documentacion obligatoria (docstrings + WHY comments), evaluacion de complejidad de equipo
+- **Que hace**: Implementa codigo con Execution Gate, Scope Rule, documentacion obligatoria (docstrings + WHY comments), evaluacion de complejidad de equipo. MCP Documentation Check antes de implementar
 
 ### sdd-verify
 - **Scope**: pipeline
 - **Auto-invoke**: Si (al verificar)
 - **Tools**: Read, Glob, Grep, Bash
-- **Que hace**: Piramide de Validacion AI (5 capas), testing diferenciado por tipo (pure auto / auto+LLM / agent), verificacion de documentacion
+- **Que hace**: Piramide de Validacion AI (5 capas), testing diferenciado por tipo (pure auto / auto+LLM / agent), verificacion de documentacion. Flag archive_ready para confirmar preparacion para produccion
 
 ### sdd-archive
 - **Scope**: pipeline
 - **Auto-invoke**: Si (al archivar)
 - **Tools**: Read, Edit, Write, Glob, Grep
-- **Que hace**: Sincroniza specs, archiva cambio, Learning Loop (6 preguntas)
+- **Que hace**: Sincroniza specs, archiva cambio, Learning Loop (6 preguntas). Ecosystem improvement triggers: detecta cuando un cambio sugiere mejoras al ecosistema
 
 ---
 
@@ -108,7 +108,7 @@ Ficha tecnica de cada uno de los 24 skills del ecosistema Batuta Dots v10.0.
 - **Scope**: infra
 - **Auto-invoke**: Si (al crear skills/agentes/workflows)
 - **Tools**: Read, Edit, Write, Glob, Grep, Bash, WebFetch, WebSearch, Task
-- **Que hace**: Crea SKILL.md, agent .md, workflow definitions con frontmatter correcto
+- **Que hace**: Crea SKILL.md, agent .md, workflow definitions con frontmatter correcto. Step 5.5: RED-GREEN-REFACTOR para validar skills empiricamente antes de registrarlos
 
 ### scope-rule
 - **Scope**: infra
@@ -126,7 +126,7 @@ Ficha tecnica de cada uno de los 24 skills del ecosistema Batuta Dots v10.0.
 - **Scope**: infra
 - **Auto-invoke**: Si (al evaluar complejidad)
 - **Tools**: Read, Edit, Write, Glob, Grep, Bash, Task
-- **Que hace**: Decision tree (solo/subagente/team), Contract-First Protocol, 4 patrones de composicion, integracion con Execution Gate
+- **Que hace**: Decision tree (solo/subagente/team), Contract-First Protocol, 4 patrones de composicion, integracion con Execution Gate. Pattern E: Superpowers-Style Review (loop spec + calidad por task)
 
 ### security-audit
 - **Scope**: infra

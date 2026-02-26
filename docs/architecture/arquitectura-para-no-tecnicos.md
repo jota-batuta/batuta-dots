@@ -674,6 +674,26 @@ R: Porque un CTO (director tecnico) no escribe codigo el mismo. Coordina al equi
 
 ---
 
+## La Regla y el MCP Discovery (v11.0)
+
+### La Regla — Como un reglamento de seguridad en una fabrica
+
+En una fabrica, hay procedimientos obligatorios: casco, gafas de seguridad, protocolo de emergencia. No importa si eres el mas experimentado — SIEMPRE los sigues. "La Regla" en Batuta es igual: si existe un procedimiento (skill) para lo que estas haciendo, lo sigues. No hay excepciones, no hay atajos.
+
+Antes de v11.0, era como tener carteles de seguridad pegados en la pared — dependias de que la gente los leyera. Ahora es como un torniquete automatico: no entras a la planta sin tu casco.
+
+### MCP Discovery — Como verificar herramientas antes de construir
+
+Antes de empezar a construir una pared, un albanil revisa: "Tengo las herramientas correctas? Hay una mejor que la que tengo?". MCP Discovery hace exactamente eso — antes de escribir codigo, verifica que herramientas (servidores MCP) estan disponibles y cuales convendria instalar.
+
+Es como la diferencia entre un albanil que trabaja con lo que tiene en el bolsillo vs uno que primero revisa la bodega completa de la ferreteria.
+
+### Review en 2 etapas — Como una revision de planos
+
+Un arquitecto diseña los planos, pero antes de construir: un ingeniero estructural verifica que cumple con las normas (revision de spec), y un inspector de calidad verifica que los materiales son correctos (revision de calidad). Solo cuando ambos aprueban, se construye. En Batuta v11.0, las tareas complejas pasan por esta misma doble revision automatica.
+
+---
+
 > **Recuerda**: No necesitas entender como funciona un motor para manejar un carro.
 > Solo necesitas saber los pedales y el volante. Los comandos son tus pedales,
 > las guias son tu manual, y Claude es el motor.

@@ -27,6 +27,10 @@ Inspirado en [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman
 - **Seguridad AI-First** — skill security-audit dedicado, integrado en fases de diseno y verificacion.
 - **Team Templates + Playbook** — composiciones pre-armadas por stack (Next.js, FastAPI, n8n, agente IA, data pipeline, refactoring).
 - **CTO Strategy Layer (v10.0)** — 3 gates + 6 skills especialistas en el pipeline SDD.
+- **Batuta Bootstrap** — "La Regla" via hook SessionStart: si un skill aplica, DEBES usarlo.
+- **MCP Discovery** — busqueda activa de servidores MCP durante la fase explore.
+- **Review Superpowers** — loop de revision en 2 etapas (spec + calidad) para tareas complejas.
+- **Descripciones Trigger-Only** — las 24 descripciones de skills siguen la convencion "Use when..." para activacion confiable.
 
 ---
 

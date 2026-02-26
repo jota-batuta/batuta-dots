@@ -1,6 +1,6 @@
 # Hooks y automatizacion
 
-Batuta Dots tiene 5 **hooks** — automatismos que se ejecutan sin que tu hagas nada. Son como alarmas inteligentes: se activan en el momento correcto para proteger tu trabajo.
+Batuta Dots tiene 5 **hooks** + 1 **bootstrap prompt** — automatismos que se ejecutan sin que tu hagas nada. Son como alarmas inteligentes: se activan en el momento correcto para proteger tu trabajo.
 
 ---
 
@@ -10,7 +10,7 @@ Un hook es codigo que se ejecuta automaticamente cuando algo pasa. No tienes que
 
 ---
 
-## Los 5 hooks
+## Los 5 hooks + 1 bootstrap prompt
 
 ### 1. SessionStart — Al iniciar sesion
 
@@ -20,6 +20,21 @@ Un hook es codigo que se ejecuta automaticamente cuando algo pasa. No tienes que
 **Ejemplo**: Ayer estabas en la fase "design" del cambio "conciliacion-bancaria". Hoy abres Claude y automaticamente sabe donde quedaste.
 
 **Sin este hook**: Tendrias que explicarle a Claude todo de nuevo cada vez.
+
+### 1b. Batuta Bootstrap — La Regla (v11.0)
+
+**Cuando**: Inmediatamente despues del SessionStart, en la misma carga inicial.
+**Que hace**: Establece "La Regla" — si un skill aplica a tu tarea, DEBES usarlo. Sin excepciones.
+
+**Que contiene**:
+- Lista completa de los 24 skills organizados por categoria
+- 4 "racionalizaciones bandera roja" que Claude debe detectar y rechazar:
+  1. "Esto es algo simple" — Las tareas simples necesitan convenciones de equipo
+  2. "Ya se como hacer esto" — Los skills codifican la forma del EQUIPO, no solo conocimiento
+  3. "Necesito contexto primero" — La carga del skill PRECEDE la recopilacion de contexto
+  4. "El skill es overkill" — El skill define calidad minima
+
+**Sin este bootstrap**: Claude "se olvida" de usar skills (~30% de las veces segun GAP-02/08/09). Con el bootstrap: enforcement deterministico.
 
 ### 2. PreToolUse (Execution Gate) — Antes de escribir
 
@@ -69,9 +84,12 @@ Los hooks viven en `~/.claude/settings.json`:
     "Stop": [{ "command": "bash infra/hooks/session-save.sh" }],
     "TeammateIdle": [{ "command": "bash infra/hooks/orta-teammate-idle.sh" }],
     "TaskCompleted": [{ "command": "bash infra/hooks/orta-task-gate.sh" }]
-  }
+  },
+  "systemPromptFiles": ["infra/bootstrap/batuta-bootstrap.md"]
 }
 ```
+
+> **Nota v11.0**: El bootstrap prompt no es un hook en el sentido tecnico — es un archivo de system prompt que Claude carga al inicio. Pero funciona en conjunto con el SessionStart hook para establecer el contexto completo.
 
 ### Tipos de hook
 

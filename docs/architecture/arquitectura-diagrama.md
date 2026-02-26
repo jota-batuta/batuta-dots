@@ -1,4 +1,4 @@
-# Diagrama de Arquitectura — Ecosistema Batuta (v10.2)
+# Diagrama de Arquitectura — Ecosistema Batuta (v11.0)
 
 ## Vista General del Ecosistema
 
@@ -62,6 +62,7 @@ flowchart TB
 ```mermaid
 flowchart TD
     USER["Usuario escribe prompt"]
+    BOOTSTRAP["Batuta Bootstrap<br/>La Regla: skill aplica? USALO.<br/>MCP disponible? CONSULTALO."]
     AUTOROUTE["Auto-Routing<br/>Clasifica intent:<br/>Build | Fix | Continue | Backtrack | Question"]
     ROUTER["CLAUDE.md (Router)<br/>~280 lineas: personalidad,<br/>reglas, routing table, auto-routing"]
 
@@ -81,7 +82,7 @@ flowchart TD
     DIRECT["Responde directo<br/>(preguntas simples)"]
     GATE["Execution Gate<br/>LIGHT | FULL"]
 
-    USER --> ROUTER --> AUTOROUTE
+    USER --> BOOTSTRAP --> ROUTER --> AUTOROUTE
     AUTOROUTE -->|"Build/Continue/Backtrack"| PIPELINE
     AUTOROUTE -->|"scope: infra"| INFRA
     AUTOROUTE -->|"scope: observability"| OBS
@@ -95,6 +96,7 @@ flowchart TD
     PROMPT --> RESULT
 
     style ROUTER fill:#D4956A,color:#fff
+    style BOOTSTRAP fill:#D47272,color:#fff
     style AUTOROUTE fill:#E8B84D,color:#000
     style PIPELINE fill:#7AAFC4,color:#fff
     style INFRA fill:#8BB87A,color:#fff
@@ -151,7 +153,8 @@ flowchart LR
     subgraph PIPELINE["SUB-AGENTES SDD (state machine)"]
         direction LR
         INIT["sdd-init<br/>Tipo de<br/>proyecto"]
-        EXPLORE["sdd-explore<br/>Investigar<br/>opciones"]
+        EXPLORE["sdd-explore<br/>(+ MCP Discovery)<br/>Investigar opciones"]
+        G025{{"G0.25<br/>MCP Ready"}}
         PROPOSE["sdd-propose<br/>Propuesta<br/>formal"]
         SPEC["sdd-spec<br/>Especificaciones<br/>tecnicas"]
         DESIGN["sdd-design<br/>Arquitectura<br/>y diseno"]
@@ -162,7 +165,7 @@ flowchart LR
     end
 
     U_DESCRIBE --> ORC
-    ORC --> INIT --> EXPLORE --> PROPOSE
+    ORC --> INIT --> EXPLORE --> G025 --> PROPOSE
     PROPOSE --> SPEC
     PROPOSE --> DESIGN
     SPEC --> TASKS
@@ -182,13 +185,14 @@ flowchart LR
     style USUARIO fill:#2d2d2d,stroke:#E8B84D,color:#F5EDE4
     style ORQUESTADOR fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
     style PIPELINE fill:#1a1a1a,stroke:#8BB87A,color:#F5EDE4
+    style G025 fill:#E8B84D,color:#000
 ```
 
 ### Dependencias entre fases (con backtracks)
 
 ```mermaid
 graph LR
-    P[propose] --> S[spec]
+    E[explore] --> G025{{"G0.25"}} --> P[propose] --> S[spec]
     P --> D[design]
     S --> T[tasks]
     D --> T
@@ -204,6 +208,7 @@ graph LR
 
     style S fill:#7AAFC4,color:#fff
     style D fill:#7AAFC4,color:#fff
+    style G025 fill:#E8B84D,color:#000
 ```
 
 > **spec** y **design** en paralelo. Lineas punteadas = backtracks (retrocesos cuando se descubren problemas). Gates G0.5 (Discovery Complete), G1 (Solution Worth Building) y G2 (Production Ready) son checkpoints estrategicos. Cada backtrack se registra en `backtrack-log.md` para trazabilidad. 6 specialist skills se invocan condicionalmente: process-analyst, recursion-designer, llm-pipeline-design, data-pipeline-design, worker-scaffold, compliance-colombia.
@@ -855,7 +860,7 @@ flowchart TD
 
 ---
 
-## Hub & Spoke: Sync Multi-Plataforma (v10.2)
+## Hub & Spoke: Sync Multi-Plataforma (v11.0)
 
 ```mermaid
 flowchart TD
@@ -896,7 +901,7 @@ flowchart TD
 
 ---
 
-## Folder Structure (v10.2)
+## Folder Structure (v11.0)
 
 ```mermaid
 flowchart TD
