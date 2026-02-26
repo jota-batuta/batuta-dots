@@ -49,7 +49,7 @@ Cada **skill** es una receta especifica. Por ejemplo:
 | `temporal-worker` | Como cocinar platos que llevan muchos pasos y pueden fallar |
 | `nextjs-portal` | Como montar el plato para que se vea bonito (la cara que ve el cliente) |
 
-El chef tiene **24 recetas basicas** que siempre estan disponibles (incluyendo 6 recetas de estrategia CTO agregadas en v10.0), y puede **aprender recetas nuevas** cuando las necesita.
+El chef tiene **22 recetas basicas** que siempre estan disponibles (incluyendo 6 recetas de estrategia CTO), y puede **aprender recetas nuevas** cuando las necesita.
 
 **Detalle importante**: Las recetas NO se leen todas al empezar. El chef solo abre la
 receta que necesita para el plato que esta preparando. Esto se llama "carga bajo demanda"
@@ -64,7 +64,12 @@ cocinar de una. Sigue un proceso de 9 pasos:
 
 ### Los 9 pasos para crear un plato nuevo
 
+Lo mejor: no necesitas memorizar estos pasos. Le dices al chef "quiero un plato de pollo al horno para 20 personas" y el automaticamente sigue el proceso. Tu solo apruebas en los puntos clave.
+
 ```
+Tu dices: "Quiero un plato de pollo al horno para 20 personas"
+      ↓
+   EL CHEF AUTOMATICAMENTE:
 1. INIT        → "Que tipo de plato es?" (entrada, principal, postre)
 2. EXPLORE     → "Que ingredientes tenemos? Que tecnicas podemos usar?"
 3. PROPOSE     → "Esta es mi propuesta de plato. Te parece bien?"
@@ -82,6 +87,18 @@ cocinar de una. Sigue un proceso de 9 pasos:
 9. ARCHIVE     → "Documento la receta para que cualquiera pueda repetirla"
 ```
 
+### Que pasa si descubres un problema a mitad de camino?
+
+En un restaurante real, a veces descubres que falta un ingrediente cuando ya estas cocinando. El chef de Batuta no empieza de cero — **retrocede** a la receta, la corrige, y continua desde ahi.
+
+| El chef esta... | Descubre que... | Entonces... |
+|----------------|-----------------|-------------|
+| Cocinando (APPLY) | Falta un ingrediente en la receta | Vuelve a la receta (SPEC), la corrige, y sigue cocinando |
+| Cocinando (APPLY) | La tecnica no funciona | Vuelve al plan de cocina (DESIGN), lo ajusta, y replanifica |
+| Probando (VERIFY) | El plato no sabe como esperaba | Vuelve a cocinar (APPLY) si es un ajuste, o al plan (DESIGN) si hay que repensar |
+
+Cada retroceso queda anotado en una bitacora para que no se pierda el aprendizaje.
+
 ### Por que tantos pasos?
 
 Porque es MAS RAPIDO planear bien que arreglar errores despues.
@@ -91,17 +108,17 @@ Imagina que empiezas a cocinar sin receta:
 - "Ups, tenia que precalentar el horno hace 30 minutos" → esperar 30 minutos
 - "Ups, la salsa no combina con la carne" → empezar de cero
 
-Con los 9 pasos, todos esos problemas se detectan ANTES de empezar a cocinar.
+Con los 9 pasos, la mayoria de esos problemas se detectan ANTES de empezar a cocinar. Y si aparece uno nuevo durante la coccion, hay un proceso claro para manejarlo sin empezar de cero.
 
 ---
 
-## La Capa CTO (CTO Strategy Layer) — v10.0
+## La Capa CTO (CTO Strategy Layer) — v11.0
 
 Imagina que antes tu restaurante tenia DOS manuales: uno para el equipo de cocina (como preparar los platos) y otro para el director del restaurante (como evaluar si un plato nuevo vale la pena ofrecerlo). El director leia su manual aparte y luego le daba instrucciones verbales al chef.
 
 **El problema**: A veces las instrucciones se perdian en la traduccion.
 
-**La solucion (v10.0)**: Ahora hay UN solo manual que integra ambas perspectivas. El chef no solo sabe COMO cocinar, sino tambien sabe hacer las preguntas estrategicas del director.
+**La solucion (v11.0)**: Ahora hay UN solo manual que integra ambas perspectivas. El chef no solo sabe COMO cocinar, sino tambien sabe hacer las preguntas estrategicas del director.
 
 ### Los 3 puntos de control (Gates)
 
@@ -130,27 +147,27 @@ El chef ahora puede llamar a **consultores** cuando necesita ayuda especializada
 
 ---
 
-## Las Dos Cocinas (Multi-Plataforma) — v10.2
+## Las Dos Cocinas (Multi-Plataforma) — v11.2
 
-Imagina que tu restaurante crece y ahora tienes DOS cocinas:
+Imagina que tu restaurante crece y ahora tienes DOS cocinas con roles distintos:
 
 | Cocina | Que es | Cuando se usa |
 |--------|--------|--------------|
-| **Cocina principal** (Claude Code) | La cocina completa del restaurante, con todo el equipamiento: hornos industriales, alarmas automaticas, equipo completo de chefs, inventario inteligente | Platos elaborados, banquetes, menus nuevos, todo lo que requiere planificacion seria |
-| **Cocina rapida** (Antigravity) | Una cocina satellite con el mismo recetario pero menos equipamiento: sin alarmas automaticas pero con un ayudante que le recuerda al chef los pasos | Sandwiches, ensaladas, pedidos simples, preparaciones rapidas |
+| **Cocina principal** (Claude Code) | La cocina completa del restaurante, con todo el equipamiento: hornos industriales, alarmas automaticas, equipo completo de chefs | Platos elaborados, banquetes, menus nuevos, todo lo que requiere planificacion seria y produccion |
+| **Cocina de ideas** (Antigravity Lite) | Una cocina satellite para experimentar: probar recetas nuevas, hacer bocetos de platos, preparaciones rapidas. Mismo recetario, sin alarmas automaticas | Brainstorming de menus, prototipos de platos, sandwiches, ensaladas, pedidos simples |
 
-**Lo importante**: Ambas cocinas usan las MISMAS recetas (skills). Si un chef inventa una receta nueva en la cocina rapida, se copia al libro maestro y automaticamente esta disponible en la cocina principal. Y viceversa.
+**Lo importante**: Ambas cocinas usan las MISMAS recetas (skills). Si un chef inventa una receta nueva en la cocina de ideas, se copia al libro maestro y automaticamente esta disponible en la cocina principal. Y viceversa.
 
 ```
-Cocina principal (Claude Code)  ←→  Libro maestro (batuta-dots)  ←→  Cocina rapida (Antigravity)
+Cocina principal (Claude Code)  ←→  Libro maestro (batuta-dots)  ←→  Cocina de ideas (Antigravity Lite)
 ```
 
-**Por que dos cocinas?** Porque la cocina principal es mas poderosa pero tiene costo ($200/mes), mientras que la cocina rapida es GRATIS. Usas la principal para lo importante y la rapida para lo mecanico. Ambas trabajan en paralelo — como tener dos turnos trabajando al mismo tiempo.
+**Por que dos cocinas?** Porque la cocina principal es para produccion seria pero tiene costo ($200/mes), mientras que la cocina de ideas es GRATIS y perfecta para explorar y prototipar. Usas la principal para lo que va a produccion y la de ideas para brainstorming y tareas mecanicas. Ambas trabajan en paralelo — como tener dos turnos trabajando al mismo tiempo.
 
 **Diferencias tecnicas simplificadas**:
-- La cocina principal tiene alarmas automaticas (hooks) que le recuerdan al chef hacer el checklist. La cocina rapida tiene un letrero en la pared que dice "No olvides el checklist" (rules).
-- La cocina principal puede armar equipos temporales especiales (Agent Teams). La cocina rapida tiene un coordinador que maneja varios chefs al mismo tiempo (Manager View).
-- Ambas tienen las mismas 22 recetas. Solo 2 recetas son exclusivas de la cocina principal porque necesitan las alarmas automaticas.
+- La cocina principal tiene alarmas automaticas (hooks) que le recuerdan al chef hacer el checklist. La cocina de ideas no tiene alarmas — tiene un letrero en la pared que dice "No olvides el checklist" (rules).
+- La cocina principal puede armar equipos temporales especiales (Agent Teams). La cocina de ideas tiene un coordinador que maneja varios chefs al mismo tiempo (Manager View).
+- Ambas comparten las mismas recetas base. Solo algunas recetas son exclusivas de la cocina principal.
 
 ---
 
@@ -227,13 +244,15 @@ que coordinan grupos de sub-chefs:
 | Jefe de area | Que coordina | Sub-chefs a su cargo |
 |-------------|-------------|----------------------|
 | **Jefe de Cocina** (pipeline) | Todo el proceso de crear platos nuevos | Los 9 sub-chefs del proceso SDD |
-| **Jefe de Almacen** (infra) | Organizacion, inventario, seguridad, recetas | Organizacion de ingredientes (scope-rule), creacion de recetas (ecosystem-creator), inventario automatico (skill-sync), coordinador de equipo (team-orchestrator), protocolo de higiene (security-audit) |
-| **Jefe de Calidad** (observability) | Control de calidad silencioso | Inspector de calidad (prompt-tracker) |
+| **Jefe de Almacen** (infra) | Organizacion, inventario, seguridad, recetas | Organizacion de ingredientes (scope-rule), creacion de recetas (ecosystem-creator), coordinador de equipo (team-orchestrator), protocolo de higiene (security-audit) |
+| **Jefe de Calidad** (observability) | Ciclo de sesion | (sin sub-chefs activos actualmente) |
+
+Los sub-chefs (skills) se asignan automaticamente a cada jefe de area basandose en su descripcion — no hace falta asignarlos manualmente.
 
 El chef principal SOLO decide a que jefe de area pasarle el pedido. El jefe de area
 decide cuales sub-chefs necesita y los coordina.
 
-**Por que es mejor asi?** Porque el chef principal no necesita recordar los 15 recetarios.
+**Por que es mejor asi?** Porque el chef principal no necesita recordar todos los recetarios.
 Solo necesita saber 3 numeros de telefono: el del jefe de cocina, el del jefe de almacen,
 y el del jefe de calidad. Cada jefe de area conoce en detalle las recetas de su area.
 
@@ -265,7 +284,7 @@ de cocinar y uno que improvisa. El checklist previene errores ANTES de que ocurr
 
 ---
 
-## El Inventario Automatico (Skill-Sync)
+## El Inventario Automatico (Sync)
 
 Imagina que cada vez que un chef agrega una receta nueva al libro, el sistema
 automaticamente actualiza:
@@ -277,8 +296,8 @@ Nadie tiene que recordar hacerlo. Es automatico.
 Ademas, `setup.sh --all` tambien instala las **alarmas automaticas** (hooks) que
 hacen que el checklist y la bitacora funcionen automaticamente.
 
-Eso es lo que hace **skill-sync**: cuando se crea o modifica una receta (SKILL.md),
-un script lee todas las recetas y regenera las tablas de referencia automaticamente.
+Eso es lo que hace **sync.sh**: cuando se crea o modifica una receta (SKILL.md),
+un script lee todas las recetas y valida el inventario automaticamente.
 
 ```
 Chef crea nueva receta de sushi
@@ -293,7 +312,7 @@ Listo — todos saben que ahora hay sushi disponible
 ```
 
 **Por que esto importa**: Sin inventario automatico, alguien tendria que recordar
-actualizar el menu cada vez que se agrega una receta. Con skill-sync, es imposible
+actualizar el menu cada vez que se agrega una receta. Con sync.sh, es imposible
 que una receta quede "invisible" — siempre aparece en el inventario.
 
 ---
@@ -336,30 +355,6 @@ Claude termina un trabajo importante, anota:
 
 La proxima vez que abras Claude, el lee el cuaderno del turno y sabe exactamente
 donde quedaste. Ya no necesitas repetirle "estabamos haciendo X con Y".
-
----
-
-## El Inspector de Calidad (Prompt Tracker)
-
-Todo buen restaurante tiene un sistema para mejorar. Cuando un cliente dice "esta
-sopa le falta sal", eso no se olvida — se registra en una bitacora.
-
-El **prompt-tracker** es la bitacora del restaurante:
-
-- Cada vez que le pides algo a Claude, se registra silenciosamente
-- Si tienes que corregir algo ("no, queria con menos sal"), se registra el tipo de error
-- Cuando dices "perfecto" o "listo", se cierra la anotacion
-
-**Importante**: Claude NUNCA te pregunta "¿calificame del 1 al 10?". La bitacora es
-silenciosa y automatica.
-
-Despues de varias interacciones, puedes pedirle a Claude que analice la bitacora con
-`/batuta:analyze-prompts`. El te dira cosas como:
-
-> "El 60% de las correcciones son porque falta especificar el tamano de pantalla.
-> Recomendacion: cuando pidas interfaces, menciona en que pantallas debe verse bien."
-
-Esto te ayuda a TI a darle mejores instrucciones, y a Claude a mejorar sus reglas.
 
 ---
 
@@ -424,10 +419,9 @@ Imagina que el restaurante tiene un sistema de alarmas automaticas que funcionan
 | Alarma | Cuando suena | Que hace |
 |--------|-------------|---------|
 | **Alarma de apertura** (SessionStart) | Cuando el chef empieza su turno | Lee el cuaderno del turno anterior y las instrucciones del restaurante |
-| **Alarma de cocina** (PreToolUse) | Cuando el chef va a tocar un plato | Ejecuta el checklist automaticamente — si no pasa, no puede cocinar |
 | **Alarma de cierre** (Stop) | Cuando el chef termina su turno | Guarda notas en el cuaderno para el siguiente turno |
 
-**Por que importa**: Antes, el chef tenia que "acordarse" de leer el cuaderno y hacer el checklist. Ahora las alarmas lo obligan — es imposible saltarselo. Es como tener un sistema contra incendios que funciona solo, sin depender de que alguien recuerde activarlo.
+**Por que importa**: Antes, el chef tenia que "acordarse" de leer el cuaderno. Ahora las alarmas lo obligan — es imposible saltarselo. Es como tener un sistema contra incendios que funciona solo, sin depender de que alguien recuerde activarlo.
 
 ---
 
@@ -517,10 +511,23 @@ El protocolo de higiene se revisa en DOS momentos:
 
 ---
 
-## Los Comandos (Como le hablas al chef)
+## Como le hablas al chef
 
-No necesitas saber programar. Solo necesitas saber estos "comandos" que son como
-pedidos en el restaurante:
+No necesitas saber programar NI memorizar comandos. Simplemente describe lo que necesitas:
+
+| Que quieres | Que le dices a Batuta |
+|-------------|----------------------|
+| Construir algo nuevo | "Necesito una app que haga X" |
+| Investigar algo | "Como funciona el sistema de pagos?" |
+| Continuar donde quedaste | "Donde quedamos?" o "sigue con lo de ayer" |
+| Corregir un problema descubierto | "Esto no funciona, falta manejar el caso X" |
+| Arreglar un bug puntual | "El boton de login no funciona" |
+
+Batuta detecta que necesitas y ejecuta el proceso automaticamente. Tu solo apruebas en los momentos clave (la propuesta y el plan de tareas).
+
+### Comandos manuales (para los que quieren control total)
+
+Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
 
 | Que quieres | Que escribes |
 |-------------|-------------|
@@ -532,9 +539,7 @@ pedidos en el restaurante:
 | Construir lo que se planeo | `/sdd-apply` |
 | Verificar que todo funcione | `/sdd-verify` |
 | Cerrar y documentar | `/sdd-archive` |
-| Crear una receta nueva | `/create-skill nombre` |
-| Analizar como mejorar la comunicacion | `/batuta:analyze-prompts` |
-| Actualizar inventario de recetas | `/batuta:sync-skills` |
+| Crear una receta nueva | `/create skill nombre` |
 
 ---
 
@@ -551,12 +556,11 @@ pedidos en el restaurante:
 | **Checklist pre-cocina** | Execution Gate | Verifica antes de cocinar: ingredientes, ubicacion, impacto |
 | **Control de calidad** | sdd-verify + O.R.T.A. | Verifican que todo salga bien |
 | **Bitacora del turno** | .batuta/session.md | El cuaderno donde el chef anota en que quedo para el proximo turno |
-| **Inspector de calidad** | prompt-tracker | Registra silenciosamente cada pedido y correccion para mejorar |
-| **Inventario automatico** | skill-sync | Actualiza el menu y listas de recetas automaticamente |
+| **Inventario automatico** | sync.sh | Actualiza el inventario de recetas automaticamente |
 | **Aprendiz que investiga** | ecosystem-creator | Cuando falta una receta, investiga y la crea |
 | **Equipo temporal** | Agent Teams (v7) | Cocineros extra para banquetes grandes — trabajan en paralelo, cada uno con su estacion |
 | **Coordinador de equipo** | team-orchestrator (v7) | Decide cuando armar equipo temporal y como repartir las tareas |
-| **Alarmas automaticas** | Native Hooks (v8) | Alarmas que obligan al chef a seguir el proceso sin que pueda saltarselo |
+| **Alarmas automaticas** | Native Hooks (SessionStart, Stop) | Alarmas que obligan al chef a seguir el proceso sin que pueda saltarselo |
 | **Control de calidad por capas** | AI Validation Pyramid (v8) | 5 niveles de inspeccion — los primeros 3 automaticos, los ultimos 2 humanos |
 | **Comandas precisas** | Contract-First Protocol (v9) | Contratos escritos que definen que recibe y que produce cada cocinero |
 | **Menus especializados** | Team Templates (v9) | Configuraciones pre-armadas de equipo para diferentes tipos de proyecto |
@@ -564,8 +568,8 @@ pedidos en el restaurante:
 | **Protocolo de higiene** | Security-Audit (v9) | Revision de seguridad: al disenar y al verificar |
 | **Controles estrategicos** | Gates G0.5/G1/G2 (v10) | Entiendo? Vale la pena? Listo? |
 | **Consultores especializados** | 6 skills CTO (v10) | Procesos, IA, datos, infra, compliance |
-| **Cocina rapida** | Antigravity IDE (v10.2) | Segunda cocina con el mismo recetario, para pedidos rapidos y mecanicos |
-| **Libro maestro compartido** | batuta-dots hub (v10.2) | Todas las recetas en un solo lugar, sincronizadas entre ambas cocinas |
+| **Cocina rapida** | Antigravity Lite (v11.2) | Segunda cocina para brainstorming y prototipado rapido, con el mismo recetario |
+| **Libro maestro compartido** | batuta-dots hub (v11.0) | Todas las recetas en un solo lugar, sincronizadas entre ambas cocinas |
 
 ---
 
@@ -576,31 +580,33 @@ TU IDEA
    ↓
 "Quiero una app que haga X"
    ↓
-/batuta-init → Instala el ecosistema + hooks + crea .batuta/
+Batuta detecta: proyecto nuevo, necesita SDD
    ↓
-/sdd-init → Define el tipo de proyecto
-   ↓
-/sdd-explore → Claude investiga como hacerlo
+Automaticamente: instala ecosistema + investiga el problema
    ↓
 (Si falta un skill → lo crea automaticamente)
    ↓
-/sdd-new → Claude te muestra el plan
+Claude te presenta la propuesta
    ↓
 TU APRUEBAS
    ↓
-/sdd-continue → Specs + Diseno + Tareas
+Claude automaticamente: Specs + Diseno + Tareas
    ↓
-Execution Gate → Verifica antes de construir
+Claude te presenta el plan
    ↓
-/sdd-apply → Claude construye la app
+TU APRUEBAS
    ↓
-/sdd-verify → Claude verifica que funcione
+Claude construye la app (Execution Gate verifica cada archivo)
+   ↓
+(Si descubre un problema → retrocede, corrige, y sigue)
+   ↓
+Claude verifica que funcione
    ↓
 Pruebas en tu computadora
    ↓
 Deploy a internet (Coolify)
    ↓
-/sdd-archive → Documenta y cierra
+Claude documenta y cierra
    ↓
 APP LISTA EN INTERNET
 ```
@@ -610,7 +616,7 @@ APP LISTA EN INTERNET
 ## Preguntas frecuentes
 
 **P: Necesito saber programar para usar esto?**
-R: No. Solo necesitas saber copiar y pegar los comandos de las guias. Claude programa por ti.
+R: No. Solo necesitas describir lo que quieres en lenguaje natural. Claude programa por ti. Los comandos existen como opcion para control directo, pero no son necesarios.
 
 **P: Que pasa si Claude hace algo mal?**
 R: El paso de `/sdd-verify` revisa todo automaticamente. Si encuentra errores, te dice cuales son y los corrige.
@@ -623,10 +629,10 @@ R: Claude Code tiene un costo de suscripcion. Las APIs de Google (Gmail, Gemini)
 
 **P: Que es O.R.T.A.?**
 R: Son cuatro cosas que toda aplicacion de Batuta debe tener:
-- **O**bservabilidad: Puedes ver que esta pasando en la app (logs, metricas). El **prompt-tracker** implementa esto para el propio ecosistema — registra cada interaccion y correccion.
+- **O**bservabilidad: Puedes ver que esta pasando en la app (logs, metricas)
 - **R**epetibilidad: Si algo funciona hoy, funciona manana igual
 - **T**razabilidad: Puedes seguir el rastro de cada decision y cambio. El **session.md** implementa esto — guarda el contexto de cada sesion.
-- **A**uto-supervision: La app se vigila a si misma y te avisa si algo sale mal. Incluye el **Execution Gate** (preventivo: verifica ANTES de actuar) y el **prompt-tracker** (reactivo: registra DESPUES para mejorar)
+- **A**uto-supervision: La app se vigila a si misma y te avisa si algo sale mal. Incluye el **Execution Gate** (preventivo: verifica ANTES de actuar)
 
 **P: Si cierro la terminal, Claude se olvida de todo?**
 R: No. Gracias al cuaderno del turno (`.batuta/session.md`), Claude lee donde quedo la ultima vez y continua sin que tengas que repetirle todo. Es automatico.
@@ -639,6 +645,26 @@ R: Si. Cada cocinero temporal es como tener otro chef completo trabajando. Si ar
 
 **P: Por que el chef principal nunca cocina directamente?**
 R: Porque un CTO (director tecnico) no escribe codigo el mismo. Coordina al equipo, toma decisiones, y se asegura de que todo siga el plan. Si el CTO se pone a cocinar, nadie esta viendo el panorama completo.
+
+---
+
+## La Regla y el MCP Discovery (v11.0)
+
+### La Regla — Como un reglamento de seguridad en una fabrica
+
+En una fabrica, hay procedimientos obligatorios: casco, gafas de seguridad, protocolo de emergencia. No importa si eres el mas experimentado — SIEMPRE los sigues. "La Regla" en Batuta es igual: si existe un procedimiento (skill) para lo que estas haciendo, lo sigues. No hay excepciones, no hay atajos.
+
+Antes de v11.0, era como tener carteles de seguridad pegados en la pared — dependias de que la gente los leyera. Ahora es como un torniquete automatico: no entras a la planta sin tu casco.
+
+### MCP Discovery — Como verificar herramientas antes de construir
+
+Antes de empezar a construir una pared, un albanil revisa: "Tengo las herramientas correctas? Hay una mejor que la que tengo?". MCP Discovery hace exactamente eso — antes de escribir codigo, verifica que herramientas (servidores MCP) estan disponibles y cuales convendria instalar.
+
+Es como la diferencia entre un albanil que trabaja con lo que tiene en el bolsillo vs uno que primero revisa la bodega completa de la ferreteria.
+
+### Review en 2 etapas — Como una revision de planos
+
+Un arquitecto diseña los planos, pero antes de construir: un ingeniero estructural verifica que cumple con las normas (revision de spec), y un inspector de calidad verifica que los materiales son correctos (revision de calidad). Solo cuando ambos aprueban, se construye. En Batuta v11.0, las tareas complejas pasan por esta misma doble revision automatica.
 
 ---
 

@@ -26,7 +26,7 @@ Marca cada item cuando puedas hacerlo **sin consultar la documentacion**. No se 
 
 ## Nivel Uno — Conocimiento del ecosistema
 
-- [ ] **Puedo nombrar las 4 categorias de skills** (Pipeline, CTO, Infra, Observabilidad)
+- [ ] **Puedo nombrar las 4 categorias de skills** (Pipeline, CTO, Infra, Patrones reutilizables)
 - [ ] **Se que hacen los 3 agentes** (pipeline, infra, observability) y cuando se activan
 - [ ] **Entiendo el Scope Rule** y puedo decidir si un archivo va en features/, shared/, o core/
 - [ ] **Se que la capa CTO tiene 6 especialistas** y puedo nombrar al menos 3
@@ -43,8 +43,8 @@ Marca cada item cuando puedas hacerlo **sin consultar la documentacion**. No se 
 - [ ] **Puedo usar `/sdd-explore` solo** para investigar sin crear un cambio
 - [ ] **Entiendo la diferencia entre solo, subagente, y equipo** y cuando usar cada uno
 - [ ] **Se que compliance-colombia** se activa con datos personales o temas DIAN
-- [ ] **Puedo explicar los 5 hooks** y que automatiza cada uno
-- [ ] **Entiendo O.R.T.A.** y para que sirve el prompt-log.jsonl
+- [ ] **Puedo explicar los 2 hooks** (SessionStart, Stop) y que automatiza cada uno
+- [ ] **Entiendo O.R.T.A.** y sus 4 pilares (Observabilidad, Repetibilidad, Trazabilidad, Auto-supervision)
 
 **Minimo para pasar**: 4 de 6
 
@@ -55,7 +55,7 @@ Marca cada item cuando puedas hacerlo **sin consultar la documentacion**. No se 
 - [ ] **Puedo crear un skill nuevo** con `/create-skill` y se que campos son obligatorios
 - [ ] **Entiendo Skill Gap Detection** y que pasa cuando falta un skill para una tecnologia
 - [ ] **Se elegir un template de equipo** apropiado para mi proyecto
-- [ ] **Puedo propagar un skill local al ecosistema global** y sincronizar con `/batuta-sync-skills`
+- [ ] **Puedo propagar un skill local al ecosistema global** usando `sync.sh`
 - [ ] **Entiendo recursion-designer** y cuando usar versionado inmutable
 
 **Minimo para pasar**: 3 de 5

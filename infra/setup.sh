@@ -79,6 +79,50 @@ log_header() {
 }
 
 # ============================================================================
+# Ecosystem Helpers (skills_shared / skills_local)
+# ============================================================================
+
+# WHY: Enumerates hub skills as a JSON array for ecosystem.json.
+# skills_shared = skills available from the batuta-dots hub.
+_hub_skills_json() {
+    local skills_src="$REPO_ROOT/BatutaClaude/skills"
+    local result="["
+    local first=true
+    for skill_dir in "$skills_src"/*/; do
+        [[ ! -d "$skill_dir" ]] && continue
+        [[ ! -f "$skill_dir/SKILL.md" ]] && continue
+        if $first; then first=false; else result+=", "; fi
+        result+="\"$(basename "$skill_dir")\""
+    done
+    result+="]"
+    echo "$result"
+}
+
+# WHY: Finds project-local skills not present in the hub.
+# skills_local = skills born in the project, not yet promoted to hub.
+_local_skills_json() {
+    local project_path="$1"
+    local hub_src="$REPO_ROOT/BatutaClaude/skills"
+    local result="["
+    local first=true
+    for scan_dir in "$project_path/.claude/skills" "$project_path/.agent/skills"; do
+        [[ ! -d "$scan_dir" ]] && continue
+        for skill_dir in "$scan_dir"/*/; do
+            [[ ! -d "$skill_dir" ]] && continue
+            [[ ! -f "$skill_dir/SKILL.md" ]] && continue
+            local name
+            name=$(basename "$skill_dir")
+            # Only include if NOT already in hub
+            [[ -d "$hub_src/$name" ]] && continue
+            if $first; then first=false; else result+=", "; fi
+            result+="\"$name\""
+        done
+    done
+    result+="]"
+    echo "$result"
+}
+
+# ============================================================================
 # Copy CLAUDE.md to project root
 # ============================================================================
 
@@ -185,16 +229,18 @@ SESSIONEOF
     # WHY: ecosystem.json tracks batuta-dots version for sync drift detection
     if [[ ! -f "$batuta_dir/ecosystem.json" ]]; then
         local batuta_version="unknown"
-        if [[ -f "$REPO_ROOT/VERSION" ]]; then
-            batuta_version=$(<"$REPO_ROOT/VERSION")
+        if [[ -f "$REPO_ROOT/BatutaClaude/VERSION" ]]; then
+            batuta_version=$(<"$REPO_ROOT/BatutaClaude/VERSION")
         fi
+        local skills_shared_json
+        skills_shared_json=$(_hub_skills_json)
         cat > "$batuta_dir/ecosystem.json" << ECOEOF
 {
   "batuta_version": "$batuta_version",
   "platform": "claude",
   "last_sync": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "skills_local": [],
-  "skills_shared": []
+  "skills_shared": $skills_shared_json
 }
 ECOEOF
         log_success "Created $batuta_dir/ecosystem.json"
@@ -234,6 +280,65 @@ IGNOREEOF
 }
 
 # ============================================================================
+# Update Project Ecosystem (--update-ecosystem <path>)
+# ============================================================================
+# WHY: Refreshes skills_shared and skills_local in an existing ecosystem.json.
+# Called after sync operations or via batuta-update to detect skill drift.
+
+update_project_ecosystem() {
+    local project_path="$1"
+
+    if [[ -z "$project_path" ]]; then
+        log_error "--update-ecosystem requires a project directory path"
+        return 1
+    fi
+
+    # Resolve and normalize
+    if [[ ! "$project_path" = /* && ! "$project_path" =~ ^[A-Za-z]: ]]; then
+        project_path="$(pwd)/$project_path"
+    fi
+    project_path="${project_path%/}"
+    project_path="${project_path%/.}"
+
+    local eco_file="$project_path/.batuta/ecosystem.json"
+    if [[ ! -f "$eco_file" ]]; then
+        log_error "ecosystem.json not found at $eco_file"
+        log_info "Run --project first to initialize the project"
+        return 1
+    fi
+
+    local skills_shared skills_local now
+    skills_shared=$(_hub_skills_json)
+    skills_local=$(_local_skills_json "$project_path")
+    now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+    if command -v jq &>/dev/null; then
+        jq --argjson shared "$skills_shared" \
+           --argjson local "$skills_local" \
+           --arg sync "$now" \
+           '.skills_shared = $shared | .skills_local = $local | .last_sync = $sync' \
+           "$eco_file" > "${eco_file}.tmp" && mv "${eco_file}.tmp" "$eco_file"
+    elif command -v python3 &>/dev/null; then
+        PYTHONUTF8=1 python3 -X utf8 -c "
+import json, sys
+with open(sys.argv[1], encoding='utf-8') as f:
+    data = json.load(f)
+data['skills_shared'] = json.loads(sys.argv[2])
+data['skills_local'] = json.loads(sys.argv[3])
+data['last_sync'] = sys.argv[4]
+with open(sys.argv[1], 'w', encoding='utf-8') as f:
+    json.dump(data, f, indent=2, ensure_ascii=False)
+    f.write('\n')
+" "$eco_file" "$skills_shared" "$skills_local" "$now"
+    else
+        log_error "Neither jq nor python3 found. Cannot update ecosystem.json."
+        return 1
+    fi
+
+    log_success "Updated ecosystem.json in $project_path"
+}
+
+# ============================================================================
 # Install Hooks + Permissions to ~/.claude/settings.json
 # ============================================================================
 
@@ -257,6 +362,22 @@ install_hooks() {
     local hooks_target="$target_dir/hooks"
     if [[ -d "$hooks_source" ]]; then
         mkdir -p "$hooks_target"
+
+        # WHY: Remove hooks that no longer exist in source (orphan cleanup).
+        # setup.sh copies TO target but never removed deleted files, leaving
+        # orphans like orta-task-gate.sh after v11.2 cleanup.
+        if [[ -d "$hooks_target" ]]; then
+            for target_hook in "$hooks_target"/*.sh; do
+                [[ ! -f "$target_hook" ]] && continue
+                local hook_name
+                hook_name=$(basename "$target_hook")
+                if [[ ! -f "$hooks_source/$hook_name" ]]; then
+                    rm -f "$target_hook"
+                    log_info "  Removed orphan hook: $hook_name"
+                fi
+            done
+        fi
+
         cp -f "$hooks_source"/*.sh "$hooks_target/"
         chmod +x "$hooks_target"/*.sh
         log_success "Copied hook scripts to $hooks_target/"
@@ -322,13 +443,15 @@ _merge_settings_python() {
     local target="$2"
     local merge_exit=0
 
-    python3 -c "
+    # WORKAROUND: On Windows (Git Bash/MSYS2), Python ignores encoding='utf-8'
+    # and falls back to charmap codec. -X utf8 forces UTF-8 mode at interpreter level.
+    PYTHONUTF8=1 python3 -X utf8 -c "
 import json, sys
 
 try:
-    with open(sys.argv[1]) as f:
+    with open(sys.argv[1], encoding='utf-8') as f:
         src = json.load(f)
-    with open(sys.argv[2]) as f:
+    with open(sys.argv[2], encoding='utf-8') as f:
         tgt = json.load(f)
 
     # Replace hooks entirely
@@ -345,7 +468,7 @@ try:
         merged = list(dict.fromkeys(tgt_perms + src_perms))
         tgt.setdefault('permissions', {})[perm_type] = merged
 
-    with open(sys.argv[2], 'w') as f:
+    with open(sys.argv[2], 'w', encoding='utf-8') as f:
         json.dump(tgt, f, indent=2, ensure_ascii=False)
         f.write('\n')
 except Exception as e:
@@ -377,6 +500,18 @@ sync_claude() {
     fi
 
     mkdir -p "$claude_dir"
+
+    # WHY: Remove skills that no longer exist in hub (orphan cleanup).
+    # Prevents stale skills from polluting the global library after removal.
+    for target_skill in "$claude_dir"/*/; do
+        [[ ! -d "$target_skill" ]] && continue
+        local target_name
+        target_name=$(basename "$target_skill")
+        if [[ ! -d "$skills_src/$target_name" ]]; then
+            rm -rf "$target_skill"
+            log_info "  Removed orphan skill: $target_name"
+        fi
+    done
 
     local count=0
     for skill_dir in "$skills_src"/*/; do
@@ -695,13 +830,6 @@ verify() {
         log_warning "BatutaClaude/agents/ directory not found"
     fi
 
-    # Check skill-sync tables present (v5)
-    if grep -q "AUTO-GENERATED by skill-sync" "$REPO_ROOT/BatutaClaude/CLAUDE.md" 2>/dev/null; then
-        log_success "skill-sync tables present in CLAUDE.md"
-    else
-        log_warning "skill-sync tables not found in CLAUDE.md — run: ./infra/setup.sh --all"
-    fi
-
     # Check Execution Gate (v5)
     if grep -q "Execution Gate" "$source_file" 2>/dev/null; then
         log_success "Execution Gate present in CLAUDE.md"
@@ -803,6 +931,10 @@ Options:
                   - Initializes git if not already a repo
                   - Creates .gitignore
                   - Installs hooks + permissions
+  --update-ecosystem <path>
+                  Refresh skills_shared and skills_local in an existing
+                  project's .batuta/ecosystem.json. Run after syncing or
+                  importing skills to detect drift.
   --claude      Copy BatutaClaude/CLAUDE.md to repo root (developer use only)
   --antigravity Sync Antigravity-compatible skills to BatutaAntigravity/skills/
                   Filters by platforms field in SKILL.md frontmatter.
@@ -838,6 +970,7 @@ parse_args() {
         --hooks)    install_hooks ;;
         --antigravity) sync_antigravity ;;
         --project)  shift_done=true; setup_project "$2" ;;
+        --update-ecosystem) shift_done=true; update_project_ecosystem "$2" ;;
         --verify)   verify ;;
         --help|-h)  show_help; exit 0 ;;
         # Legacy flags — redirect to replicate-platform.sh
@@ -860,10 +993,10 @@ parse_args() {
 # ============================================================================
 
 main() {
-    # IMPORTANT: Resolve --project path BEFORE cd to REPO_ROOT
+    # IMPORTANT: Resolve path arguments BEFORE cd to REPO_ROOT
     # Otherwise relative paths (like ".") resolve to batuta-dots instead of user's project
     local resolved_project_path=""
-    if [[ "$1" == "--project" && -n "$2" ]]; then
+    if [[ ("$1" == "--project" || "$1" == "--update-ecosystem") && -n "$2" ]]; then
         local raw_path="$2"
         if [[ ! "$raw_path" = /* && ! "$raw_path" =~ ^[A-Za-z]: ]]; then
             resolved_project_path="$(cd "$(pwd)" && pwd)/$raw_path"
@@ -879,6 +1012,8 @@ main() {
     else
         if [[ "$1" == "--project" ]]; then
             setup_project "$resolved_project_path"
+        elif [[ "$1" == "--update-ecosystem" ]]; then
+            update_project_ecosystem "$resolved_project_path"
         else
             parse_args "$@"
         fi

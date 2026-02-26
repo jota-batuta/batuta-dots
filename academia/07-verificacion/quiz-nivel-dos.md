@@ -60,16 +60,13 @@ Base rota = no hay revision humana. Si la Capa 1 (linting/tipos/build) falla, no
 ---
 
 ## Pregunta 5
-**Nombra los 5 hooks de Batuta y cuando se activan.**
+**Nombra los 2 hooks de Batuta y cuando se activan.**
 
 <details>
 <summary>Ver respuesta</summary>
 
 1. **SessionStart**: Al abrir Claude Code (restaura contexto)
-2. **PreToolUse**: Antes de escribir archivo (Execution Gate)
-3. **Stop**: Al cerrar sesion (guarda estado)
-4. **TeammateIdle**: Cuando teammate termina (logging O.R.T.A.)
-5. **TaskCompleted**: Cuando tarea se completa (quality gate)
+2. **Stop**: Al cerrar sesion (guarda estado)
 </details>
 
 ---

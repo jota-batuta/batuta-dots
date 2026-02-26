@@ -205,7 +205,6 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 **Que esperar**: Claude instala el ecosistema SIN tocar tu codigo existente. Crea:
 - `CLAUDE.md` — Las instrucciones del chef
 - `.batuta/session.md` — El cuaderno de continuidad
-- `.batuta/prompt-log.jsonl` — La bitacora de calidad
 
 **Tip**: Si Claude te pide permiso para ejecutar comandos, di "yes".
 
@@ -693,13 +692,13 @@ Ya tiene tipos en las funciones publicas, ahora faltan las internas.
 
 ## Mejorar tus instrucciones
 
-Despues de varias sesiones de refactoring:
+Despues de varias sesiones de refactoring, pidele feedback directo:
 
 ```
-/batuta-analyze-prompts
+Como ha ido la comunicacion en este proyecto? Que tipo de errores has cometido y como puedo mejorar mis instrucciones?
 ```
 
-Claude te dice como mejorar tus pedidos para futuras sesiones.
+Claude revisa el contexto del proyecto y te dice como mejorar tus pedidos para futuras sesiones.
 
 ---
 
@@ -846,7 +845,7 @@ Tu: "Haz una auditoria completa del proyecto antes del refactoring.
 
 ## Metricas esperadas de rendimiento
 
-Anota tus resultados reales para mejorar el sistema con `/batuta-analyze-prompts`.
+Anota tus resultados reales para mejorar el sistema.
 
 | Escenario | Nivel | Tiempo estimado | Costo tokens | Calidad esperada | Fortaleza | Debilidad |
 |-----------|-------|----------------|-------------|-----------------|-----------|-----------|

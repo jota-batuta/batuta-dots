@@ -21,16 +21,28 @@ If multiple changes exist and none specified, ask the user which one to continue
 
 Check which artifacts exist in `openspec/changes/{change-name}/`:
 
+**Backtrack detection** (takes priority):
+
+If `backtrack-log.md` exists, read the last entry:
+- If the last backtrack's "Downstream re-run" lists phases not yet re-executed,
+  run the next pending downstream phase.
+- Example: backtrack to SPEC completed, but DESIGN not yet re-run → run sdd-design.
+
+Backtrack state takes priority over forward detection.
+
+**Forward detection** (next phase needed):
+
 | File exists? | Next phase to run |
 |-------------|-------------------|
 | No explore.md | Run sdd-explore |
+| explore.md but unresolved skill gaps | Resolve skill gaps first — check explore.md for HIGH gaps, verify matching skills exist in `~/.claude/skills/`. Do NOT advance to propose until G0.25 passes (see pipeline-agent). |
 | explore.md but no proposal.md | Run sdd-propose |
 | proposal.md but no spec.md | Run sdd-spec |
 | spec.md but no design.md | Run sdd-design |
 | design.md but no tasks.md | Run sdd-tasks |
 | tasks.md but no implementation | Run sdd-apply |
-| Implementation exists but no verify.md | Run sdd-verify |
-| verify.md exists | Run sdd-archive |
+| Implementation exists but no verify-report.md | Run sdd-verify |
+| verify-report.md exists | Run sdd-archive |
 
 ### Step 3: Execute the next phase
 

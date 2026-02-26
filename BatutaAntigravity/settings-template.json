@@ -1,6 +1,11 @@
 {
   "agentMode": "agent-assisted",
+  "description": "Antigravity Lite — brainstorming and quick prototyping companion",
   "security": {
-    "denyPatterns": [".env", "*.pem", "*.key", "credentials*", "secrets*"]
+    "denyPatterns": [
+      "rm -rf /",
+      "DROP TABLE",
+      "DELETE FROM"
+    ]
   }
 }

@@ -65,7 +65,7 @@ git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-i
 **Solucion**: Describe lo que quieres hacer para que el gate valide. Responde "si" cuando pregunte "Procedo?"
 
 ### El gate bloquea cambios que deberian pasar
-**Causa**: El hook PreToolUse es conservador.
+**Causa**: El Execution Gate es conservador.
 **Solucion**: Re-intenta con una descripcion mas clara del cambio. Si persiste, verifica que estas dentro de una fase SDD activa.
 
 ### El gate no aparece
@@ -78,7 +78,7 @@ git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-i
 
 ### Un skill no se activa automaticamente
 **Causa**: El skill no esta registrado en las tablas de ruteo.
-**Solucion**: Ejecuta `/batuta-sync-skills` para regenerar tablas.
+**Solucion**: Reinstala el ecosistema con el instalador para regenerar tablas.
 
 ### "Skill not found" al crear skill
 **Causa**: ecosystem-creator no encuentra el directorio de skills.
@@ -86,7 +86,7 @@ git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-i
 
 ### Skill gap detection no ofrece crear skill
 **Causa**: La tecnologia ya tiene un skill registrado (posiblemente con otro nombre).
-**Solucion**: Ejecuta `/batuta-sync-skills` y revisa la lista de skills activos.
+**Solucion**: Reinstala el ecosistema y revisa la lista de skills activos.
 
 ---
 

@@ -104,7 +104,6 @@ La guia es exhaustiva, bien redactada para un publico no tecnico, y sigue fielme
 | Execution Gate | Si | Descrito correctamente como checklist pre-cambio |
 | Skill Gap Detection | Si | El flujo "no tengo skill" -> "Opcion 1/2/3" coincide con infra-agent |
 | Session Continuity (.batuta/session.md) | Si | Funciona via hooks SessionStart y Stop |
-| Prompt Tracking (.batuta/prompt-log.jsonl) | Si | Se crea automaticamente |
 | Piramide de Validacion | Parcial (H3) | Capas correctas pero la guia reorganiza el contenido |
 | Agent Teams (3 niveles) | Si | Solo/Subagent/Team correctamente explicados |
 | O.R.T.A. | No mencionado directamente | La guia simplifica y no nombra O.R.T.A.; aceptable para el publico |

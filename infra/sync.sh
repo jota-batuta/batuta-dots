@@ -289,6 +289,20 @@ sync_from_project() {
 
     echo ""
     log_success "Imported $copied skill(s) to the hub"
+
+    # WHY: After importing, skills that were local are now in the hub.
+    # Refresh ecosystem.json so skills_shared reflects the new state.
+    local eco_file="$project_path/.batuta/ecosystem.json"
+    if [[ -f "$eco_file" ]]; then
+        log_info "Refreshing ecosystem.json in $project_path ..."
+        local setup_script="$REPO_ROOT/infra/setup.sh"
+        if [[ -f "$setup_script" ]]; then
+            bash "$setup_script" --update-ecosystem "$project_path"
+        else
+            log_warning "setup.sh not found — ecosystem.json not updated"
+        fi
+    fi
+
     log_info "Run './infra/setup.sh --all' to propagate to Claude Code"
     log_info "Run './infra/sync.sh --to-antigravity' to propagate to Antigravity"
 }

@@ -1,9 +1,7 @@
 ---
 name: sdd-design
 description: >
-  Create technical design document with architecture decisions, approach, and documentation plan.
-  Trigger: When the orchestrator launches you to write or update the technical design for a change.
-  Keywords: design, architecture, ADR, technical approach, data flow, file changes, documentation plan.
+  Use when creating architecture decisions and technical design. /sdd-ff
 license: MIT
 metadata:
   author: Batuta
@@ -179,6 +177,23 @@ where multi-tenancy is involved.}
          │                              │
          └──────── Store ───────────────┘
 
+## Component Lifecycle
+
+{For every component that manages connections, clients, sessions, or state,
+specify its lifecycle explicitly. Ambiguity here leads to production bugs
+(per-request engine creation, sync-in-async, connection leaks).}
+
+| Component | Creation Point | Threading Model | Disposal Strategy |
+|-----------|---------------|-----------------|-------------------|
+| {e.g., DB Engine} | {app startup / per-request / lazy singleton} | {sync / async} | {explicit close on shutdown / GC / connection pool return} |
+| {e.g., HTTP Client} | {app startup / per-request} | {sync / async} | {explicit close / context manager} |
+| {e.g., LLM Client} | {app startup} | {async} | {explicit close on shutdown} |
+
+{Guidelines:
+- "per-request" creation is a red flag for expensive resources (DB engines, HTTP clients). Justify if used.
+- sync components inside async endpoints block the event loop. Flag and justify if intentional.
+- Every component with "explicit close" must have a corresponding shutdown hook or context manager.}
+
 ## File Changes
 
 | File | Action | Description |
@@ -311,4 +326,5 @@ Return a structured envelope:
 - Conditional sections (LLM Pipeline, Data Pipeline, Infrastructure) MUST be included when their domain is involved — omitting them when applicable is a design quality failure
 - When referencing Batuta stack technologies, explain integration points and configuration implications
 - When a design introduces multi-tenant concerns, explicitly address RLS policies, tenant context propagation, and data isolation
+- The Component Lifecycle table is MANDATORY for any design that introduces connections, clients, sessions, or stateful components. Specify creation point (startup/per-request/lazy), threading model (sync/async), and disposal strategy for each. Ambiguous lifecycle specifications lead to per-request engine creation and sync-in-async bugs in production (GAP-10).
 - Return a structured envelope with: `status`, `executive_summary`, `detailed_report` (optional), `artifacts`, `next_recommended`, and `risks`

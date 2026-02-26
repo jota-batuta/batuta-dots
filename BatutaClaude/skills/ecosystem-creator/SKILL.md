@@ -1,11 +1,7 @@
 ---
 name: ecosystem-creator
 description: >
-  Creates new skills, agents, sub-agents, and workflows for the Batuta AI ecosystem.
-  The bootstrap skill -- everything else in the ecosystem is built through this.
-  Trigger: When user asks to create a new skill, create an agent, add a sub-agent,
-  define a workflow, "create skill", "create agent", "new skill", "new agent",
-  "ecosystem", "add skill", "add agent", "register workflow".
+  Use when creating new skills, agents, sub-agents, or workflows. /create <type> <name>
 license: MIT
 metadata:
   author: Batuta
@@ -150,8 +146,7 @@ Use the template from [assets/skill-template.md](assets/skill-template.md). The 
 ---
 name: {skill-name}
 description: >
-  {One-line description of what this skill does}.
-  Trigger: {When the AI should load this skill -- include natural language triggers}.
+  Use when {trigger conditions — when should this skill activate?}. /{command-if-any}
 license: MIT
 metadata:
   author: Batuta
@@ -189,14 +184,17 @@ allowed-tools: Read, Edit, Write, Glob, Grep, Bash
 | Field | Required | Description |
 |-------|----------|-------------|
 | `name` | Yes | Skill identifier (lowercase, hyphens) |
-| `description` | Yes | What + Trigger in one block. Include natural language triggers. |
+| `description` | Yes | Trigger-only (Superpowers convention). MUST start with "Use when..." and contain ONLY activation conditions. Never summarize the workflow — Claude will read the full skill body. Max 500 chars. |
 | `license` | Yes | `MIT` for Batuta ecosystem |
 | `metadata.author` | Yes | `Batuta` |
 | `metadata.version` | Yes | Semantic version as string (e.g., `"1.0"`) |
 | `metadata.created` | Yes | ISO date string (e.g., `"2026-02-20"`) |
-| `metadata.scope` | Yes | Scope category array (e.g., `[pipeline]`, `[infra]`, `[observability]`). Used by skill-sync for routing. |
+| `metadata.scope` | Yes | Scope category array (e.g., `[pipeline]`, `[infra]`, `[observability]`). Used for dynamic skill discovery grouping. |
 | `metadata.auto_invoke` | Yes | Human-readable trigger string or YAML list. When the AI should load this skill. |
-| `allowed-tools` | Yes | Comma-separated tool list. Required for skill-sync routing tables. |
+| `metadata.mcp_validated` | No | `true/false` — whether patterns were verified against live docs (MCP or web). Added by Step 4.5. |
+| `metadata.mcp_source` | No | `"Context7"` / `"WebFetch"` / `"WebSearch"` / `"none"` — validation source. |
+| `metadata.validated_date` | No | ISO date of last validation (e.g., `"2026-02-26"`). |
+| `allowed-tools` | Yes | Comma-separated tool list. Defines which tools the skill can use. |
 
 ### Skill Content Guidelines
 
@@ -394,15 +392,11 @@ After creating ANY component, you MUST register it. This is the most commonly fo
 
 - [ ] Skill directory created at the correct destination (see table above)
 - [ ] SKILL.md has complete frontmatter (name, description with triggers, license, metadata including **scope** and **auto_invoke**, **allowed-tools**)
-- [ ] For **global** or **batuta-repo** skills: Run `bash BatutaClaude/skills/skill-sync/assets/sync.sh` to auto-update routing tables in:
-  - `BatutaClaude/CLAUDE.md` (Available Skills table)
-  - `BatutaClaude/agents/{scope}-agent.md` (Skills table for the skill's scope)
 - [ ] For **project-local** skills: No sync needed — Claude Code discovers `.claude/skills/` automatically
-- [ ] Verify the skill appears in the auto-generated tables after sync (global/batuta only)
-
-> **Automation Note**: After creating a skill, always run `sync.sh` to update routing tables. In future versions, this step will be invoked automatically by the ecosystem-creator.
+- [ ] For **global** or **batuta-repo** skills: Claude Code discovers skills by their `description` field — no manual routing table updates needed
 - [ ] If the skill was in the planned roadmap (CLAUDE.md "Planned project skills"), update status
 - [ ] If the skill has assets/, verify templates are present
+- [ ] If tech-specific: add detection rule to `sdd-init/assets/skill-provisions.yaml` for auto-provisioning
 
 ### Agent Registration Checklist
 
@@ -417,8 +411,7 @@ After creating ANY component, you MUST register it. This is the most commonly fo
 - [ ] Sub-agent skill file created: `BatutaClaude/skills/{sub-agent-name}/SKILL.md`
 - [ ] SKILL.md has complete frontmatter with triggers, **scope**, **auto_invoke**, **allowed-tools**
 - [ ] Output contract section is present and follows the envelope format
-- [ ] Run `bash BatutaClaude/skills/skill-sync/assets/sync.sh` to auto-update routing tables
-- [ ] Verify the sub-agent appears in the appropriate scope agent's skills table
+- [ ] Verify the sub-agent's `description` field enables auto-discovery by Claude Code
 - [ ] If it extends the SDD pipeline, update the pipeline-agent.md Phase Routing table
 
 ### Workflow Registration Checklist
@@ -490,18 +483,82 @@ Skill Gap Detected: "{technology}" has no active skill
 │     Include: Anti-Patterns from research
 │     Include: "What This Means (Simply)" section
 │
+├─ 4.5. MCP VALIDATION — Cross-check patterns against live docs
+│     ├── If Context7 MCP is active:
+│     │   └── Query each critical pattern: resolve-library-id → query-docs
+│     ├── If Context7 is NOT active:
+│     │   ├── WebFetch official documentation for the technology
+│     │   └── WebSearch: "{technology} official docs API reference"
+│     ├── Compare skill patterns against live documentation
+│     │   ├── If patterns MATCH: mark as validated
+│     │   └── If patterns DIFFER: update skill with current patterns
+│     ├── Add metadata to skill frontmatter:
+│     │   mcp_validated: true/false
+│     │   mcp_source: "Context7" / "WebFetch" / "WebSearch" / "none"
+│     │   validated_date: "{YYYY-MM-DD}"
+│     ├── Search for technology-specific MCP server:
+│     │   └── WebSearch: "{technology} MCP server model context protocol"
+│     │   └── If found: add note in skill body:
+│     │       "MCP available: {name} — consider installing for live doc verification"
+│     └── Document validation results in creation summary
+│
 ├─ 5. REVIEW — Present draft to user for approval
 │     Show: Key patterns extracted
 │     Show: Stack integration points identified
 │     Show: Proposed skill scope (project vs global)
 │     ASK: "¿Apruebas este skill o quieres ajustar algo?"
 │
+├─ 5.5. VALIDATE — RED-GREEN-REFACTOR for skills (Superpowers pattern)
+│     ├── RED: Run a representative task WITHOUT the skill loaded
+│     │   ├── Use a subagent (Task tool) with the skill NOT in context
+│     │   ├── Give it a task the skill should handle
+│     │   └── Document: what the agent does wrong or suboptimally
+│     ├── GREEN: Load the draft skill and re-run the SAME task
+│     │   ├── Use a subagent WITH the skill loaded
+│     │   ├── Give it the identical task
+│     │   └── Verify: the specific failures from RED are now corrected
+│     ├── REFACTOR: Test common rationalizations
+│     │   ├── "This is simple, I don't need the skill" → trigger still fires?
+│     │   ├── "I'll just do it quickly" → full process enforced?
+│     │   └── If bypassed → strengthen triggers or add enforcement rules
+│     └── Decision:
+│         ├── GREEN fixes RED → proceed to REGISTER
+│         ├── GREEN does NOT fix RED → revise skill, return to DRAFT
+│         └── SKIP if: pure reference skill or technology unavailable for testing
+│
 └─ 6. REGISTER — Follow full Registration Checklist
       Destination: Based on SCOPE DECISION — project-local (.claude/skills/), global (~/.claude/skills/), or batuta-repo (BatutaClaude/skills/)
       Ensure: SKILL.md has scope, auto_invoke, allowed-tools in frontmatter
-      Sync: For global/batuta-repo only — run `bash BatutaClaude/skills/skill-sync/assets/sync.sh` to update routing tables
-      Verify: For global/batuta-repo — skill appears in CLAUDE.md Available Skills table and scope agent Skills table
+      Verify: Skill description enables auto-discovery by Claude Code
+
+└─ 6.5. UPDATE PROVISIONING MAP — If tech-specific, register for auto-provisioning
+        If the newly created skill targets a specific technology:
+        ├── Check if sdd-init/assets/skill-provisions.yaml exists
+        │   (in hub BatutaClaude/skills/sdd-init/assets/ or ~/.claude/skills/sdd-init/assets/)
+        ├── If YES, add a new entry under tech_rules:
+        │     - detect:
+        │         content_pattern: "{technology_package_name}"
+        │       skills: [{new-skill-name}]
+        ├── This ensures future projects auto-provision the skill during /sdd-init
+        └── SKIP if: skill is generic (not tied to a specific technology),
+            or skill-provisions.yaml is not accessible
 ```
+
+### Step 6.5: Update Provisioning Map (if tech-specific)
+
+If the newly created skill targets a specific technology (e.g., `redis-cache` targets Redis, `stripe-payments` targets Stripe):
+
+1. Check if `sdd-init/assets/skill-provisions.yaml` exists (in hub or `~/.claude/skills/sdd-init/assets/`)
+2. If YES, add a new entry under `tech_rules`:
+   ```yaml
+   - detect:
+       content_pattern: "{technology_package_name}"
+       # Add file signals if applicable
+     skills: [{new-skill-name}]
+   ```
+3. This ensures future projects using that technology will auto-provision the skill during `/sdd-init`
+
+**Skip if**: The skill is generic (not tied to a specific technology), or `skill-provisions.yaml` is not accessible.
 
 ### Auto-Discovery Scope Options
 
@@ -634,7 +691,7 @@ Return a summary:
 - [ ] Name follows naming conventions for its type
 - [ ] Requirements are clear (or clarification has been requested)
 - [ ] Appropriate template is being used
-- [ ] Frontmatter is complete (description includes trigger keywords)
+- [ ] Frontmatter is complete (description starts with "Use when..." — trigger-only, no workflow summary)
 - [ ] Registration plan is clear (which files need updating)
 - [ ] If planned in roadmap, roadmap entry will be updated
 
@@ -658,5 +715,5 @@ Return a summary:
   - [agent-template.json](assets/agent-template.json) -- Agent definition template
   - [sub-agent-template.md](assets/sub-agent-template.md) -- Sub-agent SKILL.md template
   - [workflow-template.md](assets/workflow-template.md) -- Workflow definition template
-- **Registration targets**: CLAUDE.md (Available Skills table — auto-generated by skill-sync)
+- **Registration**: Skills are auto-discovered by Claude Code via their `description` field
 - **Planned roadmap**: CLAUDE.md under "Project Skills" section

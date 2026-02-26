@@ -390,7 +390,7 @@ batuta-workers/
 | Un workflow falla consistentemente | `El workflow X esta fallando en el paso Y. Muestra los logs y sugiere como arreglarlo` |
 | Quieres cambiar la politica de reintentos | `Cambia la retry policy del activity Z a maximo 5 intentos con backoff exponencial` |
 | Necesitas un workflow mas complejo | `Necesito un workflow que tenga pasos condicionales: si el paso 2 falla, ejecuta el paso 2B en lugar de reintentar` |
-| Quieres ver metricas del sistema | `/batuta-analyze-prompts` para ver como ha ido la comunicacion con Claude |
+| Quieres ver metricas del sistema | Pregunta a Claude: "Como ha ido la comunicacion en este proyecto? Que puedo mejorar?" |
 
 ---
 

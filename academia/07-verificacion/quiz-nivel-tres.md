@@ -83,8 +83,6 @@ Al final del proyecto, el `infra-agent` ejecuta el **Ecosystem Auto-Update**:
 1. **Evaluar**: El skill es reutilizable? (no tiene dependencias especificas del proyecto?)
 2. **Generalizar**: Remover referencias hardcodeadas, parametrizar valores especificos
 3. **Propagar**: Copiar a `~/.claude/skills/django-crud/SKILL.md`
-4. **Sincronizar**: Ejecutar `/batuta-sync-skills` para actualizar las tablas de ruteo
-
 Si ademas quieres que este disponible para otros usuarios de Batuta Dots:
 5. Copiar al repo `batuta-dots/BatutaClaude/skills/django-crud/`
 6. Actualizar CLAUDE.md con el nuevo skill en la tabla de ruteo
@@ -101,18 +99,18 @@ Quieres que cada vez que se complete un `sdd-verify`, se envie automaticamente u
 <details>
 <summary>Ver respuesta</summary>
 
-Usarias el hook **TaskCompleted**:
+Usarias el hook **Stop** combinado con un script personalizado:
 
 1. **Crear script**: `infra/hooks/notify-slack.sh`
-   - Recibe JSON por stdin con datos de la tarea completada
-   - Filtra solo tareas de tipo `sdd-verify`
+   - Recibe datos de la sesion completada
+   - Filtra solo sesiones donde se ejecuto `sdd-verify`
    - Usa `curl` para enviar al webhook de Slack
 
 2. **Registrar en settings.json**:
    ```json
    {
      "hooks": {
-       "TaskCompleted": [
+       "Stop": [
          {
            "type": "command",
            "command": "bash infra/hooks/notify-slack.sh"
@@ -124,7 +122,7 @@ Usarias el hook **TaskCompleted**:
 
 3. **Alternativa**: Crear un workflow con `/create-workflow slack-notify` que el `observability-agent` invoque al detectar eventos de verificacion completada.
 
-**Nota**: Los hooks nativos de Claude Code son: SessionStart, PreToolUse, Stop, TeammateIdle, TaskCompleted.
+**Nota**: Los 2 hook types nativos de Claude Code son: SessionStart y Stop.
 
 </details>
 

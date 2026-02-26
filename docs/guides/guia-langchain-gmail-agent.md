@@ -452,7 +452,7 @@ batuta-email-agent/
 | Quieres procesar correos automaticamente cada hora | `Cambia el scheduler de cada 30 minutos a cada hora` |
 | Quieres que el agente tambien responda correos | `Agrega un tool de gmail_send_reply que responda automaticamente los correos urgentes con un mensaje de "recibido"` |
 | Quieres ver estadisticas | `Agrega un reporte que muestre cuantos correos de cada categoria se procesaron esta semana` |
-| Quieres ver como mejorar tus instrucciones | `/batuta-analyze-prompts` para analizar la comunicacion con Claude |
+| Quieres ver como mejorar tus instrucciones | Pregunta a Claude: "Como puedo mejorar mis instrucciones?" |
 
 ---
 
@@ -532,7 +532,7 @@ Tu: "Quiero conectar el agente de Gmail con Slack y Notion. Que un
 
 ### Metricas esperadas de rendimiento
 
-Anota tus resultados reales para alimentar `/batuta-analyze-prompts`.
+Anota tus resultados reales para mejorar el sistema.
 
 | Escenario | Nivel | Tiempo estimado | Costo tokens | Calidad esperada | Fortaleza | Debilidad |
 |-----------|-------|----------------|-------------|-----------------|-----------|-----------|

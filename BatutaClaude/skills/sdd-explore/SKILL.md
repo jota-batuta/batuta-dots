@@ -1,8 +1,7 @@
 ---
 name: sdd-explore
 description: >
-  Explore and investigate ideas before committing to a change.
-  Trigger: When the orchestrator launches you to think through a feature, investigate the codebase, or clarify requirements.
+  Use when exploring codebase, investigating ideas, or clarifying requirements. /sdd-explore
 license: MIT
 metadata:
   author: Batuta
@@ -109,15 +108,165 @@ FOR EACH technology required by this change:
 └── Compile Skill Gap Report
 ```
 
-**When HIGH gaps are detected, ACTIVELY offer to create skills:**
+#### Gap Resolution with Project Provisioning
+
+When a HIGH gap is detected, first check if the skill already exists in the global library:
+
+```
+FOR EACH HIGH gap:
+├── Check: does ~/.claude/skills/{skill-name}/SKILL.md exist?
+│
+├── IF YES (skill exists globally but not in project):
+│   Present: "Skill **{skill-name}** existe en la libreria global pero no esta provisionado en este proyecto."
+│   Options:
+│   (1) **Copiar al proyecto** — Copy from ~/.claude/skills/{name}/ to .claude/skills/{name}/
+│       → Also update .claude/skills/.provisions.json: add to skills[] and reprovisioned[]
+│   (2) **Skip** — Continue without the skill (document justification)
+│
+├── IF NO (skill does not exist anywhere):
+│   Present: "No existe skill para **{technology}**."
+│   Options:
+│   (1) **Crear en proyecto** — Invoke ecosystem-creator, save to .claude/skills/{name}/
+│       → Update .provisions.json after creation
+│   (2) **Crear en global** — Invoke ecosystem-creator, save to ~/.claude/skills/{name}/
+│       → Then copy to .claude/skills/{name}/ for this project
+│   (3) **Skip** — Continue without (document justification)
+│
+└── HARD GATE: Do NOT advance to Step 3 until ALL HIGH gaps are resolved
+```
+
+**When HIGH gaps are detected, ACTIVELY offer resolution:**
 
 1. List all detected gaps with severity in the exploration output
-2. For each HIGH gap, ASK the user: "Detecto que no hay skill para {technology}. Quieres que lo cree? (1) Proyecto local, (2) Global batuta-dots, (3) Continuar sin skill"
-3. If user says "1" or "2", invoke `ecosystem-creator` skill to create the SKILL.md using Context7 research
-4. After creation, run `skill-sync` to register the new skill in routing tables
-5. Then continue the exploration with the new skill loaded
+2. For each HIGH gap, first check if `~/.claude/skills/{skill-name}/SKILL.md` exists (global library check)
+3. If skill exists globally: ASK the user: "Skill **{name}** existe en la libreria global pero no esta provisionado. (1) Copiar al proyecto, (2) Skip"
+4. If skill does NOT exist anywhere: ASK the user: "No existe skill para {technology}. (1) Crear en proyecto, (2) Crear en global batuta-dots, (3) Skip"
+5. If user chooses to copy: replicate from `~/.claude/skills/{name}/` to `.claude/skills/{name}/` and update `.provisions.json`
+6. If user chooses to create: invoke `ecosystem-creator` skill to create the SKILL.md using Context7 research
+7. Then continue the exploration with the new skill loaded (auto-discovered by description)
+
+⛔ **HARD GATE — DO NOT ADVANCE TO STEP 3 UNTIL RESOLVED**
+
+```
+IF high_gaps_detected:
+├── STOP execution
+├── Present gaps to user with options (create / defer / skip)
+├── WAIT for user response on EACH high gap
+├── DO NOT proceed to Step 3 (Analyze Options) until:
+│   ├── Every HIGH gap has a user decision recorded
+│   ├── Created skills are registered (if any)
+│   └── Skipped gaps have documented justification
+└── Set explore status = "blocked:skill-gaps" until resolved
+```
+
+**Why this is a gate, not a checklist item**: Documenting a problem is not the same as acting on it. Listing gaps in a table and writing "can be resolved inline" is NOT resolving the gate. The user must explicitly respond to each HIGH gap before the exploration advances.
 
 **Do NOT silently continue when HIGH gaps exist.** The gap detection must be actionable, not just documented. This is the entry point for Auto-Update SPO — skills created here can later propagate to batuta-dots.
+
+### Step 2.6: MCP Discovery (Active Search)
+
+After resolving skill gaps, discover MCP (Model Context Protocol) servers that can improve implementation quality. MCP servers provide live documentation, database access, deployment tools, and more — they are the difference between coding from stale training data and coding from current docs.
+
+**Principle**: "No busques lo que no sabes que tienes." — Just as Skill Gap Detection asks "are you missing a skill?", MCP Discovery asks "what tools exist that you're not using?"
+
+#### Phase 1 — Local Inventory
+
+Check what MCPs are already configured:
+
+```
+LOCAL MCP INVENTORY:
+├── Read project .mcp.json or .claude/settings (MCP configuration)
+├── Read mcp-servers.template.json (Batuta template, if exists)
+├── For each MCP found:
+│   ├── Is it active (configured + reachable)?
+│   ├── Which technology does it serve?
+│   └── Is it being used by the current project's stack?
+└── Compile Local MCP table
+```
+
+#### Phase 2 — Web Discovery
+
+Actively SEARCH for MCP servers that could benefit this project:
+
+```
+WEB MCP DISCOVERY:
+├── For each core technology in the project stack:
+│   ├── WebSearch: "{technology} MCP server model context protocol"
+│   ├── WebSearch: "Model Context Protocol servers for {domain}"
+│   │   (e.g., "for SQL databases", "for deployment", "for testing")
+│   └── Evaluate results:
+│       ├── Is it official or well-maintained? (GitHub stars, npm/pip downloads)
+│       ├── Does it have a package? (npm, pip, binary)
+│       └── Is it already configured locally?
+├── Compare web results against local inventory
+└── Compile Web Discovery table
+```
+
+#### Phase 3 — Recommendations
+
+Classify and recommend MCP installations:
+
+```
+MCP RECOMMENDATIONS:
+├── For the development agent (Batuta ecosystem):
+│   ├── MCPs that improve code quality (e.g., Context7 for live docs)
+│   ├── MCPs that enable testing (e.g., Playwright for E2E)
+│   ├── MCPs that give direct access (e.g., Postgres for queries)
+│   └── Classify: HIGH (core, prevents bugs) / MEDIUM (improves workflow) / LOW (nice to have)
+├── For the project being built:
+│   ├── Could the product itself use MCPs as part of its architecture?
+│   ├── (e.g., an AI agent project might need MCPs for tool calling)
+│   └── Document as "Project Architecture MCPs"
+└── For each HIGH recommendation:
+    ├── Show install command (npm/pip/binary)
+    ├── Show config snippet for .mcp.json
+    └── Explain WHY it matters for this specific change
+```
+
+#### MCP Discovery Exit Gate (advisory — does not block)
+
+```
+MCP DISCOVERY EXIT GATE:
+├── [ ] Web search executed for each core technology in the stack
+├── [ ] MCP Discovery Map table completed in output
+├── [ ] HIGH MCPs presented to user with installation instructions
+├── [ ] Recommendations for the project being built documented (if applicable)
+└── [ ] If user wants to install MCPs: pause for configuration before continuing
+```
+
+#### MCP Discovery Output Template
+
+Include this in explore.md under the Skill Gap Analysis:
+
+```markdown
+### MCP Discovery Map
+
+| Technology | MCP Configured | MCP Available (Web) | Relevance | Action |
+|-----------|---------------|--------------------|-----------|---------|
+| {tech} | {name} (active) | - | HIGH | Use for {purpose} |
+| {tech} | - | {name} ({package}) | HIGH | Recommend install |
+| {tech} | {name} (active) | - | MEDIUM | Available |
+| {tech} | - | {name} (found) | LOW | Optional |
+
+### MCP Installation Instructions (HIGH only)
+
+**{MCP name}** — {what it does}
+- Install: `{npm/pip command}`
+- Config (.mcp.json):
+  ```json
+  {
+    "{mcp-name}": {
+      "command": "{command}",
+      "args": ["{args}"]
+    }
+  }
+  ```
+- Why: {specific benefit for this change}
+
+### MCP Recommendations for Project Architecture
+{If the project being built could benefit from MCPs as part of its design,
+document them here. Otherwise: "No project-level MCP recommendations."}
+```
 
 ### Step 2.7: Domain Expert Consultation
 
@@ -228,6 +377,13 @@ Return EXACTLY this format to the orchestrator (and write the same content to `e
 
 {If HIGH gaps were detected and skills were created, note them here.}
 
+### MCP Discovery Map
+| Technology | MCP Configured | MCP Available (Web) | Relevance | Action |
+|-----------|---------------|--------------------|-----------|---------|
+| {tech} | {name} (active) / - | {name} ({package}) / - | HIGH/MEDIUM/LOW | {action} |
+
+{If HIGH MCPs found: include installation instructions. See Step 2.6 output template.}
+
 ### Discovery Completeness
 | Question | Status | Notes |
 |----------|--------|-------|
@@ -286,9 +442,17 @@ SKILL GAP EXIT GATE:
 │   ├── [ ] User was asked: create skill or skip?
 │   ├── [ ] If create: ecosystem-creator was invoked
 │   ├── [ ] If skip: justification documented in output
-│   └── [ ] skill-sync ran if any skills were created
+│   └── [ ] New skills have proper description for auto-discovery
 ├── [ ] For MEDIUM/LOW gaps: documented but not blocking
 └── [ ] "Action Taken" column filled for every row in Skill Gap table
+
+MCP DISCOVERY EXIT GATE:
+├── [ ] Local MCP inventory completed (project .mcp.json / settings checked)
+├── [ ] Web search executed for each core technology in the stack
+├── [ ] MCP Discovery Map table included in output
+├── [ ] HIGH MCPs presented to user with install instructions
+├── [ ] Recommendations for project architecture documented (or "N/A")
+└── [ ] MCP Discovery Map section included in explore.md
 
 DISCOVERY COMPLETENESS EXIT GATE:
 ├── [ ] All 5 Discovery Completeness questions answered

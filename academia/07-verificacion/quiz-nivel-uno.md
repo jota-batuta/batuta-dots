@@ -5,12 +5,12 @@ Verifica que conoces las herramientas del ecosistema.
 ---
 
 ## Pregunta 1
-**Cuantos skills tiene Batuta Dots v10.0?**
+**Cuantos skills tiene Batuta Dots v11.0?**
 
 <details>
 <summary>Ver respuesta</summary>
 
-24 skills organizados en: 9 pipeline SDD, 6 capa CTO, 5 infraestructura, 1 observabilidad, 3 patrones reutilizables.
+22 skills organizados en: 9 pipeline SDD, 6 capa CTO, 4 infraestructura, 3 patrones reutilizables.
 </details>
 
 ---

@@ -1,12 +1,16 @@
 # Skills que tienes
 
-Batuta Dots tiene 24 skills — especialistas que se activan cuando los necesitas. El sistema los activa automaticamente, pero conocerlos te da poder para pedir exactamente lo que necesitas.
+Batuta Dots tiene 22 skills — especialistas que se activan cuando los necesitas. El sistema los activa automaticamente, pero conocerlos te da poder para pedir exactamente lo que necesitas.
 
 ---
 
 ## Que es un skill
 
 Un archivo (`SKILL.md`) que le dice a Claude: que sabe hacer, cuando activarse, como hacerlo, y que herramientas usa. Como un manual de procedimientos para un empleado muy competente.
+
+### Convencion de activacion (v11.0)
+
+Cada skill tiene un campo `description` en su archivo que empieza con "Use when..." — esto le dice a Claude **cuando** activar el skill, no **que** hace. Es como un cartel en la puerta: "Entrar cuando llueva" vs "Este es el departamento de paraguas". Las tablas de abajo describen que hace cada skill en lenguaje simple.
 
 ---
 
@@ -37,21 +41,14 @@ Un archivo (`SKILL.md`) que le dice a Claude: que sabe hacer, cuando activarse, 
 | **llm-pipeline-design** | Pipelines de IA | Clasificadores, prompts |
 | **worker-scaffold** | Workers y deploy | Temporal, Docker, Coolify |
 
-### Infraestructura (5 skills)
+### Infraestructura (4 skills)
 
 | Skill | Que hace | Comando |
 |-------|---------|---------|
 | **ecosystem-creator** | Crea skills, agentes, workflows | `/create-skill` |
 | **scope-rule** | Decide donde va cada archivo | Automatico |
-| **skill-sync** | Sincroniza tablas de ruteo | `/batuta-sync-skills` |
 | **team-orchestrator** | Solo, subagente, o equipo | Automatico |
 | **security-audit** | OWASP, secrets, amenazas | En design/verify |
-
-### Observabilidad (1 skill)
-
-| Skill | Que hace | Comando |
-|-------|---------|---------|
-| **prompt-tracker** | Registra y analiza calidad | `/batuta-analyze-prompts` |
 
 ### Patrones reutilizables (3 skills)
 

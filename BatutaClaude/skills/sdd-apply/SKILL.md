@@ -1,9 +1,7 @@
 ---
 name: sdd-apply
 description: >
-  Implement tasks from the change, writing actual code following the specs and design.
-  Trigger: When the orchestrator launches you to implement one or more tasks from a change.
-  Keywords: implement, apply, code, build, write code, execute tasks, sdd apply
+  Use when implementing tasks from a change, writing code. /sdd-apply
 license: MIT
 metadata:
   author: Batuta
@@ -150,15 +148,6 @@ Before marking ANY task as complete, verify:
 
 ## What to Do
 
-### Step 0: Verify Execution Gate
-
-Before starting implementation, verify the Execution Gate ran for this task:
-1. Check `.batuta/prompt-log.jsonl` for a `gate` event linked to this prompt
-2. If no gate event exists, run the Execution Gate NOW (determine scope, location plan, impact)
-3. Log the gate event before proceeding
-
-This ensures every code change has a pre-validation record for traceability.
-
 ### Step 0.5: Evaluate Complexity for Team Routing (MANDATORY)
 
 Before writing any code, evaluate whether this implementation needs Agent Teams:
@@ -194,6 +183,52 @@ Before writing ANY code:
 3. Read existing code in affected files — understand current patterns
 4. Check the project's coding conventions from `config.yaml`
 5. Identify which stack technologies are involved and load relevant skills
+
+### Step 1.5: MCP Documentation Check (Verify Before You Code)
+
+Before writing any code, consult available MCP servers and documentation sources to verify that implementation patterns are current. This prevents bugs caused by using stale training data when live documentation is available.
+
+**Fallback chain** (use in order of preference):
+1. **Active MCP** — Query directly (e.g., Context7 for docs, Postgres MCP for schema)
+2. **WebFetch** — Fetch official documentation URLs
+3. **WebSearch** — Search for current API patterns and examples
+4. **Training data** — Last resort, flag as risk if used for core API patterns
+
+```
+MCP DOCUMENTATION CHECK:
+├── Read explore.md → find "MCP Discovery Map" section
+├── For each HIGH relevance MCP that is ACTIVE:
+│   ├── Query the MCP for each core API/pattern used in the tasks
+│   │   Example: Context7 → resolve-library-id → query-docs for FastAPI, SQLAlchemy, etc.
+│   ├── Compare MCP response against patterns in coding skills (if loaded)
+│   ├── If patterns DIFFER:
+│   │   ├── Use the MCP/docs patterns (they are more current)
+│   │   ├── Flag the coding skill as potentially stale
+│   │   └── Note in Implementation Notes: "Pattern updated from {MCP source}"
+│   └── If patterns MATCH: proceed with confidence
+├── For each HIGH relevance MCP that was RECOMMENDED but NOT installed:
+│   ├── Use WebFetch to fetch the official documentation URLs for that technology
+│   ├── Use WebSearch as backup: "{technology} official documentation {version} API"
+│   ├── Note in Implementation Notes:
+│   │   "Verified via WebFetch. {MCP name} would provide faster/richer verification — consider installing."
+│   └── If neither WebFetch nor WebSearch yields usable docs:
+│       └── Flag as risk: "Implementation uses training data patterns for {technology} — not verified against live docs"
+├── For technologies with NO MCP and NO web docs found:
+│   ├── Proceed with training data / loaded skill patterns
+│   └── Flag in risks: "No live verification available for {technology}"
+└── Document all verification results
+```
+
+Include verification results in the Implementation Progress summary:
+
+```markdown
+### Documentation Verification
+| Technology | Source | Status | Notes |
+|-----------|--------|--------|-------|
+| {tech} | Context7 (MCP) | Verified | Patterns match |
+| {tech} | WebFetch (docs) | Verified | Updated {pattern} from docs |
+| {tech} | Training data | Unverified | No MCP or docs available — risk |
+```
 
 ### Step 2: Implement Tasks (Batch Pattern)
 
@@ -264,6 +299,11 @@ If none, say "None -- implementation matches design."}
 ### Issues Found
 {List any problems discovered during implementation.
 If none, say "None."}
+
+### Documentation Verification
+| Technology | Source | Status | Notes |
+|-----------|--------|--------|-------|
+| {tech} | {Context7 (MCP) / WebFetch (docs) / Training data} | {Verified / Unverified} | {details} |
 
 ### Missing Skills Detected
 {List any technologies/patterns that lacked a dedicated coding skill.

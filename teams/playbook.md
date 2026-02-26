@@ -238,7 +238,7 @@ Despues de usar Agent Teams, evalua con estas metricas (referencia: team-orchest
 | Ratio team vs solo | Sesiones con team / total sesiones | 10-20% |
 | Utilizacion de teammates | Tiempo activo / tiempo total por teammate | > 70% |
 | Tasa de completitud | Tareas completadas / tareas asignadas | > 90% |
-| Tasa de rechazo del gate | Rechazos TaskCompleted / completitudes | < 15% |
+| Tasa de rechazo del gate | Rechazos en review / completitudes | < 15% |
 | Descubrimiento de skills | Skills nuevos creados por sesion de team | Rastrear, sin objetivo fijo |
 | Eficiencia de tokens | Calidad resultado / tokens usados vs baseline solo | > 1.5x calidad por 3-5x tokens |
 
@@ -257,7 +257,7 @@ Este playbook no es estatico. Crece con cada proyecto que usa Agent Teams:
 
 2. **Si descubres un patron nuevo**: si ningun patron (A-D) describe bien lo que hiciste, crea un template nuevo. Documentalo aqui.
 
-3. **Ejecuta /batuta:analyze-prompts**: busca patrones en los eventos de tipo `team` en `prompt-log.jsonl`. Esto revela tendencias: equipos que tardan mucho, teammates infrautilizados, contratos que se rechazan repetidamente.
+3. **Revisa los resultados de cada equipo**: busca patrones en las sesiones con Agent Teams. Esto revela tendencias: equipos que tardan mucho, teammates infrautilizados, contratos que se rechazan repetidamente.
 
 4. **El Lead documenta resultados**: al cerrar un equipo, el Lead actualiza `.batuta/session.md` con la composicion usada, que funciono y que se cambiaria la proxima vez.
 

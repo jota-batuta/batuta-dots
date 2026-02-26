@@ -1,10 +1,7 @@
 ---
 name: sqlalchemy-models
 description: >
-  SQLAlchemy model patterns: table definitions, relationships (one-to-many, many-to-many),
-  database session management, and migration support.
-  Trigger: When creating database models, "sqlalchemy", "orm", "database model",
-  "relationship", "many-to-many", "foreign key", "migration", "alembic".
+  Use when creating database models or ORM relationships with SQLAlchemy.
 license: MIT
 metadata:
   author: Batuta

@@ -1,9 +1,8 @@
 ---
 name: team-orchestrator
 description: >
-  Decides when to use solo session, subagents, or Agent Teams based on task complexity.
+  Use when evaluating task complexity, spawning teams, or coordinating multi-agent work.
   Provides team coordination rules and composition patterns for the Batuta ecosystem.
-  Trigger: When evaluating task complexity, spawning teams, or coordinating multi-agent work.
 license: MIT
 metadata:
   author: Batuta
@@ -186,6 +185,33 @@ For changes spanning multiple architectural layers:
 
 Lead handles: integration points, API contracts, coordination.
 
+**Pattern E: Superpowers-Style Review (per-task quality loop)**
+For tasks evaluated as Level 2+ complexity during sdd-apply:
+
+```
+SUPERPOWERS REVIEW LOOP (per task batch):
+├── Implementer: sdd-apply (writes code for the task batch)
+├── Spec Reviewer: verifies implementation matches spec.md scenarios
+│   ├── Each Given/When/Then scenario accounted for?
+│   ├── Missing features? Extra features not in spec?
+│   └── If issues → return to implementer with specific feedback
+├── Code Quality Reviewer: verifies patterns, docs, security
+│   ├── Scope Rule followed? Documentation complete?
+│   ├── Anti-patterns from loaded skills avoided?
+│   └── If issues → return to implementer with specific feedback
+└── Loop: reviewers approve OR implementer re-implements → re-review
+```
+
+| Teammate | Role | Checks |
+|----------|------|--------|
+| implementer | pipeline-agent | Write code per tasks.md, follow sdd-apply |
+| spec-reviewer | pipeline-agent | Compare output vs spec.md scenarios |
+| quality-reviewer | infra-agent | Scope Rule, docs, security, skill compliance |
+
+**When to activate**: sdd-apply complexity Level 2+ (4+ files, multi-module, architectural decisions).
+**When NOT to**: Level 1 tasks (single-file, trivial edits).
+**Key constraint**: Spec review BEFORE code quality review (no point reviewing code quality on wrong implementation).
+
 ## SDD Pipeline as Task List
 
 Map SDD phases to team tasks with dependencies:
@@ -210,15 +236,15 @@ The gate's FULL mode includes a "Team Assessment" step:
 - Single scope, focused change → LEVEL 1 or 2
 
 ### With O.R.T.A.
-- **TeammateIdle hook**: centralizes logging when teammates finish
-- **TaskCompleted hook**: quality gate before marking tasks done
+- **Session management**: SessionStart/Stop hooks handle context injection and persistence
 - **Plan approval**: lead reviews teammate plans (= Execution Gate for teams)
+- **Contract Diff**: lead verifies output vs contract before approving completion (replaces external quality gates)
 
 ### With Skill Gap Detection
 During team work, if a teammate encounters a technology without a skill:
 1. Teammate messages lead: "Necesito skill para {tech}"
 2. Lead spawns a new "researcher" teammate to create the skill
-3. Researcher creates SKILL.md → runs skill-sync
+3. Researcher creates SKILL.md (auto-discovered by description)
 4. Original teammate reloads and continues
 
 ### With Session Continuity
@@ -235,7 +261,7 @@ At team CLOSE, the lead updates .batuta/session.md with:
 | Team vs solo ratio | Teams created / total sessions | 10-20% |
 | Teammate utilization | Active time / total time per teammate | > 70% |
 | Task completion rate | Completed / total tasks | > 90% |
-| Gate rejection rate | TaskCompleted rejections / completions | < 15% |
+| Contract rejection rate | Contract Diff rejections / completions | < 15% |
 | Skill gap discovery rate | New skills per team session | Track, no target |
 | Token efficiency | Result quality / tokens used (vs solo baseline) | > 1.5x quality for 3-5x tokens |
 

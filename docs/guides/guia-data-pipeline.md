@@ -208,7 +208,6 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 **Que esperar**: Claude va a descargar el ecosistema y configurar todo. Puede tomar 1-2 minutos. Cuando termine, veras estos archivos nuevos:
 - `CLAUDE.md` — Las instrucciones del chef (router principal + scope agents + execution gate)
 - `.batuta/session.md` — El cuaderno donde Claude anota en que quedo (para continuar despues)
-- `.batuta/prompt-log.jsonl` — La bitacora de calidad (se llena automaticamente)
 
 **Tip**: Si Claude te pide permiso para ejecutar comandos, di "yes" o "si".
 
@@ -722,14 +721,13 @@ batuta-data-pipeline/
 
 ## Mejorar tus instrucciones
 
-Despues de trabajar un rato con Claude (10+ interacciones):
+Despues de trabajar un rato con Claude (10+ interacciones), pidele feedback directo:
 
 ```
-/batuta-analyze-prompts
+Como ha ido la comunicacion en este proyecto? Que tipo de errores has cometido y como puedo mejorar mis instrucciones?
 ```
 
-Claude analiza la bitacora de calidad y te dice:
-- Cuantas veces tuvo que corregir algo
+Claude revisa el contexto del proyecto y te da:
 - Que tipo de errores comete mas seguido
 - Recomendaciones concretas para que tus proximos pedidos sean mas claros
 
@@ -894,7 +892,7 @@ Tu: "El pipeline tarda 10 minutos con 1 millon de filas. Que un asistente
 
 ## Metricas esperadas de rendimiento
 
-Anota tus resultados reales para mejorar el sistema con `/batuta-analyze-prompts`.
+Anota tus resultados reales para mejorar el sistema.
 
 | Escenario | Nivel | Tiempo estimado | Costo tokens | Calidad esperada | Fortaleza | Debilidad |
 |-----------|-------|----------------|-------------|-----------------|-----------|-----------|

@@ -10,6 +10,23 @@ Sin gates, es tentador saltar directo a escribir codigo. El resultado: software 
 
 ---
 
+## Gate G0.25 — Skill Gaps Resolved
+
+**Cuando**: Entre explore y G0.5 (despues de investigar, antes de verificar completitud)
+**Pregunta**: "Tenemos todos los skills necesarios?"
+
+| Pregunta | Si falta... |
+|----------|------------|
+| Hay skill activo para cada tecnologia core? | Crear skill via ecosystem-creator |
+| Skill gaps marcados como HIGH? | Blocking — no avanzar sin resolver |
+| Skill gaps marcados como MEDIUM/LOW? | Deferrable con justificacion |
+
+**Ejemplo**: Proyecto usa Temporal para workers pero no hay skill de Temporal. G0.25 detecta el gap y lanza ecosystem-creator para crear el skill antes de continuar.
+
+**Nuevo en v11.0**: Este gate ahora es BLOQUEANTE (no advisory). El agente no puede avanzar a propose sin resolver gaps HIGH.
+
+---
+
 ## Gate G0.5 — Discovery Complete
 
 **Cuando**: Entre explore y propose
@@ -24,6 +41,9 @@ Sin gates, es tentador saltar directo a escribir codigo. El resultado: software 
 | Todas las ramas cubiertas? | Volver a explore |
 
 **Ejemplo**: Cliente dice "automatizar nomina". Sin G0.5, propones para nomina mensual. Con G0.5, descubres que hay mensual, quincenal, retroactiva, y liquidaciones — cada una funciona diferente.
+
+> **Nota v11.0**: Durante G0.5, las recomendaciones de MCP (Model Context Protocol) descubiertas en la fase explore se presentan al usuario. Si explore detecto servidores MCP relevantes (locales o via web), G0.5 los lista para que el usuario decida si habilitarlos antes de avanzar a propose.
+
 
 ---
 
@@ -88,8 +108,26 @@ Todo marcado → "si" y avanzas. Algo sin marcar → vuelves a completar.
 
 ---
 
+## Gates y retrocesos (backtracks)
+
+Los gates no son la unica forma de volver atras. A veces descubres problemas DURANTE la implementacion o verificacion. El pipeline SDD es una maquina de estados — puedes retroceder a cualquier fase anterior:
+
+| Estas en... | Descubres que... | Vuelves a... |
+|-------------|------------------|-------------|
+| APPLY | Falta un caso en el spec | SPEC |
+| APPLY | La arquitectura no soporta algo | DESIGN |
+| APPLY | El problema es diferente | EXPLORE |
+| VERIFY | Tests revelan fallo de diseno | DESIGN |
+
+Cada retroceso se registra en `backtrack-log.md` para que quede documentado QUE cambio y POR QUE. Los artefactos se actualizan in-place — git guarda el historial.
+
+> Los gates son **preventivos** (verifican ANTES de avanzar). Los backtracks son **correctivos** (arreglan DESPUES de descubrir un problema). Ambos son normales y saludables — no son señal de error.
+
+---
+
 | Gate | Cuando | Pregunta | Si falla |
 |------|--------|----------|----------|
+| G0.25 | explore (pre-G0.5) | Skills completos? | Crear skills faltantes |
 | G0.5 | explore → propose | Entendemos? | Volver a explore |
 | G1 | propose → spec | Vale la pena? | Iterar propose |
 | G2 | verify → archive | Listo? | Volver a verify/apply |

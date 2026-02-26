@@ -1,12 +1,7 @@
 ---
 name: scope-rule
 description: >
-  Enforces the Scope Rule for file and component organization: "Use determines location."
-  Every component, service, utility, or module must be placed based on WHO uses it,
-  not what it does. Prevents messy utils/ and components/ dump folders.
-  Trigger: When creating files, components, services, modules, organizing code,
-  "where should this go", "file structure", "folder structure", "component location",
-  "shared component", "move to shared", "scope", architecture, refactor structure.
+  Use when deciding where a new file or component should go.
 license: MIT
 metadata:
   author: Batuta

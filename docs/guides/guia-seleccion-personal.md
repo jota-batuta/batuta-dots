@@ -6,7 +6,7 @@
 > **Formato**: Sigue los pasos en orden, como cuando aprendes a manejar.
 > Cada paso depende del anterior. No saltes pasos.
 >
-> **Que tiene de especial esta guia**: Demuestra el flujo CTO completo (v10.0)
+> **Que tiene de especial esta guia**: Demuestra el flujo CTO completo (v11.0)
 > con LLM pipeline — usa inteligencia artificial para evaluar y clasificar
 > hojas de vida automaticamente, con garantias de calidad y compliance.
 
@@ -328,7 +328,7 @@ Aprobado, continua
 
 Repite hasta completar specs, design y tasks.
 
-### Lo especial del design (v10.0)
+### Lo especial del design (v11.0)
 
 **LLM Pipeline Design** (se activa porque usamos IA):
 
@@ -415,7 +415,7 @@ HVs sobrecalificadas. Tambien genera 3 perfiles de cargo con competencias.
 /sdd-verify screening-automatico
 ```
 
-### Testing diferenciado (v10.0 — Type B: Automation + LLM)
+### Testing diferenciado (v11.0 — Type B: Automation + LLM)
 
 Claude aplica la **estrategia Type B** porque este proyecto usa LLM:
 
@@ -602,7 +602,7 @@ screening-hojas-de-vida/
 
 ---
 
-## Flujo visual completo (CTO v10.0 con LLM)
+## Flujo visual completo (CTO v11.0 con LLM)
 
 ```
 Cliente: "Necesito automatizar screening de hojas de vida"
@@ -624,9 +624,9 @@ Cliente: "Necesito automatizar screening de hojas de vida"
  |     === GATE G1 === ................... "Worth Building? ROI claro"
  |
  +-- Paso 8:  /sdd-continue .............. "Specs → Design:"
- |             - LLM Pipeline (6 fases)     ← NUEVO v10.0
- |             - Compliance SIC 002/2024    ← NUEVO v10.0
- |             - Architecture Checklist     ← NUEVO v10.0
+ |             - LLM Pipeline (6 fases)     ← NUEVO v11.0
+ |             - Compliance SIC 002/2024    ← NUEVO v11.0
+ |             - Architecture Checklist     ← NUEVO v11.0
  |             "→ Tasks"
  |
  +-- Paso 9:  /sdd-apply (8 batches) ..... "Parsing → Extraccion → PII → LLM

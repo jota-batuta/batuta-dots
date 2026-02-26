@@ -155,7 +155,6 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 **Que esperar**: Claude va a descargar el ecosistema y configurar todo. Puede tomar 1-2 minutos. Cuando termine, te dira que archivos creo, incluyendo:
 - `CLAUDE.md` — Las instrucciones del chef (router principal + scope agents + execution gate)
 - `.batuta/session.md` — El cuaderno donde Claude anota en que quedo (para continuar despues)
-- `.batuta/prompt-log.jsonl` — La bitacora de calidad (se llena automaticamente)
 
 **Tip**: Si Claude te pide permiso para ejecutar comandos, di "yes" o "si".
 
@@ -184,6 +183,8 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 
 > **Detalle tecnico (opcional)**: Cuando ejecutas `/sdd-init`, Claude activa su pipeline-agent
 > (el "jefe de cocina") que coordina todo el proceso de desarrollo.
+
+> Durante `sdd-init`, Claude detecta las tecnologias del proyecto y copia solo los skills relevantes a `.claude/skills/`. Esto mantiene el contexto limpio (v11.3).
 
 ---
 
@@ -580,26 +581,6 @@ Y sigue el mismo flujo: explore → propose → specs → design → tasks → a
 
 ---
 
-## Mejorar tus instrucciones
-
-Despues de trabajar un rato con Claude (10+ interacciones), puedes pedirle que analice como le ha ido entendiendo tus pedidos:
-
-```
-/batuta-analyze-prompts
-```
-
-Claude va a revisar la bitacora de calidad y te dira:
-- Cuantas veces tuvo que corregir algo
-- Que tipo de errores comete mas seguido
-- Tasa de compliance del Execution Gate
-- **Recomendaciones concretas** para que tus proximos pedidos sean mas claros
-
-Ejemplo de lo que podria decirte:
-> "El 40% de las correcciones fueron porque faltaba especificar el tamano de pantalla.
-> Tip: cuando pidas interfaces, menciona en que dispositivos debe verse bien (celular, tablet, PC)."
-
----
-
 ## Actualizar el ecosistema Batuta
 
 Cuando haya actualizaciones disponibles del ecosistema:
@@ -771,8 +752,7 @@ Estas metricas son estimaciones para que compares cuando ejecutes los pasos. Ano
 | SDD Pipeline completo (explore→archive) | Agent Team | 30-45 min | ~200K tokens | 85% primera vez | Spec+Design en paralelo, apply paralelo | Requiere buena descripcion inicial |
 
 > **Importante**: Estas son estimaciones iniciales. Cuando ejecutes cada paso, anota cuanto tardo
-> realmente y si el resultado fue correcto a la primera. Esa informacion ayuda a mejorar el sistema
-> con `/batuta-analyze-prompts`.
+> realmente y si el resultado fue correcto a la primera. Esa informacion ayuda a mejorar el sistema.
 
 ---
 

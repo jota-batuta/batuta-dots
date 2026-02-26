@@ -192,7 +192,6 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 **Que esperar**: Claude va a descargar el ecosistema y configurar todo. Puede tomar 1-2 minutos. Cuando termine, te dira que archivos creo, incluyendo:
 - `CLAUDE.md` — Las instrucciones del chef (router principal + scope agents + execution gate)
 - `.batuta/session.md` — El cuaderno donde Claude anota en que quedo (para continuar despues)
-- `.batuta/prompt-log.jsonl` — La bitacora de calidad (se llena automaticamente)
 
 **Tip**: Si Claude te pide permiso para ejecutar comandos, di "yes" o "si".
 
@@ -884,13 +883,13 @@ Quiero agregar subtareas:
 
 ## Mejorar tus instrucciones
 
-Despues de trabajar un rato con Claude (10+ interacciones):
+Despues de trabajar un rato con Claude (10+ interacciones), pidele feedback directo:
 
 ```
-/batuta-analyze-prompts
+Como ha ido la comunicacion en este proyecto? Que tipo de errores has cometido y como puedo mejorar mis instrucciones?
 ```
 
-Claude revisa la bitacora de calidad y te da recomendaciones concretas.
+Claude revisa el contexto del proyecto y te da recomendaciones concretas.
 
 ---
 

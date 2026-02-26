@@ -1,10 +1,7 @@
 ---
 name: jwt-auth
 description: >
-  JWT authentication pattern: registration, login, token validation, password hashing.
-  Generates auth endpoints and middleware for FastAPI or similar frameworks.
-  Trigger: When implementing authentication, "jwt", "auth", "login", "register",
-  "token", "password hashing", "bcrypt", "authentication".
+  Use when implementing JWT authentication, login, registration, tokens.
 license: MIT
 metadata:
   author: Batuta

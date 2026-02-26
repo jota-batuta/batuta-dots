@@ -17,16 +17,19 @@ Inspirado en [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman
 - **Regla de Alcance (Scope Rule)** que organiza archivos por quien los usa, no por tipo.
 - **Auto-deteccion de gaps en skills** con investigacion automatica via Context7.
 - **Carga lazy de skills** — Claude lee ~220 lineas al iniciar, el resto se carga bajo demanda.
-- **Routing nativo** — skills se auto-invocan por su campo `description`, agentes de scope con frontmatter nativo.
-- **Execution Gate** — pre-validacion obligatoria via hook `PreToolUse` (enforcement determinístico).
-- **Hooks nativos** — SessionStart, PreToolUse, Stop, TeammateIdle, TaskCompleted.
-- **Skill-Sync** — inventario de assets auto-generado desde frontmatters de skills.
+- **Scope agents** — 3 agentes con skills auto-descubiertos por campo `description`.
+- **Execution Gate** — pre-validacion obligatoria antes de cualquier cambio de codigo.
+- **Hooks nativos** — SessionStart, Stop.
 - **Framework O.R.T.A.** (Observabilidad, Repetibilidad, Trazabilidad, Auto-supervision).
 - **Agent Teams** — orquestacion de multiples sesiones Claude en paralelo para tareas complejas.
 - **Contract-First Protocol** — contratos pre-spawn definen input/output/file-ownership por teammate.
 - **Seguridad AI-First** — skill security-audit dedicado, integrado en fases de diseno y verificacion.
 - **Team Templates + Playbook** — composiciones pre-armadas por stack (Next.js, FastAPI, n8n, agente IA, data pipeline, refactoring).
-- **CTO Strategy Layer (v10.0)** — 3 gates + 6 skills especialistas en el pipeline SDD.
+- **CTO Strategy Layer (v11.0)** — 3 gates + 6 skills especialistas en el pipeline SDD.
+- **Batuta Bootstrap** — "La Regla" via hook SessionStart: si un skill aplica, DEBES usarlo.
+- **MCP Discovery** — busqueda activa de servidores MCP durante la fase explore.
+- **Review Superpowers** — loop de revision en 2 etapas (spec + calidad) para tareas complejas.
+- **Descripciones Trigger-Only** — las 22 descripciones de skills siguen la convencion "Use when..." para activacion confiable.
 
 ---
 
@@ -70,8 +73,8 @@ git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-i
 
 | Plataforma | Destino | Contenido |
 |------------|---------|-----------|
-| **Claude Code** | `~/.claude/` | 24 skills, 3 agentes, 14+ comandos, 4 hooks, settings.json, output-styles |
-| **Claude Code** | Directorio actual | `CLAUDE.md` + `.batuta/` (session, prompt-log, ecosystem.json) |
+| **Claude Code** | `~/.claude/` | 22 skills, 3 agentes, 11 comandos, 2 hooks, settings.json, output-styles |
+| **Claude Code** | Directorio actual | `CLAUDE.md` + `.batuta/` (session, ecosystem.json) |
 | **Antigravity** | `~/.gemini/antigravity/` | Skills compatibles, workflows, GEMINI.md |
 
 ### Setup para desarrolladores
@@ -100,12 +103,10 @@ batuta-dots/
 │   ├── commands/                      # Slash commands globales
 │   │   ├── batuta-init.md             # /batuta-init — importar ecosistema
 │   │   ├── batuta-update.md           # /batuta-update — actualizar
-│   │   ├── batuta-analyze-prompts.md  # /batuta:analyze-prompts — analisis de satisfaccion
-│   │   └── batuta-sync-skills.md      # /batuta:sync-skills — regenerar tablas de routing
-│   ├── agents/                        # Agentes de scope (frontmatter nativo + dominio)
+│   ├── agents/                        # Agentes de scope (skills auto-descubiertos por description)
 │   │   ├── pipeline-agent.md          # Especialista SDD Pipeline (9 skills)
-│   │   ├── infra-agent.md             # Especialista infraestructura (5 skills)
-│   │   └── observability-agent.md     # Motor O.R.T.A. (1 skill)
+│   │   ├── infra-agent.md             # Especialista infraestructura (3 skills)
+│   │   └── observability-agent.md     # Motor O.R.T.A. (sin skills activos)
 │   └── skills/                        # Skills instalables (carga lazy)
 │       ├── ecosystem-creator/         # Skill bootstrap
 │       │   ├── SKILL.md
@@ -120,17 +121,9 @@ batuta-dots/
 │       ├── sdd-apply/SKILL.md
 │       ├── sdd-verify/SKILL.md
 │       ├── sdd-archive/SKILL.md
-│       ├── prompt-tracker/            # Tracking de satisfaccion (O.R.T.A.)
-│       │   ├── SKILL.md
-│       │   └── assets/session-template.md
 │       ├── team-orchestrator/SKILL.md # Orquestacion Agent Teams (cuando escalar)
-│       ├── security-audit/SKILL.md   # Seguridad AI-first (OWASP + amenazas + escaneo de secretos)
-│       └── skill-sync/               # Generacion automatica de tablas de routing
-│           ├── SKILL.md
-│           └── assets/
-│               ├── sync.sh
-│               └── sync_test.sh
-├── BatutaAntigravity/                 # Configuracion Antigravity IDE (Lite)
+│       └── security-audit/SKILL.md   # Seguridad AI-first (OWASP + amenazas + escaneo de secretos)
+├── BatutaAntigravity/                 # Antigravity Lite (brainstorming y prototipado)
 │   ├── GEMINI.md                      # Cerebro CTO completo adaptado para Antigravity
 │   ├── setup-antigravity.sh           # Script de setup (--global / --workspace / --all)
 │   ├── settings-template.json         # Config recomendada para Antigravity
@@ -154,8 +147,8 @@ batuta-dots/
 │   │   ├── guia-data-pipeline.md      # Pipeline de datos (ETL)
 │   │   ├── guia-refactoring-legacy.md # Refactoring de codigo legacy
 │   │   ├── guia-ai-agent-adk.md       # Agente IA con Google ADK
-│   │   ├── guia-auditoria-contable.md # Auditoria contable (CTO v10.0)
-│   │   └── guia-seleccion-personal.md # Seleccion de personal (CTO v10.0)
+│   │   ├── guia-auditoria-contable.md # Auditoria contable (CTO v11.0)
+│   │   └── guia-seleccion-personal.md # Seleccion de personal (CTO v11.0)
 │   └── qa/                            # Reportes de control de calidad
 │       ├── README.md                  # Indice de QA
 │       ├── audits/                    # Reportes de auditoria de calidad (v5-v9)
@@ -171,7 +164,7 @@ batuta-dots/
 │   │   ├── data-pipeline.md          # Template equipo pipeline de datos
 │   │   └── refactoring.md            # Template equipo refactoring legacy
 │   └── playbook.md                    # Patrones y mejores practicas de equipos
-├── CHANGELOG-refactor.md              # Documento de traza de refactorizaciones (v1-v10.1)
+├── CHANGELOG-refactor.md              # Documento de traza de refactorizaciones (v1-v11.0)
 ├── academia/                          # Curso de capacitacion (8 modulos, 53 lecciones)
 └── infra/                             # Infraestructura y scripts de setup
     ├── setup.sh                       # Script principal (Claude Code)
@@ -180,9 +173,7 @@ batuta-dots/
     ├── setup_test.sh                  # Tests de verificacion (51 tests)
     └── hooks/                         # Hooks O.R.T.A. (nativos de Claude Code)
         ├── session-start.sh           # SessionStart — inyectar session.md como contexto
-        ├── session-save.sh            # Stop — logear fin de sesion
-        ├── orta-teammate-idle.sh      # TeammateIdle — registrar fin de teammate
-        └── orta-task-gate.sh          # TaskCompleted — puerta de calidad
+        └── session-save.sh            # Stop — logear fin de sesion
 ```
 
 ---
@@ -191,46 +182,44 @@ batuta-dots/
 
 1. **CLAUDE.md** es el punto de entrada (~220 lineas). Define personalidad, reglas, Scope Rule, Execution Gate, y SDD commands.
 2. **Skills se auto-invocan** por Claude Code basandose en su campo `description`. No hay routing manual.
-3. **Hooks nativos** enfuerzan comportamientos criticos de forma deterministica (Execution Gate, session continuity).
-4. **setup.sh --all** sincroniza skills y agentes, ejecuta skill-sync para validar inventario, y copia CLAUDE.md a la raiz.
+3. **Hooks nativos** enfuerzan comportamientos criticos de forma deterministica (session continuity).
+4. **setup.sh --all** sincroniza skills y agentes, instala hooks + permisos, y copia CLAUDE.md a la raiz.
 
 ```
 CLAUDE.md (personalidad + reglas — ~220 lineas)
     │
-    ├──> Hooks nativos (settings.json)
+    ├──> Hooks (settings.json)
     │     ├── SessionStart → inyecta session.md como contexto
-    │     ├── PreToolUse → Execution Gate (valida antes de Write/Edit)
-    │     ├── Stop → actualiza session.md + logea fin de sesion
-    │     ├── TeammateIdle → logging centralizado
-    │     └── TaskCompleted → puerta de calidad
+    │     └── Stop → actualiza session.md + logea fin de sesion
     │
-    ├──> Skills (auto-invocados por Claude Code via description)
+    ├──> Skills (auto-descubiertos por Claude Code via description)
     │     ├── pipeline: sdd-init...sdd-archive (9 skills)
-    │     ├── infra: scope-rule, ecosystem-creator, skill-sync, team-orchestrator, security-audit
-    │     └── observability: prompt-tracker
+    │     ├── infra: scope-rule, ecosystem-creator, team-orchestrator, security-audit
+    │     └── observability: (sin skills activos)
     │
-    ├──> Scope Agents (frontmatter nativo + dominio)
+    ├──> Scope Agents (skills auto-descubiertos por campo description)
     │     ├── pipeline-agent (dependency graph, orchestrator rules)
     │     ├── infra-agent (Skill Gap Detection, Ecosystem Auto-Update)
-    │     └── observability-agent (session lifecycle, analysis pipeline)
+    │     └── observability-agent (session lifecycle)
     │
     └──> Agent Team (Nivel 3) ──> spawn desde scope agents
 ```
 
-### Multi-Plataforma: Claude Code + Antigravity
+### Multi-Plataforma: Claude Code + Antigravity Lite
 
-Batuta soporta ejecucion en paralelo — Claude Code (Full) para proyectos complejos y Google Antigravity IDE (Lite) para tareas rapidas:
+Batuta soporta dos plataformas con roles distintos — Claude Code para produccion seria (pipeline SDD completo) y Antigravity Lite como companion de brainstorming y prototipado rapido:
 
-| Aspecto | Claude Code (Full) | Antigravity (Lite) |
+| Aspecto | Claude Code (Full) | Antigravity Lite |
 |---------|-------------------|-------------------|
+| Rol | Produccion — pipeline SDD completo, arquitectura, features complejas | Exploracion — brainstorming, prototipado rapido, scripts, docs |
 | Cerebro | CTO completo via CLAUDE.md | CTO completo via GEMINI.md |
 | Comandos | Slash commands (nativos) | Workflows (prompts guardados) |
-| Hooks | Nativos (SessionStart, PreToolUse, Stop) | Reglas de comportamiento |
+| Hooks | Nativos (SessionStart, Stop) | Sin hooks — solo reglas de comportamiento |
 | Skills | `~/.claude/skills/` | `.agent/skills/` o `~/.gemini/antigravity/skills/` |
 | Multi-agente | Agent Teams | Manager View |
 | Costo | Claude Max x20 ($200/mes) | Gratis (preview) |
 
-Los skills son agnósticos de plataforma (estándar abierto SKILL.md). El campo `platforms` en el frontmatter controla que plataformas reciben cada skill durante el sync. Ver [Guia de Antigravity](docs/guides/guia-batuta-antigravity.md).
+Los skills son agnosticos de plataforma (estandar abierto SKILL.md). El campo `platforms` en el frontmatter controla que plataformas reciben cada skill durante el sync. Ver [Guia de Antigravity Lite](docs/guides/guia-batuta-antigravity.md).
 
 ```bash
 # Setup Antigravity en un proyecto
@@ -261,50 +250,57 @@ NUNCA se crean carpetas `utils/`, `helpers/`, `lib/` o `components/` en la raiz.
 
 ### Spec-Driven Development (SDD)
 
-Pipeline de 9 fases que fuerza "entender antes de construir":
+Maquina de estados de 9 fases que fuerza "entender antes de construir":
 
 ```
 init -> explore -> propose -> spec -> design -> tasks -> apply -> verify -> archive
+                                                          ↑ backtracks ↑
 ```
 
-Cada fase es un sub-agente especializado. El pipeline-agent orquesta, delega todo el trabajo pesado y solo rastrea estado y decisiones del usuario.
+Cada fase es un sub-agente especializado. El pipeline-agent orquesta como **maquina de estados** — las fases avanzan (happy path) o retroceden (backtracks) cuando la implementacion revela problemas. El usuario interactua con **conversacion natural** (auto-routing clasifica intent), no con slash commands. Los comandos permanecen como override manual.
 
-### Mix-of-Experts
+### Auto-Routing (Pipeline Dirigido por Intent)
 
-El agente principal actua como un router puro. Clasifica el scope de cada solicitud y delega a agentes de scope especializados:
+El usuario describe lo que necesita en lenguaje natural. El agente clasifica el intent y enruta automaticamente:
+
+| Intent | Ruta |
+|--------|------|
+| Construir / Feature / Problema | Pipeline SDD (auto-avance con checkpoints) |
+| Fix rapido / Bug | Fix directo (sin SDD, Execution Gate LIGHT) |
+| Continuar / Retomar | Detecta fase desde artefactos, retoma |
+| Backtrack / Repensar | Clasifica fase destino, actualiza artefacto, re-avanza |
+| Pregunta / Explicar | Responde directamente |
+| Comando `/sdd-*` explicito | Override manual |
+
+### Scope Agents
+
+Tres agentes de scope organizan skills por dominio. Los skills son auto-descubiertos por Claude Code basandose en su campo `description`:
 
 | Agente de Scope | Dominio | Skills |
 |-----------------|---------|--------|
 | `pipeline-agent` | Ciclo de desarrollo | 9 skills SDD (init a archive) |
-| `infra-agent` | Organizacion, ecosistema, seguridad | scope-rule, ecosystem-creator, skill-sync, team-orchestrator, security-audit |
-| `observability-agent` | Tracking de calidad | prompt-tracker |
+| `infra-agent` | Organizacion, ecosistema, seguridad | scope-rule, ecosystem-creator, team-orchestrator, security-audit |
+| `observability-agent` | Ciclo de sesion | (sin skills activos) |
 
-Esto mantiene al agente principal liviano (~220 lineas) y a cada agente de scope enfocado en su dominio. Los scope agents usan frontmatter nativo de Claude Code (`skills`, `memory: project`).
+Esto mantiene al agente principal liviano (~220 lineas) y a cada agente de scope enfocado en su dominio.
 
 ### Execution Gate (Puerta de Ejecucion)
 
-Antes de cualquier cambio de codigo, una pre-validacion obligatoria se ejecuta. No se puede omitir. Enforzado determinísticamente via hook `PreToolUse` sobre `Write|Edit`.
+Antes de cualquier cambio de codigo, una pre-validacion obligatoria se ejecuta. No se puede omitir.
 
 | Modo | Cuando | Que muestra |
 |------|--------|-------------|
 | LIGHT | Edicion de un solo archivo, fix simple | "Modifico {archivo} en {ubicacion}. Procedo?" |
 | FULL | Archivos nuevos, 2+ archivos, arquitectura | Plan de ubicacion + impacto + cumplimiento SDD/skills |
 
-### Hooks Nativos (v8)
+### Hooks Nativos
 
 Batuta usa hooks nativos de Claude Code para enforcement determinístico:
 
 | Hook | Tipo | Proposito |
 |------|------|-----------|
 | SessionStart | command | Inyecta `.batuta/session.md` como contexto automaticamente |
-| PreToolUse | prompt | Execution Gate: valida cambios antes de Write/Edit |
 | Stop | prompt + command | Actualiza session.md + logea fin de sesion |
-| TeammateIdle | command | Logging centralizado de teammates |
-| TaskCompleted | command | Puerta de calidad para tareas |
-
-### Skill-Sync
-
-El inventario de skills se gestiona desde los frontmatters de SKILL.md. Agregar un skill = crear SKILL.md con frontmatter → ejecutar sync.sh → inventario validado automaticamente.
 
 ### Deteccion de Skills Faltantes
 
@@ -320,13 +316,9 @@ Antes de escribir codigo con una tecnologia, Claude verifica si existe un skill 
 
 Solo se carga el nivel necesario. Una pregunta simple nunca llega al nivel 3.
 
-### Tracking de Satisfaccion de Prompts (O.R.T.A.)
-
-Cada interaccion significativa se registra en `.batuta/prompt-log.jsonl`. Seis tipos de evento: `prompt`, `gate`, `correction`, `follow-up`, `closed`, `team`. Con el tiempo, `/batuta:analyze-prompts` computa metricas y genera recomendaciones accionables.
-
 ### Continuidad de Sesion
 
-Enforzada determinísticamente via hooks nativos. Al inicio de cada conversacion, el hook `SessionStart` inyecta `.batuta/session.md` automaticamente. Al final, el hook `Stop` evalua si se necesita actualizar el archivo.
+Al inicio de cada conversacion, Claude lee `.batuta/session.md` para restaurar contexto. Al final de trabajo significativo, actualiza el archivo para que la proxima conversacion retome donde quedo.
 
 ### Agent Teams (Ejecucion de 3 Niveles)
 
@@ -338,25 +330,27 @@ Batuta soporta tres niveles de ejecucion. El sistema evalua automaticamente cual
 | Subagente (Task tool) | Delegacion fire-and-forget | Investigacion, verificacion, fase SDD individual |
 | Agent Team | Multiples sesiones Claude independientes | Feature multi-modulo, pipeline SDD completo, hipotesis competitivas |
 
-Los Agent Teams crean sesiones reales de Claude Code que trabajan en paralelo con una lista de tareas compartida y mensajeria bidireccional. Hooks O.R.T.A. (`TeammateIdle`, `TaskCompleted`) aseguran logging centralizado y puertas de calidad.
+Los Agent Teams crean sesiones reales de Claude Code que trabajan en paralelo con una lista de tareas compartida y mensajeria bidireccional.
 
 ### Auto-actualizacion del Ecosistema
 
 Cuando se crean skills nuevos en un proyecto, Claude propone propagarlos de vuelta a batuta-dots para que otros proyectos se beneficien.
 
+### Provisioning de Skills por Proyecto (v11.3)
+
+Durante `/sdd-init`, solo los skills relevantes se copian de la libreria global al proyecto. El agente solo ve lo que necesita, manteniendo el contexto limpio mientras el ecosistema crece a 100+ skills.
+
 ---
 
-## Skills Disponibles (24 + 3 agentes de scope)
+## Skills Disponibles (22 + 3 agentes de scope)
 
 | Skill | Scope | Descripcion |
 |-------|-------|-------------|
 | `ecosystem-creator` | infra | Crea nuevos skills, agentes, sub-agentes y workflows |
 | `scope-rule` | infra | Organiza archivos por alcance (feature / shared / core) |
-| `skill-sync` | infra | Genera tablas de routing automaticamente desde frontmatters |
 | `team-orchestrator` | infra | Evalua cuando escalar a Agent Teams, spawn y coordinacion |
 | `security-audit` | infra, pipeline | Seguridad AI-first: OWASP + inyeccion de prompts + escaneo de secretos + auditoria de dependencias |
 | `sdd-init` a `sdd-archive` | pipeline | Pipeline SDD de 9 fases |
-| `prompt-tracker` | observability | Tracking de satisfaccion, compliance de gate, y analisis de patrones |
 | `process-analyst` | pipeline | Analisis de procesos complejos con 3+ variantes de caso |
 | `recursion-designer` | pipeline | Taxonomias externas, categorias que cambian, sistemas de aprendizaje |
 | `compliance-colombia` | pipeline | Proteccion de datos colombiana, retencion fiscal, compliance IA |
@@ -371,23 +365,19 @@ Cuando se crean skills nuevos en un proyecto, Claude propone propagarlos de vuel
 
 ## Comandos
 
-| Comando | Agente de Scope | Descripcion |
-|---------|-----------------|-------------|
-| `/batuta-init [nombre]` | — | Importar ecosistema Batuta a un proyecto |
-| `/batuta-update` | — | Actualizar ecosistema desde batuta-dots |
-| `/sdd-init` | pipeline | Inicializar contexto de orquestacion |
-| `/sdd-explore <tema>` | pipeline | Explorar idea y restricciones |
-| `/sdd-new <nombre>` | pipeline | Iniciar flujo de propuesta |
-| `/sdd-continue [nombre]` | pipeline | Ejecutar siguiente fase |
-| `/sdd-ff [nombre]` | pipeline | Fast-forward: propose → spec → design → tasks |
-| `/sdd-apply [nombre]` | pipeline + infra | Implementar en lotes |
-| `/sdd-verify [nombre]` | pipeline | Validar implementacion |
-| `/sdd-archive [nombre]` | pipeline | Cerrar y persistir estado final |
-| `/create-skill <nombre>` | infra | Crear un nuevo skill |
-| `/create-sub-agent <nombre>` | infra | Crear un nuevo sub-agente |
-| `/create-workflow <nombre>` | infra | Crear un nuevo workflow |
-| `/batuta:analyze-prompts` | observability | Analizar log de satisfaccion y generar recomendaciones |
-| `/batuta:sync-skills` | infra | Regenerar tablas de routing desde frontmatters |
+| Comando | Descripcion |
+|---------|-------------|
+| `/batuta-init [nombre]` | Importar ecosistema Batuta a un proyecto |
+| `/batuta-update` | Actualizar ecosistema desde batuta-dots |
+| `/sdd-init` | Inicializar contexto de orquestacion |
+| `/sdd-explore <tema>` | Explorar idea y restricciones |
+| `/sdd-new <nombre>` | Iniciar flujo de propuesta |
+| `/sdd-continue [nombre]` | Ejecutar siguiente fase |
+| `/sdd-ff [nombre]` | Fast-forward: propose → spec → design → tasks |
+| `/sdd-apply [nombre]` | Implementar en lotes |
+| `/sdd-verify [nombre]` | Validar implementacion |
+| `/sdd-archive [nombre]` | Cerrar y persistir estado final |
+| `/create <tipo> <nombre>` | Crear un nuevo skill, sub-agente o workflow |
 
 ---
 
@@ -397,13 +387,13 @@ Cuando se crean skills nuevos en un proyecto, Claude propone propagarlos de vuel
 |------|--------|
 | `--claude` | Copia CLAUDE.md a la raiz del proyecto |
 | `--sync` | Sincroniza skills + agentes + commands a ~/.claude/ |
-| `--all` | Setup completo: sync + skill-sync + hooks + copy + antigravity (recomendado) |
+| `--all` | Setup completo: sync + hooks + copy + antigravity (recomendado) |
 | `--hooks` | Instala hooks + permisos en ~/.claude/settings.json |
 | `--antigravity` | Sincroniza skills compatibles con Antigravity a BatutaAntigravity/skills/ |
 | `--project <path>` | Setup de un proyecto destino (CLAUDE.md + .batuta/ + git + hooks) |
 | `--verify` | Verificacion completa (51 checks) |
 
-El flag `--all`: sincroniza skills y agentes → ejecuta skill-sync → instala hooks + permisos → copia CLAUDE.md actualizado a la raiz.
+El flag `--all`: sincroniza skills y agentes → instala hooks + permisos → copia CLAUDE.md actualizado a la raiz.
 
 ---
 
@@ -423,7 +413,7 @@ Guias de ejecucion paso a paso (12 guias) cubriendo el ciclo completo: instalaci
 | [Pipeline de Datos](docs/guides/guia-data-pipeline.md) | Construir pipeline ETL con validacion |
 | [Refactoring Legacy](docs/guides/guia-refactoring-legacy.md) | Modernizar codigo legacy sin romper funcionalidad |
 | [Agente IA (Google ADK)](docs/guides/guia-ai-agent-adk.md) | Construir agente conversacional con Google ADK |
-| [Auditoria Contable](docs/guides/guia-auditoria-contable.md) | Conciliacion bancaria — flujo CTO v10.0 completo |
+| [Auditoria Contable](docs/guides/guia-auditoria-contable.md) | Conciliacion bancaria — flujo CTO v11.0 completo |
 | [Seleccion de Personal](docs/guides/guia-seleccion-personal.md) | Evaluacion de CVs con LLM + compliance |
 
 ## Academia (Manual de Capacitacion)
@@ -451,7 +441,7 @@ Curso completo de Batuta Dots — desde cero hasta uso autonomo. 53 lecciones en
 
 | Documento | Descripcion |
 |-----------|-------------|
-| [Diagramas de Arquitectura](docs/architecture/arquitectura-diagrama.md) | 15+ diagramas Mermaid (MoE, SDD, hooks, piramide, contratos, seguridad, etc.) |
+| [Diagramas de Arquitectura](docs/architecture/arquitectura-diagrama.md) | 15+ diagramas Mermaid (SDD, hooks, piramide, contratos, seguridad, etc.) |
 | [Arquitectura para No-Tecnicos](docs/architecture/arquitectura-para-no-tecnicos.md) | Analogia del restaurante para no-desarrolladores |
 
 ---
@@ -460,22 +450,21 @@ Curso completo de Batuta Dots — desde cero hasta uso autonomo. 53 lecciones en
 
 ### Agregar un Skill Nuevo
 
-1. Ejecutar `/create-skill <nombre>` — el ecosystem-creator guia el proceso (frontmatter: scope, auto_invoke, allowed-tools)
+1. Ejecutar `/create skill <nombre>` — el ecosystem-creator guia el proceso (frontmatter: scope, auto_invoke, allowed-tools)
 2. O manualmente: crear `BatutaClaude/skills/<nombre>/SKILL.md` con frontmatter completo
-3. Ejecutar `bash BatutaClaude/skills/skill-sync/assets/sync.sh` para actualizar tablas de routing
-4. Ejecutar `./infra/setup.sh --all`
+3. Ejecutar `./infra/setup.sh --all`
 
 ### Agregar un Agente de Scope Nuevo
 
 1. Crear `BatutaClaude/agents/<scope>-agent.md` con frontmatter nativo (`name`, `description`, `skills`, `memory`)
 2. Actualizar frontmatters de SKILL.md para referenciar el nuevo scope
-3. Ejecutar skill-sync para validar el inventario
+3. Ejecutar `./infra/setup.sh --all`
 
 ---
 
 ## Creditos
 
-Inspirado en [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.Dots) de [Gentleman Programming](https://github.com/Gentleman-Programming). Batuta adapta el concepto de dotfiles para fabricas de software multi-proyecto con personalidad CTO/Mentor, Spec-Driven Development, Regla de Alcance, routing Mix-of-Experts, auto-deteccion de skills, y el framework O.R.T.A.
+Inspirado en [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.Dots) de [Gentleman Programming](https://github.com/Gentleman-Programming). Batuta adapta el concepto de dotfiles para fabricas de software multi-proyecto con personalidad CTO/Mentor, Spec-Driven Development, Regla de Alcance, scope agents con skills auto-descubiertos, auto-deteccion de skills, y el framework O.R.T.A.
 
 ---
 

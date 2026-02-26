@@ -1,10 +1,7 @@
 ---
 name: worker-scaffold
 description: >
-  Scaffolds and manages worker lifecycle: directory structure, Temporal config,
-  Docker containerization, Coolify deployment, and monitoring.
-  Trigger: worker, scaffold, deploy, Temporal, Coolify, Docker, container,
-  monitoring, task queue, health check, worker nuevo.
+  Use when scaffolding workers: Temporal, Docker, Coolify deployment.
 license: MIT
 metadata:
   author: Batuta

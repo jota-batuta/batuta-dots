@@ -212,7 +212,6 @@ Los siguientes elementos fueron verificados y estan correctos:
 | `scope-rule` skill existe | `BatutaClaude/skills/scope-rule/SKILL.md` | PASS |
 | Execution Gate descrito correctamente | `BatutaClaude/CLAUDE.md` | PASS — descripcion de la guia coincide con Gate modes LIGHT/FULL |
 | `.batuta/session.md` creado por batuta-init | `BatutaClaude/commands/batuta-init.md` Step 2.5 | PASS |
-| `.batuta/prompt-log.jsonl` creado por batuta-init | `BatutaClaude/commands/batuta-init.md` Step 2.5 | PASS |
 | Agent Teams descritos como innecesarios para este proyecto | `BatutaClaude/CLAUDE.md` (criterios Level 3) | PASS — correcto para 1 scope, menos de 4 archivos |
 | `/sdd-apply` contiene Execution Gate | `BatutaClaude/skills/sdd-apply/SKILL.md` Step 0 | PASS |
 | `/sdd-verify` incluye AI Validation Pyramid | `BatutaClaude/skills/sdd-verify/SKILL.md` | PASS — coincide con descripcion de la guia |

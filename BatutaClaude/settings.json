@@ -15,17 +15,10 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/session-start.sh"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
+          },
           {
             "type": "prompt",
-            "prompt": "You are the Execution Gate for the Batuta ecosystem. A tool call is about to execute. Check if this code change has been validated by the Execution Gate (the user confirmed 'Procedo?' or this is within an approved SDD phase). If no gate approval exists for this change, respond with {\"ok\": false, \"reason\": \"Execution Gate: este cambio no fue validado. Ejecuta el gate primero.\"}. If the change is trivially approved (single-file edit within an active SDD task, or user already confirmed), respond with {\"ok\": true}."
+            "prompt": "BATUTA BOOTSTRAP — THE RULE: If a skill applies to your current task, you MUST invoke it. No exceptions. If an MCP server is available and relevant, you MUST consult it before relying on training data.\n\nYour available skills were auto-discovered and listed in the Batuta Skill Inventory injected above. Review them before proceeding.\n\nRed-flag rationalizations — if you catch yourself thinking any of these, STOP and load the relevant skill:\n- \"This is just something simple\" — Simple tasks still need team conventions.\n- \"I already know how to do this\" — Skills encode the TEAM way, not just knowledge.\n- \"I need more context first\" — Skill loading PRECEDES context gathering.\n- \"The skill is overkill for this\" — The skill defines minimum quality. Follow it.\n\nRespond with {\"ok\": true}."
           }
         ]
       }
@@ -40,26 +33,6 @@
           {
             "type": "prompt",
             "prompt": "Before stopping, check if .batuta/session.md exists in the project. If it does, and you performed significant work this session (completed an SDD phase, created/modified 3+ files, resolved a bug, or had 5+ exchanges), update .batuta/session.md with current state: active changes, phase status, recent decisions, discovered conventions. If no significant work was done, skip the update. Respond with {\"ok\": true} after updating (or skipping)."
-          }
-        ]
-      }
-    ],
-    "TeammateIdle": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/orta-teammate-idle.sh"
-          }
-        ]
-      }
-    ],
-    "TaskCompleted": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/orta-task-gate.sh"
           }
         ]
       }
@@ -158,7 +131,8 @@
       "Bash(rg:*)",
       "Bash(sd:*)",
       "WebFetch",
-      "WebSearch"
+      "WebSearch",
+      "Skill"
     ]
   }
 }

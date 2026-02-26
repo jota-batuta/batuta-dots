@@ -1,8 +1,7 @@
 ---
 name: llm-pipeline-design
 description: >
-  Designs the 6-phase intelligence pipeline for LLM applications.
-  Trigger: LLM, modelo, prompt, clasificador, confianza, drift, pipeline IA, Langfuse.
+  Use when designing LLM classification, prompts, confidence, or drift detection.
 license: MIT
 metadata:
   author: Batuta

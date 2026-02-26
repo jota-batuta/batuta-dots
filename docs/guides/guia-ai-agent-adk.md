@@ -174,7 +174,6 @@ claude
 **Que hace Claude**: Descarga el ecosistema y configura todo. Puede tomar 1-2 minutos. Crea:
 - `CLAUDE.md` — Las instrucciones del chef (router principal)
 - `.batuta/session.md` — El cuaderno donde Claude anota en que quedo
-- `.batuta/prompt-log.jsonl` — La bitacora de calidad
 
 **Si no tienes el comando /batuta-init**, copia y pega esto en su lugar:
 
@@ -746,13 +745,13 @@ Ajusta el system prompt para que:
 
 ## Mejorar tus instrucciones
 
-Despues de 10+ interacciones con Claude:
+Despues de 10+ interacciones con Claude, pidele feedback directo:
 
 ```
-/batuta-analyze-prompts
+Como ha ido la comunicacion en este proyecto? Que tipo de errores has cometido y como puedo mejorar mis instrucciones?
 ```
 
-Claude revisa la bitacora de calidad y te dice que tipo de errores comete y como mejorar tus instrucciones.
+Claude revisa el contexto del proyecto y te dice que tipo de errores comete y como mejorar tus instrucciones.
 
 ## Estructura esperada del proyecto
 

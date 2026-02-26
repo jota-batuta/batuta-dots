@@ -36,7 +36,7 @@ Proyecto A (Claude Code)  ←→  batuta-dots (hub)  ←→  Proyecto B (Antigra
 3. Del hub se distribuye a todos los spokes (via `install.sh` para usuarios, o `setup.sh --sync` / `setup-antigravity.sh` para desarrolladores)
 
 El campo `platforms` en el frontmatter de SKILL.md determina que plataformas reciben cada skill:
-- `platforms: [claude, antigravity]` — va a ambas (22 de 24 skills)
+- `platforms: [claude, antigravity]` — va a ambas (20 de 22 skills)
 - `platforms: [claude]` — solo Claude Code (2 skills que requieren hooks o Agent Teams)
 
 ---
@@ -50,7 +50,7 @@ Google Antigravity es un IDE agent-first (fork de VS Code/Windsurf). Durante el 
 | Reglas del agente | CLAUDE.md | GEMINI.md (Rules) |
 | Comandos | Slash commands (/sdd-init) | Workflows (prompts guardados con /trigger) |
 | Skills | `~/.claude/skills/` | `.agent/skills/` o `~/.gemini/antigravity/skills/` |
-| Hooks automaticos | 5 hooks nativos | No hay — reglas de comportamiento en GEMINI.md |
+| Hooks automaticos | 2 hooks nativos (SessionStart, Stop) | No hay — reglas de comportamiento en GEMINI.md |
 | Multi-agente | Agent Teams (spawn sessions) | Manager View (nativo) |
 
 ---

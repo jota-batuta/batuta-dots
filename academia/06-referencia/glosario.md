@@ -38,7 +38,7 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 
 **Ecosystem Creator**: Skill para crear nuevos skills, agentes, y workflows.
 
-**Execution Gate**: Validacion obligatoria antes de escribir codigo. Modo LIGHT (1 linea) o FULL (plan completo). Implementado como hook PreToolUse.
+**Execution Gate**: Validacion obligatoria antes de escribir codigo. Modo LIGHT (1 linea) o FULL (plan completo).
 
 **Explore**: Fase 2 del pipeline SDD. Investigar el problema antes de proponer soluciones.
 
@@ -52,7 +52,7 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 
 ## H
 
-**Hook**: Automatismo que se ejecuta cuando algo pasa. 5 hooks: SessionStart, PreToolUse, Stop, TeammateIdle, TaskCompleted.
+**Hook**: Automatismo que se ejecuta cuando algo pasa. 2 hook types: SessionStart, Stop.
 
 ## I
 
@@ -80,8 +80,6 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 
 **Process Analyst**: Skill CTO que mapea variantes de un proceso (10 preguntas, arbol de variantes).
 
-**Prompt Tracker**: Skill que registra interacciones y genera recomendaciones de mejora.
-
 **Propose**: Fase 3 del pipeline SDD. Presentar propuesta con costos, beneficios, y comunicacion al cliente.
 
 ## R
@@ -98,11 +96,9 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 
 **Security Audit**: Skill que revisa seguridad (OWASP 10 puntos, secrets, dependencies, threat model).
 
-**Skill**: Archivo SKILL.md que le ensena a Claude una especialidad. 24 skills en v10.0.
+**Skill**: Archivo SKILL.md que le ensena a Claude una especialidad. 22 skills en v11.1.
 
 **Skill Gap Detection**: Mecanismo que detecta cuando falta un skill para una tecnologia y ofrece crearlo.
-
-**Skill Sync**: Proceso de regenerar tablas de ruteo despues de crear/modificar skills.
 
 **Spec**: Fase 4 del pipeline SDD. Escribir requisitos exactos en Given/When/Then.
 

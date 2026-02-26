@@ -23,13 +23,17 @@ cd mi-todo-app
 claude
 ```
 
-## Paso 3: Inicializa SDD
+## Paso 3: Describe lo que quieres
 
 ```
-/sdd-init
+Quiero construir una lista de tareas simple con Next.js.
+El usuario puede crear, completar y eliminar tareas.
 ```
 
-Batuta analiza tu proyecto, te pregunta el tipo (responde **webapp**) y el stack (responde **Next.js**). Crea la estructura:
+Batuta detecta que es un proyecto nuevo y necesita SDD. Automaticamente:
+1. Inicializa el proyecto (crea `openspec/`)
+2. Te pregunta el tipo de proyecto (responde **webapp**) y el stack (responde **Next.js**)
+3. Explora el problema y te presenta una propuesta
 
 ```
 mi-todo-app/
@@ -39,24 +43,19 @@ mi-todo-app/
     changes/         ← Para cambios
 ```
 
-## Paso 4: Empieza tu primer cambio
-
-```
-/sdd-new todo-basico
-```
-
-Batuta ejecuta 2 fases: **explore** (investiga) y **propose** (propone solucion).
-
 **Gate G0.5**: "Entendemos bien el problema?" → Responde **si**.
+Batuta presenta su propuesta.
 **Gate G1**: "La solucion vale la pena?" → Responde **si**.
 
-## Paso 5: Disena y planifica
+## Paso 4: Aprueba la propuesta
+
+Batuta te muestra un resumen de lo que propone construir. Revisalo y responde:
 
 ```
-/sdd-ff
+Dale, me parece bien.
 ```
 
-Fast-forward ejecuta: spec → design → tasks. Resultado en `openspec/changes/todo-basico/`:
+Batuta automaticamente avanza por las fases de planificacion: spec → design → tasks. Resultado en `openspec/changes/todo-basico/`:
 
 ```
 explore.md     ← Investigacion
@@ -66,21 +65,19 @@ design.md      ← Arquitectura
 tasks.md       ← Tareas a implementar
 ```
 
-## Paso 6: Construye
+## Paso 5: Aprueba el plan de tareas
+
+Batuta te presenta las tareas organizadas en fases. Revisalas y responde:
 
 ```
-/sdd-apply
+Arranca.
 ```
 
 Batuta escribe codigo siguiendo las tareas. Antes de cada archivo, pregunta "Procedo?" — responde **si**.
 
-## Paso 7: Verifica
+## Paso 6: Revisa la verificacion
 
-```
-/sdd-verify
-```
-
-La Piramide de Validacion en accion:
+Batuta verifica automaticamente con la Piramide de Validacion:
 
 | Capa | Que verifica | Quien |
 |------|-------------|-------|
@@ -92,25 +89,22 @@ La Piramide de Validacion en accion:
 
 **Gate G2**: Todo pasa? Listo para produccion.
 
-## Paso 8: Archiva
+## Paso 7: Archiva
 
-```
-/sdd-archive
-```
-
-Cierra el cambio y documenta lecciones aprendidas.
+Batuta cierra el cambio y documenta lecciones aprendidas.
 
 ---
 
 ## Lo que acabas de hacer
 
 ```
-Idea → Explorar → Proponer → Especificar → Disenar →
-Tareas → Implementar → Verificar → Archivar
+"Quiero una todo app" → Propuesta → Aprobacion → Plan → Implementacion → Verificacion → Archivado
 ```
 
-El proceso profesional completo, asistido por Batuta.
+El proceso profesional completo. Tus unicas acciones fueron: describir lo que querias, aprobar la propuesta, y aprobar el plan de tareas. Batuta hizo el resto.
+
+> **Nota**: Si prefieres controlar cada paso manualmente, puedes usar los slash commands directamente: `/sdd-init`, `/sdd-new`, `/sdd-ff`, `/sdd-apply`, `/sdd-verify`, `/sdd-archive`.
 
 ---
 
-→ [Anatomia de un comando](anatomia-de-un-comando.md) — Que pasa cuando escribes /sdd-explore
+→ [Anatomia de un comando](anatomia-de-un-comando.md) — Como funciona internamente (para los curiosos)

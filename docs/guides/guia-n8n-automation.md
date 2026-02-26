@@ -179,7 +179,6 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 **Que esperar**: Claude va a descargar el ecosistema y configurar todo. Puede tomar 1-2 minutos. Cuando termine, te dira que archivos creo, incluyendo:
 - `CLAUDE.md` — Las instrucciones del chef (router principal + scope agents + execution gate)
 - `.batuta/session.md` — El cuaderno donde Claude anota en que quedo (para continuar despues)
-- `.batuta/prompt-log.jsonl` — La bitacora de calidad (se llena automaticamente)
 
 **Tip**: Si Claude te pide permiso para ejecutar comandos, di "yes" o "si".
 
@@ -802,14 +801,13 @@ para manejar las nuevas categorias.
 
 ## Mejorar tus instrucciones
 
-Despues de trabajar un rato con Claude (10+ interacciones), puedes pedirle que analice como le ha ido entendiendo tus pedidos:
+Despues de trabajar un rato con Claude (10+ interacciones), pidele feedback directo:
 
 ```
-/batuta-analyze-prompts
+Como ha ido la comunicacion en este proyecto? Que tipo de errores has cometido y como puedo mejorar mis instrucciones?
 ```
 
-Claude va a revisar la bitacora de calidad y te dira:
-- Cuantas veces tuvo que corregir algo
+Claude revisa el contexto del proyecto y te da:
 - Que tipo de errores comete mas seguido
 - Tasa de compliance del Execution Gate
 - **Recomendaciones concretas** para que tus proximos pedidos sean mas claros
@@ -1020,8 +1018,7 @@ Estas metricas son estimaciones para que compares cuando ejecutes los pasos. Ano
 | Optimizacion rendimiento + seguridad | Agent Team | 20-30 min | ~120K tokens | 85% cobertura | Dos perspectivas simultaneas | Pueden tocar los mismos archivos |
 
 > **Importante**: Estas son estimaciones iniciales. Cuando ejecutes cada paso, anota cuanto tardo
-> realmente y si el resultado fue correcto a la primera. Esa informacion ayuda a mejorar el sistema
-> con `/batuta-analyze-prompts`.
+> realmente y si el resultado fue correcto a la primera. Esa informacion ayuda a mejorar el sistema.
 
 ---
 

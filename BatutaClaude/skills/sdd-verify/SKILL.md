@@ -1,11 +1,7 @@
 ---
 name: sdd-verify
 description: >
-  Validate implementation using the AI Validation Pyramid: type checking/linting (Layer 1), unit tests (Layer 2),
-  integration/E2E tests (Layer 3), then flag items for human code review (Layer 4) and manual testing (Layer 5).
-  Checks specs, design, tasks, documentation, and O.R.T.A. operational standards.
-  Trigger: When the orchestrator launches you to verify a completed (or partially completed) change.
-  Keywords: verify, validate, check, review, audit, quality-gate, orta, documentation-check, validation-pyramid
+  Use when validating implementation via the AI Validation Pyramid. /sdd-verify
 license: MIT
 metadata:
   author: Batuta
@@ -139,7 +135,41 @@ LAYER 1 CHECK (automated by agent):
 └── If all pass clean → PASS Layer 1
 ```
 
-**This step is NOT optional.** The Validation Pyramid principle: automate the base layers to catch problems before they reach human reviewers. If a build/lint/type-check command is not available, note as WARNING and recommend adding one.
+**FALLBACK** (when no venv/dev environment exists):
+
+```
+IF no virtual environment or node_modules found:
+├── Python: Use `python -c "import ast; ast.parse(open(f).read())"` for syntax validation per file
+├── Node.js: Use `node --check {file}` for syntax validation per file
+├── Go: `go vet` works without extra setup
+├── Any language: Verify imports resolve, basic file structure is valid
+├── Mark Layer 1 as PARTIAL (not SKIP) with note: "No dev environment — syntax-only validation performed"
+└── NEVER mark Layer 1 as SKIP entirely — always run what you can
+```
+
+The fallback exists because the base of the Validation Pyramid should never be entirely empty. Even syntax-only validation catches import errors, typos, and structural problems that would otherwise reach human reviewers.
+
+**This step is NOT optional.** The Validation Pyramid principle: automate the base layers to catch problems before they reach human reviewers. If a build/lint/type-check command is not available, use the fallback above. Never skip Layer 1 entirely.
+
+### Step 3.6: Pyramid Layer 1e — Sync-in-Async Detection
+
+Scan changed files for common async anti-patterns that cause production performance issues:
+
+```
+SYNC-IN-ASYNC CHECK (automated by agent):
+├── Search for async def functions in changed files
+├── Inside each async def, flag these anti-patterns:
+│   ├── sync HTTP clients: requests.get/post, httpx.Client (not AsyncClient), anthropic.Anthropic (not AsyncAnthropic)
+│   ├── sync file I/O: open() without aiofiles in async handlers
+│   ├── sync database calls: engine.execute(), session.query() without async equivalents
+│   ├── blocking sleep: time.sleep() instead of asyncio.sleep()
+│   └── sync subprocess: subprocess.run() instead of asyncio.create_subprocess_exec()
+├── If found → WARNING: "Sync operation inside async function blocks the event loop. Use async equivalent."
+├── Include specific file:line references for each finding
+└── This check is INFORMATIONAL (WARNING, not CRITICAL) — but flag prominently as performance risk
+```
+
+This check exists because sync-in-async bugs are invisible in development (single user) but catastrophic in production (blocks the event loop for all concurrent requests). Manual code review often misses them.
 
 ### Step 3.7: Pyramid Layer 1d — Code Documentation Check (MANDATORY)
 
@@ -437,6 +467,14 @@ Return to the orchestrator the same content you wrote to `verify-report.md`:
 
 {One-line summary of overall status}
 {One-line business-impact summary for non-technical stakeholders}
+
+### Archive Readiness
+**archive_ready**: {true/false}
+
+{Deterministic field for sdd-archive to check. Rules:
+- `true`: No CRITICAL issues that block archive. PASS or PASS WITH WARNINGS verdict.
+- `false`: CRITICAL issues exist that must be fixed before archiving, OR verdict is FAIL.
+This field removes ambiguity about whether "CRITICAL (fix before deploy)" means "also blocks archive."}
 ```
 
 ## Sub-Agent Output Contract
@@ -456,6 +494,8 @@ detailed_report: >
 artifacts:
   - path: "openspec/changes/{change-name}/verify-report.md"
     action: "created"
+archive_ready: true | false
+# Deterministic: true if verdict is PASS or PASS_WITH_WARNINGS and no CRITICAL issues block archive
 next_recommended: >
   What the orchestrator should do next.
   Examples: "Proceed to sdd-archive", "Return to sdd-implement to fix CRITICAL issues",

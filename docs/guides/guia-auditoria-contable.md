@@ -6,7 +6,7 @@
 > **Formato**: Sigue los pasos en orden, como cuando aprendes a manejar.
 > Cada paso depende del anterior. No saltes pasos.
 >
-> **Que tiene de especial esta guia**: Demuestra el flujo CTO completo (v10.0)
+> **Que tiene de especial esta guia**: Demuestra el flujo CTO completo (v11.0)
 > — desde que un cliente te contacta con un problema hasta tener la solucion
 > funcionando en produccion. Incluye Discovery, Process Analysis, y Cost-Benefit.
 
@@ -342,7 +342,7 @@ Esto pasa **automaticamente**. Claude verifica las 5 preguntas de Discovery:
 
 **Que vamos a hacer**: Claude genera una propuesta formal que incluye cuanto cuesta y cuanto ahorra. Esto es lo que le presentas al cliente.
 
-Claude genera la propuesta con 3 secciones nuevas (v10.0):
+Claude genera la propuesta con 3 secciones nuevas (v11.0):
 
 ### Client Communication (lo que le envias al cliente)
 
@@ -407,7 +407,7 @@ Ejecuta `/sdd-continue` UNA vez por fase. Repite hasta completar specs, design y
 
 > **Alternativa rapida**: `/sdd-ff conciliacion-automatica` hace todo de corrido.
 
-### Que tiene de especial el design (v10.0)
+### Que tiene de especial el design (v11.0)
 
 Claude incluye **secciones condicionales** que antes no existian:
 
@@ -498,7 +498,7 @@ diccionario para probar el Recursion Designer.
 /sdd-verify conciliacion-automatica
 ```
 
-### Testing por tipo de solucion (v10.0)
+### Testing por tipo de solucion (v11.0)
 
 Claude aplica la **estrategia diferenciada** porque este proyecto usa LLM para clasificacion (si el design incluyo LLM) o puro automation (si no):
 
@@ -590,7 +590,7 @@ Ahorro estimado: 2.8 dias de trabajo manual
 /sdd-archive conciliacion-automatica
 ```
 
-### Learning Loop (v10.0)
+### Learning Loop (v11.0)
 
 Claude responde 6 preguntas de mejora del ecosistema:
 
@@ -711,7 +711,7 @@ conciliacion-bancaria/
 
 ---
 
-## Flujo visual completo (CTO v10.0)
+## Flujo visual completo (CTO v11.0)
 
 ```
 Cliente: "Necesito automatizar conciliacion bancaria"

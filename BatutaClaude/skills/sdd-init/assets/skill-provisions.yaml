@@ -1,0 +1,152 @@
+# skill-provisions.yaml — Tech-to-skill and tech-to-MCP mapping for Project Skill Provisioning
+# Read by sdd-init Step 3.8. This is DATA, not code.
+# Claude reads this file during /sdd-init to determine which skills and MCPs to provision.
+#
+# Categories:
+#   always   — Provisioned in every Batuta project
+#   sdd      — Provisioned when using the SDD pipeline (always in Batuta projects)
+#   tech_rules — Conditionally provisioned based on detected technologies
+#   mcp_rules  — MCP servers provisioned based on detected technologies
+
+# --- Skills: Always provisioned ---
+always:
+  - scope-rule
+  - ecosystem-creator
+  - security-audit
+  - team-orchestrator
+
+# --- Skills: SDD pipeline (always in Batuta projects) ---
+sdd:
+  - sdd-init
+  - sdd-explore
+  - sdd-propose
+  - sdd-spec
+  - sdd-design
+  - sdd-tasks
+  - sdd-apply
+  - sdd-verify
+  - sdd-archive
+
+# --- Skills: Technology-detected ---
+# Each rule has: detect (signals) + skills (to provision)
+# Signal types:
+#   files: file names to check for existence
+#   content_pattern: regex to search in dependency files (requirements.txt, pyproject.toml, package.json, etc.)
+#   project_type: match against sdd-init Step 1 project type detection
+#   context_mentions: keywords that may appear in user conversation or project docs
+tech_rules:
+  # Python + FastAPI
+  - detect:
+      files: [requirements.txt, pyproject.toml, setup.py, Pipfile]
+      content_pattern: "fastapi|FastAPI"
+    skills: [fastapi-crud, fastapi-streaming, jwt-auth]
+
+  # SQLAlchemy / ORM
+  - detect:
+      content_pattern: "sqlalchemy|SQLAlchemy|alembic"
+    skills: [sqlalchemy-models]
+
+  # SQL Server / pyodbc
+  - detect:
+      content_pattern: "pyodbc|mssql|sqlserver"
+    skills: [pyodbc-sqlserver, sqlglot-validation]
+
+  # LLM / AI Agents
+  - detect:
+      content_pattern: "langchain|langgraph|openai|anthropic|google-adk|claude"
+      project_type: ai-agent
+    skills: [llm-pipeline-design]
+
+  # ETL / Data Pipelines
+  - detect:
+      content_pattern: "temporalio|prefect|airflow|dagster|pandas|polars"
+      project_type: data-pipeline
+    skills: [data-pipeline-design]
+
+  # Temporal / Workers / Docker deploy
+  - detect:
+      content_pattern: "temporalio|temporal"
+      files: [temporal.yaml, docker-compose.yml, Dockerfile]
+    skills: [worker-scaffold]
+
+  # Colombia compliance
+  - detect:
+      context_mentions: [colombia, dian, nit, habeas data, ley 1581, retencion]
+    skills: [compliance-colombia]
+
+  # Complex processes (typically added by sdd-explore, not file detection)
+  # Included here for completeness — sdd-explore Step 2.5 can also provision these
+  - detect:
+      context_mentions: [process complexity, multiple actors, 3+ case types]
+    skills: [process-analyst]
+
+  # External taxonomies / recursive categories
+  - detect:
+      context_mentions: [external categories, bank concepts, tax codes, SKU hierarchy]
+    skills: [recursion-designer]
+
+# --- MCP Servers ---
+# Each rule has: detect (signals) + mcp (server config)
+# Config values with YOUR_*_HERE are placeholders the user must fill in.
+mcp_rules:
+  # Always include — live documentation lookup
+  always:
+    context7:
+      type: http
+      url: "https://mcp.context7.com/mcp"
+
+  # GitHub — if project is a git repository
+  - detect:
+      files: [.git]
+    mcp:
+      name: github
+      type: stdio
+      command: npx
+      args: ["-y", "@modelcontextprotocol/server-github"]
+      env:
+        GITHUB_PERSONAL_ACCESS_TOKEN: "YOUR_TOKEN_HERE"
+
+  # PostgreSQL — if postgres detected in docker-compose or dependencies
+  - detect:
+      content_pattern: "postgres|postgresql|psycopg"
+      files: [docker-compose.yml, docker-compose.yaml]
+    mcp:
+      name: postgres
+      type: stdio
+      command: uvx
+      args: ["postgres-mcp", "--access-mode=unrestricted"]
+      env:
+        DATABASE_URI: "YOUR_DATABASE_URI_HERE"
+
+  # Playwright — if E2E testing configured
+  - detect:
+      files: [playwright.config.ts, playwright.config.js]
+      content_pattern: "playwright"
+    mcp:
+      name: playwright
+      type: stdio
+      command: npx
+      args: ["-y", "@playwright/mcp@latest"]
+
+  # Coolify — if deployment platform detected
+  - detect:
+      files: [coolify.json, .coolify]
+      content_pattern: "coolify"
+    mcp:
+      name: coolify
+      type: stdio
+      command: npx
+      args: ["-y", "@masonator/coolify-mcp"]
+      env:
+        COOLIFY_ACCESS_TOKEN: "YOUR_TOKEN_HERE"
+        COOLIFY_BASE_URL: "YOUR_COOLIFY_URL_HERE"
+
+  # n8n — if automation platform detected
+  - detect:
+      files: [n8n-*.json]
+      project_type: automation
+    mcp:
+      name: n8n-mcp
+      type: stdio
+      command: supergateway
+      args: ["--streamableHttp", "YOUR_N8N_MCP_URL_HERE"]

@@ -1,8 +1,7 @@
 ---
 name: sdd-archive
 description: >
-  Sync delta specs to main specs and archive a completed change.
-  Trigger: When the orchestrator launches you to archive a change after implementation and verification.
+  Use when archiving a completed change, syncing specs. /sdd-archive
 license: MIT
 metadata:
   author: Batuta
@@ -39,6 +38,26 @@ Rules:
 - If mode resolves to `openspec`, perform merge and archive folder moves as defined in this skill.
 
 ## What to Do
+
+### Step 0: Validate Archive Readiness
+
+Before any archive operation, verify the change is ready:
+
+```
+ARCHIVE READINESS CHECK (deterministic):
+├── Read verify-report.md
+├── Check for `archive_ready` field:
+│   ├── If `archive_ready: false` → STOP. Return status: blocked.
+│   ├── If `archive_ready: true` → proceed to Step 1.
+│   └── If field missing (legacy report) → fall back to verdict check below.
+├── Fallback: Check verdict field:
+│   ├── If verdict is FAIL → STOP. Return status: blocked.
+│   ├── If verdict is PASS or PASS WITH WARNINGS → proceed.
+│   └── If unclear → STOP. Ask orchestrator to re-run sdd-verify.
+└── If verify-report.md does not exist → STOP. Run sdd-verify first.
+```
+
+This check replaces the previous cognitive rule "NEVER archive a change that has CRITICAL issues" with a deterministic file-based check. The `archive_ready` field in verify-report.md is the source of truth.
 
 ### Step 1: Sync Delta Specs to Main Specs
 
@@ -99,6 +118,23 @@ Append to `design.md`:
 ```
 
 This ensures the design document remains an accurate historical record, not a stale plan.
+
+### Step 1.7: Update config.yaml Context
+
+Read `openspec/config.yaml`. If the context section contains unresolved placeholders (e.g., "TBD", "Por explorar", "To be determined", generic descriptions that exploration has since resolved):
+
+1. Read `openspec/changes/{change-name}/explore.md` (or the exploration analysis)
+2. Identify resolved technology decisions (frameworks, databases, APIs, models)
+3. Update `config.yaml` context with the actual stack decisions
+4. This ensures config.yaml reflects post-exploration reality, not init-time guesses
+
+```
+EXAMPLE:
+Before: "Tech stack: Python (TBD framework)", "LLM: Por explorar"
+After:  "Tech stack: Python (FastAPI)", "LLM: Claude (Anthropic API)"
+```
+
+If config.yaml context is already accurate, skip this step.
 
 ### Step 2: Move to Archive
 
@@ -241,7 +277,7 @@ Every response back to the orchestrator MUST include the following structured en
 
 ## Rules
 
-- NEVER archive a change that has CRITICAL issues in its verification report
+- NEVER archive a change that has CRITICAL issues in its verification report. This is enforced by Step 0: check `archive_ready: false` or `verdict: FAIL` in verify-report.md. Do NOT rely on reading and interpreting CRITICAL issues manually — use the deterministic `archive_ready` field
 - ALWAYS sync delta specs BEFORE moving to archive
 - When merging into existing specs, PRESERVE requirements not mentioned in the delta
 - Use ISO date format (YYYY-MM-DD) for archive folder prefix

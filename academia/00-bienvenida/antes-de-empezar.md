@@ -84,7 +84,7 @@ git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-i
 El instalador:
 1. Descarga el ecosistema en un directorio temporal
 2. Te pregunta que plataforma instalar (Claude Code o Antigravity)
-3. Instala los 24 skills, 3 agentes, hooks y configuracion en `~/.claude/`
+3. Instala los 22 skills, 3 agentes, hooks y configuracion en `~/.claude/`
 4. Configura tu directorio actual como proyecto Batuta
 5. Limpia todo automaticamente — no queda ninguna copia del repositorio
 
@@ -131,6 +131,8 @@ Stack: ...
 Location: openspec/
 ```
 
+> Batuta automaticamente detecta tu stack y provee solo los skills necesarios (v11.3).
+
 ---
 
 ## Estructura despues de instalar
@@ -150,7 +152,7 @@ Despues de la instalacion, tu carpeta personal de Claude tendra esta estructura:
     sdd-explore/      ← Skill para investigar
     sdd-propose/      ← Skill para proponer
     security-audit/   ← Skill para seguridad
-    ... (24 skills en total)
+    ... (22 skills en total)
 ```
 
 ---

@@ -1,6 +1,12 @@
 # Comandos completos
 
-Referencia rapida de todos los comandos disponibles en Batuta Dots v10.0.
+Referencia rapida de todos los comandos disponibles en Batuta Dots v11.0.
+
+> **Auto-routing**: Normalmente no necesitas escribir estos comandos. Batuta detecta
+> automaticamente lo que necesitas y ejecuta la fase correcta. Describe tu problema
+> en lenguaje natural y Batuta actua. Estos comandos existen como **override manual**
+> para cuando quieras controlar un paso especifico directamente.
+> Ver: [Auto-routing](../01-nivel-cero/el-pipeline-sdd.md#auto-routing-conversacion-natural)
 
 ---
 
@@ -136,21 +142,6 @@ Stack: Next.js, PostgreSQL, Redis
 /create-workflow deploy-production
 ```
 
-### /batuta-sync-skills
-**Que hace**: Regenera tablas de ruteo de los agentes.
-**Cuando**: Despues de crear o modificar skills.
-
-```
-/batuta-sync-skills
-```
-
-### /batuta-analyze-prompts
-**Que hace**: Analiza el historial de interacciones y genera recomendaciones.
-**Cuando**: Quieres mejorar tu flujo de trabajo.
-
-```
-/batuta-analyze-prompts
-```
 
 ---
 
@@ -168,16 +159,14 @@ Stack: Next.js, PostgreSQL, Redis
 
 ## Referencia rapida
 
-| Quiero... | Comando |
-|-----------|---------|
-| Empezar proyecto | `/sdd-init` |
-| Investigar idea | `/sdd-explore "tema"` |
-| Construir algo nuevo | `/sdd-new nombre` |
-| Avanzar rapido | `/sdd-ff` |
-| Continuar donde quede | `/sdd-continue` |
-| Implementar | `/sdd-apply` |
-| Verificar | `/sdd-verify` |
-| Cerrar cambio | `/sdd-archive` |
-| Crear skill | `/create-skill nombre` |
-| Sincronizar | `/batuta-sync-skills` |
-| Analizar calidad | `/batuta-analyze-prompts` |
+| Quiero... | Forma natural (auto-routing) | Override manual |
+|-----------|------------------------------|-----------------|
+| Construir algo nuevo | "Necesito un dashboard de ventas" | `/sdd-new nombre` |
+| Investigar idea | "Como funciona el auth actual?" | `/sdd-explore "tema"` |
+| Continuar donde quede | "Donde quedamos?" | `/sdd-continue` |
+| Avanzar rapido por planificacion | "Dale, avanza con todo" | `/sdd-ff` |
+| Implementar | "Arranca con el codigo" | `/sdd-apply` |
+| Verificar | "Verifica que funcione" | `/sdd-verify` |
+| Cerrar cambio | "Archiva el cambio" | `/sdd-archive` |
+| Empezar proyecto | — | `/sdd-init` |
+| Crear skill | — | `/create-skill nombre` |
