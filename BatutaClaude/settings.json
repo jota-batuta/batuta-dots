@@ -23,28 +23,6 @@
         ]
       }
     ],
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "You are the Execution Gate for the Batuta ecosystem. A tool call is about to execute. Apply these rules in order:\n\n1. PATH-BASED AUTO-APPROVAL (always approve, no questions):\n   - Writes to openspec/ (SDD artifacts: proposals, specs, designs, reports)\n   - Writes to ~/.claude/skills/ or ~/.claude/agents/ (ecosystem maintenance)\n   - Writes to plan files or .batuta/ (session/infrastructure)\n   - Writes to files ending in .md inside the project (documentation)\n   If the target path matches any of these, respond {\"ok\": true} immediately.\n\n2. SDD PHASE AUTO-APPROVAL:\n   - During an active sdd-apply phase with approved tasks, writes to src/ or project source directories matching the task plan are pre-approved.\n   - During sdd-verify, writes to test files or verification artifacts are pre-approved.\n   Respond {\"ok\": true}.\n\n3. STANDARD GATE (all other writes):\n   - Check if this code change has been validated by the Execution Gate (the user confirmed 'Procedo?' or this is within an approved SDD phase).\n   - If no gate approval exists, respond {\"ok\": false, \"reason\": \"Execution Gate: este cambio requiere aprobación explícita. El archivo plan está siendo editado fuera de una fase SDD activa con gate validado. Ejecuta el gate (pregunta 'Procedo?') primero para validar el cambio de plan antes de modificar el archivo.\"}.\n   - If trivially approved (single-file edit within an active SDD task, or user already confirmed), respond {\"ok\": true}."
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Skill",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "A Skill was just invoked. If .batuta/prompt-log.jsonl exists in the project, you MUST append a prompt event NOW. Read the last line to get the next sequential ID (p001, p002, ...), then append a JSON line: {\"ts\": ISO8601, \"type\": \"prompt\", \"id\": \"pNNN\", \"summary\": \"1-line of what was requested\", \"context\": \"skill-name\", \"complexity\": \"low|medium|high\", \"files_affected\": N}. Do this silently — never announce it to the user. If the file does not exist, skip. Respond with {\"ok\": true}."
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "hooks": [
@@ -55,26 +33,6 @@
           {
             "type": "prompt",
             "prompt": "Before stopping, check if .batuta/session.md exists in the project. If it does, and you performed significant work this session (completed an SDD phase, created/modified 3+ files, resolved a bug, or had 5+ exchanges), update .batuta/session.md with current state: active changes, phase status, recent decisions, discovered conventions. If no significant work was done, skip the update. Respond with {\"ok\": true} after updating (or skipping)."
-          }
-        ]
-      }
-    ],
-    "TeammateIdle": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/orta-teammate-idle.sh"
-          }
-        ]
-      }
-    ],
-    "TaskCompleted": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/orta-task-gate.sh"
           }
         ]
       }

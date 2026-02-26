@@ -1,6 +1,6 @@
 # Skills que tienes
 
-Batuta Dots tiene 24 skills — especialistas que se activan cuando los necesitas. El sistema los activa automaticamente, pero conocerlos te da poder para pedir exactamente lo que necesitas.
+Batuta Dots tiene 22 skills — especialistas que se activan cuando los necesitas. El sistema los activa automaticamente, pero conocerlos te da poder para pedir exactamente lo que necesitas.
 
 ---
 
@@ -41,21 +41,14 @@ Cada skill tiene un campo `description` en su archivo que empieza con "Use when.
 | **llm-pipeline-design** | Pipelines de IA | Clasificadores, prompts |
 | **worker-scaffold** | Workers y deploy | Temporal, Docker, Coolify |
 
-### Infraestructura (5 skills)
+### Infraestructura (4 skills)
 
 | Skill | Que hace | Comando |
 |-------|---------|---------|
 | **ecosystem-creator** | Crea skills, agentes, workflows | `/create-skill` |
 | **scope-rule** | Decide donde va cada archivo | Automatico |
-| **skill-sync** | Sincroniza tablas de ruteo | `/batuta-sync-skills` |
 | **team-orchestrator** | Solo, subagente, o equipo | Automatico |
 | **security-audit** | OWASP, secrets, amenazas | En design/verify |
-
-### Observabilidad (1 skill)
-
-| Skill | Que hace | Comando |
-|-------|---------|---------|
-| **prompt-tracker** | Registra y analiza calidad | `/batuta-analyze-prompts` |
 
 ### Patrones reutilizables (3 skills)
 

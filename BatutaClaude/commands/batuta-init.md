@@ -38,7 +38,7 @@ Do NOT copy settings.json, mcp-servers.template.json, or other config files — 
 
 ### Step 2.5: Initialize .batuta/ directory
 
-Create the project-local Batuta directory for session continuity and prompt tracking:
+Create the project-local Batuta directory for session continuity:
 
 ```bash
 mkdir -p .batuta
@@ -46,17 +46,12 @@ mkdir -p .batuta
 
 Copy the session template from batuta-dots:
 ```bash
-cp "$BATUTA_DOTS_PATH/BatutaClaude/skills/prompt-tracker/assets/session-template.md" .batuta/session.md
+cp "$BATUTA_DOTS_PATH/infra/templates/session-template.md" .batuta/session.md
 ```
 
 Read the session template and use the Write tool to create `.batuta/session.md`,
 replacing `{project-name}` with the actual project name (from argument or directory name).
 Do not use sed — use Claude Code's native Write tool for cross-platform compatibility.
-
-Create an empty prompt log:
-```bash
-touch .batuta/prompt-log.jsonl
-```
 
 ### Step 3: Sync skills + install hooks
 
@@ -67,7 +62,7 @@ bash "$BATUTA_DOTS_PATH/infra/setup.sh" --sync
 bash "$BATUTA_DOTS_PATH/infra/setup.sh" --hooks
 ```
 
-The `--hooks` flag installs the 5 native hooks (Execution Gate, session continuity, O.R.T.A.) and permissions to `~/.claude/settings.json`. It backs up existing settings before merging.
+The `--hooks` flag installs the native hooks (session continuity) and permissions to `~/.claude/settings.json`. It backs up existing settings before merging.
 
 If the script fails, manually copy skills:
 ```bash
@@ -89,7 +84,6 @@ Create a `.gitignore` if one doesn't exist, with at minimum:
 node_modules/
 __pycache__/
 .venv/
-.batuta/prompt-log.jsonl
 .batuta/analysis-report.md
 ```
 
@@ -103,16 +97,15 @@ Ecosistema Batuta instalado en este proyecto.
 Archivos creados:
 - CLAUDE.md (personalidad + reglas + routing de skills)
 - .batuta/session.md (continuidad entre sesiones)
-- .batuta/prompt-log.jsonl (tracking de satisfaccion)
 
 Skills sincronizados a ~/.claude/skills/ (X skills)
-Hooks instalados en ~/.claude/settings.json (5 hooks + permissions)
+Hooks instalados en ~/.claude/settings.json (2 hooks + permissions)
 
 Comandos disponibles:
 - /sdd-init          — Iniciar proyecto con SDD
 - /sdd-explore       — Explorar una idea
 - /sdd-new           — Crear propuesta de cambio
-- /create-skill      — Crear un skill nuevo
+- /create <type>     — Crear un skill, agente, o workflow
 
 Siguiente paso recomendado: /sdd-init
 ```

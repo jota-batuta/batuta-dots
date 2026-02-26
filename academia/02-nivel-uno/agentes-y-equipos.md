@@ -12,11 +12,11 @@ Coordina el flujo SDD completo (explorar a archivar). Maneja: sdd-init, sdd-expl
 
 ### Infra Agent — El arquitecto de la casa
 
-Coordina organizacion de archivos, creacion de herramientas, seguridad. Maneja: ecosystem-creator, scope-rule, skill-sync, team-orchestrator, security-audit. Cada archivo que se crea pasa por el Scope Rule.
+Coordina organizacion de archivos, creacion de herramientas, seguridad. Maneja: ecosystem-creator, scope-rule, team-orchestrator, security-audit. Cada archivo que se crea pasa por el Scope Rule.
 
 ### Observability Agent — El inspector de calidad
 
-Coordina registro de eventos, calidad, y continuidad de sesion. Maneja: prompt-tracker. Es el motor O.R.T.A.:
+Coordina registro de eventos, calidad, y continuidad de sesion. Es el motor O.R.T.A.:
 - **O**bservabilidad: Registra cada accion importante
 - **R**epetibilidad: Mismo input = mismo resultado
 - **T**razabilidad: Cada decision se puede rastrear

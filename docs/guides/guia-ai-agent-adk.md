@@ -174,7 +174,6 @@ claude
 **Que hace Claude**: Descarga el ecosistema y configura todo. Puede tomar 1-2 minutos. Crea:
 - `CLAUDE.md` — Las instrucciones del chef (router principal)
 - `.batuta/session.md` — El cuaderno donde Claude anota en que quedo
-- `.batuta/prompt-log.jsonl` — La bitacora de calidad
 
 **Si no tienes el comando /batuta-init**, copia y pega esto en su lugar:
 

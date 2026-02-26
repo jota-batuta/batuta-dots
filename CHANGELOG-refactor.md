@@ -4,6 +4,60 @@
 
 ---
 
+## v11.1.0 — QA Cleanup: Eliminate Ecosystem Overhead (2026-02-26)
+
+### Contexto
+
+QA audit against `inventory-agent` project revealed significant ecosystem overhead. Several components duplicate Claude Code native features: prompt-log duplicates transcripts, skill-sync's routing tables are obsolete since v8 (skills auto-discovered by description), Execution Gate LLM hook was non-deterministic. This release eliminates dead weight and cleans all orphan references.
+
+### Eliminated Components
+
+- **prompt-tracker skill** — Removed entirely. prompt-log.jsonl system duplicated Claude Code native transcripts with cognitive overhead and non-deterministic behavior.
+- **skill-sync skill** — Removed entirely. Routing tables are obsolete since skills are auto-discovered by their `description` field.
+- **4 hook types** — Removed `PreToolUse` (non-deterministic LLM gate), `PostToolUse` (wrote to prompt-log), `TeammateIdle` (prompt-log centralization), `TaskCompleted` (prompt-log quality gate). Only `SessionStart` and `Stop` remain.
+- **4 commands** — Removed `batuta-analyze-prompts`, `batuta-sync-skills`. Unified 3 create commands (`create-skill`, `create-sub-agent`, `create-workflow`) into `/create <type> <name>`.
+
+### Changes
+
+- **Session template moved**: `prompt-tracker/assets/session-template.md` → `infra/templates/session-template.md`
+- **Unified create command**: `/create <type> <name>` replaces 3 separate commands
+- **team-orchestrator description**: Fixed to "Use when..." trigger format
+- **Scope agents cleaned**: All 3 kept, removed AUTO-GENERATED delimiters and obsolete skill references
+- **CLAUDE.md simplified**: Removed Prompt Tracking section, simplified Scope Routing (no agent column), removed ecosystem.json ref
+- **Execution Gate**: Kept as cognitive rule in CLAUDE.md, removed non-deterministic PreToolUse hook
+- **sdd-apply**: Removed Step 0 (Verify Execution Gate via prompt-log)
+- **sdd-propose**: Removed prompt-log amendment logging step
+- **ecosystem-creator**: Removed skill-sync references, updated registration checklists
+- **session-save.sh**: Removed prompt-log.jsonl writing
+- **batuta-init**: Updated template path, removed prompt-log creation
+- **batuta-update**: Removed prompt-log from local/synced table
+
+### Documentation Updates (~40 files)
+
+- 2 READMEs (counts, architecture, file tree, commands)
+- 12+ academia files (skill counts, hook counts, removed prompt-tracker/skill-sync entries)
+- 8 guide files (removed prompt-log.jsonl from archivos creados)
+- 9 QA integration test files (removed prompt-log expectations)
+- 2 architecture docs (removed prompt-log diagrams, updated hooks)
+- setup_test.sh (updated all test expectations)
+
+### New Counts
+
+| Component | Before | After |
+|-----------|--------|-------|
+| Skills | 24 | 22 |
+| Agents | 3 | 3 |
+| Commands | 15 | 11 |
+| Hook types | 6 | 2 |
+
+### Rollback
+
+```bash
+git revert <commit-hash>..HEAD  # Revert all v11.1 commits
+```
+
+---
+
 ## v11.0.1 — Dynamic Skill Discovery + Hardcoded Reference Cleanup (2026-02-26)
 
 ### Contexto

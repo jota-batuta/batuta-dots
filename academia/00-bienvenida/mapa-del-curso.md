@@ -66,7 +66,7 @@ Extendiendo el ecosistema → Templates de equipo → Referencia completa
 ### Modulo 2 — Nivel Uno
 | Leccion | Descripcion | Tiempo |
 |---------|------------|--------|
-| [Skills que tienes](../02-nivel-uno/skills-que-tienes.md) | Catalogo completo de 24 skills | 30 min |
+| [Skills que tienes](../02-nivel-uno/skills-que-tienes.md) | Catalogo completo de 22 skills | 30 min |
 | [Agentes y equipos](../02-nivel-uno/agentes-y-equipos.md) | Los 3 agentes + cuando se activan equipos | 25 min |
 | [La capa CTO](../02-nivel-uno/la-capa-cto.md) | Los 6 expertos estrategicos que se activan solos | 20 min |
 | [Scope Rule](../02-nivel-uno/scope-rule.md) | Donde va cada archivo y por que | 20 min |
@@ -79,7 +79,7 @@ Extendiendo el ecosistema → Templates de equipo → Referencia completa
 | [Validando ideas](../03-nivel-dos/validando-ideas.md) | sdd-explore como herramienta de pensamiento | 20 min |
 | [Equipos de agentes](../03-nivel-dos/equipos-de-agentes.md) | Cuando usar solo, subagente, o equipo | 25 min |
 | [Compliance y datos](../03-nivel-dos/compliance-y-datos.md) | Regulacion colombiana + pipelines de datos | 20 min |
-| [Hooks y automatizacion](../03-nivel-dos/hooks-y-automatizacion.md) | Los 6 hooks que automatizan tu flujo | 20 min |
+| [Hooks y automatizacion](../03-nivel-dos/hooks-y-automatizacion.md) | Los 2 hooks que automatizan tu flujo | 20 min |
 
 ### Modulo 4 — Nivel Tres
 | Leccion | Descripcion | Tiempo |

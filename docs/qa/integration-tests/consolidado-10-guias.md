@@ -114,7 +114,7 @@ Pero `--all` opera dentro de batuta-dots, no en el proyecto del usuario. No crea
 
 El flag correcto es `--project <path>` (agregado en v9.1) que SI crea `.batuta/`, copia CLAUDE.md, y configura hooks.
 
-**Impacto**: Usuario sin `.batuta/session.md` (sin session continuity), sin `.batuta/prompt-log.jsonl` (sin prompt tracking), y CLAUDE.md en el lugar equivocado. El ecosistema funciona al 60% de capacidad.
+**Impacto**: Usuario sin `.batuta/session.md` (sin session continuity), y CLAUDE.md en el lugar equivocado. El ecosistema funciona al 60% de capacidad.
 
 **Fix propuesto**: Cambiar en TODAS las guias la Opcion B para usar `--project <path>`.
 

@@ -74,7 +74,7 @@ Items para tu revision:
 
 O.R.T.A. no es una herramienta que ejecutas una vez — es un framework que funciona siempre:
 
-**Observabilidad**: Cada accion significativa queda registrada en `.batuta/prompt-log.jsonl`. No tienes que hacer nada; el sistema lo hace automaticamente.
+**Observabilidad**: Cada accion significativa queda registrada automaticamente. No tienes que hacer nada; el sistema lo hace por ti.
 
 **Repetibilidad**: El mismo input produce el mismo resultado. Si ejecutas `/sdd-verify` dos veces con el mismo codigo, el resultado es identico.
 

@@ -142,21 +142,6 @@ Stack: Next.js, PostgreSQL, Redis
 /create-workflow deploy-production
 ```
 
-### /batuta-sync-skills
-**Que hace**: Regenera tablas de ruteo de los agentes.
-**Cuando**: Despues de crear o modificar skills.
-
-```
-/batuta-sync-skills
-```
-
-### /batuta-analyze-prompts
-**Que hace**: Analiza el historial de interacciones y genera recomendaciones.
-**Cuando**: Quieres mejorar tu flujo de trabajo.
-
-```
-/batuta-analyze-prompts
-```
 
 ---
 
@@ -185,5 +170,3 @@ Stack: Next.js, PostgreSQL, Redis
 | Cerrar cambio | "Archiva el cambio" | `/sdd-archive` |
 | Empezar proyecto | — | `/sdd-init` |
 | Crear skill | — | `/create-skill nombre` |
-| Sincronizar | — | `/batuta-sync-skills` |
-| Analizar calidad | `/batuta-analyze-prompts` |

@@ -78,7 +78,7 @@ No siempre necesitas crear skills proactivamente. El sistema detecta gaps automa
 1. Empiezas a trabajar con una tecnologia nueva
 2. **infra-agent** detecta que no hay skill para esa tecnologia
 3. Te ofrece: crear skill local, global, o continuar sin el
-4. Si creas el skill, se registra automaticamente con **skill-sync**
+4. Si creas el skill, se registra automaticamente
 
 ---
 
@@ -88,20 +88,7 @@ Si creas un skill en un proyecto y quieres que este disponible en todos:
 
 1. Al terminar el proyecto, Batuta pregunta: "Quieres propagar estos skills a batuta-dots?"
 2. Si dices si, el skill se copia al repositorio global
-3. Se ejecuta skill-sync para actualizar las tablas de ruteo
-4. En tu proximo proyecto, el skill ya esta disponible
-
----
-
-## skill-sync: mantener todo sincronizado
-
-Despues de crear o modificar skills:
-
-```
-/batuta-sync-skills
-```
-
-Esto regenera las tablas de ruteo en los agentes. Sin sync, un skill nuevo no se "ve" en el sistema.
+3. En tu proximo proyecto, el skill ya esta disponible
 
 ---
 

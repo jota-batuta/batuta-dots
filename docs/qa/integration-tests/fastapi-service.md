@@ -61,13 +61,13 @@ Y agregar una nota: "La seguridad se verifica automaticamente dentro de los paso
 
 **Paso**: Paso 2 (Instalar el ecosistema Batuta), Opcion B
 
-**Descripcion**: El prompt de la Opcion B que el usuario debe copiar indica ejecutar `skills/setup.sh --all`, lo que segun el ecosystem-snapshot.md tiene un bug conocido (exit code 1 y output duplicado). Pero mas importante: el prompt de Opcion B NO instruye a crear `.batuta/session.md` ni `.batuta/prompt-log.jsonl`, y no menciona la instalacion de hooks.
+**Descripcion**: El prompt de la Opcion B que el usuario debe copiar indica ejecutar `skills/setup.sh --all`, lo que segun el ecosystem-snapshot.md tiene un bug conocido (exit code 1 y output duplicado). Pero mas importante: el prompt de Opcion B NO instruye a crear `.batuta/session.md`, y no menciona la instalacion de hooks.
 
 Comparacion con `batuta-init.md` (el command real que ejecuta `/batuta-init`):
 
 | Paso | batuta-init.md (real) | Guia Opcion B (prompt) |
 |------|-----------------------|------------------------|
-| Crear .batuta/ | Step 2.5: crea `.batuta/session.md` y `.batuta/prompt-log.jsonl` | NO lo menciona |
+| Crear .batuta/ | Step 2.5: crea `.batuta/session.md` | NO lo menciona |
 | Instalar hooks | Step 3: ejecuta `--sync` y `--hooks` por separado | Solo dice `--all` |
 | Gitignore | Step 4: crea `.gitignore` con entradas especificas | Solo dice "inicializa git" |
 

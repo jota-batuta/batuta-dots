@@ -55,13 +55,5 @@ if [[ -z "$BATUTA_DIR" ]]; then
     exit 0
 fi
 
-# Log session end event if prompt-log.jsonl exists
-TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-SESSION_ID=$(json_val session_id "unknown")
-
-if [[ -f "$BATUTA_DIR/prompt-log.jsonl" ]]; then
-    echo "{\"ts\":\"$TIMESTAMP\",\"type\":\"prompt\",\"event\":\"session_end\",\"session_id\":\"$SESSION_ID\"}" >> "$BATUTA_DIR/prompt-log.jsonl"
-fi
-
 # Allow stop — the prompt hook in settings.json handles the LLM evaluation
 exit 0

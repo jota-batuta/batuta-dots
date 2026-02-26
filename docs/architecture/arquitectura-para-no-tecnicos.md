@@ -49,7 +49,7 @@ Cada **skill** es una receta especifica. Por ejemplo:
 | `temporal-worker` | Como cocinar platos que llevan muchos pasos y pueden fallar |
 | `nextjs-portal` | Como montar el plato para que se vea bonito (la cara que ve el cliente) |
 
-El chef tiene **24 recetas basicas** que siempre estan disponibles (incluyendo 6 recetas de estrategia CTO agregadas en v11.0), y puede **aprender recetas nuevas** cuando las necesita.
+El chef tiene **22 recetas basicas** que siempre estan disponibles (incluyendo 6 recetas de estrategia CTO), y puede **aprender recetas nuevas** cuando las necesita.
 
 **Detalle importante**: Las recetas NO se leen todas al empezar. El chef solo abre la
 receta que necesita para el plato que esta preparando. Esto se llama "carga bajo demanda"
@@ -167,7 +167,7 @@ Cocina principal (Claude Code)  ←→  Libro maestro (batuta-dots)  ←→  Coc
 **Diferencias tecnicas simplificadas**:
 - La cocina principal tiene alarmas automaticas (hooks) que le recuerdan al chef hacer el checklist. La cocina rapida tiene un letrero en la pared que dice "No olvides el checklist" (rules).
 - La cocina principal puede armar equipos temporales especiales (Agent Teams). La cocina rapida tiene un coordinador que maneja varios chefs al mismo tiempo (Manager View).
-- Ambas tienen las mismas 22 recetas. Solo 2 recetas son exclusivas de la cocina principal porque necesitan las alarmas automaticas.
+- Ambas comparten las mismas recetas base. Solo algunas recetas son exclusivas de la cocina principal.
 
 ---
 
@@ -244,13 +244,15 @@ que coordinan grupos de sub-chefs:
 | Jefe de area | Que coordina | Sub-chefs a su cargo |
 |-------------|-------------|----------------------|
 | **Jefe de Cocina** (pipeline) | Todo el proceso de crear platos nuevos | Los 9 sub-chefs del proceso SDD |
-| **Jefe de Almacen** (infra) | Organizacion, inventario, seguridad, recetas | Organizacion de ingredientes (scope-rule), creacion de recetas (ecosystem-creator), inventario automatico (skill-sync), coordinador de equipo (team-orchestrator), protocolo de higiene (security-audit) |
-| **Jefe de Calidad** (observability) | Control de calidad silencioso | Inspector de calidad (prompt-tracker) |
+| **Jefe de Almacen** (infra) | Organizacion, inventario, seguridad, recetas | Organizacion de ingredientes (scope-rule), creacion de recetas (ecosystem-creator), coordinador de equipo (team-orchestrator), protocolo de higiene (security-audit) |
+| **Jefe de Calidad** (observability) | Ciclo de sesion | (sin sub-chefs activos actualmente) |
+
+Los sub-chefs (skills) se asignan automaticamente a cada jefe de area basandose en su descripcion — no hace falta asignarlos manualmente.
 
 El chef principal SOLO decide a que jefe de area pasarle el pedido. El jefe de area
 decide cuales sub-chefs necesita y los coordina.
 
-**Por que es mejor asi?** Porque el chef principal no necesita recordar los 15 recetarios.
+**Por que es mejor asi?** Porque el chef principal no necesita recordar todos los recetarios.
 Solo necesita saber 3 numeros de telefono: el del jefe de cocina, el del jefe de almacen,
 y el del jefe de calidad. Cada jefe de area conoce en detalle las recetas de su area.
 
@@ -294,8 +296,8 @@ Nadie tiene que recordar hacerlo. Es automatico.
 Ademas, `setup.sh --all` tambien instala las **alarmas automaticas** (hooks) que
 hacen que el checklist y la bitacora funcionen automaticamente.
 
-Eso es lo que hace **skill-sync**: cuando se crea o modifica una receta (SKILL.md),
-un script lee todas las recetas y regenera las tablas de referencia automaticamente.
+Eso es lo que hace **sync.sh**: cuando se crea o modifica una receta (SKILL.md),
+un script lee todas las recetas y valida el inventario automaticamente.
 
 ```
 Chef crea nueva receta de sushi
@@ -310,7 +312,7 @@ Listo — todos saben que ahora hay sushi disponible
 ```
 
 **Por que esto importa**: Sin inventario automatico, alguien tendria que recordar
-actualizar el menu cada vez que se agrega una receta. Con skill-sync, es imposible
+actualizar el menu cada vez que se agrega una receta. Con sync.sh, es imposible
 que una receta quede "invisible" — siempre aparece en el inventario.
 
 ---
@@ -353,30 +355,6 @@ Claude termina un trabajo importante, anota:
 
 La proxima vez que abras Claude, el lee el cuaderno del turno y sabe exactamente
 donde quedaste. Ya no necesitas repetirle "estabamos haciendo X con Y".
-
----
-
-## El Inspector de Calidad (Prompt Tracker)
-
-Todo buen restaurante tiene un sistema para mejorar. Cuando un cliente dice "esta
-sopa le falta sal", eso no se olvida — se registra en una bitacora.
-
-El **prompt-tracker** es la bitacora del restaurante:
-
-- Cada vez que le pides algo a Claude, se registra silenciosamente
-- Si tienes que corregir algo ("no, queria con menos sal"), se registra el tipo de error
-- Cuando dices "perfecto" o "listo", se cierra la anotacion
-
-**Importante**: Claude NUNCA te pregunta "¿calificame del 1 al 10?". La bitacora es
-silenciosa y automatica.
-
-Despues de varias interacciones, puedes pedirle a Claude que analice la bitacora con
-`/batuta:analyze-prompts`. El te dira cosas como:
-
-> "El 60% de las correcciones son porque falta especificar el tamano de pantalla.
-> Recomendacion: cuando pidas interfaces, menciona en que pantallas debe verse bien."
-
-Esto te ayuda a TI a darle mejores instrucciones, y a Claude a mejorar sus reglas.
 
 ---
 
@@ -441,10 +419,9 @@ Imagina que el restaurante tiene un sistema de alarmas automaticas que funcionan
 | Alarma | Cuando suena | Que hace |
 |--------|-------------|---------|
 | **Alarma de apertura** (SessionStart) | Cuando el chef empieza su turno | Lee el cuaderno del turno anterior y las instrucciones del restaurante |
-| **Alarma de cocina** (PreToolUse) | Cuando el chef va a tocar un plato | Ejecuta el checklist automaticamente — si no pasa, no puede cocinar |
 | **Alarma de cierre** (Stop) | Cuando el chef termina su turno | Guarda notas en el cuaderno para el siguiente turno |
 
-**Por que importa**: Antes, el chef tenia que "acordarse" de leer el cuaderno y hacer el checklist. Ahora las alarmas lo obligan — es imposible saltarselo. Es como tener un sistema contra incendios que funciona solo, sin depender de que alguien recuerde activarlo.
+**Por que importa**: Antes, el chef tenia que "acordarse" de leer el cuaderno. Ahora las alarmas lo obligan — es imposible saltarselo. Es como tener un sistema contra incendios que funciona solo, sin depender de que alguien recuerde activarlo.
 
 ---
 
@@ -562,9 +539,7 @@ Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
 | Construir lo que se planeo | `/sdd-apply` |
 | Verificar que todo funcione | `/sdd-verify` |
 | Cerrar y documentar | `/sdd-archive` |
-| Crear una receta nueva | `/create-skill nombre` |
-| Analizar como mejorar la comunicacion | `/batuta:analyze-prompts` |
-| Actualizar inventario de recetas | `/batuta:sync-skills` |
+| Crear una receta nueva | `/create skill nombre` |
 
 ---
 
@@ -581,12 +556,11 @@ Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
 | **Checklist pre-cocina** | Execution Gate | Verifica antes de cocinar: ingredientes, ubicacion, impacto |
 | **Control de calidad** | sdd-verify + O.R.T.A. | Verifican que todo salga bien |
 | **Bitacora del turno** | .batuta/session.md | El cuaderno donde el chef anota en que quedo para el proximo turno |
-| **Inspector de calidad** | prompt-tracker | Registra silenciosamente cada pedido y correccion para mejorar |
-| **Inventario automatico** | skill-sync | Actualiza el menu y listas de recetas automaticamente |
+| **Inventario automatico** | sync.sh | Actualiza el inventario de recetas automaticamente |
 | **Aprendiz que investiga** | ecosystem-creator | Cuando falta una receta, investiga y la crea |
 | **Equipo temporal** | Agent Teams (v7) | Cocineros extra para banquetes grandes — trabajan en paralelo, cada uno con su estacion |
 | **Coordinador de equipo** | team-orchestrator (v7) | Decide cuando armar equipo temporal y como repartir las tareas |
-| **Alarmas automaticas** | Native Hooks (v8) | Alarmas que obligan al chef a seguir el proceso sin que pueda saltarselo |
+| **Alarmas automaticas** | Native Hooks (SessionStart, Stop) | Alarmas que obligan al chef a seguir el proceso sin que pueda saltarselo |
 | **Control de calidad por capas** | AI Validation Pyramid (v8) | 5 niveles de inspeccion — los primeros 3 automaticos, los ultimos 2 humanos |
 | **Comandas precisas** | Contract-First Protocol (v9) | Contratos escritos que definen que recibe y que produce cada cocinero |
 | **Menus especializados** | Team Templates (v9) | Configuraciones pre-armadas de equipo para diferentes tipos de proyecto |
@@ -655,10 +629,10 @@ R: Claude Code tiene un costo de suscripcion. Las APIs de Google (Gmail, Gemini)
 
 **P: Que es O.R.T.A.?**
 R: Son cuatro cosas que toda aplicacion de Batuta debe tener:
-- **O**bservabilidad: Puedes ver que esta pasando en la app (logs, metricas). El **prompt-tracker** implementa esto para el propio ecosistema — registra cada interaccion y correccion.
+- **O**bservabilidad: Puedes ver que esta pasando en la app (logs, metricas)
 - **R**epetibilidad: Si algo funciona hoy, funciona manana igual
 - **T**razabilidad: Puedes seguir el rastro de cada decision y cambio. El **session.md** implementa esto — guarda el contexto de cada sesion.
-- **A**uto-supervision: La app se vigila a si misma y te avisa si algo sale mal. Incluye el **Execution Gate** (preventivo: verifica ANTES de actuar) y el **prompt-tracker** (reactivo: registra DESPUES para mejorar)
+- **A**uto-supervision: La app se vigila a si misma y te avisa si algo sale mal. Incluye el **Execution Gate** (preventivo: verifica ANTES de actuar)
 
 **P: Si cierro la terminal, Claude se olvida de todo?**
 R: No. Gracias al cuaderno del turno (`.batuta/session.md`), Claude lee donde quedo la ultima vez y continua sin que tengas que repetirle todo. Es automatico.

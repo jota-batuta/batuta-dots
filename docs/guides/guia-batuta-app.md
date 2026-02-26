@@ -155,7 +155,6 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 **Que esperar**: Claude va a descargar el ecosistema y configurar todo. Puede tomar 1-2 minutos. Cuando termine, te dira que archivos creo, incluyendo:
 - `CLAUDE.md` — Las instrucciones del chef (router principal + scope agents + execution gate)
 - `.batuta/session.md` — El cuaderno donde Claude anota en que quedo (para continuar despues)
-- `.batuta/prompt-log.jsonl` — La bitacora de calidad (se llena automaticamente)
 
 **Tip**: Si Claude te pide permiso para ejecutar comandos, di "yes" o "si".
 

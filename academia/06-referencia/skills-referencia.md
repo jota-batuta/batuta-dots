@@ -1,6 +1,6 @@
 # Skills — Referencia tecnica
 
-Ficha tecnica de cada uno de los 24 skills del ecosistema Batuta Dots v11.0.
+Ficha tecnica de cada uno de los 22 skills del ecosistema Batuta Dots v11.1.
 
 ---
 
@@ -116,12 +116,6 @@ Ficha tecnica de cada uno de los 24 skills del ecosistema Batuta Dots v11.0.
 - **Tools**: Read, Glob, Grep
 - **Que hace**: Arbol de decision: 1 feature → features/, 2+ → shared/, toda app → core/. Anti-patterns.
 
-### skill-sync
-- **Scope**: infra
-- **Auto-invoke**: Si (despues de crear/modificar skills)
-- **Tools**: Read, Edit, Write, Glob, Grep, Bash
-- **Que hace**: Regenera tablas de ruteo en agentes, valida frontmatter, detecta skills sin registrar
-
 ### team-orchestrator
 - **Scope**: infra
 - **Auto-invoke**: Si (al evaluar complejidad)
@@ -133,16 +127,6 @@ Ficha tecnica de cada uno de los 24 skills del ecosistema Batuta Dots v11.0.
 - **Auto-invoke**: Si (en design y verify)
 - **Tools**: Read, Glob, Grep, Bash
 - **Que hace**: Checklist 10 puntos OWASP, threat model, secrets scan, dependency audit, seccion especial IA (prompt injection, PII, cost control)
-
----
-
-## Observabilidad
-
-### prompt-tracker
-- **Scope**: observability
-- **Auto-invoke**: Si (al rastrear satisfaccion)
-- **Tools**: Read, Edit, Write, Glob, Grep, Bash
-- **Que hace**: Registra eventos en prompt-log.jsonl, computa metricas, detecta patrones de correccion, genera recomendaciones
 
 ---
 

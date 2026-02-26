@@ -29,10 +29,10 @@ estos puntos ciegos funcionales.
 - **Fix propuesto**: `setup.sh` deberia aceptar `--target <path>` o usar `$PWD` como destino
 
 #### H3: setup.sh --all NO crea .batuta/ directory
-- **Descripcion**: La guia dice que el setup crea `.batuta/session.md` y `.batuta/prompt-log.jsonl` pero `setup.sh --all` no los crea
+- **Descripcion**: La guia dice que el setup crea `.batuta/session.md` but `setup.sh --all` no los crea
 - **Impacto**: Sin estos archivos, O.R.T.A. session continuity no funciona hasta que los hooks los creen
 - **Reproduccion**: Ejecutar `bash skills/setup.sh --all` → no existe `.batuta/` en ningun proyecto
-- **Test propuesto**: `test_setup_creates_batuta_dir()` — verificar que `--all` crea `.batuta/session.md` y `.batuta/prompt-log.jsonl`
+- **Test propuesto**: `test_setup_creates_batuta_dir()` — verificar que `--all` crea `.batuta/session.md`
 - **Fix propuesto**: Agregar a `setup.sh --all` la creacion de `.batuta/` en el proyecto destino
 
 #### H4: setup.sh --all NO instala hooks nativos
@@ -130,7 +130,7 @@ test_setup_installs_hooks() {
 # I3: setup.sh --all debe crear .batuta/
 test_setup_creates_batuta_dir() {
     log_test "setup.sh --all creates .batuta/ directory"
-    # Verificar que setup.sh crea .batuta/session.md y prompt-log.jsonl
+    # Verificar que setup.sh crea .batuta/session.md
     assert_file_contains "$REPO_ROOT/skills/setup.sh" ".batuta\|session.md" \
         "setup.sh should create .batuta/ directory"
 }

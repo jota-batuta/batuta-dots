@@ -148,15 +148,6 @@ Before marking ANY task as complete, verify:
 
 ## What to Do
 
-### Step 0: Verify Execution Gate
-
-Before starting implementation, verify the Execution Gate ran for this task:
-1. Check `.batuta/prompt-log.jsonl` for a `gate` event linked to this prompt
-2. If no gate event exists, run the Execution Gate NOW (determine scope, location plan, impact)
-3. Log the gate event before proceeding
-
-This ensures every code change has a pre-validation record for traceability.
-
 ### Step 0.5: Evaluate Complexity for Team Routing (MANDATORY)
 
 Before writing any code, evaluate whether this implementation needs Agent Teams:

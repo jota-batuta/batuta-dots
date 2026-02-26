@@ -184,24 +184,6 @@ El command para actualizar el ecosistema es `batuta-update.md` y se invocaria co
 
 ---
 
-#### M-03: La guia describe `.batuta/prompt-log.jsonl` como "bitacora de calidad (se llena automaticamente)" pero no advierte que requiere inicializacion explicita
-
-**Paso afectado**: Paso 2
-
-La guia dice que tras instalar el ecosistema el usuario vera:
-
-> `.batuta/prompt-log.jsonl` — La bitacora de calidad (se llena automaticamente)
-
-El command `batuta-init.md` crea el archivo con `touch .batuta/prompt-log.jsonl`, lo cual es correcto. El archivo si se crea. Sin embargo, la descripcion "se llena automaticamente" puede generar expectativas incorrectas: el archivo **solo se llena** cuando Claude Code tiene el `PreToolUse` hook activo y el archivo `CLAUDE.md` con la seccion de Prompt Tracking configurada. Si el usuario usa el ecosistema sin hooks instalados (por ejemplo, si el `--hooks` fallo silenciosamente segun el ecosystem-snapshot que reporta "Exit code 1"), el archivo quedara vacio.
-
-El ecosystem-snapshot menciona que `setup.sh --all` tiene un bug conocido (exit code 1 aunque todo se instala). Si el usuario no verifica la instalacion de hooks, el prompt-log.jsonl no se llenara.
-
-**Impacto**: Bajo para el flujo principal del pipeline. Solo afecta el paso opcional de `/batuta:analyze-prompts`.
-
-**Archivo**: `docs/guides/guia-data-pipeline.md` (Paso 2), `BatutaClaude/commands/batuta-init.md`
-
----
-
 ## Tabla de Hallazgos
 
 | ID | Severidad | Descripcion | Prioridad | Archivo principal |
@@ -212,7 +194,6 @@ El ecosystem-snapshot menciona que `setup.sh --all` tiene un bug conocido (exit 
 | I-02 | IMPORTANTE | Estructura de carpetas de la guia (features/{nombre}/) no coincide con el template oficial de data-pipeline (pipeline/, transforms/, validators/) | Media | `teams/templates/data-pipeline.md` |
 | M-01 | MENOR | La guia atribuye Skill Gap Detection al infra-agent cuando en el flujo SDD el actor es sdd-explore | Baja | `docs/guides/guia-data-pipeline.md` (Paso 4) |
 | M-02 | MENOR | Template de reporte en prompt-tracker referencia `/batuta-update` (guion), inconsistente con la convencion `/{namespace}:{action}` | Baja | `BatutaClaude/skills/prompt-tracker/SKILL.md` |
-| M-03 | MENOR | La guia dice que prompt-log.jsonl "se llena automaticamente" sin advertir que requiere hooks activos | Baja | `docs/guides/guia-data-pipeline.md` (Paso 2) |
 
 ---
 

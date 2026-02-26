@@ -57,7 +57,7 @@ bash "$BATUTA_DOTS_PATH/skills/setup.sh" --sync
 bash "$BATUTA_DOTS_PATH/skills/setup.sh" --hooks
 ```
 
-**Analisis**: El flag `--all` existe (confirmado en `ecosystem-snapshot.md`: `setup.sh flags: --claude, --sync, --all, --verify, --hooks, --project`) pero el command `batuta-init.md` lo descompone en dos llamadas separadas (`--sync` y `--hooks`). La Opcion B es un prompt manual de "primera vez" que el usuario copia antes de tener el command instalado. Si un usuario tecnico lo ejecuta directamente como `setup.sh --all`, el comportamiento podria diferir del que documenta `batuta-init.md` (por ejemplo, el step 2.5 de `batuta-init.md` crea `.batuta/session.md` y `prompt-log.jsonl` antes de llamar al script, lo cual `--all` solo no hace).
+**Analisis**: El flag `--all` existe (confirmado en `ecosystem-snapshot.md`: `setup.sh flags: --claude, --sync, --all, --verify, --hooks, --project`) pero el command `batuta-init.md` lo descompone en dos llamadas separadas (`--sync` y `--hooks`). La Opcion B es un prompt manual de "primera vez" que el usuario copia antes de tener el command instalado. Si un usuario tecnico lo ejecuta directamente como `setup.sh --all`, el comportamiento podria diferir del que documenta `batuta-init.md` (por ejemplo, el step 2.5 de `batuta-init.md` crea `.batuta/session.md` antes de llamar al script, lo cual `--all` solo no hace).
 
 **Riesgo**: Un usuario que sigue la Opcion B manualmente (sin que Claude ejecute el prompt) podria omitir la creacion del directorio `.batuta/` y los archivos de sesion, ya que esos pasos estan en `batuta-init.md` Steps 2.5 pero NO en el prompt que la guia sugiere pegar.
 
@@ -143,7 +143,7 @@ Las siguientes referencias de la guia fueron verificadas contra el ecosistema y 
 | `prompt-tracker` — skill existe, es SSoT de event schemas | PASS | `BatutaClaude/skills/prompt-tracker/SKILL.md` |
 | 3 Scope Agents: pipeline, infra, observability | PASS | `BatutaClaude/CLAUDE.md` tabla de routing |
 | Execution Gate con modo LIGHT y FULL | PASS | `BatutaClaude/CLAUDE.md` seccion Execution Gate |
-| `.batuta/session.md` y `.batuta/prompt-log.jsonl` creados por `/batuta-init` | PASS | `BatutaClaude/commands/batuta-init.md` Step 2.5 |
+| `.batuta/session.md` creado por `/batuta-init` | PASS | `BatutaClaude/commands/batuta-init.md` Step 2.5 |
 | Skill Gap Detection en `infra-agent` con 3 opciones al usuario | PASS | `BatutaClaude/agents/infra-agent.md` |
 | `/sdd-new` crea proposal (sdd-explore → sdd-propose) | PASS | `BatutaClaude/CLAUDE.md` tabla SDD Commands |
 | `/sdd-continue` avanza al siguiente paso del pipeline | PASS | `BatutaClaude/CLAUDE.md` tabla SDD Commands |

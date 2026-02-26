@@ -1,9 +1,8 @@
 ---
 name: team-orchestrator
 description: >
-  Decides when to use solo session, subagents, or Agent Teams based on task complexity.
+  Use when evaluating task complexity, spawning teams, or coordinating multi-agent work.
   Provides team coordination rules and composition patterns for the Batuta ecosystem.
-  Trigger: When evaluating task complexity, spawning teams, or coordinating multi-agent work.
 license: MIT
 metadata:
   author: Batuta
@@ -245,7 +244,7 @@ The gate's FULL mode includes a "Team Assessment" step:
 During team work, if a teammate encounters a technology without a skill:
 1. Teammate messages lead: "Necesito skill para {tech}"
 2. Lead spawns a new "researcher" teammate to create the skill
-3. Researcher creates SKILL.md → runs skill-sync
+3. Researcher creates SKILL.md (auto-discovered by description)
 4. Original teammate reloads and continues
 
 ### With Session Continuity

@@ -63,7 +63,7 @@ Batuta decide ejecutar sdd-explore
          |
          v
 [5] O.R.T.A. registra el evento
-    → prompt-log.jsonl: tipo "prompt", scope "pipeline"
+    → Tipo "prompt", scope "pipeline"
 ```
 
 ---
@@ -75,7 +75,6 @@ Batuta decide ejecutar sdd-explore
 | **CLAUDE.md** | Router principal | `~/.claude/CLAUDE.md` |
 | **pipeline-agent** | Coordinador del flujo SDD | `~/.claude/agents/pipeline-agent.md` |
 | **sdd-explore** | Especialista en investigacion | `~/.claude/skills/sdd-explore/SKILL.md` |
-| **prompt-tracker** | Registro de eventos | `~/.claude/skills/prompt-tracker/SKILL.md` |
 | **Execution Gate** | Validador de cambios | Hook en `settings.json` |
 
 ---
@@ -116,15 +115,13 @@ No todos los comandos funcionan igual:
 ```
 /create-skill     → infra-agent → ecosystem-creator
 /create-sub-agent → infra-agent → ecosystem-creator
-/batuta-sync-skills → infra-agent → skill-sync
-/batuta-analyze-prompts → observability-agent → prompt-tracker
 ```
 
 ---
 
 ## El Execution Gate en detalle
 
-El Execution Gate es un **hook** — codigo que se ejecuta automaticamente antes de que Batuta escriba o modifique cualquier archivo.
+El Execution Gate es una validacion que se ejecuta automaticamente antes de que Batuta escriba o modifique cualquier archivo.
 
 ### Como funciona
 
@@ -132,7 +129,7 @@ El Execution Gate es un **hook** — codigo que se ejecuta automaticamente antes
 Batuta quiere escribir un archivo
          |
          v
-Hook PreToolUse se activa
+Execution Gate se activa
          |
          v
 Pregunta: "Este cambio fue validado?"

@@ -45,9 +45,9 @@ Las correcciones mas significativas de v9.1 fueron: `setup.sh --hooks` (nuevo fl
 ### H3 (original): setup.sh --all NO crea .batuta/ directory
 - **Estado**: PARCIALMENTE CORREGIDO
 - **Evidencia**:
-  - Se agrego el flag `--project <path>` que SI crea `.batuta/session.md` y `.batuta/prompt-log.jsonl` (lineas 136-176 de setup.sh).
+  - Se agrego el flag `--project <path>` que SI crea `.batuta/session.md` (lineas 136-176 de setup.sh).
   - El command `/batuta-init` tambien crea `.batuta/` en su Step 2.5 (lineas 39-59 de batuta-init.md).
-  - **El problema parcial**: `setup.sh --all` sigue SIN crear `.batuta/`. La guia Opcion B dice "Ejecuta el script skills/setup.sh --all" pero `--all` ejecuta: `sync_claude` + `sync_agents` + `run_skill_sync` + `install_hooks` + `generate_claude`. Ninguna de estas funciones crea `.batuta/`. La guia promete que se crearan `.batuta/session.md` y `.batuta/prompt-log.jsonl` (lineas 202-203), pero para un usuario que sigue Opcion B, estos archivos NO se crearian a menos que Claude interprete el paso 3 del prompt manual como una instruccion para crearlos.
+  - **El problema parcial**: `setup.sh --all` sigue SIN crear `.batuta/`. La guia Opcion B dice "Ejecuta el script skills/setup.sh --all" pero `--all` ejecuta: `sync_claude` + `sync_agents` + `run_skill_sync` + `install_hooks` + `generate_claude`. Ninguna de estas funciones crea `.batuta/`. La guia promete que se creara `.batuta/session.md` (lineas 202-203), pero para un usuario que sigue Opcion B, este archivo NO se crearia a menos que Claude interprete el paso 3 del prompt manual como una instruccion para crearlos.
   - La Opcion A (`/batuta-init`) SI funciona correctamente para este caso.
 - **Archivos verificados**: `skills/setup.sh` lineas 447-468 (do_all), 105-207 (setup_project), `BatutaClaude/commands/batuta-init.md` lineas 39-59
 
@@ -168,9 +168,9 @@ Las correcciones mas significativas de v9.1 fueron: `setup.sh --hooks` (nuevo fl
 ### N1: Guia Opcion B (prompt manual) no crea .batuta/ porque usa --all en vez de --project
 - **Severidad**: IMPORTANTE
 - **Ubicacion**: Paso 2 de la guia, Opcion B (lineas 186-194)
-- **Lo que dice la guia**: El prompt manual dice "Ejecuta el script skills/setup.sh --all para copiar CLAUDE.md, sincronizar skills e instalar hooks". Luego la guia promete (lineas 200-203): "Cuando termine, te dira que archivos creo, incluyendo: `.batuta/session.md` y `.batuta/prompt-log.jsonl`"
+- **Lo que dice la guia**: El prompt manual dice "Ejecuta el script skills/setup.sh --all para copiar CLAUDE.md, sincronizar skills e instalar hooks". Luego la guia promete (lineas 200-203): "Cuando termine, te dira que archivos creo, incluyendo: `.batuta/session.md`"
 - **Lo que hace el ecosistema**: `setup.sh --all` ejecuta sync_claude + sync_agents + run_skill_sync + install_hooks + generate_claude. NINGUNA de estas funciones crea `.batuta/`. Solo `setup.sh --project <path>` crea `.batuta/`. El `generate_claude` copia CLAUDE.md a `$REPO_ROOT` (batuta-dots), no al proyecto del usuario.
-- **Impacto en el usuario**: Un usuario que sigue Opcion B (primera vez sin commands) y Claude ejecuta literalmente el prompt, no obtendria `.batuta/session.md` ni `.batuta/prompt-log.jsonl`. La session continuity y el prompt tracking no funcionarian hasta que los hooks los crearan. El fix es cambiar el prompt de Opcion B para que diga `setup.sh --project <path>` en vez de `--all`, o agregar pasos explicitos para crear `.batuta/`.
+- **Impacto en el usuario**: Un usuario que sigue Opcion B (primera vez sin commands) y Claude ejecuta literalmente el prompt, no obtendria `.batuta/session.md`. La session continuity no funcionaria hasta que los hooks lo crearan. El fix es cambiar el prompt de Opcion B para que diga `setup.sh --project <path>` en vez de `--all`, o agregar pasos explicitos para crear `.batuta/`.
 - **Nota**: La Opcion A (`/batuta-init`) SI funciona correctamente porque el command `batuta-init.md` tiene Step 2.5 que crea `.batuta/` y Step 3 que ejecuta `--sync` + `--hooks`.
 
 ---

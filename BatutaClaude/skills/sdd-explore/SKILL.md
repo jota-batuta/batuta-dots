@@ -113,8 +113,7 @@ FOR EACH technology required by this change:
 1. List all detected gaps with severity in the exploration output
 2. For each HIGH gap, ASK the user: "Detecto que no hay skill para {technology}. Quieres que lo cree? (1) Proyecto local, (2) Global batuta-dots, (3) Continuar sin skill"
 3. If user says "1" or "2", invoke `ecosystem-creator` skill to create the SKILL.md using Context7 research
-4. After creation, run `skill-sync` to register the new skill in routing tables
-5. Then continue the exploration with the new skill loaded
+4. Then continue the exploration with the new skill loaded (auto-discovered by description)
 
 ⛔ **HARD GATE — DO NOT ADVANCE TO STEP 3 UNTIL RESOLVED**
 
@@ -413,7 +412,7 @@ SKILL GAP EXIT GATE:
 │   ├── [ ] User was asked: create skill or skip?
 │   ├── [ ] If create: ecosystem-creator was invoked
 │   ├── [ ] If skip: justification documented in output
-│   └── [ ] skill-sync ran if any skills were created
+│   └── [ ] New skills have proper description for auto-discovery
 ├── [ ] For MEDIUM/LOW gaps: documented but not blocking
 └── [ ] "Action Taken" column filled for every row in Skill Gap table
 

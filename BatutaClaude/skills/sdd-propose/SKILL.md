@@ -215,8 +215,6 @@ When the user provides feedback that requires changes to an existing proposal:
    - `Trigger`: "User feedback" / "Backtrack from {phase}" / "Review" / "Stakeholder input"
    - `Changes`: Brief list of sections modified (e.g., "Scope: added multi-bodega; Risks: added cost filtering")
    - `Justification`: Summarize the user's reasoning in their own words
-6. **LOG** an `amendment` event to `.batuta/prompt-log.jsonl` (see prompt-tracker skill, event type #7)
-
 **Do NOT** create separate files (proposal-v1.md, proposal-v2.md). The Amendment History table IS the version log. Git commits provide the actual diffs.
 
 ### Step 4: Return Summary

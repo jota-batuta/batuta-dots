@@ -126,9 +126,9 @@ Claude Code puede crear sesiones paralelas independientes (Agent Teams). Antigra
 
 **Solucion**: Usa Manager View de Antigravity directamente. No necesitas el skill `team-orchestrator` (es `platforms: [claude]` por esta razon).
 
-### 3. No hay prompt-tracker automatico
+### 3. No hay session tracking automatico
 
-El prompt-tracker de Claude Code logea silenciosamente cada interaccion via hooks. Sin hooks, no hay logging automatico.
+Claude Code usa hooks nativos (SessionStart, Stop) para leer/actualizar `.batuta/session.md` automaticamente. Sin hooks, no hay tracking automatico.
 
 **Solucion**: GEMINI.md incluye una regla de tracking manual: al terminar una tarea significativa, el agente registra un resumen en `.batuta/session.md`.
 

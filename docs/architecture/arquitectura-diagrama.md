@@ -1,4 +1,4 @@
-# Diagrama de Arquitectura — Ecosistema Batuta (v11.0)
+# Diagrama de Arquitectura — Ecosistema Batuta (v11.1)
 
 ## Vista General del Ecosistema
 
@@ -16,7 +16,6 @@ flowchart TB
 
     subgraph SETUP["SCRIPTS"]
         SETUP_SH["setup.sh<br/>--claude | --sync | --all | --hooks | --verify"]
-        SYNC_SH["skill-sync/sync.sh<br/>regenera routing tables"]
         REPLICATE["replicate-platform.sh<br/>--antigravity | --copilot | --codex"]
         SYNC_BI["sync.sh<br/>--to-antigravity | --from-project"]
     end
@@ -29,14 +28,12 @@ flowchart TB
         SK_ECO["ecosystem-creator"]
         SK_SCOPE["scope-rule"]
         SK_SDD["sdd-init...sdd-archive<br/>(9 sub-agentes)"]
-        SK_PROMPT["prompt-tracker<br/>(O.R.T.A.)"]
         SK_PROJECT["skills de proyecto<br/>(creados bajo demanda)"]
     end
 
     subgraph COMMANDS_LOCAL["~/.claude/commands/ (usuario)"]
         CMD_INIT["/batuta-init"]
         CMD_UPDATE["/batuta-update"]
-        CMD_ANALYZE["/batuta:analyze-prompts"]
     end
 
     CLAUDE_SRC --> SETUP_SH
@@ -44,9 +41,6 @@ flowchart TB
     SETUP_SH -->|"--claude"| CLAUDE_GEN
     SETUP_SH -->|"--sync"| SKILLS_LOCAL
     SETUP_SH -->|"--sync"| COMMANDS_LOCAL
-    SETUP_SH -->|"--all"| SYNC_SH
-    SYNC_SH -->|"genera tablas"| CLAUDE_SRC
-    SYNC_SH -->|"genera tablas"| AGENTS_SRC
     CLAUDE_SRC --> REPLICATE
 
     style FUENTE fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
@@ -57,25 +51,24 @@ flowchart TB
 
 ---
 
-## Mix-of-Experts: Routing del Agente Principal (v11)
+## Scope Agents: Routing del Agente Principal (v11.1)
 
 ```mermaid
 flowchart TD
     USER["Usuario escribe prompt"]
     BOOTSTRAP["Batuta Bootstrap<br/>La Regla: skill aplica? USALO.<br/>MCP disponible? CONSULTALO."]
     AUTOROUTE["Auto-Routing<br/>Clasifica intent:<br/>Build | Fix | Continue | Backtrack | Question"]
-    ROUTER["CLAUDE.md (Router)<br/>~280 lineas: personalidad,<br/>reglas, routing table, auto-routing"]
+    ROUTER["CLAUDE.md (Router)<br/>~220 lineas: personalidad,<br/>reglas, auto-routing"]
 
-    subgraph AGENTS["SCOPE AGENTS"]
+    subgraph AGENTS["SCOPE AGENTS (skills auto-descubiertos por description)"]
         PIPELINE["pipeline-agent<br/>SDD State Machine<br/>(9 skills)"]
-        INFRA["infra-agent<br/>Infraestructura<br/>(5 skills)"]
-        OBS["observability-agent<br/>O.R.T.A.<br/>(1 skill)"]
+        INFRA["infra-agent<br/>Infraestructura<br/>(4 skills)"]
+        OBS["observability-agent<br/>Ciclo de sesion<br/>(sin skills activos)"]
     end
 
     subgraph SKILLS["SKILLS (carga lazy)"]
         SDD["sdd-init...sdd-archive"]
-        ECO["ecosystem-creator<br/>scope-rule<br/>skill-sync<br/>team-orchestrator<br/>security-audit"]
-        PROMPT["prompt-tracker"]
+        ECO["ecosystem-creator<br/>scope-rule<br/>team-orchestrator<br/>security-audit"]
     end
 
     RESULT["Resultado al usuario"]
@@ -90,10 +83,8 @@ flowchart TD
     AUTOROUTE -->|"Quick fix"| GATE --> RESULT
     PIPELINE --> SDD
     INFRA --> ECO
-    OBS --> PROMPT
     SDD --> RESULT
     ECO --> RESULT
-    PROMPT --> RESULT
 
     style ROUTER fill:#D4956A,color:#fff
     style BOOTSTRAP fill:#D47272,color:#fff
@@ -105,11 +96,11 @@ flowchart TD
     style GATE fill:#E8B84D,color:#000
 ```
 
-> El agente principal es un **router puro** con **auto-routing**. Clasifica el intent del usuario (Build, Fix, Continue, Backtrack, Question) y delega automaticamente — el usuario no necesita escribir slash commands. Los comandos existen como override manual.
+> El agente principal es un **router** con **auto-routing**. Clasifica el intent del usuario (Build, Fix, Continue, Backtrack, Question) y delega automaticamente — el usuario no necesita escribir slash commands. Los comandos existen como override manual. Los skills son auto-descubiertos por Claude Code basandose en su campo `description`.
 
 ---
 
-## Skill-Sync: Redundancia Automatica (v5)
+## Skill-Sync: Inventario Automatico
 
 ```mermaid
 flowchart LR
@@ -117,23 +108,21 @@ flowchart LR
         SKILLS_MD["SKILL.md frontmatters<br/>(scope, auto_invoke,<br/>allowed-tools)"]
     end
 
-    SYNC["sync.sh<br/>(lee → agrupa → genera)"]
+    SYNC["infra/sync.sh<br/>(lee → agrupa → valida)"]
 
-    subgraph GENERADO["TABLAS AUTO-GENERADAS"]
-        CLAUDE_TABLE["CLAUDE.md<br/>Available Skills<br/>(Skill | Scope | Auto-invoke)"]
-        AGENT_TABLE["agents/*.md<br/>Skills per scope<br/>(Skill | Auto-invoke | Tools)"]
+    subgraph RESULTADO["INVENTARIO VALIDADO"]
+        CLAUDE_TABLE["Skills auto-descubiertos<br/>por Claude Code via<br/>campo description"]
     end
 
     SKILLS_MD --> SYNC
     SYNC --> CLAUDE_TABLE
-    SYNC --> AGENT_TABLE
 
     style FUENTE fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
     style SYNC fill:#E8B84D,color:#000
-    style GENERADO fill:#1a1a1a,stroke:#666,color:#999,stroke-dasharray: 5 5
+    style RESULTADO fill:#1a1a1a,stroke:#666,color:#999,stroke-dasharray: 5 5
 ```
 
-> Agregar un skill nuevo = crear SKILL.md con frontmatter → correr sync.sh → tablas actualizadas automaticamente. Sin edicion manual.
+> Agregar un skill nuevo = crear SKILL.md con frontmatter → correr sync.sh → inventario validado automaticamente.
 
 ---
 
@@ -270,39 +259,6 @@ flowchart TD
 ```
 
 > Cada conversacion empieza leyendo el contexto de la anterior. Al terminar trabajo significativo, actualiza el archivo para la proxima sesion.
-
----
-
-## Tracking de Satisfaccion de Prompts (O.R.T.A.)
-
-```mermaid
-flowchart TD
-    PROMPT["Usuario escribe un prompt"]
-    LOG_P["Log: evento 'prompt'<br/>(silencioso, automatico)"]
-    GATE["Execution Gate<br/>Log: evento 'gate'<br/>(scope, validacion, routing)"]
-    WORK["Claude ejecuta la tarea"]
-    RESULT{"Resultado OK?"}
-    CORRECTION["Usuario corrige"]
-    LOG_C["Log: evento 'correction'<br/>+ tipo (missing-req,<br/>wrong-approach, etc.)"]
-    SATISFIED["Usuario: 'perfecto' / 'listo'"]
-    LOG_CLOSED["Log: evento 'closed'<br/>+ metricas"]
-    ANALYZE["/batuta:analyze-prompts"]
-    REPORT["Genera reporte:<br/>metricas + patrones +<br/>gate compliance +<br/>recomendaciones"]
-
-    PROMPT --> LOG_P --> GATE --> WORK --> RESULT
-    RESULT -->|"No"| CORRECTION --> LOG_C --> WORK
-    RESULT -->|"Si"| SATISFIED --> LOG_CLOSED
-    LOG_CLOSED -.->|"acumula datos"| ANALYZE
-    ANALYZE --> REPORT
-
-    style LOG_P fill:#666,color:#fff
-    style GATE fill:#E8B84D,color:#000
-    style LOG_C fill:#E8B84D,color:#000
-    style LOG_CLOSED fill:#8BB87A,color:#fff
-    style REPORT fill:#D4956A,color:#fff
-```
-
-> El tracking es SILENCIOSO — Claude nunca pide "califica mi respuesta". El Execution Gate se ejecuta ANTES de cada cambio, validando y logeando la decision de routing. Despues, `/batuta:analyze-prompts` analiza todos los eventos y genera recomendaciones.
 
 ---
 
@@ -453,7 +409,7 @@ flowchart TD
 
 ---
 
-## Ciclo de Vida de un Agent Team (v7)
+## Ciclo de Vida de un Agent Team (v11.1)
 
 ```mermaid
 flowchart LR
@@ -461,30 +417,27 @@ flowchart LR
     SPAWN["SPAWN<br/>Lead crea teammates<br/>con spawn prompts<br/>(scope agents)"]
     ASSIGN["ASSIGN<br/>Lead crea task list<br/>con dependencias"]
     WORK["WORK<br/>Teammates ejecutan<br/>tasks en paralelo"]
-    HOOKGATE["GATE<br/>TaskCompleted hook<br/>valida calidad"]
-    SYNC["SYNC<br/>TeammateIdle hook<br/>centraliza logs"]
+    REVIEW["REVIEW<br/>Lead revisa<br/>resultados"]
     CLOSE["CLOSE<br/>Lead consolida<br/>resultados"]
 
     PLAN --> SPAWN --> ASSIGN --> WORK
-    WORK --> HOOKGATE
-    HOOKGATE -->|"OK"| SYNC
-    HOOKGATE -->|"Rechazado<br/>(exit code 2)"| WORK
-    SYNC --> CLOSE
+    WORK --> REVIEW
+    REVIEW -->|"OK"| CLOSE
+    REVIEW -->|"Ajustes"| WORK
 
     style PLAN fill:#E8B84D,color:#000
     style SPAWN fill:#D4956A,color:#fff
     style ASSIGN fill:#7AAFC4,color:#fff
     style WORK fill:#8BB87A,color:#fff
-    style HOOKGATE fill:#E8B84D,color:#000
-    style SYNC fill:#9B7AB8,color:#fff
+    style REVIEW fill:#9B7AB8,color:#fff
     style CLOSE fill:#D4956A,color:#fff
 ```
 
-> PLAN → SPAWN → ASSIGN → WORK → GATE → SYNC → CLOSE. El hook **TaskCompleted** actua como quality gate (puede rechazar con exit code 2). El hook **TeammateIdle** centraliza el logging en prompt-log.jsonl.
+> PLAN → SPAWN → ASSIGN → WORK → REVIEW → CLOSE. El lead revisa los resultados de cada teammate y consolida.
 
 ---
 
-## O.R.T.A. Hooks con Agent Teams (v7)
+## O.R.T.A. con Agent Teams (v11.1)
 
 ```mermaid
 flowchart TD
@@ -494,42 +447,27 @@ flowchart TD
         TM2["Teammate 2"]
     end
 
-    subgraph HOOKS["HOOKS (bash scripts)"]
-        IDLE["TeammateIdle<br/>hooks/orta-teammate-idle.sh"]
-        COMPLETED["TaskCompleted<br/>hooks/orta-task-gate.sh"]
-    end
-
-    subgraph ORTA["O.R.T.A. INTEGRATION"]
-        LOG["prompt-log.jsonl<br/>(escritura centralizada<br/>SOLO el lead escribe)"]
+    subgraph ORTA["O.R.T.A. PRINCIPLES"]
         SCOPE["Scope Rule Check<br/>(archivos en lugar correcto?)"]
         SDD_CHECK["SDD Artifacts Check<br/>(spec? design? tests?)"]
+        SESSION["session.md<br/>(continuidad)"]
     end
 
-    TM1 -->|"termina task"| COMPLETED
-    TM2 -->|"termina task"| COMPLETED
-    TM1 -->|"queda idle"| IDLE
-    TM2 -->|"queda idle"| IDLE
+    TM1 -->|"termina task"| LEAD
+    TM2 -->|"termina task"| LEAD
 
-    COMPLETED --> SCOPE
-    COMPLETED --> SDD_CHECK
-    SCOPE -->|"OK"| LOG
-    SDD_CHECK -->|"OK"| LOG
-    SCOPE -->|"Falla → exit 2"| TM1
-    SDD_CHECK -->|"Falla → exit 2"| TM2
-
-    IDLE --> LOG
-
-    LEAD -.->|"consolida al final"| LOG
+    LEAD --> SCOPE
+    LEAD --> SDD_CHECK
+    LEAD --> SESSION
 
     style TEAM fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
-    style HOOKS fill:#2d2d2d,stroke:#E8B84D,color:#F5EDE4
     style ORTA fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
-    style LOG fill:#9B7AB8,color:#fff
-    style COMPLETED fill:#E8B84D,color:#000
-    style IDLE fill:#7AAFC4,color:#fff
+    style SESSION fill:#9B7AB8,color:#fff
+    style SCOPE fill:#E8B84D,color:#000
+    style SDD_CHECK fill:#7AAFC4,color:#fff
 ```
 
-> Los hooks conectan Agent Teams con O.R.T.A.: **[O]** TeammateIdle → log centralizado. **[R]** Task list con dependencias = mismo orden. **[T]** Cada teammate tiene ID, tasks → artefactos. **[A]** TaskCompleted = quality gate automatico.
+> O.R.T.A. principles in Agent Teams: **[O]** Lead observes teammate results. **[R]** Task list con dependencias = mismo orden. **[T]** Cada teammate tiene ID, tasks → artefactos. **[A]** Lead revisa calidad antes de consolidar.
 
 ---
 
@@ -632,7 +570,7 @@ flowchart TD
 flowchart TD
     EMPTY["Carpeta vacia"]
     INIT_CMD["/batuta-init mi-app"]
-    BATUTA_DIR["Crea .batuta/<br/>(session.md + prompt-log.jsonl)"]
+    BATUTA_DIR["Crea .batuta/<br/>(session.md + ecosystem.json)"]
     DESCRIBE["Usuario describe:<br/>'Necesito una app que haga X'"]
     AUTOROUTE["Auto-routing clasifica:<br/>Build → SDD Pipeline"]
     SDD_AUTO["Batuta automaticamente:<br/>init → explore → propose"]
@@ -674,15 +612,14 @@ flowchart TD
 
 ---
 
-## Native Hooks: Deterministic Enforcement (v8)
+## Native Hooks: Deterministic Enforcement (v11.1)
 
 ```mermaid
 flowchart TD
     subgraph HOOKS["CLAUDE CODE NATIVE HOOKS"]
         direction TB
-        SS["SessionStart<br/>(pre-tool)"]
-        PTU["PreToolUse<br/>(pre-tool)"]
-        STOP["Stop<br/>(post-tool)"]
+        SS["SessionStart<br/>(command)"]
+        STOP["Stop<br/>(prompt + command)"]
     end
 
     subgraph SS_ACTIONS["SessionStart"]
@@ -690,27 +627,19 @@ flowchart TD
         READ_CLAUDE["Lee CLAUDE.md<br/>(personalidad + routing)"]
     end
 
-    subgraph PTU_ACTIONS["PreToolUse: Edit/Write/NotebookEdit"]
-        GATE_CHECK["Execution Gate<br/>(LIGHT o FULL)"]
-        LOG_GATE["Log evento 'gate'<br/>en prompt-log.jsonl"]
-    end
-
     subgraph STOP_ACTIONS["Stop"]
         UPDATE_SESSION["Actualiza session.md<br/>(estado, decisiones)"]
-        LOG_CLOSE["Log evento 'closed'<br/>en prompt-log.jsonl"]
     end
 
     SS --> SS_ACTIONS
-    PTU --> PTU_ACTIONS
     STOP --> STOP_ACTIONS
 
     style HOOKS fill:#2d2d2d,stroke:#E8B84D,color:#F5EDE4
     style SS fill:#8BB87A,color:#fff
-    style PTU fill:#D4956A,color:#fff
     style STOP fill:#7AAFC4,color:#fff
 ```
 
-> Los hooks nativos de Claude Code ejecutan de forma **determinista** — no dependen de que Claude "recuerde" hacerlo. SessionStart carga contexto, PreToolUse valida antes de escribir codigo, Stop guarda estado al cerrar.
+> Los hooks nativos de Claude Code ejecutan de forma **determinista** — no dependen de que Claude "recuerde" hacerlo. SessionStart carga contexto al iniciar, Stop guarda estado al cerrar.
 
 ---
 
@@ -865,8 +794,8 @@ flowchart TD
 ```mermaid
 flowchart TD
     subgraph HUB["batuta-dots (HUB)"]
-        BC["BatutaClaude/<br/>skills/ (24)"]
-        BA["BatutaAntigravity/<br/>skills/ (22, filtrados)"]
+        BC["BatutaClaude/<br/>skills/ (22)"]
+        BA["BatutaAntigravity/<br/>skills/ (20, filtrados)"]
         SYNC["infra/sync.sh"]
     end
 
@@ -901,7 +830,7 @@ flowchart TD
 
 ---
 
-## Folder Structure (v11.0)
+## Folder Structure (v11.1)
 
 ```mermaid
 flowchart TD
@@ -919,7 +848,7 @@ flowchart TD
     subgraph CLAUDE_DETAIL["BatutaClaude/"]
         CLAUDE_MD["CLAUDE.md (router)"]
         AGENTS["agents/<br/>pipeline, infra, observability"]
-        SKILLS_24["skills/ (24 skills)<br/>sdd-*, ecosystem, scope-rule,<br/>skill-sync, team-orchestrator,<br/>prompt-tracker, security-audit,<br/>+ 6 CTO specialists (v11.0)<br/>+ 3 technology skills"]
+        SKILLS_22["skills/ (22 skills)<br/>sdd-*, ecosystem, scope-rule,<br/>team-orchestrator, security-audit,<br/>+ 6 CTO specialists<br/>+ 3 technology skills"]
     end
 
     subgraph ANTIGRAVITY_DETAIL["BatutaAntigravity/"]

@@ -17,20 +17,20 @@
 #   - Idempotency and error handling
 #   - replicate-platform.sh exists for future use
 #   v4:
-#   - prompt-tracker skill exists
-#   - CLAUDE.md contains v4+ sections (Session Continuity, Prompt Tracking, Execution Gate)
-#   - batuta-analyze-prompts command exists
+#   - session template exists in infra/templates/
+#   - CLAUDE.md contains v4+ sections (Session Continuity, Execution Gate)
+#   - (v11.1: prompt-tracker and analyze-prompts removed)
 #   v5 (MoE + Execution Gate + Frontmatter + Skill-Sync):
 #   - Execution Gate with LIGHT/FULL modes
 #   - Scope Routing Table with 3 scope agents
 #   - Follow Questions removed
 #   - "just do it → PROCEED" removed
 #   - 3 scope agent files exist with sync delimiters
-#   - prompt-tracker documents gate event
+#   - (v11.1: prompt-tracker removed)
 #   - All skills have scope, auto_invoke, allowed-tools
 #   - Agents sync via setup.sh
-#   - skill-sync script exists and is well-formed
-#   - AUTO-GENERATED delimiters in CLAUDE.md and agents
+#   - (v11.1: skill-sync removed)
+#   - (v11.1: AUTO-GENERATED delimiters removed)
 #   v6→v9 (Quality Audit + Folder Reorganization):
 #   - docs/architecture/ directory exists with architecture docs
 #   - docs/guides/ contains execution guides
@@ -38,7 +38,7 @@
 #   - BatutaClaude/VERSION file exists
 #   - teams/ directory exists with templates and playbook
 #   v9.3 (Post-Smoke-Test Corrections):
-#   - All 24 skills have ## Purpose section
+#   - All 22 skills have ## Purpose section
 #   - New skills (fastapi-crud, jwt-auth, sqlalchemy-models) have valid frontmatter
 #   - 7 team templates (including temporal-io-app)
 #   - settings.json hooks point to infra/ (not skills/)
@@ -322,23 +322,10 @@ test_multiple_runs_are_idempotent() {
 # 10. Prompt Tracker Skill (v4)
 # ============================================================================
 
-test_prompt_tracker_skill_exists() {
-    log_test "prompt-tracker skill exists (v4)"
-    assert_file_exists "$REPO_ROOT/BatutaClaude/skills/prompt-tracker/SKILL.md"
-    assert_file_contains "$REPO_ROOT/BatutaClaude/skills/prompt-tracker/SKILL.md" "prompt-tracker" "skill name"
-    assert_file_contains "$REPO_ROOT/BatutaClaude/skills/prompt-tracker/SKILL.md" "O.R.T.A" "ORTA framework reference"
-}
-
-test_prompt_tracker_session_template_exists() {
-    log_test "prompt-tracker session template exists"
-    assert_file_exists "$REPO_ROOT/BatutaClaude/skills/prompt-tracker/assets/session-template.md"
-    assert_file_contains "$REPO_ROOT/BatutaClaude/skills/prompt-tracker/assets/session-template.md" "Session Context" "session context header"
-}
-
-test_analyze_prompts_command_exists() {
-    log_test "batuta-analyze-prompts command exists (v4)"
-    assert_file_exists "$REPO_ROOT/BatutaClaude/commands/batuta-analyze-prompts.md"
-    assert_file_contains "$REPO_ROOT/BatutaClaude/commands/batuta-analyze-prompts.md" "analyze" "analysis purpose"
+test_session_template_exists() {
+    log_test "session template exists in infra/templates/ (v11.1)"
+    assert_file_exists "$REPO_ROOT/infra/templates/session-template.md"
+    assert_file_contains "$REPO_ROOT/infra/templates/session-template.md" "Session Context" "session context header"
 }
 
 # ============================================================================
@@ -350,27 +337,7 @@ test_claude_md_has_v4_sections() {
     local claude_src="$REPO_ROOT/BatutaClaude/CLAUDE.md"
 
     assert_file_contains "$claude_src" "Session Continuity" "session continuity section"
-    assert_file_contains "$claude_src" "Prompt Tracking" "prompt tracking section"
     assert_file_contains "$claude_src" "Execution Gate" "execution gate (v5, replaces Follow Questions)"
-    assert_file_contains "$claude_src" "prompt-tracker" "prompt-tracker in skills table"
-    assert_file_contains "$claude_src" "batuta-analyze-prompts" "analyze-prompts in commands table"
-}
-
-test_prompt_tracker_in_sync() {
-    log_test "prompt-tracker syncs correctly"
-    local skills_src="$REPO_ROOT/BatutaClaude/skills"
-
-    local tmp_home=$(mktemp -d)
-    HOME="$tmp_home" USERPROFILE="" bash "$SETUP_SCRIPT" --sync >/dev/null 2>&1 || true
-
-    local claude_skills="$tmp_home/.claude/skills"
-    [[ -f "$claude_skills/prompt-tracker/SKILL.md" ]] && log_pass "prompt-tracker synced" || log_fail "prompt-tracker not synced"
-    [[ -f "$claude_skills/prompt-tracker/assets/session-template.md" ]] && log_pass "session-template synced" || log_fail "session-template not synced"
-
-    local commands_dir="$tmp_home/.claude/commands"
-    [[ -f "$commands_dir/batuta-analyze-prompts.md" ]] && log_pass "analyze-prompts command synced" || log_fail "analyze-prompts command not synced"
-
-    rm -rf "$tmp_home"
 }
 
 # ============================================================================
@@ -437,23 +404,19 @@ test_scope_agents_exist() {
     assert_file_exists "$agents_dir/infra-agent.md"
     assert_file_exists "$agents_dir/observability-agent.md"
 
-    # Verify they have AUTO-GENERATED delimiters for skill-sync
-    assert_file_contains "$agents_dir/pipeline-agent.md" "AUTO-GENERATED by skill-sync" "pipeline-agent has sync delimiters"
-    assert_file_contains "$agents_dir/infra-agent.md" "AUTO-GENERATED by skill-sync" "infra-agent has sync delimiters"
-    assert_file_contains "$agents_dir/observability-agent.md" "AUTO-GENERATED by skill-sync" "observability-agent has sync delimiters"
+    # Verify agents have skill listings (auto-discovered, no more AUTO-GENERATED delimiters)
+    assert_file_contains "$agents_dir/pipeline-agent.md" "auto-discovered" "pipeline-agent notes auto-discovery"
+    assert_file_contains "$agents_dir/infra-agent.md" "auto-discovered" "infra-agent notes auto-discovery"
 }
 
 # ============================================================================
-# 17. prompt-tracker has gate event (v5)
+# 17. (v11.1: prompt-tracker removed — test replaced)
 # ============================================================================
 
-test_prompt_tracker_has_gate_event() {
-    log_test "prompt-tracker SKILL.md documents gate event (v5)"
-    local tracker="$REPO_ROOT/BatutaClaude/skills/prompt-tracker/SKILL.md"
-
-    assert_file_contains "$tracker" '"gate"' "gate event type"
-    assert_file_contains "$tracker" "Six event types" "updated event count to six"
-    assert_file_contains "$tracker" "Gate compliance" "gate compliance metrics"
+test_execution_gate_is_cognitive_rule() {
+    log_test "Execution Gate is a cognitive rule in CLAUDE.md (v11.1)"
+    local claude_src="$REPO_ROOT/BatutaClaude/CLAUDE.md"
+    assert_file_contains "$claude_src" "cognitive rule" "execution gate defined as cognitive rule"
 }
 
 # ============================================================================
@@ -551,55 +514,43 @@ test_agents_sync_correctly() {
 }
 
 # ============================================================================
-# 22. skill-sync script exists and is well-formed (v5)
+# 22. (v11.1: skill-sync removed — test replaced)
 # ============================================================================
 
-test_skill_sync_script_exists() {
-    log_test "skill-sync script exists and is well-formed (v5)"
-    local sync_script="$REPO_ROOT/BatutaClaude/skills/skill-sync/assets/sync.sh"
-
-    assert_file_exists "$sync_script"
-    assert_file_not_empty "$sync_script"
-    assert_file_exists "$REPO_ROOT/BatutaClaude/skills/skill-sync/SKILL.md"
-
-    # Verify it has a valid shebang
-    if head -1 "$sync_script" | grep -q '#!/usr/bin/env bash\|#!/bin/bash'; then
-        log_pass "sync.sh has valid shebang"
+test_no_skill_sync_remnants() {
+    log_test "skill-sync directory does not exist (v11.1)"
+    if [[ -d "$REPO_ROOT/BatutaClaude/skills/skill-sync" ]]; then
+        log_fail "skill-sync directory still exists"
     else
-        log_fail "sync.sh missing valid shebang"
+        log_pass "skill-sync directory removed"
     fi
-
-    # Verify key functions exist
-    assert_file_contains "$sync_script" "extract_metadata" "extract_metadata function"
-    assert_file_contains "$sync_script" "replace_section" "replace_section function"
-    assert_file_contains "$sync_script" "generate_claude_table" "generate_claude_table function"
 }
 
 # ============================================================================
 # 23. AUTO-GENERATED delimiters present (v5)
 # ============================================================================
 
-test_skill_sync_tables_present() {
-    log_test "AUTO-GENERATED delimiters present in CLAUDE.md and agents (v5)"
+test_no_auto_generated_delimiters() {
+    log_test "No AUTO-GENERATED delimiters in CLAUDE.md or agents (v11.1)"
     local claude_src="$REPO_ROOT/BatutaClaude/CLAUDE.md"
     local agents_dir="$REPO_ROOT/BatutaClaude/agents"
 
-    # CLAUDE.md must have both opening and closing delimiters
-    assert_file_contains "$claude_src" "AUTO-GENERATED by skill-sync" "CLAUDE.md has opening delimiter"
-    assert_file_contains "$claude_src" "END AUTO-GENERATED" "CLAUDE.md has closing delimiter"
+    # CLAUDE.md should NOT have old delimiters
+    if grep -q "AUTO-GENERATED by skill-sync" "$claude_src" 2>/dev/null; then
+        log_fail "CLAUDE.md still has AUTO-GENERATED delimiters"
+    else
+        log_pass "CLAUDE.md has no AUTO-GENERATED delimiters"
+    fi
 
-    # All 3 agent files must have delimiters
+    # Agent files should NOT have old delimiters
     for agent in pipeline-agent infra-agent observability-agent; do
         local agent_file="$agents_dir/${agent}.md"
         if [[ -f "$agent_file" ]]; then
-            if grep -q "AUTO-GENERATED by skill-sync" "$agent_file" 2>/dev/null && \
-               grep -q "END AUTO-GENERATED" "$agent_file" 2>/dev/null; then
-                log_pass "${agent}.md has sync delimiters"
+            if grep -q "AUTO-GENERATED by skill-sync" "$agent_file" 2>/dev/null; then
+                log_fail "${agent}.md still has AUTO-GENERATED delimiters"
             else
-                log_fail "${agent}.md missing sync delimiters"
+                log_pass "${agent}.md clean"
             fi
-        else
-            log_fail "${agent}.md not found"
         fi
     done
 }
@@ -779,15 +730,16 @@ test_scope_agents_have_spawn_prompts() {
 }
 
 # ============================================================================
-# 33. prompt-tracker has team event type (v7)
+# 33. (v11.1: prompt-tracker removed — test replaced)
 # ============================================================================
 
-test_prompt_tracker_has_team_event() {
-    log_test "prompt-tracker SKILL.md documents team event type (v7)"
-    local tracker="$REPO_ROOT/BatutaClaude/skills/prompt-tracker/SKILL.md"
-
-    assert_file_contains "$tracker" '"team"' "team event type"
-    assert_file_contains "$tracker" "team_created\|teammate_idle\|task_completed\|team_closed" "team sub-events"
+test_no_prompt_tracker_remnants() {
+    log_test "prompt-tracker directory does not exist (v11.1)"
+    if [[ -d "$REPO_ROOT/BatutaClaude/skills/prompt-tracker" ]]; then
+        log_fail "prompt-tracker directory still exists"
+    else
+        log_pass "prompt-tracker directory removed"
+    fi
 }
 
 # ============================================================================
@@ -897,8 +849,8 @@ test_security_integration() {
 # 40. Total skill count is 15 (v9)
 # ============================================================================
 
-test_twentyfour_skills_total() {
-    log_test "24 skills total in BatutaClaude/skills/ (v11.0)"
+test_twentytwo_skills_total() {
+    log_test "22 skills total in BatutaClaude/skills/ (v11.1)"
     local skills_dir="$REPO_ROOT/BatutaClaude/skills"
 
     local skill_count=0
@@ -906,10 +858,10 @@ test_twentyfour_skills_total() {
         [[ -d "$d" && -f "$d/SKILL.md" ]] && skill_count=$((skill_count + 1))
     done
 
-    if [[ $skill_count -eq 24 ]]; then
-        log_pass "$skill_count skills (expected 24)"
+    if [[ $skill_count -eq 22 ]]; then
+        log_pass "$skill_count skills (expected 22)"
     else
-        log_fail "Expected 24 skills, found $skill_count"
+        log_fail "Expected 22 skills, found $skill_count"
     fi
 }
 
@@ -985,7 +937,7 @@ test_commands_mention_hooks() {
 # ============================================================================
 
 test_all_skills_have_purpose_section() {
-    log_test "All 24 skills have ## Purpose section (v9.3)"
+    log_test "All 22 skills have ## Purpose section (v11.1)"
     local skills_dir="$REPO_ROOT/BatutaClaude/skills"
     local missing=0
 
@@ -1089,14 +1041,13 @@ test_claude_md_has_doc_standard_rule() {
 # v9.4 Tests: SDD Command Wrappers + Colon-to-Hyphen Migration
 # ============================================================================
 
-test_fifteen_commands_synced() {
-    log_test "15 commands exist in BatutaClaude/commands/ (v9.4)"
+test_eleven_commands_synced() {
+    log_test "11 commands exist in BatutaClaude/commands/ (v11.1)"
     local cmd_dir="$REPO_ROOT/BatutaClaude/commands"
     local expected_commands=(
-        "batuta-analyze-prompts.md"
         "batuta-init.md"
-        "batuta-sync-skills.md"
         "batuta-update.md"
+        "create.md"
         "sdd-init.md"
         "sdd-explore.md"
         "sdd-new.md"
@@ -1105,9 +1056,6 @@ test_fifteen_commands_synced() {
         "sdd-apply.md"
         "sdd-verify.md"
         "sdd-archive.md"
-        "create-skill.md"
-        "create-sub-agent.md"
-        "create-workflow.md"
     )
 
     local found=0
@@ -1120,7 +1068,7 @@ test_fifteen_commands_synced() {
     done
 
     if [[ $found -eq ${#expected_commands[@]} ]]; then
-        log_pass "All 15 command files exist in BatutaClaude/commands/"
+        log_pass "All 11 command files exist in BatutaClaude/commands/"
     fi
 }
 
@@ -1291,11 +1239,8 @@ test_replicate_platform_exists
 test_multiple_runs_are_idempotent
 
 # --- v4 tests ---
-test_prompt_tracker_skill_exists
-test_prompt_tracker_session_template_exists
-test_analyze_prompts_command_exists
+test_session_template_exists
 test_claude_md_has_v4_sections
-test_prompt_tracker_in_sync
 
 # --- v5 tests: MoE + Execution Gate + Frontmatter + Skill-Sync ---
 test_claude_md_has_execution_gate
@@ -1303,13 +1248,13 @@ test_claude_md_has_scope_routing
 test_claude_md_no_follow_questions
 test_claude_md_no_just_do_it_proceed
 test_scope_agents_exist
-test_prompt_tracker_has_gate_event
+test_execution_gate_is_cognitive_rule
 test_all_skills_have_scope
 test_all_skills_have_auto_invoke
 test_all_skills_have_allowed_tools
 test_agents_sync_correctly
-test_skill_sync_script_exists
-test_skill_sync_tables_present
+test_no_skill_sync_remnants
+test_no_auto_generated_delimiters
 
 # --- v6 tests: Quality Audit + Folder Reorganization ---
 test_about_directory_exists
@@ -1323,7 +1268,7 @@ test_orta_hooks_exist
 test_settings_has_agent_teams
 test_claude_md_has_team_routing
 test_scope_agents_have_spawn_prompts
-test_prompt_tracker_has_team_event
+test_no_prompt_tracker_remnants
 
 # --- v9 tests: Security + Contracts + Templates + Guides ---
 test_security_audit_skill_exists
@@ -1332,7 +1277,7 @@ test_team_playbook_exists
 test_ten_guides_exist
 test_contract_first_protocol
 test_security_integration
-test_twentyfour_skills_total
+test_twentytwo_skills_total
 test_infra_agent_has_security
 
 # --- v9.1 tests: Integration Test Findings ---
@@ -1354,7 +1299,7 @@ test_sdd_apply_has_documentation_standard
 test_claude_md_has_doc_standard_rule
 
 # --- v9.4 tests: SDD Command Wrappers + Colon-to-Hyphen Migration ---
-test_fifteen_commands_synced
+test_eleven_commands_synced
 test_sdd_commands_use_hyphens_not_colons
 test_claude_md_commands_use_hyphens
 

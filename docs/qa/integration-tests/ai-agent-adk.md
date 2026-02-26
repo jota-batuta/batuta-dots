@@ -20,7 +20,7 @@ La guia es funcional y lleva a un usuario no tecnico desde cero hasta un agente 
 ### H2: La guia dice que /batuta-init crea archivos, pero falta mencionar skills sincronizados y hooks
 - **Severidad**: MENOR
 - **Ubicacion**: Paso 2, lineas 172-176
-- **Lo que dice la guia**: "Crea: CLAUDE.md, .batuta/session.md, .batuta/prompt-log.jsonl"
+- **Lo que dice la guia**: "Crea: CLAUDE.md, .batuta/session.md"
 - **Lo que hace el ecosistema**: El command `batuta-init.md` hace mucho mas: copia CLAUDE.md, crea .batuta/, sincroniza skills con `--sync`, instala hooks con `--hooks`, e inicializa git. La confirmacion final del comando dice "Skills sincronizados a ~/.claude/skills/ (X skills)" y "Hooks instalados en ~/.claude/settings.json (6 hooks + permissions)".
 - **Impacto en el usuario**: Menor. El usuario se sorprendera de que pasan mas cosas de las que la guia dice. No es un error — es una subestimacion. Claude seguira el command spec real internamente.
 
