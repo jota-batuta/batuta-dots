@@ -50,7 +50,7 @@ Google Antigravity es un IDE agent-first (fork de VS Code/Windsurf). Durante el 
 | Reglas del agente | CLAUDE.md | GEMINI.md (Rules) |
 | Comandos | Slash commands (/sdd-init) | Workflows (prompts guardados con /trigger) |
 | Skills | `~/.claude/skills/` | `.agent/skills/` o `~/.gemini/antigravity/skills/` |
-| Hooks automaticos | 5 hooks nativos | No hay — reglas de comportamiento en GEMINI.md |
+| Hooks automaticos | 6 hooks nativos | No hay — reglas de comportamiento en GEMINI.md |
 | Multi-agente | Agent Teams (spawn sessions) | Manager View (nativo) |
 
 ---

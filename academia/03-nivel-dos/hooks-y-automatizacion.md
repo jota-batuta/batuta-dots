@@ -10,7 +10,7 @@ Un hook es codigo que se ejecuta automaticamente cuando algo pasa. No tienes que
 
 ---
 
-## Los 5 hooks + 1 bootstrap prompt
+## Los 6 hook types (8 hooks total)
 
 ### 1. SessionStart — Al iniciar sesion
 

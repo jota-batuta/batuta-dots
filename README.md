@@ -73,7 +73,7 @@ git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-i
 
 | Platform | Destination | Contents |
 |----------|-------------|----------|
-| **Claude Code** | `~/.claude/` | 24 skills, 3 agents, 14+ commands, 4 hooks, settings.json, output-styles |
+| **Claude Code** | `~/.claude/` | 24 skills, 3 agents, 15 commands, 6 hooks, settings.json, output-styles |
 | **Claude Code** | Current directory | `CLAUDE.md` + `.batuta/` (session, prompt-log, ecosystem.json) |
 | **Antigravity** | `~/.gemini/antigravity/` | Antigravity-compatible skills, workflows, GEMINI.md |
 
@@ -157,8 +157,8 @@ batuta-dots/
 │   │   ├── guia-data-pipeline.md      # Data pipeline (ETL) guide
 │   │   ├── guia-refactoring-legacy.md # Legacy refactoring guide
 │   │   ├── guia-ai-agent-adk.md       # AI agent (Google ADK) guide
-│   │   ├── guia-auditoria-contable.md # Accounting audit (CTO v10.0) guide
-│   │   └── guia-seleccion-personal.md # Personnel selection (CTO v10.0) guide
+│   │   ├── guia-auditoria-contable.md # Accounting audit (CTO v11.0) guide
+│   │   └── guia-seleccion-personal.md # Personnel selection (CTO v11.0) guide
 │   └── qa/                            # Quality assurance reports
 │       ├── README.md                  # QA index
 │       ├── audits/                    # Quality audit reports (v5-v9)
@@ -174,7 +174,7 @@ batuta-dots/
 │   │   ├── data-pipeline.md          # Data pipeline team template
 │   │   └── refactoring.md            # Legacy refactoring team template
 │   └── playbook.md                    # Team patterns and best practices
-├── CHANGELOG-refactor.md              # Refactoring trace document (v1-v10.1)
+├── CHANGELOG-refactor.md              # Refactoring trace document (v1-v11.0)
 ├── academia/                          # Training course (8 modules, 53 lessons)
 └── infra/                             # Infrastructure & setup scripts
     ├── setup.sh                       # Claude Code setup (primary)
@@ -419,7 +419,7 @@ Step-by-step execution guides (12 guides) covering the full lifecycle: ecosystem
 | [Data Pipeline](docs/guides/guia-data-pipeline.md) | Build an ETL data pipeline with validation |
 | [Legacy Refactoring](docs/guides/guia-refactoring-legacy.md) | Modernize legacy code without breaking functionality |
 | [AI Agent (Google ADK)](docs/guides/guia-ai-agent-adk.md) | Build a conversational AI agent with Google ADK |
-| [Accounting Audit](docs/guides/guia-auditoria-contable.md) | Bank reconciliation — CTO v10.0 flow |
+| [Accounting Audit](docs/guides/guia-auditoria-contable.md) | Bank reconciliation — CTO v11.0 flow |
 | [Personnel Selection](docs/guides/guia-seleccion-personal.md) | Resume screening with LLM + compliance |
 
 ## Academia (Training Manual)

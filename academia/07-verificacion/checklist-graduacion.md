@@ -43,7 +43,7 @@ Marca cada item cuando puedas hacerlo **sin consultar la documentacion**. No se 
 - [ ] **Puedo usar `/sdd-explore` solo** para investigar sin crear un cambio
 - [ ] **Entiendo la diferencia entre solo, subagente, y equipo** y cuando usar cada uno
 - [ ] **Se que compliance-colombia** se activa con datos personales o temas DIAN
-- [ ] **Puedo explicar los 5 hooks** y que automatiza cada uno
+- [ ] **Puedo explicar los 6 hooks** y que automatiza cada uno
 - [ ] **Entiendo O.R.T.A.** y para que sirve el prompt-log.jsonl
 
 **Minimo para pasar**: 4 de 6

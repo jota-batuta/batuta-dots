@@ -49,7 +49,7 @@ Cada **skill** es una receta especifica. Por ejemplo:
 | `temporal-worker` | Como cocinar platos que llevan muchos pasos y pueden fallar |
 | `nextjs-portal` | Como montar el plato para que se vea bonito (la cara que ve el cliente) |
 
-El chef tiene **24 recetas basicas** que siempre estan disponibles (incluyendo 6 recetas de estrategia CTO agregadas en v10.0), y puede **aprender recetas nuevas** cuando las necesita.
+El chef tiene **24 recetas basicas** que siempre estan disponibles (incluyendo 6 recetas de estrategia CTO agregadas en v11.0), y puede **aprender recetas nuevas** cuando las necesita.
 
 **Detalle importante**: Las recetas NO se leen todas al empezar. El chef solo abre la
 receta que necesita para el plato que esta preparando. Esto se llama "carga bajo demanda"
@@ -112,13 +112,13 @@ Con los 9 pasos, la mayoria de esos problemas se detectan ANTES de empezar a coc
 
 ---
 
-## La Capa CTO (CTO Strategy Layer) — v10.0
+## La Capa CTO (CTO Strategy Layer) — v11.0
 
 Imagina que antes tu restaurante tenia DOS manuales: uno para el equipo de cocina (como preparar los platos) y otro para el director del restaurante (como evaluar si un plato nuevo vale la pena ofrecerlo). El director leia su manual aparte y luego le daba instrucciones verbales al chef.
 
 **El problema**: A veces las instrucciones se perdian en la traduccion.
 
-**La solucion (v10.0)**: Ahora hay UN solo manual que integra ambas perspectivas. El chef no solo sabe COMO cocinar, sino tambien sabe hacer las preguntas estrategicas del director.
+**La solucion (v11.0)**: Ahora hay UN solo manual que integra ambas perspectivas. El chef no solo sabe COMO cocinar, sino tambien sabe hacer las preguntas estrategicas del director.
 
 ### Los 3 puntos de control (Gates)
 
@@ -147,7 +147,7 @@ El chef ahora puede llamar a **consultores** cuando necesita ayuda especializada
 
 ---
 
-## Las Dos Cocinas (Multi-Plataforma) — v10.2
+## Las Dos Cocinas (Multi-Plataforma) — v11.0
 
 Imagina que tu restaurante crece y ahora tienes DOS cocinas:
 
@@ -594,8 +594,8 @@ Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
 | **Protocolo de higiene** | Security-Audit (v9) | Revision de seguridad: al disenar y al verificar |
 | **Controles estrategicos** | Gates G0.5/G1/G2 (v10) | Entiendo? Vale la pena? Listo? |
 | **Consultores especializados** | 6 skills CTO (v10) | Procesos, IA, datos, infra, compliance |
-| **Cocina rapida** | Antigravity IDE (v10.2) | Segunda cocina con el mismo recetario, para pedidos rapidos y mecanicos |
-| **Libro maestro compartido** | batuta-dots hub (v10.2) | Todas las recetas en un solo lugar, sincronizadas entre ambas cocinas |
+| **Cocina rapida** | Antigravity IDE (v11.0) | Segunda cocina con el mismo recetario, para pedidos rapidos y mecanicos |
+| **Libro maestro compartido** | batuta-dots hub (v11.0) | Todas las recetas en un solo lugar, sincronizadas entre ambas cocinas |
 
 ---
 

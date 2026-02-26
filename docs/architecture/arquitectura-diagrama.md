@@ -211,7 +211,7 @@ graph LR
     style G025 fill:#E8B84D,color:#000
 ```
 
-> **spec** y **design** en paralelo. Lineas punteadas = backtracks (retrocesos cuando se descubren problemas). Gates G0.5 (Discovery Complete), G1 (Solution Worth Building) y G2 (Production Ready) son checkpoints estrategicos. Cada backtrack se registra en `backtrack-log.md` para trazabilidad. 6 specialist skills se invocan condicionalmente: process-analyst, recursion-designer, llm-pipeline-design, data-pipeline-design, worker-scaffold, compliance-colombia.
+> **spec** y **design** en paralelo. Lineas punteadas = backtracks (retrocesos cuando se descubren problemas). Gates G0.25 (MCP Ready), G0.5 (Discovery Complete), G1 (Solution Worth Building) y G2 (Production Ready) son checkpoints estrategicos. Cada backtrack se registra en `backtrack-log.md` para trazabilidad. 6 specialist skills se invocan condicionalmente: process-analyst, recursion-designer, llm-pipeline-design, data-pipeline-design, worker-scaffold, compliance-colombia.
 
 ---
 
@@ -919,7 +919,7 @@ flowchart TD
     subgraph CLAUDE_DETAIL["BatutaClaude/"]
         CLAUDE_MD["CLAUDE.md (router)"]
         AGENTS["agents/<br/>pipeline, infra, observability"]
-        SKILLS_24["skills/ (24 skills)<br/>sdd-*, ecosystem, scope-rule,<br/>skill-sync, team-orchestrator,<br/>prompt-tracker, security-audit,<br/>+ 6 CTO specialists (v10.0)<br/>+ 3 technology skills"]
+        SKILLS_24["skills/ (24 skills)<br/>sdd-*, ecosystem, scope-rule,<br/>skill-sync, team-orchestrator,<br/>prompt-tracker, security-audit,<br/>+ 6 CTO specialists (v11.0)<br/>+ 3 technology skills"]
     end
 
     subgraph ANTIGRAVITY_DETAIL["BatutaAntigravity/"]

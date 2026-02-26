@@ -104,7 +104,7 @@ All SDD phases are available as workflows triggered with `/`:
 
 ---
 
-## CTO Strategy Layer (v10.0)
+## CTO Strategy Layer (v11.0)
 
 Strategic capabilities integrated from the CTO expert layer. These enrich the SDD pipeline with business analysis, compliance, and domain expertise:
 

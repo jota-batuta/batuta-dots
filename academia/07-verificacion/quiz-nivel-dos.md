@@ -60,7 +60,7 @@ Base rota = no hay revision humana. Si la Capa 1 (linting/tipos/build) falla, no
 ---
 
 ## Pregunta 5
-**Nombra los 5 hooks de Batuta y cuando se activan.**
+**Nombra los 6 hooks de Batuta y cuando se activan.**
 
 <details>
 <summary>Ver respuesta</summary>

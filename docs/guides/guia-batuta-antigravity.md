@@ -23,7 +23,7 @@ Batuta Lite es la version del ecosistema Batuta optimizada para Google Antigravi
 | **Quick fixes y config** | Posible | Ideal |
 | **Documentacion** | Posible | Ideal |
 | **Agent Teams (paralelo)** | Si (nativo) | Manager View (nativo diferente) |
-| **Hooks automaticos** | Si (5 hooks nativos) | No (reglas de comportamiento) |
+| **Hooks automaticos** | Si (6 hooks nativos) | No (reglas de comportamiento) |
 | **Costo** | $200/mes (Max x20) | Gratis (preview) |
 
 **Estrategia**: Claude Code para lo que requiere potencia y precision. Antigravity para volumen y tareas mecanicas. Ambos en paralelo.
@@ -113,7 +113,7 @@ bash /path/to/batuta-dots/infra/sync.sh --from-project /path/to/project
 
 ### 1. No hay hooks automaticos
 
-Claude Code tiene 5 hooks nativos (SessionStart, PreToolUse, Stop, TeammateIdle, TaskCompleted). Antigravity no tiene hooks.
+Claude Code tiene 6 hooks nativos (SessionStart, PreToolUse, PostToolUse, Stop, TeammateIdle, TaskCompleted). Antigravity no tiene hooks.
 
 **Solucion**: GEMINI.md incluye reglas de comportamiento que replican los hooks mas criticos:
 - "Al inicio de cada sesion, lee `.batuta/session.md`" (reemplaza SessionStart)

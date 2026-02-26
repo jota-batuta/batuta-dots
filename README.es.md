@@ -26,7 +26,7 @@ Inspirado en [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman
 - **Contract-First Protocol** — contratos pre-spawn definen input/output/file-ownership por teammate.
 - **Seguridad AI-First** — skill security-audit dedicado, integrado en fases de diseno y verificacion.
 - **Team Templates + Playbook** — composiciones pre-armadas por stack (Next.js, FastAPI, n8n, agente IA, data pipeline, refactoring).
-- **CTO Strategy Layer (v10.0)** — 3 gates + 6 skills especialistas en el pipeline SDD.
+- **CTO Strategy Layer (v11.0)** — 3 gates + 6 skills especialistas en el pipeline SDD.
 - **Batuta Bootstrap** — "La Regla" via hook SessionStart: si un skill aplica, DEBES usarlo.
 - **MCP Discovery** — busqueda activa de servidores MCP durante la fase explore.
 - **Review Superpowers** — loop de revision en 2 etapas (spec + calidad) para tareas complejas.
@@ -74,7 +74,7 @@ git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-i
 
 | Plataforma | Destino | Contenido |
 |------------|---------|-----------|
-| **Claude Code** | `~/.claude/` | 24 skills, 3 agentes, 14+ comandos, 4 hooks, settings.json, output-styles |
+| **Claude Code** | `~/.claude/` | 24 skills, 3 agentes, 15 comandos, 6 hooks, settings.json, output-styles |
 | **Claude Code** | Directorio actual | `CLAUDE.md` + `.batuta/` (session, prompt-log, ecosystem.json) |
 | **Antigravity** | `~/.gemini/antigravity/` | Skills compatibles, workflows, GEMINI.md |
 
@@ -158,8 +158,8 @@ batuta-dots/
 │   │   ├── guia-data-pipeline.md      # Pipeline de datos (ETL)
 │   │   ├── guia-refactoring-legacy.md # Refactoring de codigo legacy
 │   │   ├── guia-ai-agent-adk.md       # Agente IA con Google ADK
-│   │   ├── guia-auditoria-contable.md # Auditoria contable (CTO v10.0)
-│   │   └── guia-seleccion-personal.md # Seleccion de personal (CTO v10.0)
+│   │   ├── guia-auditoria-contable.md # Auditoria contable (CTO v11.0)
+│   │   └── guia-seleccion-personal.md # Seleccion de personal (CTO v11.0)
 │   └── qa/                            # Reportes de control de calidad
 │       ├── README.md                  # Indice de QA
 │       ├── audits/                    # Reportes de auditoria de calidad (v5-v9)
@@ -175,7 +175,7 @@ batuta-dots/
 │   │   ├── data-pipeline.md          # Template equipo pipeline de datos
 │   │   └── refactoring.md            # Template equipo refactoring legacy
 │   └── playbook.md                    # Patrones y mejores practicas de equipos
-├── CHANGELOG-refactor.md              # Documento de traza de refactorizaciones (v1-v10.1)
+├── CHANGELOG-refactor.md              # Documento de traza de refactorizaciones (v1-v11.0)
 ├── academia/                          # Curso de capacitacion (8 modulos, 53 lecciones)
 └── infra/                             # Infraestructura y scripts de setup
     ├── setup.sh                       # Script principal (Claude Code)
@@ -441,7 +441,7 @@ Guias de ejecucion paso a paso (12 guias) cubriendo el ciclo completo: instalaci
 | [Pipeline de Datos](docs/guides/guia-data-pipeline.md) | Construir pipeline ETL con validacion |
 | [Refactoring Legacy](docs/guides/guia-refactoring-legacy.md) | Modernizar codigo legacy sin romper funcionalidad |
 | [Agente IA (Google ADK)](docs/guides/guia-ai-agent-adk.md) | Construir agente conversacional con Google ADK |
-| [Auditoria Contable](docs/guides/guia-auditoria-contable.md) | Conciliacion bancaria — flujo CTO v10.0 completo |
+| [Auditoria Contable](docs/guides/guia-auditoria-contable.md) | Conciliacion bancaria — flujo CTO v11.0 completo |
 | [Seleccion de Personal](docs/guides/guia-seleccion-personal.md) | Evaluacion de CVs con LLM + compliance |
 
 ## Academia (Manual de Capacitacion)

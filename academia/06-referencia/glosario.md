@@ -52,7 +52,7 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 
 ## H
 
-**Hook**: Automatismo que se ejecuta cuando algo pasa. 5 hooks: SessionStart, PreToolUse, Stop, TeammateIdle, TaskCompleted.
+**Hook**: Automatismo que se ejecuta cuando algo pasa. 6 hooks: SessionStart, PreToolUse, PostToolUse, Stop, TeammateIdle, TaskCompleted.
 
 ## I
 
@@ -98,7 +98,7 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 
 **Security Audit**: Skill que revisa seguridad (OWASP 10 puntos, secrets, dependencies, threat model).
 
-**Skill**: Archivo SKILL.md que le ensena a Claude una especialidad. 24 skills en v10.0.
+**Skill**: Archivo SKILL.md que le ensena a Claude una especialidad. 24 skills en v11.0.
 
 **Skill Gap Detection**: Mecanismo que detecta cuando falta un skill para una tecnologia y ofrece crearlo.
 

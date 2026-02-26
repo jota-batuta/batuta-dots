@@ -4,6 +4,34 @@
 
 ---
 
+## v11.0.1 — Dynamic Skill Discovery + Hardcoded Reference Cleanup (2026-02-26)
+
+### Contexto
+
+The v11.0 bootstrap prompt hardcoded a list of 24 skills that would become stale when new skills are created via `/create-skill`. Audit revealed 40+ hardcoded references across the ecosystem. This patch makes the skill inventory fully dynamic and fixes all stale counts and version references.
+
+### Changes
+
+- **Dynamic Skill Discovery**: `session-start.sh` now scans `~/.claude/skills/*/SKILL.md` and project-local `.claude/skills/*/SKILL.md`, extracts name + scope from YAML frontmatter, groups by scope, and injects a `Batuta Skill Inventory` into session context. No hardcoded lists.
+- **Simplified Bootstrap Prompt**: `settings.json` SessionStart prompt hook no longer lists skills — it references the dynamically injected inventory above.
+- **Hook Count Fix**: Documentation updated from "4/5 hooks" to "6 hooks" across 8 files. Added missing `PostToolUse` to enumerated lists.
+- **Version References**: Updated all stale `v10.0`/`v10.1`/`v10.2` references to `v11.0` across 13+ files (CHANGELOG historical entries left as-is).
+- **Command Count Fix**: `14+ commands` updated to `15 commands` in READMEs.
+- **Test Fixture Fix**: `setup_test.sh` updated from 18 to 24 expected skills.
+
+### Files Modified (18)
+
+`infra/hooks/session-start.sh`, `BatutaClaude/settings.json`, `README.md`, `README.es.md`, `BatutaClaude/CLAUDE.md`, `BatutaAntigravity/GEMINI.md`, `academia/README.md`, `academia/03-nivel-dos/hooks-y-automatizacion.md`, `academia/06-referencia/glosario.md`, `academia/07-verificacion/quiz-nivel-dos.md`, `academia/07-verificacion/quiz-nivel-uno.md`, `docs/guides/guia-batuta-antigravity.md`, `docs/qa/integration-tests/nextjs-saas.md`, `docs/qa/integration-tests/ai-agent-adk.md`, `docs/architecture/arquitectura-diagrama.md`, `docs/architecture/arquitectura-para-no-tecnicos.md`, `infra/setup_test.sh`, `CHANGELOG-refactor.md`
+
+### Rollback
+
+```bash
+git revert <commit-hash>  # Reverts all changes
+# Then manually restore hardcoded skill list in settings.json bootstrap prompt
+```
+
+---
+
 ## v11.0 — SDD Pipeline Hardening + Superpowers Adoption (2026-02-26)
 
 ### Contexto

@@ -73,4 +73,4 @@ Quizzes y checklists para confirmar que dominas cada nivel.
 
 ---
 
-*Batuta Dots v10.0 — Academia*
+*Batuta Dots v11.0 — Academia*

@@ -5,7 +5,7 @@ Verifica que conoces las herramientas del ecosistema.
 ---
 
 ## Pregunta 1
-**Cuantos skills tiene Batuta Dots v10.0?**
+**Cuantos skills tiene Batuta Dots v11.0?**
 
 <details>
 <summary>Ver respuesta</summary>

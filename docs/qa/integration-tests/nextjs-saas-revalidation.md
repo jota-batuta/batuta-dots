@@ -56,10 +56,10 @@ Las correcciones mas significativas de v9.1 fueron: `setup.sh --hooks` (nuevo fl
 ### H4 (original): setup.sh --all NO instala hooks nativos
 - **Estado**: CORREGIDO
 - **Evidencia**:
-  - `setup.sh --all` ahora llama a `install_hooks` (linea 462 de setup.sh) que merge los 5 hooks de `BatutaClaude/settings.json` al `~/.claude/settings.json` del usuario.
+  - `setup.sh --all` ahora llama a `install_hooks` (linea 462 de setup.sh) que merge los 6 hooks de `BatutaClaude/settings.json` al `~/.claude/settings.json` del usuario.
   - La funcion `install_hooks` (lineas 213-250) hace backup del settings.json existente, merge via jq o python3, y preserva hooks/env/permissions existentes del usuario.
   - Se agrego tambien el flag `--hooks` para instalacion independiente.
-  - Los 5 hooks estan definidos en `BatutaClaude/settings.json`: SessionStart, PreToolUse (Execution Gate), Stop (2 hooks: command + prompt), TeammateIdle, TaskCompleted.
+  - Los 6 hooks estan definidos en `BatutaClaude/settings.json`: SessionStart, PreToolUse (Execution Gate), PostToolUse (prompt-tracker), Stop (2 hooks: command + prompt), TeammateIdle, TaskCompleted.
 - **Archivos verificados**: `skills/setup.sh` lineas 213-318 (install_hooks, _merge_settings_jq, _merge_settings_python), linea 462 (llamada desde do_all), `BatutaClaude/settings.json` lineas 12-44
 
 ---

@@ -3,13 +3,16 @@
 # O.R.T.A. Hook: SessionStart
 # =============================================================================
 # Runs at the beginning of every Claude Code session.
-# Reads .batuta/session.md and injects it as additionalContext so Claude
-# automatically restores project state without relying on compliance.
+#
+# 1. Discovers all installed skills dynamically (no hardcoded lists)
+# 2. Reads .batuta/session.md for project state restoration
+# 3. Checks freshness and version drift
+# 4. Injects everything as additionalContext
 #
 # Input: JSON via stdin from Claude Code hooks system
 #   { "session_id": "...", "cwd": "...", ... }
 #
-# Output: JSON on stdout with additionalContext (if session.md exists)
+# Output: JSON on stdout with additionalContext
 #   { "hookSpecificOutput": { "hookEventName": "SessionStart", "additionalContext": "..." } }
 #
 # Exit codes:
@@ -50,6 +53,89 @@ json_escape() {
 
 CWD=$(json_val cwd ".")
 
+# =============================================================================
+# Dynamic Skill Discovery
+# =============================================================================
+# Scans installed SKILL.md files, extracts name + scope from YAML frontmatter,
+# groups by scope, and generates a formatted inventory.
+# Project-local skills (~/.claude/skills/) take priority over global.
+# =============================================================================
+discover_skills() {
+    declare -A scope_skills scope_counts seen_skills
+    local total=0
+
+    # Project-local skills first (higher priority), then global
+    local search_dirs=()
+    [[ -d "$CWD/.claude/skills" ]] && search_dirs+=("$CWD/.claude/skills")
+    [[ -d "$HOME/.claude/skills" ]] && search_dirs+=("$HOME/.claude/skills")
+
+    [[ ${#search_dirs[@]} -eq 0 ]] && return
+
+    for skills_dir in "${search_dirs[@]}"; do
+        for skill_file in "$skills_dir"/*/SKILL.md; do
+            [[ -f "$skill_file" ]] || continue
+
+            # Extract name and scope from YAML frontmatter using awk
+            local parsed
+            parsed=$(awk '
+                BEGIN { fm=0; name=""; scope="" }
+                /^---[[:space:]]*$/ { fm++; next }
+                fm==1 && /^name:/ {
+                    name=$0; sub(/^name:[[:space:]]*/, "", name)
+                    gsub(/["'"'"']+/, "", name)
+                    gsub(/[[:space:]]+$/, "", name)
+                }
+                fm==1 && /^[[:space:]]+scope:/ {
+                    scope=$0; sub(/.*\[/, "", scope); sub(/\].*/, "", scope)
+                    sub(/,.*/, "", scope)
+                    gsub(/[[:space:]]+/, "", scope)
+                }
+                fm>=2 { exit }
+                END { if (name!="") print (scope!="" ? scope : "other") "|" name }
+            ' "$skill_file" 2>/dev/null) || continue
+
+            [[ -z "$parsed" ]] && continue
+
+            local scope="${parsed%%|*}"
+            local name="${parsed#*|}"
+
+            # Deduplicate: project-local wins (processed first)
+            [[ -n "${seen_skills[$name]:-}" ]] && continue
+            seen_skills[$name]=1
+
+            if [[ -n "${scope_skills[$scope]:-}" ]]; then
+                scope_skills[$scope]="${scope_skills[$scope]}, $name"
+            else
+                scope_skills[$scope]="$name"
+            fi
+            scope_counts[$scope]=$(( ${scope_counts[$scope]:-0} + 1 ))
+            total=$((total + 1))
+        done
+    done
+
+    [[ "$total" -eq 0 ]] && return
+
+    local num_scopes=${#scope_skills[@]}
+    echo "## Batuta Skill Inventory (auto-discovered)"
+    echo ""
+    echo "Found $total skills across $num_scopes scopes:"
+
+    # Consistent order: pipeline, infra, observability, then others alphabetically
+    local -a ordered_scopes=()
+    for s in pipeline infra observability; do
+        [[ -n "${scope_skills[$s]:-}" ]] && ordered_scopes+=("$s")
+    done
+    for s in $(printf '%s\n' "${!scope_skills[@]}" | sort); do
+        case "$s" in pipeline|infra|observability) ;; *) ordered_scopes+=("$s") ;; esac
+    done
+
+    for s in "${ordered_scopes[@]}"; do
+        echo "- $s (${scope_counts[$s]}): ${scope_skills[$s]}"
+    done
+}
+
+SKILL_INVENTORY=$(discover_skills)
+
 # Find project's .batuta/ directory
 BATUTA_DIR=""
 if [[ -d "$CWD/.batuta" ]]; then
@@ -58,33 +144,38 @@ elif [[ -n "${CLAUDE_PROJECT_DIR:-}" && -d "$CLAUDE_PROJECT_DIR/.batuta" ]]; the
     BATUTA_DIR="$CLAUDE_PROJECT_DIR/.batuta"
 fi
 
-# If no .batuta directory or no session.md, exit silently
-if [[ -z "$BATUTA_DIR" || ! -f "$BATUTA_DIR/session.md" ]]; then
+# Read session.md if it exists
+SESSION_CONTENT=""
+if [[ -n "$BATUTA_DIR" && -f "$BATUTA_DIR/session.md" ]]; then
+    SESSION_CONTENT=$(<"$BATUTA_DIR/session.md")
+fi
+
+# If nothing to inject, exit silently
+if [[ -z "$SKILL_INVENTORY" && -z "$SESSION_CONTENT" ]]; then
     exit 0
 fi
 
-# Read session.md content
-SESSION_CONTENT=$(<"$BATUTA_DIR/session.md")
-
-# Check freshness (warn if >7 days since last update)
+# Check freshness (warn if >7 days since last session update)
 FRESHNESS_WARNING=""
-LAST_UPDATE=$(grep -oP 'Last updated.*?: \K\d{4}-\d{2}-\d{2}' "$BATUTA_DIR/session.md" 2>/dev/null || true)
-if [[ -n "$LAST_UPDATE" ]]; then
-    LAST_EPOCH=$(date -d "$LAST_UPDATE" +%s 2>/dev/null || echo "0")
-    NOW_EPOCH=$(date +%s)
-    if [[ "$LAST_EPOCH" -gt 0 ]]; then
-        DAYS_AGO=$(( (NOW_EPOCH - LAST_EPOCH) / 86400 ))
-        if [[ "$DAYS_AGO" -gt 7 ]]; then
-            FRESHNESS_WARNING="
+if [[ -n "$SESSION_CONTENT" ]]; then
+    LAST_UPDATE=$(grep -oP 'Last updated.*?: \K\d{4}-\d{2}-\d{2}' "$BATUTA_DIR/session.md" 2>/dev/null || true)
+    if [[ -n "$LAST_UPDATE" ]]; then
+        LAST_EPOCH=$(date -d "$LAST_UPDATE" +%s 2>/dev/null || echo "0")
+        NOW_EPOCH=$(date +%s)
+        if [[ "$LAST_EPOCH" -gt 0 ]]; then
+            DAYS_AGO=$(( (NOW_EPOCH - LAST_EPOCH) / 86400 ))
+            if [[ "$DAYS_AGO" -gt 7 ]]; then
+                FRESHNESS_WARNING="
 
 Warning: $DAYS_AGO days since last session update. Consider running /batuta-update."
+            fi
         fi
     fi
 fi
 
 # Check ecosystem.json for version drift
 ECOSYSTEM_WARNING=""
-if [[ -f "$BATUTA_DIR/ecosystem.json" ]]; then
+if [[ -n "$BATUTA_DIR" && -f "$BATUTA_DIR/ecosystem.json" ]]; then
     # WHY: Compare local batuta_version with batuta-dots to detect stale installs
     LOCAL_VERSION=""
     case "$_JSON_CMD" in
@@ -108,10 +199,21 @@ Note: Local Batuta version ($LOCAL_VERSION) differs from hub ($HUB_VERSION). Run
     done
 fi
 
-# Build context string
-CONTEXT="## Batuta Session Context (auto-injected)
+# Build context string from available parts
+CONTEXT=""
+
+if [[ -n "$SKILL_INVENTORY" ]]; then
+    CONTEXT="$SKILL_INVENTORY"
+fi
+
+if [[ -n "$SESSION_CONTENT" ]]; then
+    [[ -n "$CONTEXT" ]] && CONTEXT="$CONTEXT
+
+"
+    CONTEXT="${CONTEXT}## Batuta Session Context (auto-injected)
 
 $SESSION_CONTENT$FRESHNESS_WARNING$ECOSYSTEM_WARNING"
+fi
 
 # Escape for JSON output
 CONTEXT_ESCAPED=$(echo "$CONTEXT" | json_escape)

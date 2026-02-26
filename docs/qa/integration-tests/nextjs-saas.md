@@ -39,7 +39,7 @@ estos puntos ciegos funcionales.
 - **Descripcion**: El script sincroniza skills, commands, y agents a `~/.claude/` pero NO merge los hooks de `BatutaClaude/settings.json` al `~/.claude/settings.json` del usuario
 - **Impacto**: Sin hooks, el ecosistema pierde: Execution Gate, session continuity, O.R.T.A. teammate monitoring, task quality gate
 - **Reproduccion**: Ejecutar `bash skills/setup.sh --all` → `~/.claude/settings.json` no tiene hooks
-- **Test propuesto**: `test_setup_installs_hooks()` — verificar que despues de `--all`, `~/.claude/settings.json` contiene los 5 hooks
+- **Test propuesto**: `test_setup_installs_hooks()` — verificar que despues de `--all`, `~/.claude/settings.json` contiene los 6 hooks
 - **Fix propuesto**: Agregar paso a `setup.sh` que merge hooks (con backup del settings.json existente)
 
 #### H10: ecosystem-creator no distingue ruta de destino (local vs global vs batuta-dots)
