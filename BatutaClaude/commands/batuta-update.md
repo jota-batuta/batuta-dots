@@ -2,74 +2,69 @@
 name: batuta-update
 description: >
   Update the Batuta ecosystem in the current project from the latest batuta-dots.
-  Pulls latest changes, re-syncs skills, and updates CLAUDE.md.
-  Use after batuta-dots has been updated with new skills.
+  Single command: syncs global ~/.claude/, updates project CLAUDE.md, refreshes ecosystem.
 disable-model-invocation: true
 allowed-tools: Bash, Read, Write, Glob
 ---
 
 ## Update Batuta Ecosystem
 
-Pull the latest changes from batuta-dots and update this project. Follow these steps:
+Pull latest batuta-dots and update everything (global + project) in one shot.
 
 ### Step 1: Locate batuta-dots
 
 Check these locations in order:
 
-1. `E:/BATUTA PROJECTS/claude/batuta-dots/`
+1. `E:/BATUTA PROJECTS/batuta-dots/`
 2. `~/batuta-dots/`
 3. `/tmp/batuta-dots/`
 
 If found, do a `git pull` in that directory to get latest changes.
 If not found, clone: `git clone https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-dots`
 
-### Important: What gets updated vs what stays
+Store the path in `$BATUTA_DOTS_PATH`.
 
-| Scope | Updates from batuta-dots? | Location |
-|-------|--------------------------|----------|
-| Agent behavior (rules, personality) | YES | CLAUDE.md |
-| Skills (coding standards) | YES | ~/.claude/skills/ |
-| Scope agents (routing docs) | YES | ~/.claude/agents/ |
-| Commands (slash commands) | YES | ~/.claude/commands/ |
-| Routing tables (auto-generated) | YES | BatutaClaude/CLAUDE.md + agents/ |
-| Hooks + permissions | YES | ~/.claude/settings.json |
-| Orphan hooks/skills | CLEANED UP | ~/.claude/hooks/, ~/.claude/skills/ |
-| Project context (session state) | **NO — stays local** | .batuta/session.md |
-| SDD artifacts (specs, designs) | **NO — stays local** | openspec/ |
-
-NEVER overwrite `.batuta/` contents during update. Project context is sacred.
-
-### Step 2: Re-sync skills, agents, and routing tables
+### Step 2: Run full update (one command)
 
 ```bash
-bash "$BATUTA_DOTS_PATH/infra/setup.sh" --all
+bash "$BATUTA_DOTS_PATH/infra/setup.sh" --update "$(pwd)"
 ```
 
-This syncs skills + scope agents + commands to `~/.claude/`, installs hooks + permissions to `~/.claude/settings.json`, and copies the updated CLAUDE.md to the project root.
+This single command does everything:
+- Syncs skills, agents, commands, output-styles to `~/.claude/`
+- Cleans up orphan hooks and skills from `~/.claude/`
+- Installs hooks + permissions to `~/.claude/settings.json`
+- Copies updated CLAUDE.md to the current project
+- Refreshes `.batuta/ecosystem.json` with version and skill lists
 
-### Step 3: Confirm CLAUDE.md update
+### What gets updated vs what stays
 
-If `./CLAUDE.md` exists in the current project, ask the user:
+| Scope | Updated? | Location |
+|-------|----------|----------|
+| Skills, agents, commands | YES | ~/.claude/ |
+| Hooks + permissions | YES | ~/.claude/settings.json |
+| Orphan hooks/skills | CLEANED UP | ~/.claude/hooks/, ~/.claude/skills/ |
+| Project CLAUDE.md | YES | ./CLAUDE.md |
+| Project ecosystem.json | YES | .batuta/ecosystem.json |
+| Project session state | **NO — stays local** | .batuta/session.md |
+| SDD artifacts | **NO — stays local** | openspec/ |
 
-> "CLAUDE.md ya existe en este proyecto. Quieres actualizarlo con la version mas reciente de batuta-dots?
-> Esto sobreescribira cualquier cambio local que hayas hecho a CLAUDE.md.
-> Si prefieres, puedo hacer un diff primero para que veas las diferencias."
+NEVER overwrite `.batuta/session.md` or `openspec/` contents. Project context is sacred.
 
-Options:
-1. Overwrite — Copy latest BatutaClaude/CLAUDE.md
-2. Show diff — Run `diff ./CLAUDE.md $BATUTA_DOTS_PATH/BatutaClaude/CLAUDE.md` and let user decide
-3. Skip — Keep current CLAUDE.md
-
-### Step 4: Report
+### Step 3: Report
 
 ```
 Ecosistema Batuta actualizado.
 
-Skills sincronizados: X skills en ~/.claude/skills/
-Agentes sincronizados: X agentes en ~/.claude/agents/
-Hooks + permissions: instalados en ~/.claude/settings.json
-CLAUDE.md: [actualizado | sin cambios | omitido]
+Global:
+  Skills sincronizados: X skills en ~/.claude/skills/
+  Agentes sincronizados: X agentes en ~/.claude/agents/
+  Hooks + permissions: instalados
 
-Nuevos skills disponibles desde la ultima actualizacion:
-- [lista de skills nuevos si los hay, comparando con la version anterior]
+Proyecto:
+  CLAUDE.md: actualizado a vX.Y.Z
+  ecosystem.json: version y skills actualizados
+
+Nuevos skills desde la ultima actualizacion:
+- [lista si los hay]
 ```

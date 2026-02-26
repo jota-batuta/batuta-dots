@@ -746,6 +746,57 @@ do_all() {
 }
 
 # ============================================================================
+# Update: Global + Project in one shot (--update <path>)
+# ============================================================================
+# WHY: Running --all + --project + --update-ecosystem separately is high friction.
+# This combines all three so /batuta-update and manual updates are a single command.
+
+update_all() {
+    local project_path="$1"
+
+    if [[ -z "$project_path" ]]; then
+        log_error "--update requires a project directory path"
+        return 1
+    fi
+
+    # Normalize
+    project_path="${project_path%/}"
+    project_path="${project_path%/.}"
+
+    if [[ ! -d "$project_path" ]]; then
+        log_error "Project directory does not exist: $project_path"
+        return 1
+    fi
+
+    # Phase 1: Global — sync skills, agents, commands, hooks, styles to ~/.claude/
+    do_all
+
+    # Phase 2: Project CLAUDE.md — copy latest from batuta-dots
+    echo ""
+    log_header "Updating project: $project_path"
+
+    local source_claude="$REPO_ROOT/BatutaClaude/CLAUDE.md"
+    local target_claude="$project_path/CLAUDE.md"
+    if [[ -f "$source_claude" ]]; then
+        cp -f "$source_claude" "$target_claude"
+        log_success "Updated $target_claude"
+    else
+        log_error "BatutaClaude/CLAUDE.md not found"
+    fi
+
+    # Phase 3: Ecosystem — refresh version and skill lists
+    if [[ -f "$project_path/.batuta/ecosystem.json" ]]; then
+        update_project_ecosystem "$project_path"
+    else
+        log_info "No .batuta/ecosystem.json found — skipping ecosystem update"
+        log_info "Run --project first to bootstrap, or /sdd-init from Claude Code"
+    fi
+
+    echo ""
+    log_success "Global + project update complete!"
+}
+
+# ============================================================================
 # Verify
 # ============================================================================
 
@@ -917,8 +968,10 @@ End-User Install (recommended):
 Developer Usage: ./infra/setup.sh [OPTIONS]
 
 Options:
+  --update <path>  Full update: global (~/.claude/) + project (CLAUDE.md + ecosystem)
+                  This is the recommended one-command update for existing projects.
   --all         Full setup: sync skills + agents + commands + hooks + output-styles
-                  to ~/.claude/ (Claude Code platform only)
+                  to ~/.claude/ only (does NOT update project files)
   --sync        Sync skills, agents, and commands to ~/.claude/
                   Copies all SKILL.md files, assets, scope agents,
                   and slash commands so Claude Code can route and load.
@@ -949,8 +1002,9 @@ Other Platforms:
   ./infra/replicate-platform.sh --all
 
 Examples:
-  ./infra/setup.sh --all                  # Full setup (developer)
-  ./infra/setup.sh --project /my/app      # Bootstrap a project
+  ./infra/setup.sh --update /my/app        # Update global + project (recommended)
+  ./infra/setup.sh --all                  # Update global ~/.claude/ only
+  ./infra/setup.sh --project /my/app      # Bootstrap a NEW project
   ./infra/setup.sh --verify               # Check everything is correct
   ./infra/setup.sh                        # Interactive menu
 
@@ -970,6 +1024,7 @@ parse_args() {
         --hooks)    install_hooks ;;
         --antigravity) sync_antigravity ;;
         --project)  shift_done=true; setup_project "$2" ;;
+        --update)   shift_done=true; update_all "$2" ;;
         --update-ecosystem) shift_done=true; update_project_ecosystem "$2" ;;
         --verify)   verify ;;
         --help|-h)  show_help; exit 0 ;;
@@ -996,7 +1051,7 @@ main() {
     # IMPORTANT: Resolve path arguments BEFORE cd to REPO_ROOT
     # Otherwise relative paths (like ".") resolve to batuta-dots instead of user's project
     local resolved_project_path=""
-    if [[ ("$1" == "--project" || "$1" == "--update-ecosystem") && -n "$2" ]]; then
+    if [[ ("$1" == "--project" || "$1" == "--update" || "$1" == "--update-ecosystem") && -n "$2" ]]; then
         local raw_path="$2"
         if [[ ! "$raw_path" = /* && ! "$raw_path" =~ ^[A-Za-z]: ]]; then
             resolved_project_path="$(cd "$(pwd)" && pwd)/$raw_path"
@@ -1012,6 +1067,8 @@ main() {
     else
         if [[ "$1" == "--project" ]]; then
             setup_project "$resolved_project_path"
+        elif [[ "$1" == "--update" ]]; then
+            update_all "$resolved_project_path"
         elif [[ "$1" == "--update-ecosystem" ]]; then
             update_project_ecosystem "$resolved_project_path"
         else
