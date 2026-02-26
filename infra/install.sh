@@ -143,7 +143,7 @@ select_platform() {
     echo "Which platform do you want to install?"
     echo ""
     printf "  ${CYAN}1)${NC} BatutaClaude  — Claude Code (skills, agents, commands, hooks)\n"
-    printf "  ${CYAN}2)${NC} BatutaAntigravity — Gemini CLI (skills, workflows)\n"
+    printf "  ${CYAN}2)${NC} BatutaAntigravity — Antigravity IDE (skills, workflows)\n"
     printf "  ${CYAN}3)${NC} Both platforms\n"
     printf "  ${CYAN}0)${NC} Cancel\n"
     echo ""
@@ -178,11 +178,11 @@ install_claude() {
 }
 
 # ============================================================================
-# Install Antigravity (Gemini CLI)
+# Install Antigravity
 # ============================================================================
 
 install_antigravity() {
-    log_header "Installing BatutaAntigravity (Gemini CLI)"
+    log_header "Installing BatutaAntigravity (Antigravity IDE)"
 
     # Global + workspace install
     bash "$REPO_DIR/BatutaAntigravity/setup-antigravity.sh" --all
@@ -209,7 +209,7 @@ Usage (public repo):
 
 Options:
   --claude        Install BatutaClaude (Claude Code) only
-  --antigravity   Install BatutaAntigravity (Gemini CLI) only
+  --antigravity   Install BatutaAntigravity (Antigravity IDE) only
   --both          Install both platforms
   --help, -h      Show this help message
 

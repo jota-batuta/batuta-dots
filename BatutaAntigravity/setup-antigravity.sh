@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # ============================================================================
-# Batuta.Dots — Antigravity (Gemini CLI) Setup Script
+# Batuta.Dots — Antigravity Setup Script
 # ============================================================================
-# Sets up the Batuta ecosystem for Google's Antigravity (Gemini CLI).
+# Sets up the Batuta ecosystem for Google's Antigravity IDE.
 # Copies GEMINI.md to the project root and syncs cross-platform skills
 # that declare `platforms:.*antigravity` in their SKILL.md frontmatter.
 #
@@ -288,7 +288,7 @@ create_batuta_dir() {
 - **Type**: (pending detection)
 - **Description**: (pending)
 - **Status**: New project
-- **Platform**: Antigravity (Gemini CLI)
+- **Platform**: Antigravity
 
 ## Current State
 - SDD Phase: not started
@@ -351,7 +351,7 @@ do_all() {
 
     echo ""
     log_success "Antigravity fully configured!"
-    log_info "Next: open Gemini CLI in your project and start with /sdd-init"
+    log_info "Next: open Antigravity in your project and start with /sdd-init"
 }
 
 # ============================================================================
@@ -361,7 +361,7 @@ do_all() {
 show_menu() {
     log_header "Batuta.Dots — Antigravity Setup"
 
-    echo "This script configures Antigravity (Gemini CLI) with the Batuta ecosystem."
+    echo "This script configures Antigravity IDE with the Batuta ecosystem."
     echo "GEMINI.md is the entry point. Skills are filtered by platform compatibility."
     echo ""
     printf "  ${CYAN}1)${NC} Copy GEMINI.md to project root\n"
@@ -400,17 +400,17 @@ interactive_menu() {
 
 show_help() {
     cat << 'EOF'
-Batuta.Dots — Antigravity (Gemini CLI) Setup
-==============================================
+Batuta.Dots — Antigravity Setup
+================================
 
-Configures Antigravity (Gemini CLI) with the Batuta AI ecosystem.
+Configures Antigravity IDE with the Batuta AI ecosystem.
 GEMINI.md is the entry point. Skills are filtered by platform compatibility.
 
 Usage: ./BatutaAntigravity/setup-antigravity.sh [OPTIONS]
 
 Options:
   --global      Install antigravity-compatible skills to ~/.gemini/antigravity/skills/
-                  Global skills are available across all Gemini CLI projects.
+                  Global skills are available across all Antigravity projects.
                   Only skills with 'platforms:.*antigravity' in SKILL.md are copied.
   --workspace   Install antigravity-compatible skills to .agent/skills/
                   Workspace skills are project-local (committed to repo).
