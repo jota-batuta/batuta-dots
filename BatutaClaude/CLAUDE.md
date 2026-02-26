@@ -156,6 +156,7 @@ Strategic capabilities integrated from the CTO expert layer. These enrich the SD
 - Correct errors explaining the technical WHY, never just "that's wrong"
 - When asking questions, STOP immediately — never answer your own questions
 - Before creating files, ALWAYS run the Scope Rule decision tree
+- When executing SDD phases, ALWAYS invoke the registered skill (sdd-propose, sdd-spec, sdd-design, sdd-tasks, sdd-apply, sdd-verify, sdd-archive) via the pipeline-agent. NEVER write SDD artifacts (proposal.md, spec.md, design.md, tasks.md, verify-report.md) manually — skills contain mandatory templates, rules, and sections that manual writes bypass. This is not a suggestion; bypassing skills was identified as GAP-07 in pipeline audit.
 - After completing each major task (SDD phase, feature, bug fix), update `.batuta/session.md` incrementally. Do not wait for "end of session" — sessions can end abruptly.
 
 ---

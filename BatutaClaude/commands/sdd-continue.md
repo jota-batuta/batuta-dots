@@ -35,6 +35,7 @@ Backtrack state takes priority over forward detection.
 | File exists? | Next phase to run |
 |-------------|-------------------|
 | No explore.md | Run sdd-explore |
+| explore.md but unresolved skill gaps | Resolve skill gaps first — check explore.md for HIGH gaps, verify matching skills exist in `~/.claude/skills/`. Do NOT advance to propose until G0.25 passes (see pipeline-agent). |
 | explore.md but no proposal.md | Run sdd-propose |
 | proposal.md but no spec.md | Run sdd-spec |
 | spec.md but no design.md | Run sdd-design |

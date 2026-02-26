@@ -66,6 +66,8 @@ openspec/changes/{change-name}/
 ```markdown
 # Delta for {Domain}
 
+**Based on**: proposal.md (v{N})
+
 ## ADDED Requirements
 
 ### Requirement: {Requirement Name}
@@ -165,6 +167,7 @@ Ready for design (sdd-design). If design already exists, ready for tasks (sdd-ta
 - Keep scenarios TESTABLE — someone should be able to write an automated test from each one
 - DO NOT include implementation details in specs — specs describe WHAT, not HOW
 - Write requirements in plain language accessible to non-technical stakeholders
+- ALWAYS reference the proposal version in the delta spec header (e.g., "Based on: proposal.md (v2)"). Read the proposal's Version field to get the current version number. This ensures traceability between specs and the exact proposal version they were derived from.
 - Apply any `rules.specs` from `openspec/config.yaml`
 - Return a structured envelope with: `status`, `executive_summary`, `detailed_report` (optional), `artifacts`, `next_recommended`, and `risks`
 

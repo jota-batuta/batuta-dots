@@ -48,7 +48,7 @@ All data lives in the project's `.batuta/` directory:
 
 ## Event Format (JSONL)
 
-Each line in `.batuta/prompt-log.jsonl` is a JSON object representing one event. Six event types exist:
+Each line in `.batuta/prompt-log.jsonl` is a JSON object representing one event. Seven event types exist:
 
 ### 1. `prompt` — User makes a request
 
@@ -194,6 +194,34 @@ This is NOT a correction — the original result was fine, the user is adding sc
 | `details` | No | Additional context (skills used, duration, artifacts) |
 
 > **Note**: Team events are logged centrally by the lead or via O.R.T.A. hooks (TeammateIdle, TaskCompleted). Teammates do NOT write to prompt-log.jsonl directly to avoid multi-writer conflicts.
+
+### 7. `amendment` — Proposal or artifact amended after user feedback
+
+```json
+{
+  "ts": "2026-02-25T14:00:00Z",
+  "type": "amendment",
+  "change_name": "agente-inventarios",
+  "artifact": "proposal.md",
+  "amendment_number": 1,
+  "trigger": "user-feedback",
+  "sections_changed": ["scope", "risks", "approach"],
+  "summary": "Added multi-bodega support, SQL Server on-premise, cost column filtering"
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `ts` | Yes | ISO 8601 timestamp |
+| `type` | Yes | Always `"amendment"` |
+| `change_name` | Yes | The SDD change name (e.g., "agente-inventarios") |
+| `artifact` | Yes | Which artifact was amended: `proposal.md`, `design.md`, `spec.md` |
+| `amendment_number` | Yes | Sequential number matching the Amendment History table in the artifact |
+| `trigger` | Yes | `user-feedback`, `backtrack`, `review`, `stakeholder-input` |
+| `sections_changed` | Yes | Array of section names that were modified |
+| `summary` | Yes | 1-line summary of what changed and why |
+
+> **When to log**: Whenever sdd-propose (or any SDD skill) updates an existing artifact based on user feedback or backtrack. This event complements the Amendment History table in proposal.md — the table is human-readable, this event is machine-queryable.
 
 ---
 

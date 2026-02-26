@@ -78,6 +78,9 @@ If `openspec/specs/` has relevant specs, read them to understand current behavio
 ```markdown
 # Proposal: {Change Title}
 
+**Version**: 1
+**Last updated**: {ISO date}
+
 ## Plain Language Summary
 
 {Three sentences maximum. Zero jargon. Explain what we are doing, why we are doing it, and what the team should expect -- written so that anyone in the company (founder, product manager, designer, client) can understand it without asking follow-up questions.}
@@ -189,7 +192,35 @@ Include Coolify/Docker rollback procedure if applicable.}
 - [ ] {How do we know this change succeeded?}
 - [ ] {Measurable outcome}
 - [ ] {Stakeholders have been informed per the communication plan above}
+
+## Amendment History
+
+{This section is auto-populated when user feedback modifies the proposal.
+Each entry records what changed, why, and who requested it.
+DO NOT delete previous entries — this is an append-only log.
+Leave empty for initial version.}
+
+| # | Date | Trigger | Changes | Justification |
+|---|------|---------|---------|---------------|
 ```
+
+### Step 3.5: Amendment Handling (when updating an existing proposal)
+
+When the user provides feedback that requires changes to an existing proposal:
+
+1. **READ** the existing proposal.md first (this is already a rule)
+2. **INCREMENT** the Version field in the header (v1 → v2, v2 → v3, etc.)
+3. **UPDATE** the Last updated date
+4. **UPDATE** the relevant sections in-place (scope, risks, approach, etc.)
+5. **APPEND** an entry to the Amendment History table:
+   - `#`: Sequential number (1, 2, 3...)
+   - `Date`: Current ISO date
+   - `Trigger`: "User feedback" / "Backtrack from {phase}" / "Review" / "Stakeholder input"
+   - `Changes`: Brief list of sections modified (e.g., "Scope: added multi-bodega; Risks: added cost filtering")
+   - `Justification`: Summarize the user's reasoning in their own words
+6. **LOG** an `amendment` event to `.batuta/prompt-log.jsonl` (see prompt-tracker skill, event type #7)
+
+**Do NOT** create separate files (proposal-v1.md, proposal-v2.md). The Amendment History table IS the version log. Git commits provide the actual diffs.
 
 ### Step 4: Return Summary
 
@@ -256,3 +287,5 @@ risks:
 - Return a structured envelope with: `status`, `executive_summary`, `detailed_report` (optional), `artifacts`, `next_recommended`, and `risks`
 - Write with the voice of a CTO who respects their team's time: clear, direct, no unnecessary complexity
 - Client communication must be in the client's language — never assume English
+- When updating an existing proposal after user feedback, ALWAYS increment the Version, update the date, and append an entry to the Amendment History table. Never update a proposal silently — the amendment trail is the audit log for stakeholder decisions
+- The Amendment History section is MANDATORY in the template — even if empty on initial creation
