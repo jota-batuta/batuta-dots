@@ -462,12 +462,12 @@ EOF
 # ============================================================================
 
 main() {
-    cd "$REPO_ROOT"
-
     # IMPORTANT: Save caller's directory BEFORE cd to REPO_ROOT.
     # Relative paths and --push (no arg) need the caller's cwd.
     local caller_dir
     caller_dir="$(pwd)"
+
+    cd "$REPO_ROOT"
 
     # WHY pre-resolve project path: same pattern as setup.sh. Relative paths
     # must be resolved before cd to REPO_ROOT, otherwise "." would point to

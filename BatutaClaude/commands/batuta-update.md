@@ -25,15 +25,18 @@ git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-d
 
 Store the path in `$BATUTA_DOTS_PATH`.
 
-### Step 2: Try to get latest (best-effort)
+### Step 2: Pull latest changes
 
 Tell the user: "Actualizando batuta-dots para obtener los últimos skills y configuración..."
 
-Try `git pull` in `$BATUTA_DOTS_PATH`. **This is best-effort** — if it fails (dirty tree,
-wrong branch, rejected by user), continue with the local version. Say:
-"No pude hacer pull (puede que tengas cambios locales). Continúo con la versión local."
+Run `git pull` in `$BATUTA_DOTS_PATH`. If it fails (dirty tree, wrong branch, conflict),
+**stop and explain the issue to the user**. Do NOT silently continue with stale files —
+the user needs to know they're not getting the latest version.
 
-Do NOT stop the flow if git pull fails. The local version is good enough.
+Common failures and what to tell the user:
+- Dirty tree: "batuta-dots tiene cambios sin commit. Haz commit o stash antes de actualizar."
+- Wrong branch: "batuta-dots está en la rama X. Cambia a master para actualizar."
+- Network error: "No hay conexión. Verifica tu red."
 
 ### Step 3: Run full update (one command)
 
