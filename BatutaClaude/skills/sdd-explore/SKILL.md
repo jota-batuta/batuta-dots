@@ -59,6 +59,7 @@ From the orchestrator:
 
 Rules:
 - `detail_level` controls output depth; architecture-wide explorations may require deep reports.
+- When `detail_level` = `concise`: Discovery Completeness uses 1-line per question (not full table), Approaches section shows 1 recommendation only (skip alternatives), MCP Discovery Map section is OMITTED, Process Complexity section is OMITTED, max 3 bullets per section. This reduces output ~70% for simple explorations.
 - If mode resolves to `none`, return result only.
 - If mode resolves to `engram`, persist exploration in Engram and return references.
 - If mode resolves to `openspec`, `exploration.md` may be created when a change name is provided.
