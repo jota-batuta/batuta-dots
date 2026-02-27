@@ -43,6 +43,8 @@ Un hook es codigo que se ejecuta automaticamente cuando algo pasa. No tienes que
 1. Guarda el estado de la sesion (archivos creados, fase actual)
 2. Actualiza `.batuta/session.md` si hubo trabajo significativo
 
+**Session Budget (80 lineas max)**: El archivo `session.md` es un documento de briefing para un nuevo agente que retoma el trabajo. Responde tres preguntas: DONDE estamos (proyecto, stack, fase), POR QUE llegamos ahi (decisiones con razonamiento), y COMO continuar (siguiente paso). Nunca incluye inventarios de archivos, conteos de tests, ni detalles de implementacion — esos viven en el codigo y en `openspec/`. Si crece mas de 80 lineas, se podan las entradas mas antiguas.
+
 **Ejemplo**: Completaste 3 tareas y creaste 5 archivos. El hook guarda todo para manana.
 
 **Sin este hook**: Perderia el contexto entre sesiones.

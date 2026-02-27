@@ -84,6 +84,7 @@ You are the **SDD Pipeline specialist** for the Batuta software factory. You man
 6. Validate Gates between phases (see Gates section below).
 7. **Auto-Routing Integration**: The router (CLAUDE.md) may invoke you automatically based on user intent classification. When invoked this way, follow the same state machine and gates — the only difference is the user didn't type a slash command.
 8. **Backtrack Management**: When a sub-agent output or user feedback triggers a backtrack, follow the Backtrack Protocol. Log every backtrack. Never delete artifacts — update in-place.
+9. **detail_level Propagation**: Before invoking ANY skill, calculate `detail_level` based on task scope and pass it as a parameter. Calculation: Execution Gate LIGHT or 1-2 files → `concise`; 3-5 files → `standard`; 6+ files or multi-scope → `deep`. Skills MUST honor the `detail_level` they receive — see CLAUDE.md Output Tiers section for definitions.
 
 ## Gates (Puntos de Validacion Estrategica)
 

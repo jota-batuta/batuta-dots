@@ -333,6 +333,14 @@ When new skills are created in a project, Claude proposes propagating them back 
 
 During `/sdd-init`, only relevant skills are copied from the global library to your project. The agent sees only what it needs, keeping context clean as the ecosystem grows to 100+ skills.
 
+### Deterministic Rules & Mandatory Gates
+
+All mandatory behaviors (scope enforcement, skill invocation, pipeline gates, ecosystem lifecycle) are defined as hard Rules with MUST/NEVER/ALWAYS keywords — deterministic and compaction-resistant. Seven mandatory gates (Execution Gate, G0.25, G0.5, G1, Proposal Approval, Task Plan Approval, G2) are consolidated as explicit STOP points.
+
+### Proportional Output & Session Budget
+
+Output scales to task complexity via three tiers (MICRO/STANDARD/COMPLEX). Session.md is capped at 80 lines as a briefing document answering WHERE/WHY/HOW — not a project README.
+
 ---
 
 ## Available Skills (22 + 3 scope agents)

@@ -4,6 +4,54 @@
 
 ---
 
+## v12.1.0 — Deterministic Rules, Mandatory Gates & Session Budget (2026-02-26)
+
+### Contexto
+
+After 10+ PRs and a pilot project (Agente Conciliador Bancario), a full ecosystem audit revealed: 13 rules in `## Rules` but 56 mandatory instructions scattered across Behavior, Auto-Routing, and Execution Gate sections — all using MUST/NEVER/ALWAYS but not enforced as Rules. Session.md grew to 150+ lines in the pilot, causing 10+ context compactions. The `detail_level` parameter was declared in 7 skills but never defined.
+
+### CLAUDE.md Restructure
+
+- **Rules expanded (13 → ~25)** — Promoted 12+ implicit rules from Behavior/Auto-Routing to `## Rules` with subsections: Core, Scope & File Creation, SDD Pipeline, Ecosystem Lifecycle, Session & Output, Auto-Routing. All use MUST/NEVER/ALWAYS keywords for deterministic enforcement.
+- **New `## Mandatory Gates` section** — 7 gates consolidated from CTO Strategy, Auto-Routing, and Execution Gate into a single table: Execution Gate, G0.25 (Skill Gaps), G0.5 (Discovery Complete), G1 (Worth Building), Proposal Approval, Task Plan Approval, G2 (Ready for Production).
+- **Behavior reduced (~10 → 7 items)** — Removed all items promoted to Rules. Only advisory items remain (explain WHY, tradeoff tables, "What This Means" section, educational style).
+- **New `## Output Tiers` section** — Defines three tiers: MICRO (1-2 files, executive_summary only), STANDARD (3-5 files, full template), COMPLEX (6+ files, deep analysis). Maps to `detail_level` parameter: concise/standard/deep.
+- **`## Session Continuity` rewritten** — 80-line budget, briefing document structure (WHERE/WHY/HOW), explicit pruning rules, clear "what does NOT belong" list.
+
+### Pipeline & Skills
+
+- **pipeline-agent.md** — New rule 9: `detail_level` propagation. Pipeline-agent MUST calculate tier (Execution Gate LIGHT or 1-2 files → concise; 3-5 → standard; 6+ → deep) before invoking any skill.
+- **sdd-explore/SKILL.md** — Added concise mode: when `detail_level=concise`, Discovery Completeness uses 1-line per question, Approaches shows 1 recommendation only, MCP Discovery Map and Process Complexity sections are omitted, max 3 bullets per section.
+
+### Session & Workflows
+
+- **session-template.md** — Rewritten as briefing document with budget reminder and WHERE/WHY/HOW structure.
+- **save-session.md** — Rewritten with explicit pruning step (6 rules) and budget enforcement before writing.
+
+### Documentation
+
+- **README.md / README.es.md** — Added "Deterministic Rules & Mandatory Gates" and "Proportional Output & Session Budget" subsections.
+- **academia hooks-y-automatizacion.md** — Added Session Budget explanation in Stop hook section.
+
+### Principio de diseno
+
+- **Rules = deterministic** (MUST/NEVER/ALWAYS in `## Rules`): survive context compaction, cannot be rationalized away.
+- **Behaviors = advisory** (style, tone, format in `## Behavior`): guide but don't block.
+- **Gates = STOP points**: agent cannot advance without meeting criteria.
+- **Output scales to complexity**: a 1-file fix never produces a 200-line report.
+- **Session.md = briefing, not README**: answers WHERE/WHY/HOW in ≤80 lines.
+
+### Rollback
+
+```bash
+git revert <commit-hash>  # Revert v12.1 commit
+# CLAUDE.md returns to pre-restructure state
+# Skills lose concise mode conditionals
+# Session template reverts to unbounded format
+```
+
+---
+
 ## v11.3.0 — Project-Scoped Skills & MCPs (2026-02-26)
 
 ### Contexto

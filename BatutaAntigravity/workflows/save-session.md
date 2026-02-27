@@ -18,42 +18,56 @@ If no significant work was done, tell the user: "No hay cambios significativos q
 ### Step 2: Gather session state
 
 Collect the following information from the current session:
-- **Current state**: What is the project's current status?
-- **What was accomplished**: List completed tasks, phases, or changes.
-- **Pending items**: What remains to be done?
-- **Key decisions**: Any architectural, design, or technical decisions made.
-- **Active change**: If an SDD change is in progress, note its name and current phase.
+- **WHERE are we**: Project type, stack, 1-line status, current SDD phase
+- **WHY did we get here**: Key decisions with rationale, conventions discovered
+- **HOW to continue**: Actionable next steps, blockers, what to do first
 
-### Step 3: Write session file
+### Step 3: Prune and enforce budget
+
+Before writing, apply the Session Budget (80 lines max):
+1. Completed SDD changes → REMOVE from Active Changes (they're in openspec/archive/)
+2. Decisions now obvious from code → REMOVE
+3. Next Steps already done → REMOVE
+4. Individual file paths → NEVER list (use summaries: "4 parsers, 48 tests")
+5. Implementation details (regex patterns, S3 paths, test counts) → REMOVE (they live in code)
+6. If over 80 lines → trim oldest decisions and notes until compliant
+
+### Step 4: Write session file
 
 Create or update `.batuta/session.md` with the gathered state. Use this structure:
 
 ```markdown
-# Session State
-> Last updated: {current date and time}
+# Session — {project-name}
 
-## Current State
-{project status summary}
+> Briefing for a new agent: WHERE are we, WHY, HOW to continue.
+> Budget: 80 lines max. Details live in code and openspec/.
 
-## Accomplished
-{list of completed items}
+## Project
+- **Type**: {type}
+- **Stack**: {stack}
+- **Status**: {1-line status}
 
-## Pending
-{list of remaining items}
+## Active SDD Changes
 
-## Key Decisions
-{decisions and their rationale}
+| Change | Phase | Last Updated |
+|--------|-------|--------------|
 
-## Active SDD Change
-{change name and phase, or "None"}
+## Key Decisions (WHY we got here)
+- {date}: {decision + rationale — 1-2 lines}
+
+## Conventions
+- {patterns: date formats, money handling, naming, etc.}
+
+## Next Steps (HOW to continue)
+- [ ] {actionable item}
 ```
 
 The session file is for PROJECT context only. Never put personal preferences here.
 
-### Step 4: Confirm
+### Step 5: Confirm
 
 Tell the user:
 
 ```
-Sesion guardada en .batuta/session.md.
+Sesion guardada en .batuta/session.md ({N} lineas, dentro del budget de 80).
 ```
