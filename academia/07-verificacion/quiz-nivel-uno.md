@@ -10,7 +10,7 @@ Verifica que conoces las herramientas del ecosistema.
 <details>
 <summary>Ver respuesta</summary>
 
-22 skills organizados en: 9 pipeline SDD, 6 capa CTO, 4 infraestructura, 3 patrones reutilizables.
+23 skills organizados en: 9 pipeline SDD, 6 capa CTO, 4 infraestructura, 3 patrones reutilizables.
 </details>
 
 ---

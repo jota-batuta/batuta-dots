@@ -82,7 +82,9 @@ IF project-specific:
 └── If "needs generalization" → note for future ecosystem review
 ```
 
-### Step 4: Validate Frontmatter Completeness
+### Step 4: Validate Frontmatter Completeness (defense-in-depth)
+
+Ecosystem-creator validates frontmatter during creation. This step re-validates AFTER creation as defense-in-depth — catching cases where frontmatter was manually edited, partially generated, or where creator missed a field.
 
 Check these required fields — flag any missing:
 

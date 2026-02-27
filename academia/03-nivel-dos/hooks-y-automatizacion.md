@@ -27,7 +27,7 @@ Un hook es codigo que se ejecuta automaticamente cuando algo pasa. No tienes que
 **Que hace**: Establece "La Regla" — si un skill aplica a tu tarea, DEBES usarlo. Sin excepciones.
 
 **Que contiene**:
-- Lista completa de los 22 skills organizados por categoria
+- Lista completa de los 23 skills organizados por categoria
 - 4 "racionalizaciones bandera roja" que Claude debe detectar y rechazar:
   1. "Esto es algo simple" — Las tareas simples necesitan convenciones de equipo
   2. "Ya se como hacer esto" — Los skills codifican la forma del EQUIPO, no solo conocimiento
@@ -58,14 +58,23 @@ Los hooks viven en `~/.claude/settings.json`:
 ```json
 {
   "hooks": {
-    "SessionStart": [{ "command": "bash infra/hooks/session-start.sh" }],
-    "Stop": [{ "command": "bash infra/hooks/session-save.sh" }]
-  },
-  "systemPromptFiles": ["infra/bootstrap/batuta-bootstrap.md"]
+    "SessionStart": [{
+      "hooks": [
+        { "type": "command", "command": "bash ~/.claude/hooks/session-start.sh" },
+        { "type": "prompt", "prompt": "BATUTA BOOTSTRAP — THE RULE: If a skill applies..." }
+      ]
+    }],
+    "Stop": [{
+      "hooks": [
+        { "type": "command", "command": "bash ~/.claude/hooks/session-save.sh" },
+        { "type": "prompt", "prompt": "Before stopping, check if .batuta/session.md exists..." }
+      ]
+    }]
+  }
 }
 ```
 
-> **Nota v11.0**: El bootstrap prompt no es un hook en el sentido tecnico — es un archivo de system prompt que Claude carga al inicio. Pero funciona en conjunto con el SessionStart hook para establecer el contexto completo.
+> **Nota v12.1**: El bootstrap ("La Regla") esta embebido como prompt hook inline dentro del SessionStart array, no como archivo separado. El hook `command` ejecuta el script de descubrimiento de skills y el hook `prompt` inyecta La Regla directamente. Ambos se ejecutan en secuencia al iniciar sesion.
 
 ### Tipos de hook
 

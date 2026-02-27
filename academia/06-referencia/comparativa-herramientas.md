@@ -35,7 +35,7 @@ La mayoria de herramientas generan codigo. Batuta te obliga a pensar ANTES de ge
 ### 2. Especializacion, no generalismo
 
 Claude Code es generalista — sabe de todo pero no tiene opiniones fuertes. Batuta lo convierte en un CTO con:
-- 22 skills especializados
+- 23 skills especializados
 - 3 agentes coordinadores
 - 6 expertos de dominio
 - Reglas claras (Scope Rule, Execution Gate, Documentation Standard)

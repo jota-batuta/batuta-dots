@@ -805,7 +805,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     subgraph HUB["batuta-dots (HUB)"]
-        BC["BatutaClaude/<br/>skills/ (22)"]
+        BC["BatutaClaude/<br/>skills/ (23)"]
         BA["BatutaAntigravity/<br/>skills/ (20, filtrados)"]
         SYNC["infra/sync.sh"]
     end
@@ -859,7 +859,7 @@ flowchart TD
     subgraph CLAUDE_DETAIL["BatutaClaude/"]
         CLAUDE_MD["CLAUDE.md (router)"]
         AGENTS["agents/<br/>pipeline, infra, observability"]
-        SKILLS_22["skills/ (22 skills)<br/>sdd-*, ecosystem, scope-rule,<br/>team-orchestrator, security-audit,<br/>+ 6 CTO specialists<br/>+ 3 technology skills"]
+        SKILLS_22["skills/ (23 skills)<br/>sdd-*, ecosystem, scope-rule,<br/>team-orchestrator, security-audit,<br/>+ 6 CTO specialists<br/>+ 3 technology skills"]
     end
 
     subgraph ANTIGRAVITY_DETAIL["BatutaAntigravity/ (Lite)"]

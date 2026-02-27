@@ -73,7 +73,7 @@ git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-i
 
 | Platform | Destination | Contents |
 |----------|-------------|----------|
-| **Claude Code** | `~/.claude/` | 22 skills, 3 agents, 11 commands, 2 hooks, settings.json, output-styles |
+| **Claude Code** | `~/.claude/` | 23 skills, 3 agents, 11 commands, 2 hooks, settings.json, output-styles |
 | **Claude Code** | Current directory | `CLAUDE.md` + `.batuta/` (session, ecosystem.json) |
 | **Antigravity** | `~/.gemini/antigravity/` | Antigravity-compatible skills, workflows, GEMINI.md |
 

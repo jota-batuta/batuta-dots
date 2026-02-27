@@ -36,7 +36,7 @@ Proyecto A (Claude Code)  ←→  batuta-dots (hub)  ←→  Proyecto B (Antigra
 3. Del hub se distribuye a todos los spokes (via `install.sh` para usuarios, o `setup.sh --update` / `setup-antigravity.sh --update` para desarrolladores)
 
 El campo `platforms` en el frontmatter de SKILL.md determina que plataformas reciben cada skill:
-- `platforms: [claude, antigravity]` — va a ambas (20 de 22 skills)
+- `platforms: [claude, antigravity]` — va a ambas (20 de 23 skills)
 - `platforms: [claude]` — solo Claude Code (2 skills que requieren hooks o Agent Teams)
 
 ---
@@ -77,7 +77,7 @@ bash ~/batuta-dots/BatutaAntigravity/setup-antigravity.sh --all
 ```
 
 Esto:
-- Copia 22 skills a `.agent/skills/` (workspace) y `~/.gemini/antigravity/skills/` (global)
+- Copia 23 skills a `.agent/skills/` (workspace) y `~/.gemini/antigravity/skills/` (global)
 - Copia GEMINI.md al proyecto
 - Crea `.batuta/session.md` y `.batuta/ecosystem.json`
 

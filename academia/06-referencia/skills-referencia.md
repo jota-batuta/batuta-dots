@@ -1,6 +1,6 @@
 # Skills — Referencia tecnica
 
-Ficha tecnica de cada uno de los 22 skills del ecosistema Batuta Dots v11.1.
+Ficha tecnica de cada uno de los 23 skills del ecosistema Batuta Dots v11.1.
 
 ---
 

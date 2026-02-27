@@ -12,7 +12,7 @@ Imagina que vas a abrir un restaurante. Podrias hacerlo tu solo — cocinar, ser
 
 Ahora imagina que tienes:
 - Un **chef ejecutivo** que disena el menu (el CTO, que es Batuta)
-- **Cocineros especializados** — uno para entradas, otro para platos fuertes, otro para postres (los 22 skills)
+- **Cocineros especializados** — uno para entradas, otro para platos fuertes, otro para postres (los 23 skills)
 - Un **maitre** que coordina el servicio (el pipeline SDD)
 - **Inspectores de calidad** que revisan cada plato antes de servir (los gates y la validacion)
 - Un **manual de operaciones** que documenta cada receta (las especificaciones)
@@ -22,7 +22,7 @@ Batuta Dots funciona igual, pero para software:
 | Restaurante | Batuta Dots | Que hace |
 |------------|------------|---------|
 | Chef ejecutivo | CLAUDE.md (personalidad CTO) | Define las reglas, el tono, y la filosofia |
-| Cocineros | 22 skills especializados | Cada uno sabe hacer algo especifico muy bien |
+| Cocineros | 23 skills especializados | Cada uno sabe hacer algo especifico muy bien |
 | Maitre | Pipeline SDD (9 fases) | Coordina el orden: primero pensar, luego disenar, luego construir |
 | Inspectores | Gates (G0.5, G1, G2) | Verifican calidad antes de avanzar |
 | Recetas | Especificaciones (openspec/) | Documentan exactamente que se va a construir |
