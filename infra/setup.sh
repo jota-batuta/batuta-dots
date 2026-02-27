@@ -485,6 +485,42 @@ except Exception as e:
 }
 
 # ============================================================================
+# Check MCP Server Prerequisites
+# ============================================================================
+# WHY: settings.json defines mcpServers that need npm (npx) or uv (uvx).
+# Claude Code launches MCPs lazily — missing tools cause silent failures.
+# This check warns users so they can install prerequisites proactively.
+
+check_mcp_prerequisites() {
+    log_info "Checking MCP server prerequisites..."
+    local warnings=0
+
+    # npx (Node.js) — needed by: sequential-thinking, playwright, eslint, postgres
+    if ! command -v npx &>/dev/null; then
+        log_warning "npx not found — 4 MCP servers require Node.js (sequential-thinking, playwright, eslint, postgres)"
+        log_info "  Install Node.js: https://nodejs.org/ or 'brew install node'"
+        warnings=$((warnings + 1))
+    else
+        log_success "npx available (Node.js MCPs ready)"
+    fi
+
+    # uvx (uv) — needed by: semgrep
+    if ! command -v uvx &>/dev/null; then
+        log_warning "uvx not found — Semgrep MCP server requires uv (Python package runner)"
+        log_info "  Install uv: pip install uv or https://docs.astral.sh/uv/"
+        warnings=$((warnings + 1))
+    else
+        log_success "uvx available (Semgrep MCP ready)"
+    fi
+
+    if [[ $warnings -eq 0 ]]; then
+        log_success "All MCP prerequisites satisfied"
+    else
+        log_info "MCPs with missing prerequisites will be unavailable until dependencies are installed"
+    fi
+}
+
+# ============================================================================
 # Sync Skills to ~/.claude/skills/
 # ============================================================================
 
@@ -740,6 +776,8 @@ do_all() {
     install_hooks
     echo ""
     sync_output_styles
+    echo ""
+    check_mcp_prerequisites
 
     echo ""
     log_success "Claude Code fully configured!"
