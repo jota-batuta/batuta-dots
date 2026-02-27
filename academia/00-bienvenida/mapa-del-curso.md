@@ -66,7 +66,7 @@ Extendiendo el ecosistema → Templates de equipo → Referencia completa
 ### Modulo 2 — Nivel Uno
 | Leccion | Descripcion | Tiempo |
 |---------|------------|--------|
-| [Skills que tienes](../02-nivel-uno/skills-que-tienes.md) | Catalogo completo de 22 skills | 30 min |
+| [Skills que tienes](../02-nivel-uno/skills-que-tienes.md) | Catalogo completo de 33 skills | 30 min |
 | [Agentes y equipos](../02-nivel-uno/agentes-y-equipos.md) | Los 3 agentes + cuando se activan equipos | 25 min |
 | [La capa CTO](../02-nivel-uno/la-capa-cto.md) | Los 6 expertos estrategicos que se activan solos | 20 min |
 | [Scope Rule](../02-nivel-uno/scope-rule.md) | Donde va cada archivo y por que | 20 min |

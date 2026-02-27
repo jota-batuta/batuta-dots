@@ -9,8 +9,8 @@ metadata:
   created: "2026-02-23"
   scope: [infra]
   auto_invoke: "Implementing JWT authentication, login/register endpoints"
-allowed-tools: Read, Glob, Grep, Write, Edit
-platforms: [claude, antigravity]
+  platforms: [claude, antigravity]
+allowed-tools: Read Glob Grep Write Edit
 ---
 
 ## Purpose

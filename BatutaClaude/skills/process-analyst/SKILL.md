@@ -10,8 +10,8 @@ metadata:
   source: "CTO Layer skill 14"
   scope: [pipeline]
   auto_invoke: false
-allowed-tools: Read, Glob, Grep, WebSearch
-platforms: [claude, antigravity]
+  platforms: [claude, antigravity]
+allowed-tools: Read Glob Grep WebSearch
 ---
 
 # Process Analyst — Variant Mapping Specialist

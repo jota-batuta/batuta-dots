@@ -10,8 +10,8 @@ metadata:
   source: "CTO Layer skill 03"
   scope: [pipeline]
   auto_invoke: false
-allowed-tools: Read, Glob, Grep, WebSearch
-platforms: [claude, antigravity]
+  platforms: [claude, antigravity]
+allowed-tools: Read Glob Grep WebSearch
 ---
 
 # LLM Pipeline Design — Intelligence Specialist

@@ -1,9 +1,9 @@
 ---
 name: observability-agent
 description: >
-  Observability & Quality specialist. Manages session continuity, freshness
-  checks, and context restoration across sessions.
-skills: []
+  Observability & Quality specialist. Manages session continuity, monitoring
+  infrastructure, freshness checks, and context restoration across sessions.
+skills: [observability]
 memory: project
 ---
 

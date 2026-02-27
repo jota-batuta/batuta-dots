@@ -9,8 +9,8 @@ metadata:
   created: "2026-02-20"
   scope: [infra]
   auto_invoke: "Creating files, deciding file locations"
-allowed-tools: Read, Glob, Grep
-platforms: [claude, antigravity]
+  platforms: [claude, antigravity]
+allowed-tools: Read Glob Grep
 ---
 
 ## Purpose

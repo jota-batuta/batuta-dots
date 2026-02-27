@@ -9,8 +9,8 @@ metadata:
   created: "2026-02-20"
   scope: [pipeline]
   auto_invoke: "Breaking work into tasks"
-allowed-tools: Read, Edit, Write, Glob, Grep
-platforms: [claude, antigravity]
+  platforms: [claude, antigravity]
+allowed-tools: Read Edit Write Glob Grep
 ---
 
 ## Purpose

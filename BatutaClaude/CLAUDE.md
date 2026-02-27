@@ -106,7 +106,7 @@ Skills are organized by scope and auto-discovered by their `description` field �
 |-------|--------|
 | `pipeline` | SDD commands, spec/design/implement/verify tasks |
 | `infra` | Creating files, skills, agents, workflows; Scope Rule; security |
-| `observability` | Session continuity, context restoration |
+| `observability` | Session continuity, context restoration, monitoring infrastructure |
 
 Multiple scopes can apply (e.g., `sdd-apply` invokes `pipeline` + `infra` for Scope Rule).
 For simple questions or conversation, respond directly.
@@ -147,6 +147,7 @@ During `sdd-apply`, consult active MCPs before implementing; use WebFetch as
 fallback for recommended but uninstalled MCPs.
 During `ecosystem-creator`, validate skill patterns against live docs via MCP
 or web; add `mcp_validated` metadata to created skills.
+MCP checks are cumulative across the pipeline: discover during explore, consult during apply, validate during creation. Each phase builds on the previous.
 Principle: "No busques lo que no sabes que tienes."
 Full protocol: see `sdd-explore` Step 2.6, `sdd-apply` Step 1.5, `ecosystem-creator` Step 4.5.
 
@@ -192,6 +193,13 @@ Strategic capabilities integrated from the CTO expert layer. These enrich the SD
 | `data-pipeline-design` | ETL, ERP integrations, bank files, DIAN, data quality |
 | `llm-pipeline-design` | LLM classifiers, prompt engineering, confidence scoring, drift detection |
 | `worker-scaffold` | Temporal workers, Docker, Coolify deploy, monitoring |
+| `tdd-workflow` | TDD methodology needed, red-green-refactor cycles |
+| `debugging-systematic` | Systematic debugging with binary search, hypothesis testing |
+| `api-design` | Designing REST APIs, versioning, error contracts |
+| `observability` | Implementing monitoring, logging, tracing, alerting |
+| `e2e-testing` | Implementing E2E tests with Playwright or Cypress |
+| `security-audit` | Security review, OWASP checks, secrets scanning, threat modeling |
+| `ci-cd-pipeline` | GitHub Actions, testing pipelines, deployment automation, Coolify |
 
 ### Enriched SDD Phases
 - **sdd-explore**: Discovery Completeness (5 questions) + Domain Expert consultation + Process Complexity Detection
@@ -210,7 +218,7 @@ Strategic capabilities integrated from the CTO expert layer. These enrich the SD
 - For concepts: (1) explain problem, (2) propose solution with examples, (3) mention tools/resources
 - Correct errors explaining the technical WHY, never just "that's wrong"
 - When asking questions, STOP immediately — never answer your own questions
-- After completing each major task (SDD phase, feature, bug fix), update `.batuta/session.md` following the Session Budget. Replace, don't append. Prune completed work to 1-line summaries. Sessions can end abruptly — save state, not history.
+- After completing each major task (SDD phase, feature, bug fix), update `.batuta/session.md` following the Session Budget. Replace, don't append. Prune completed work to 1-line summaries. Sessions can end abruptly — save state, not history. Significant work thresholds: completed SDD phase, 3+ files modified, resolved a bug, or 5+ exchanges.
 
 ---
 
@@ -304,8 +312,8 @@ This is a cognitive rule — always validate before implementing.
 
 | Mode | When | What to show |
 |------|------|--------------|
-| LIGHT | Single-file edit, SDD-specified task, bug fix with clear scope | 1-line: "Modifico {file} en {location}. Procedo?" |
-| FULL | New files, 2+ file changes, architecture decisions, destructive ops | Location plan + impact + scope + SDD/skill compliance |
+| LIGHT | 1-2 file edit, SDD-specified task, bug fix with clear scope | 1-line: "Modifico {file} en {location}. Procedo?" |
+| FULL | New files, 3+ file changes, architecture decisions, destructive ops | Location plan + impact + scope + SDD/skill compliance |
 
 > The Execution Gate applies to **production code changes** only. SDD artifacts (specs, designs, tasks, proposals) are validated by the pipeline dependency graph, not by the gate.
 
@@ -344,7 +352,7 @@ When a skill receives `detail_level`:
 - **standard** = STANDARD tier: all template sections, 5 bullets max per section
 - **deep** = COMPLEX tier: all sections, unlimited depth and analysis
 
-Pipeline-agent MUST calculate detail_level based on file count and Execution Gate mode before invoking any skill.
+Pipeline-agent MUST set detail_level before invoking any skill. Calculation: sdd-explore and sdd-propose always use `standard` (discovery needs full context, file count is unknown). From sdd-spec onward, use file count: 1-2 files or Execution Gate LIGHT → `concise`; 3-5 files → `standard`; 6+ files or multi-scope → `deep`.
 
 ---
 

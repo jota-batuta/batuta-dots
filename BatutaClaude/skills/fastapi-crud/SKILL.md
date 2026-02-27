@@ -9,8 +9,8 @@ metadata:
   created: "2026-02-23"
   scope: [infra]
   auto_invoke: "Creating FastAPI CRUD endpoints, REST API routes"
-allowed-tools: Read, Glob, Grep, Write, Edit
-platforms: [claude, antigravity]
+  platforms: [claude, antigravity]
+allowed-tools: Read Glob Grep Write Edit
 ---
 
 ## Purpose

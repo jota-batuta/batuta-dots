@@ -14,6 +14,7 @@ always:
   - ecosystem-creator
   - security-audit
   - team-orchestrator
+  - ecosystem-lifecycle
 
 # --- Skills: SDD pipeline (always in Batuta projects) ---
 sdd:
@@ -26,6 +27,8 @@ sdd:
   - sdd-apply
   - sdd-verify
   - sdd-archive
+  - tdd-workflow
+  - debugging-systematic
 
 # --- Skills: Technology-detected ---
 # Each rule has: detect (signals) + skills (to provision)
@@ -39,17 +42,13 @@ tech_rules:
   - detect:
       files: [requirements.txt, pyproject.toml, setup.py, Pipfile]
       content_pattern: "fastapi|FastAPI"
-    skills: [fastapi-crud, fastapi-streaming, jwt-auth]
+    skills: [fastapi-crud, jwt-auth]
 
-  # SQLAlchemy / ORM
+  # SQLAlchemy / ORM (often paired with PostgreSQL)
   - detect:
       content_pattern: "sqlalchemy|SQLAlchemy|alembic"
     skills: [sqlalchemy-models]
-
-  # SQL Server / pyodbc
-  - detect:
-      content_pattern: "pyodbc|mssql|sqlserver"
-    skills: [pyodbc-sqlserver, sqlglot-validation]
+    mcps: [postgres]
 
   # LLM / AI Agents
   - detect:
@@ -85,15 +84,106 @@ tech_rules:
       context_mentions: [external categories, bank concepts, tax codes, SKU hierarchy]
     skills: [recursion-designer]
 
+  # Playwright / E2E Testing
+  - detect:
+      files: [playwright.config.ts, playwright.config.js]
+      content_pattern: "playwright"
+    skills: [e2e-testing]
+    mcps: [playwright]
+
+  # ESLint / Code Quality
+  # No dedicated skill — MCP provides lint integration for AI Pyramid Layer 1
+  - detect:
+      files: [eslint.config.js, eslint.config.mjs, .eslintrc.js, .eslintrc.json]
+      content_pattern: "eslint"
+    skills: []
+    mcps: [eslint]
+
+  # Semgrep / Security Scanning
+  # SECURITY: Semgrep is global in settings.json, but this rule ensures the
+  # security-audit skill is provisioned when semgrep config files exist.
+  - detect:
+      files: [.semgrep.yml, .semgrepignore, semgrep.yml]
+      content_pattern: "semgrep"
+    skills: [security-audit]
+    mcps: [semgrep]
+
+  # PostgreSQL / Database
+  - detect:
+      content_pattern: "postgres|postgresql|psycopg|pg_"
+      files: [docker-compose.yml, docker-compose.yaml]
+    skills: [sqlalchemy-models]
+    mcps: [postgres]
+
+  # React / Next.js
+  - detect:
+      files: [next.config.js, next.config.mjs, next.config.ts]
+      content_pattern: "react|next|nextjs|@next"
+    skills: [react-nextjs]
+    mcps: []
+
+  # TypeScript / Node.js
+  - detect:
+      files: [tsconfig.json, tsconfig.base.json]
+      content_pattern: "typescript|ts-node"
+    skills: [typescript-node]
+    mcps: [eslint]
+
+  # CI/CD Pipelines
+  - detect:
+      files: [.github/workflows, .gitlab-ci.yml, Jenkinsfile, .circleci]
+      content_pattern: "github/workflows|gitlab-ci|jenkins|circleci"
+    skills: [ci-cd-pipeline]
+
+  # API Design (OpenAPI / Swagger)
+  - detect:
+      files: [openapi.yaml, openapi.json, swagger.yaml, swagger.json]
+      content_pattern: "openapi|swagger"
+    skills: [api-design]
+
+  # Observability Stack (monitoring, tracing, error tracking)
+  - detect:
+      content_pattern: "opentelemetry|sentry-sdk|@sentry|langfuse|prometheus|datadog"
+    skills: [observability]
+    mcps: [semgrep]
+
+  # Vector Databases / RAG
+  - detect:
+      content_pattern: "pgvector|pinecone|chromadb|langchain.*embeddings|llama.index"
+    skills: [vector-db-rag]
+    mcps: [postgres]
+
+  # Message Brokers / Queues
+  - detect:
+      files: [docker-compose.yml, docker-compose.yaml]
+      content_pattern: "pika|aio-pika|rabbitmq|amqplib|celery|bullmq|kafkajs|confluent.kafka"
+    skills: [message-queues]
+
 # --- MCP Servers ---
 # Each rule has: detect (signals) + mcp (server config)
 # Config values with YOUR_*_HERE are placeholders the user must fill in.
+#
+# MCP tiers:
+#   always   — Present in every project (global settings.json + .mcp.json)
+#   detected — Provisioned when technology signals match
 mcp_rules:
-  # Always include — live documentation lookup
+  # Always include — these are in global settings.json AND project .mcp.json
   always:
     context7:
       type: http
       url: "https://mcp.context7.com/mcp"
+    # SECURITY: Semgrep scans AI-generated code for vulnerabilities, secrets,
+    # and supply chain risks. Global because security applies to every project.
+    semgrep:
+      type: stdio
+      command: uvx
+      args: ["semgrep-mcp"]
+    # REASONING: Sequential thinking for complex architectural decisions.
+    # Supports CTO Strategy Layer and SDD pipeline exploration phases.
+    sequential-thinking:
+      type: stdio
+      command: npx
+      args: ["-y", "@modelcontextprotocol/server-sequential-thinking"]
 
   # GitHub — if project is a git repository
   - detect:
@@ -107,18 +197,21 @@ mcp_rules:
         GITHUB_PERSONAL_ACCESS_TOKEN: "YOUR_TOKEN_HERE"
 
   # PostgreSQL — if postgres detected in docker-compose or dependencies
+  # BUSINESS RULE: Uses official MCP package for read-only schema inspection.
+  # Batuta core stack — most projects use PostgreSQL.
   - detect:
       content_pattern: "postgres|postgresql|psycopg"
       files: [docker-compose.yml, docker-compose.yaml]
     mcp:
       name: postgres
       type: stdio
-      command: uvx
-      args: ["postgres-mcp", "--access-mode=unrestricted"]
+      command: npx
+      args: ["-y", "@modelcontextprotocol/server-postgres"]
       env:
         DATABASE_URI: "YOUR_DATABASE_URI_HERE"
 
   # Playwright — if E2E testing configured
+  # AI Validation Pyramid Layer 3 (E2E testing). Maps to e2e-testing skill.
   - detect:
       files: [playwright.config.ts, playwright.config.js]
       content_pattern: "playwright"
@@ -127,6 +220,17 @@ mcp_rules:
       type: stdio
       command: npx
       args: ["-y", "@playwright/mcp@latest"]
+
+  # ESLint — if linting configured
+  # AI Validation Pyramid Layer 1 (static analysis / code quality).
+  - detect:
+      files: [eslint.config.js, eslint.config.mjs, eslint.config.cjs, .eslintrc.js, .eslintrc.json, .eslintrc.yml]
+      content_pattern: "eslint"
+    mcp:
+      name: eslint
+      type: stdio
+      command: npx
+      args: ["-y", "@eslint/mcp@latest"]
 
   # Coolify — if deployment platform detected
   - detect:

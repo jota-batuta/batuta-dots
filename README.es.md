@@ -29,7 +29,7 @@ Inspirado en [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman
 - **Batuta Bootstrap** — "La Regla" via hook SessionStart: si un skill aplica, DEBES usarlo.
 - **MCP Discovery** — busqueda activa de servidores MCP durante la fase explore.
 - **Review Superpowers** — loop de revision en 2 etapas (spec + calidad) para tareas complejas.
-- **Descripciones Trigger-Only** — las 22 descripciones de skills siguen la convencion "Use when..." para activacion confiable.
+- **Descripciones Trigger-Only** — las 33 descripciones de skills siguen la convencion "Use when..." para activacion confiable.
 
 ---
 
@@ -73,7 +73,7 @@ git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-i
 
 | Plataforma | Destino | Contenido |
 |------------|---------|-----------|
-| **Claude Code** | `~/.claude/` | 22 skills, 3 agentes, 11 comandos, 2 hooks, settings.json, output-styles |
+| **Claude Code** | `~/.claude/` | 33 skills, 3 agentes, 11 comandos, 2 hooks, settings.json, output-styles |
 | **Claude Code** | Directorio actual | `CLAUDE.md` + `.batuta/` (session, ecosystem.json) |
 | **Antigravity** | `~/.gemini/antigravity/` | Skills compatibles, workflows, GEMINI.md |
 
@@ -105,7 +105,7 @@ batuta-dots/
 │   │   ├── batuta-update.md           # /batuta-update — actualizar
 │   ├── agents/                        # Agentes de scope (skills auto-descubiertos por description)
 │   │   ├── pipeline-agent.md          # Especialista SDD Pipeline (9 skills)
-│   │   ├── infra-agent.md             # Especialista infraestructura (3 skills)
+│   │   ├── infra-agent.md             # Especialista infraestructura (5 skills)
 │   │   └── observability-agent.md     # Motor O.R.T.A. (sin skills activos)
 │   └── skills/                        # Skills instalables (carga lazy)
 │       ├── ecosystem-creator/         # Skill bootstrap
@@ -194,7 +194,7 @@ CLAUDE.md (personalidad + reglas — ~220 lineas)
     │
     ├──> Skills (auto-descubiertos por Claude Code via description)
     │     ├── pipeline: sdd-init...sdd-archive (9 skills)
-    │     ├── infra: scope-rule, ecosystem-creator, team-orchestrator, security-audit
+    │     ├── infra: scope-rule, ecosystem-creator, ecosystem-lifecycle, team-orchestrator, security-audit
     │     └── observability: (sin skills activos)
     │
     ├──> Scope Agents (skills auto-descubiertos por campo description)
@@ -282,7 +282,7 @@ Tres agentes de scope organizan skills por dominio. Los skills son auto-descubie
 | Agente de Scope | Dominio | Skills |
 |-----------------|---------|--------|
 | `pipeline-agent` | Ciclo de desarrollo | 9 skills SDD (init a archive) |
-| `infra-agent` | Organizacion, ecosistema, seguridad | scope-rule, ecosystem-creator, team-orchestrator, security-audit |
+| `infra-agent` | Organizacion, ecosistema, seguridad | scope-rule, ecosystem-creator, ecosystem-lifecycle, team-orchestrator, security-audit |
 | `observability-agent` | Ciclo de sesion | (sin skills activos) |
 
 Esto mantiene al agente principal liviano (~220 lineas) y a cada agente de scope enfocado en su dominio.
@@ -353,13 +353,14 @@ El output escala con la complejidad de la tarea via tres tiers (MICRO/STANDARD/C
 
 ---
 
-## Skills Disponibles (22 + 3 agentes de scope)
+## Skills Disponibles (33 + 3 agentes de scope)
 
 | Skill | Scope | Descripcion |
 |-------|-------|-------------|
 | `ecosystem-creator` | infra | Crea nuevos skills, agentes, sub-agentes y workflows |
 | `scope-rule` | infra | Organiza archivos por alcance (feature / shared / core) |
 | `team-orchestrator` | infra | Evalua cuando escalar a Agent Teams, spawn y coordinacion |
+| `ecosystem-lifecycle` | infra | Clasifica, auto-repara y provisiona el ciclo de vida de skills |
 | `security-audit` | infra, pipeline | Seguridad AI-first: OWASP + inyeccion de prompts + escaneo de secretos + auditoria de dependencias |
 | `sdd-init` a `sdd-archive` | pipeline | Pipeline SDD de 9 fases |
 | `process-analyst` | pipeline | Analisis de procesos complejos con 3+ variantes de caso |
@@ -368,9 +369,19 @@ El output escala con la complejidad de la tarea via tres tiers (MICRO/STANDARD/C
 | `data-pipeline-design` | pipeline | ETL, integraciones ERP, patrones de calidad de datos |
 | `llm-pipeline-design` | pipeline | Clasificadores LLM, prompt engineering, deteccion de drift |
 | `worker-scaffold` | pipeline | Workers Temporal, Docker, Coolify deploy, monitoreo |
-| `fastapi-crud` | pipeline | Patrones CRUD para FastAPI |
-| `jwt-auth` | pipeline | Patrones de autenticacion JWT |
-| `sqlalchemy-models` | pipeline | Patrones de modelos SQLAlchemy ORM |
+| `fastapi-crud` | infra | Patrones CRUD para FastAPI |
+| `jwt-auth` | infra | Patrones de autenticacion JWT |
+| `sqlalchemy-models` | infra | Patrones de modelos SQLAlchemy ORM |
+| `react-nextjs` | pipeline | Patrones React/Next.js App Router |
+| `typescript-node` | pipeline | Patrones TypeScript/Node.js backend |
+| `api-design` | pipeline | Diseno de APIs REST, versionado, manejo de errores |
+| `e2e-testing` | pipeline | Testing end-to-end con Playwright/Cypress |
+| `tdd-workflow` | pipeline | Metodologia Test-Driven Development |
+| `debugging-systematic` | pipeline | Depuracion sistematica con busqueda binaria y prueba de hipotesis |
+| `vector-db-rag` | pipeline | Bases de datos vectoriales y pipelines RAG |
+| `message-queues` | pipeline | Patrones de colas de mensajes (RabbitMQ, Redis, SQS) |
+| `ci-cd-pipeline` | infra | Diseno y automatizacion de pipelines CI/CD |
+| `observability` | observability | Monitoreo, logging, tracing, alertas |
 
 ---
 

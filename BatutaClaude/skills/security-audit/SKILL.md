@@ -14,8 +14,8 @@ metadata:
     - "Creating threat model for a feature"
     - "Scanning for hardcoded secrets"
     - "Auditing dependencies for known vulnerabilities"
-allowed-tools: Read, Glob, Grep, Bash, WebSearch
-platforms: [claude, antigravity]
+  platforms: [claude, antigravity]
+allowed-tools: Read Glob Grep Bash WebSearch
 ---
 
 # Security Audit — AI-First Security Practices

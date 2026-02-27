@@ -1,6 +1,6 @@
 # Skills — Referencia tecnica
 
-Ficha tecnica de cada uno de los 22 skills del ecosistema Batuta Dots v11.1.
+Ficha tecnica de cada uno de los 33 skills del ecosistema Batuta Dots v12.2.
 
 ---
 
@@ -110,6 +110,12 @@ Ficha tecnica de cada uno de los 22 skills del ecosistema Batuta Dots v11.1.
 - **Tools**: Read, Edit, Write, Glob, Grep, Bash, WebFetch, WebSearch, Task
 - **Que hace**: Crea SKILL.md, agent .md, workflow definitions con frontmatter correcto. Step 5.5: RED-GREEN-REFACTOR para validar skills empiricamente antes de registrarlos
 
+### ecosystem-lifecycle
+- **Scope**: infra
+- **Trigger**: Despues de crear un skill, cuando se reporta violacion de reglas, cuando falta un skill para una tecnologia
+- **Que hace**: Clasifica skills (generico vs proyecto-especifico), verifica y repara violaciones de reglas, auto-provisiona skills desde la libreria global
+- **Plataformas**: Claude Code, Antigravity
+
 ### scope-rule
 - **Scope**: infra
 - **Auto-invoke**: Si (al crear archivos)
@@ -146,3 +152,67 @@ Ficha tecnica de cada uno de los 22 skills del ecosistema Batuta Dots v11.1.
 - **Scope**: pipeline
 - **Auto-invoke**: Si (al crear modelos BD)
 - **Que hace**: Patrones one-to-many, many-to-many, database session, migrations
+
+---
+
+## Tecnologias y Metodologias (v12.2)
+
+### react-nextjs
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al construir frontend React/Next.js)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Patrones App Router, Server/Client Components, data fetching, server actions, Scope Rule para componentes
+
+### typescript-node
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al construir backend TypeScript/Node.js)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Configuracion TypeScript estricta, patrones Express/Fastify, manejo de errores tipado, dependency injection
+
+### api-design
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al disenar APIs REST)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Diseno de endpoints REST, versionado de API, contratos de error, paginacion, OpenAPI/Swagger
+
+### e2e-testing
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al implementar tests E2E)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Testing end-to-end con Playwright/Cypress, Page Object Model, selectores accesibles, CI integration
+
+### tdd-workflow
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al usar metodologia TDD)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Ciclos red-green-refactor, test-first approach, cobertura minima, test doubles y mocking
+
+### debugging-systematic
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al depurar problemas complejos)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Depuracion con busqueda binaria, prueba de hipotesis, aislamiento de variables, reproduccion de bugs
+
+### vector-db-rag
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al implementar RAG o busqueda semantica)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Pipelines RAG, embeddings, vector stores (Pinecone, Chroma, pgvector), chunking, retrieval strategies
+
+### message-queues
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al implementar colas de mensajes)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Patrones pub/sub, work queues, dead letter queues con RabbitMQ, Redis Streams, SQS
+
+### ci-cd-pipeline
+- **Scope**: infra
+- **Auto-invoke**: Si (al configurar CI/CD)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Pipelines GitHub Actions/GitLab CI, stages, caching, deploy strategies, secrets management
+
+### observability
+- **Scope**: observability
+- **Auto-invoke**: Si (al implementar monitoreo)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Structured logging, distributed tracing (OpenTelemetry), metricas, dashboards, alertas, health checks

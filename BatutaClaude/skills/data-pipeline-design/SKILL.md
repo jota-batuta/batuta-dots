@@ -10,8 +10,8 @@ metadata:
   source: "CTO Layer skill 02"
   scope: [pipeline]
   auto_invoke: false
-allowed-tools: Read, Glob, Grep, WebSearch
-platforms: [claude, antigravity]
+  platforms: [claude, antigravity]
+allowed-tools: Read Glob Grep WebSearch
 ---
 
 # Data Pipeline Design — Integration Specialist
