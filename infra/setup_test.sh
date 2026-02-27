@@ -325,7 +325,7 @@ test_multiple_runs_are_idempotent() {
 test_session_template_exists() {
     log_test "session template exists in infra/templates/ (v11.1)"
     assert_file_exists "$REPO_ROOT/infra/templates/session-template.md"
-    assert_file_contains "$REPO_ROOT/infra/templates/session-template.md" "Session Context" "session context header"
+    assert_file_contains "$REPO_ROOT/infra/templates/session-template.md" "# Session" "session briefing header"
 }
 
 # ============================================================================
