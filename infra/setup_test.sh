@@ -38,7 +38,7 @@
 #   - BatutaClaude/VERSION file exists
 #   - teams/ directory exists with templates and playbook
 #   v9.3 (Post-Smoke-Test Corrections):
-#   - All 22 skills have ## Purpose section
+#   - All 23 skills have ## Purpose section
 #   - New skills (fastapi-crud, jwt-auth, sqlalchemy-models) have valid frontmatter
 #   - 7 team templates (including temporal-io-app)
 #   - settings.json hooks point to infra/ (not skills/)
@@ -851,8 +851,8 @@ test_security_integration() {
 # 40. Total skill count is 15 (v9)
 # ============================================================================
 
-test_twentytwo_skills_total() {
-    log_test "22 skills total in BatutaClaude/skills/ (v11.1)"
+test_twentythree_skills_total() {
+    log_test "23 skills total in BatutaClaude/skills/ (v12.1)"
     local skills_dir="$REPO_ROOT/BatutaClaude/skills"
 
     local skill_count=0
@@ -860,10 +860,10 @@ test_twentytwo_skills_total() {
         [[ -d "$d" && -f "$d/SKILL.md" ]] && skill_count=$((skill_count + 1))
     done
 
-    if [[ $skill_count -eq 22 ]]; then
-        log_pass "$skill_count skills (expected 22)"
+    if [[ $skill_count -eq 23 ]]; then
+        log_pass "$skill_count skills (expected 23)"
     else
-        log_fail "Expected 22 skills, found $skill_count"
+        log_fail "Expected 23 skills, found $skill_count"
     fi
 }
 
@@ -939,7 +939,7 @@ test_commands_mention_hooks() {
 # ============================================================================
 
 test_all_skills_have_purpose_section() {
-    log_test "All 22 skills have ## Purpose section (v11.1)"
+    log_test "All 23 skills have ## Purpose section (v11.1)"
     local skills_dir="$REPO_ROOT/BatutaClaude/skills"
     local missing=0
 
@@ -1321,7 +1321,7 @@ test_team_playbook_exists
 test_ten_guides_exist
 test_contract_first_protocol
 test_security_integration
-test_twentytwo_skills_total
+test_twentythree_skills_total
 test_infra_agent_has_security
 
 # --- v9.1 tests: Integration Test Findings ---

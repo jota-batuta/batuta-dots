@@ -682,6 +682,19 @@ Return a summary:
 {One paragraph explaining what was created and why it matters, in plain language.}
 ```
 
+### 8. Invoke Classification (MANDATORY)
+
+After reporting to the user, invoke `ecosystem-lifecycle` in **classify** mode with the path to the newly created component.
+
+This step is NOT optional — CLAUDE.md Rules require classification after every creation. Classification determines:
+- Whether the component is **generic** (propagates to hub) or **project-specific** (stays local)
+- Whether the provisioning map (`skill-provisions.yaml`) needs updating
+- Whether frontmatter is complete for auto-discovery
+
+If `ecosystem-lifecycle` is not available (e.g., non-Batuta project without the skill loaded), perform a minimal self-check:
+1. Verify frontmatter completeness (name, description starts with "Use when", scope, auto_invoke, platforms)
+2. Log the skip reason: "ecosystem-lifecycle not available — minimal validation performed"
+
 ---
 
 ## Checklist Before Creating Any Component
