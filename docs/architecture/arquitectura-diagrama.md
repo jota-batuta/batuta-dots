@@ -1,4 +1,4 @@
-# Diagrama de Arquitectura — Ecosistema Batuta (v11.3)
+# Diagrama de Arquitectura — Ecosistema Batuta (v12.2)
 
 ## Vista General del Ecosistema
 
@@ -62,13 +62,13 @@ flowchart TD
 
     subgraph AGENTS["SCOPE AGENTS (skills auto-descubiertos por description)"]
         PIPELINE["pipeline-agent<br/>SDD State Machine<br/>(9 skills)"]
-        INFRA["infra-agent<br/>Infraestructura<br/>(4 skills)"]
+        INFRA["infra-agent<br/>Infraestructura<br/>(5 skills)"]
         OBS["observability-agent<br/>Ciclo de sesion<br/>(sin skills activos)"]
     end
 
     subgraph SKILLS["SKILLS (carga lazy)"]
         SDD["sdd-init...sdd-archive"]
-        ECO["ecosystem-creator<br/>scope-rule<br/>team-orchestrator<br/>security-audit"]
+        ECO["ecosystem-creator<br/>ecosystem-lifecycle<br/>scope-rule<br/>team-orchestrator<br/>security-audit"]
     end
 
     RESULT["Resultado al usuario"]
@@ -805,8 +805,8 @@ flowchart TD
 ```mermaid
 flowchart TD
     subgraph HUB["batuta-dots (HUB)"]
-        BC["BatutaClaude/<br/>skills/ (23)"]
-        BA["BatutaAntigravity/<br/>skills/ (20, filtrados)"]
+        BC["BatutaClaude/<br/>skills/ (33)"]
+        BA["BatutaAntigravity/<br/>skills/ (32, filtrados)"]
         SYNC["infra/sync.sh"]
     end
 
@@ -859,7 +859,7 @@ flowchart TD
     subgraph CLAUDE_DETAIL["BatutaClaude/"]
         CLAUDE_MD["CLAUDE.md (router)"]
         AGENTS["agents/<br/>pipeline, infra, observability"]
-        SKILLS_22["skills/ (23 skills)<br/>sdd-*, ecosystem, scope-rule,<br/>team-orchestrator, security-audit,<br/>+ 6 CTO specialists<br/>+ 3 technology skills"]
+        SKILLS_33["skills/ (33 skills)<br/>pipeline (24: 9 SDD + 6 CTO + 9 tech),<br/>infra (8),<br/>observability (1)"]
     end
 
     subgraph ANTIGRAVITY_DETAIL["BatutaAntigravity/ (Lite)"]

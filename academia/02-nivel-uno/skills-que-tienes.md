@@ -1,6 +1,6 @@
 # Skills que tienes
 
-Batuta Dots tiene 23 skills — especialistas que se activan cuando los necesitas. El sistema los activa automaticamente, pero conocerlos te da poder para pedir exactamente lo que necesitas.
+Batuta Dots tiene 33 skills — especialistas que se activan cuando los necesitas. El sistema los activa automaticamente, pero conocerlos te da poder para pedir exactamente lo que necesitas.
 
 ---
 
@@ -41,11 +41,12 @@ Cada skill tiene un campo `description` en su archivo que empieza con "Use when.
 | **llm-pipeline-design** | Pipelines de IA | Clasificadores, prompts |
 | **worker-scaffold** | Workers y deploy | Temporal, Docker, Coolify |
 
-### Infraestructura (4 skills)
+### Infraestructura (5 skills)
 
 | Skill | Que hace | Comando |
 |-------|---------|---------|
 | **ecosystem-creator** | Crea skills, agentes, workflows | `/create-skill` |
+| **ecosystem-lifecycle** | Clasifica, auto-repara y provisiona skills | Automatico |
 | **scope-rule** | Decide donde va cada archivo | Automatico |
 | **team-orchestrator** | Solo, subagente, o equipo | Automatico |
 | **security-audit** | OWASP, secrets, amenazas | En design/verify |
@@ -57,6 +58,21 @@ Cada skill tiene un campo `description` en su archivo que empieza con "Use when.
 | **fastapi-crud** | CRUD con FastAPI + SQLAlchemy |
 | **jwt-auth** | Autenticacion JWT con bcrypt |
 | **sqlalchemy-models** | Modelos BD con relaciones |
+
+### Tecnologias y Metodologias (10 skills)
+
+| Skill | Que hace |
+|-------|---------|
+| **react-nextjs** | Frontend React/Next.js App Router |
+| **typescript-node** | Backend TypeScript/Node.js |
+| **api-design** | Diseno de APIs REST y contratos |
+| **e2e-testing** | Tests E2E con Playwright/Cypress |
+| **tdd-workflow** | Metodologia Test-Driven Development |
+| **debugging-systematic** | Depuracion sistematica de bugs |
+| **vector-db-rag** | Bases de datos vectoriales y RAG |
+| **message-queues** | Colas de mensajes (RabbitMQ, Redis, SQS) |
+| **ci-cd-pipeline** | Pipelines CI/CD (GitHub Actions, GitLab) |
+| **observability** | Monitoreo, logging, tracing, alertas |
 
 ---
 

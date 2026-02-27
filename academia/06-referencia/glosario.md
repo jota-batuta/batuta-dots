@@ -96,7 +96,7 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 
 **Security Audit**: Skill que revisa seguridad (OWASP 10 puntos, secrets, dependencies, threat model).
 
-**Skill**: Archivo SKILL.md que le ensena a Claude una especialidad. 23 skills en v11.1.
+**Skill**: Archivo SKILL.md que le ensena a Claude una especialidad. 33 skills en v12.2.
 
 **Skill Gap Detection**: Mecanismo que detecta cuando falta un skill para una tecnologia y ofrece crearlo.
 

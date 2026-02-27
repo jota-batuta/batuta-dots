@@ -9,8 +9,8 @@ metadata:
   created: "2026-02-20"
   scope: [infra]
   auto_invoke: "Creating skills, agents, workflows"
-allowed-tools: Read, Edit, Write, Glob, Grep, Bash, WebFetch, WebSearch, Task
-platforms: [claude, antigravity]
+  platforms: [claude, antigravity]
+allowed-tools: Read Edit Write Glob Grep Bash WebFetch WebSearch Task
 ---
 
 ## Purpose
@@ -154,7 +154,8 @@ metadata:
   created: "{YYYY-MM-DD}"
   scope: [{category}]
   auto_invoke: "{human-readable trigger}"
-allowed-tools: Read, Edit, Write, Glob, Grep, Bash
+  platforms: [claude, antigravity]
+allowed-tools: Read Edit Write Glob Grep Bash
 ---
 
 ## When to Use
@@ -194,7 +195,8 @@ allowed-tools: Read, Edit, Write, Glob, Grep, Bash
 | `metadata.mcp_validated` | No | `true/false` — whether patterns were verified against live docs (MCP or web). Added by Step 4.5. |
 | `metadata.mcp_source` | No | `"Context7"` / `"WebFetch"` / `"WebSearch"` / `"none"` — validation source. |
 | `metadata.validated_date` | No | ISO date of last validation (e.g., `"2026-02-26"`). |
-| `allowed-tools` | Yes | Comma-separated tool list. Defines which tools the skill can use. |
+| `metadata.platforms` | Yes | Target platforms for distribution (e.g., `[claude, antigravity]`). Stored under `metadata` per agentskills.io standard. |
+| `allowed-tools` | Yes | Space-delimited tool list (agentskills.io standard). Defines which tools the skill can use. Example: `Read Edit Write Glob Grep Bash`. |
 
 ### Skill Content Guidelines
 
@@ -394,7 +396,7 @@ After creating ANY component, you MUST register it. This is the most commonly fo
 - [ ] SKILL.md has complete frontmatter (name, description with triggers, license, metadata including **scope** and **auto_invoke**, **allowed-tools**)
 - [ ] For **project-local** skills: No sync needed — Claude Code discovers `.claude/skills/` automatically
 - [ ] For **global** or **batuta-repo** skills: Claude Code discovers skills by their `description` field — no manual routing table updates needed
-- [ ] If the skill was in the planned roadmap (CLAUDE.md "Planned project skills"), update status
+- [ ] If the skill was in the project roadmap, update tracking accordingly
 - [ ] If the skill has assets/, verify templates are present
 - [ ] If tech-specific: add detection rule to `sdd-init/assets/skill-provisions.yaml` for auto-provisioning
 
@@ -692,7 +694,7 @@ This step is NOT optional — CLAUDE.md Rules require classification after every
 - Whether frontmatter is complete for auto-discovery
 
 If `ecosystem-lifecycle` is not available (e.g., non-Batuta project without the skill loaded), perform a minimal self-check:
-1. Verify frontmatter completeness (name, description starts with "Use when", scope, auto_invoke, platforms)
+1. Verify frontmatter completeness (name, description starts with "Use when", scope, auto_invoke, metadata.platforms, space-delimited allowed-tools)
 2. Log the skip reason: "ecosystem-lifecycle not available — minimal validation performed"
 
 ---

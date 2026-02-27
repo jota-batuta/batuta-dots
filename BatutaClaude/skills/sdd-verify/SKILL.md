@@ -9,8 +9,8 @@ metadata:
   created: "2026-02-20"
   scope: [pipeline]
   auto_invoke: "Verifying implementation, /sdd-verify"
-allowed-tools: Read, Glob, Grep, Bash
-platforms: [claude, antigravity]
+  platforms: [claude, antigravity]
+allowed-tools: Read Glob Grep Bash
 ---
 
 ## Purpose

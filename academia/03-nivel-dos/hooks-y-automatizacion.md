@@ -27,7 +27,7 @@ Un hook es codigo que se ejecuta automaticamente cuando algo pasa. No tienes que
 **Que hace**: Establece "La Regla" — si un skill aplica a tu tarea, DEBES usarlo. Sin excepciones.
 
 **Que contiene**:
-- Lista completa de los 23 skills organizados por categoria
+- Lista completa de los 33 skills organizados por categoria
 - 4 "racionalizaciones bandera roja" que Claude debe detectar y rechazar:
   1. "Esto es algo simple" — Las tareas simples necesitan convenciones de equipo
   2. "Ya se como hacer esto" — Los skills codifican la forma del EQUIPO, no solo conocimiento

@@ -13,8 +13,8 @@ metadata:
     - "Evaluating whether to use subagents or Agent Teams"
     - "Spawning a team for complex tasks"
     - "Coordinating multi-agent work"
-allowed-tools: Read, Edit, Write, Glob, Grep, Bash, Task
-platforms: [claude]
+  platforms: [claude]
+allowed-tools: Read Edit Write Glob Grep Bash Task
 ---
 
 # Team Orchestrator

@@ -9,8 +9,8 @@ metadata:
   created: "2025-01-01"
   scope: [pipeline]
   auto_invoke: "Starting SDD workflow, /sdd-init"
-allowed-tools: Read, Edit, Write, Glob, Grep, Bash
-platforms: [claude, antigravity]
+  platforms: [claude, antigravity]
+allowed-tools: Read Edit Write Glob Grep Bash
 ---
 
 ## Purpose
@@ -225,7 +225,7 @@ If `.claude/settings.local.json` already exists, READ it first and MERGE (do not
 
 ### Step 3.8: Project Skill Provisioning (Auto-Scope)
 
-Provision the project with ONLY the skills and MCPs it needs based on detected technologies. This reduces context noise from 22+ global skills to typically 12-16 relevant ones.
+Provision the project with ONLY the skills and MCPs it needs based on detected technologies. This reduces context noise from 33+ global skills to typically 12-16 relevant ones.
 
 **Principle**: "El agente solo ve lo que el proyecto necesita. Contexto limpio = decisiones claras."
 
@@ -269,8 +269,8 @@ Create `.claude/skills/` directory if it does not exist.
 Using the MCP rules from `skill-provisions.yaml`:
 
 ```
-1. Start with: mcp_rules.always (context7)
-2. For each MCP rule:
+1. Start with: mcp_rules.always (context7, semgrep, sequential-thinking)
+2. For each MCP rule in mcp_rules:
    a. Evaluate detection signals (same as tech_rules)
    b. If match → add MCP config to .mcp.json
 3. For env vars with placeholders (YOUR_*_HERE):
@@ -279,6 +279,41 @@ Using the MCP rules from `skill-provisions.yaml`:
 5. If .gitignore exists and .mcp.json not in it:
    → Append .mcp.json to .gitignore (may contain secrets after user edits)
 ```
+
+#### Phase 3.5 — Cross-Reference Tech Skills with MCPs
+
+After generating `.mcp.json` from `mcp_rules`, cross-reference the `tech_rules` entries
+to suggest additional MCPs that complement the provisioned skills:
+
+```
+1. For each matched tech_rule from Phase 1:
+   a. If rule has mcps[] field → collect those MCP names
+   b. Check if each MCP is already in .mcp.json (from Phase 3)
+   c. If not yet configured → add to "suggested MCPs" list
+2. For each suggested MCP:
+   a. Look up its config in mcp_rules (by name)
+   b. If found → add to .mcp.json automatically
+   c. If NOT found in mcp_rules → log as recommendation only
+3. Present a summary table of MCPs by source:
+```
+
+**MCP Summary Table (show to user)**:
+
+```markdown
+| MCP | Source | Status | Why |
+|-----|--------|--------|-----|
+| semgrep | Global (always) | Ready | Security scanning — always active |
+| sequential-thinking | Global (always) | Ready | Complex reasoning support |
+| context7 | Global (always) | Ready | Live documentation lookup |
+| {name} | Detected: {tech_rule match} | Ready / Needs ENV | {AI Pyramid layer / skill mapping} |
+
+**MCPs requiring configuration**:
+- {name}: Set `{ENV_VAR}` in `.mcp.json` with your {description}
+```
+
+This cross-reference ensures that when a technology is detected (e.g., SQLAlchemy triggers
+`sqlalchemy-models` skill), the complementary MCP (e.g., `postgres`) is also provisioned
+without requiring a separate detection pass.
 
 #### Phase 4 — Write Provisions Manifest
 
@@ -316,11 +351,15 @@ Show the user what was provisioned (non-interactive — no approval needed per s
 - {list of skipped skills with reason}
 
 **MCPs configured ({count})**:
-| MCP | Status | Action Required |
-|-----|--------|-----------------|
-| {name} | Ready / Placeholder | {None / Set ENV_VAR in .mcp.json} |
+| MCP | Source | Status | Action Required |
+|-----|--------|--------|-----------------|
+| semgrep | Global (always) | Ready | None — security scanning is always active |
+| sequential-thinking | Global (always) | Ready | None — complex reasoning support |
+| context7 | Global (always) | Ready | None — live documentation lookup |
+| {name} | Detected: {technology} | Ready / Placeholder | {None / Set ENV_VAR in .mcp.json} |
 
 > To add skills later: `/sdd-explore` Skill Gap Detection will detect missing skills and offer to copy them from the global library.
+> To add MCPs later: Phase 3.5 cross-references tech_rules with mcps fields automatically.
 ```
 
 ### Step 4: Return Summary

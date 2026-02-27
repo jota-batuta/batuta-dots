@@ -16,8 +16,8 @@ metadata:
     - After ecosystem-creator completes (classification)
     - When user reports rule violation (self-heal)
     - When technology has no matching local skill (provisioning)
-allowed-tools: Read, Edit, Write, Glob, Grep, Bash
-platforms: [claude, antigravity]
+  platforms: [claude, antigravity]
+allowed-tools: Read Edit Write Glob Grep Bash
 ---
 
 ## Purpose
@@ -47,7 +47,7 @@ Invoked automatically after ecosystem-creator Step 8. Input: path to newly creat
 ### Step 1: Read Component
 
 - Parse the SKILL.md (or agent/workflow definition) frontmatter
-- Extract: `name`, `scope`, `description`, `platforms`, `auto_invoke`
+- Extract: `name`, `description`, `metadata.scope`, `metadata.platforms`, `metadata.auto_invoke`
 - Identify technologies and patterns referenced in the content
 
 ### Step 2: Classification Decision Tree
@@ -90,13 +90,13 @@ Check these required fields — flag any missing:
 
 | Field | Required | Check |
 |-------|----------|-------|
-| `name` | Yes | Lowercase, hyphens |
-| `description` | Yes | Starts with "Use when" |
-| `scope` | Yes | Valid scope: pipeline, infra, observability |
-| `auto_invoke` | Yes | Human-readable trigger |
-| `allowed-tools` | Yes | Non-empty |
-| `platforms` | Yes | `[claude]` or `[claude, antigravity]` |
-| `version` | Yes | Semantic version string |
+| `name` | Yes | Lowercase, hyphens, max 64 chars, must match directory name (agentskills.io) |
+| `description` | Yes | Starts with "Use when", max 1024 chars (agentskills.io) |
+| `metadata.scope` | Yes | Valid scope: pipeline, infra, observability |
+| `metadata.auto_invoke` | Yes | Human-readable trigger |
+| `allowed-tools` | Yes | Space-delimited (agentskills.io standard), non-empty |
+| `metadata.platforms` | Yes | `[claude]` or `[claude, antigravity]` (under metadata per agentskills.io) |
+| `metadata.version` | Yes | Semantic version string |
 
 If tech-specific skill: verify entry exists in `sdd-init/assets/skill-provisions.yaml`.
 If missing, add the detection rule.

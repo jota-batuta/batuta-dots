@@ -8,6 +8,33 @@
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "teammateMode": "in-process",
+  "mcpServers": {
+    "semgrep": {
+      "command": "uvx",
+      "args": ["semgrep-mcp"],
+      "description": "GLOBAL — Security scanning for AI-generated code. Semgrep detects vulnerabilities, secrets, and supply chain risks. Always-on because security is non-negotiable in every project."
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "description": "GLOBAL — Structured problem-solving for complex reasoning. Breaks architectural decisions and large-scale refactoring into logical steps. Supports the CTO Strategy Layer."
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"],
+      "description": "RECOMMENDED — Browser automation and E2E testing. Maps to e2e-testing skill. AI Validation Pyramid Layer 3 (E2E). Auto-provisioned when playwright is detected."
+    },
+    "eslint": {
+      "command": "npx",
+      "args": ["-y", "@eslint/mcp@latest"],
+      "description": "RECOMMENDED — Code quality and linting via MCP. AI Validation Pyramid Layer 1 (static analysis). Auto-provisioned when eslint is detected in project."
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres"],
+      "description": "RECOMMENDED — Read-only PostgreSQL schema inspection and queries. Batuta core stack. Requires DATABASE_URI env var. Auto-provisioned when postgres is detected."
+    }
+  },
   "hooks": {
     "SessionStart": [
       {

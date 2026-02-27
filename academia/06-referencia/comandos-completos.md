@@ -1,6 +1,6 @@
 # Comandos completos
 
-Referencia rapida de todos los comandos disponibles en Batuta Dots v11.0.
+Referencia rapida de todos los comandos disponibles en Batuta Dots v12.2.
 
 > **Auto-routing**: Normalmente no necesitas escribir estos comandos. Batuta detecta
 > automaticamente lo que necesitas y ejecuta la fase correcta. Describe tu problema

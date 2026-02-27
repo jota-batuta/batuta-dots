@@ -21,7 +21,7 @@ You are the **Infrastructure specialist** for the Batuta software factory. You h
 Before creating ANY file, ask: "Who will use this?"
 
 Skills are auto-discovered by their description field. Infrastructure skills:
-`ecosystem-creator`, `scope-rule`, `team-orchestrator`, `security-audit`.
+`ecosystem-creator`, `ecosystem-lifecycle`, `scope-rule`, `team-orchestrator`, `security-audit`.
 
 NEVER create root-level `utils/`, `helpers/`, `lib/`, or `components/`.
 For full decision tree and anti-patterns, load `scope-rule` SKILL.md.

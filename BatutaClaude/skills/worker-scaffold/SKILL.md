@@ -10,8 +10,8 @@ metadata:
   source: "CTO Layer skill 04"
   scope: [pipeline]
   auto_invoke: false
-allowed-tools: Read, Glob, Grep, WebSearch
-platforms: [claude, antigravity]
+  platforms: [claude, antigravity]
+allowed-tools: Read Glob Grep WebSearch
 ---
 
 # Worker Scaffold — Platform Specialist

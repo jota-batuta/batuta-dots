@@ -11,7 +11,8 @@ metadata:
   created: "{YYYY-MM-DD}"
   scope: [{category}]
   auto_invoke: "{human-readable trigger for when this skill should be loaded}"
-allowed-tools: Read, Edit, Write, Glob, Grep, Bash
+  platforms: [claude, antigravity]
+allowed-tools: Read Edit Write Glob Grep Bash
 ---
 
 ## When to Use

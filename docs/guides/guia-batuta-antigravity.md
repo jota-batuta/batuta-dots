@@ -6,7 +6,7 @@
 
 ## Que es Antigravity Lite
 
-Antigravity Lite es el companion de exploracion rapida del ecosistema Batuta. Mientras Claude Code es para produccion seria (pipeline SDD completo, arquitectura, features complejas), Antigravity Lite es para **brainstorming, prototipado rapido, scripts, documentacion y tareas mecanicas**. Conserva el 100% del cerebro CTO (filosofia, gates estrategicos, 23 skills, reglas de comportamiento). Lo que cambia es el **rol**: exploracion y velocidad en lugar de precision y rigurosidad.
+Antigravity Lite es el companion de exploracion rapida del ecosistema Batuta. Mientras Claude Code es para produccion seria (pipeline SDD completo, arquitectura, features complejas), Antigravity Lite es para **brainstorming, prototipado rapido, scripts, documentacion y tareas mecanicas**. Conserva el 100% del cerebro CTO (filosofia, gates estrategicos, 33 skills, reglas de comportamiento). Lo que cambia es el **rol**: exploracion y velocidad en lugar de precision y rigurosidad.
 
 **Antigravity** es el IDE agent-first de Google, un fork de VS Code/Windsurf. Durante el preview es **gratuito** con Gemini 3 Pro. Soporta Rules (GEMINI.md), Workflows (prompts guardados con /trigger), Skills (.agent/skills/), y Manager View para multi-agente.
 
@@ -40,7 +40,7 @@ cd /path/to/your/project
 bash /path/to/batuta-dots/BatutaAntigravity/setup-antigravity.sh --workspace
 ```
 
-Esto copia los 23 skills compatibles a `.agent/skills/` dentro del proyecto.
+Esto copia los 33 skills compatibles a `.agent/skills/` dentro del proyecto.
 
 ### Opcion 2: Global (todos los proyectos)
 
