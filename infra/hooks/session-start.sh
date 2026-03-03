@@ -204,11 +204,34 @@ if [[ -n "$BATUTA_DIR" && -f "$BATUTA_DIR/ecosystem.json" ]]; then
         python)  LOCAL_VERSION=$(python -c "import json; d=json.load(open('$BATUTA_DIR/ecosystem.json')); print(d.get('batuta_version',''))" 2>/dev/null) ;;
     esac
 
-    # WHY: Check batuta-dots VERSION file — resolve relative to script location first,
-    # then fall back to well-known paths (user may have it cloned elsewhere)
+    # WHY: Check batuta-dots VERSION file.
+    # Priority: (1) batuta-config.json explicit path, (2) relative to script,
+    # (3) well-known paths. After installation, hooks live in ~/.claude/hooks/
+    # (not inside batuta-dots), so the relative path often fails.
+    BATUTA_DOTS_LOCATIONS=()
+
+    # (1) Read from batuta-config.json if it exists
+    BATUTA_CONFIG="$HOME/.claude/batuta-config.json"
+    if [[ -f "$BATUTA_CONFIG" ]]; then
+        CONFIGURED_PATH=""
+        # WORKAROUND: Python on Windows can't resolve MSYS2 paths like /c/Users/...,
+        # so use os.path.expanduser('~') instead of passing $HOME from bash.
+        case "$_JSON_CMD" in
+            jq)      CONFIGURED_PATH=$(jq -r '.batuta_claude_path // ""' "$BATUTA_CONFIG" 2>/dev/null) ;;
+            python3) CONFIGURED_PATH=$(python3 -c "import json,os; d=json.load(open(os.path.expanduser('~/.claude/batuta-config.json'))); print(d.get('batuta_claude_path',''))" 2>/dev/null) ;;
+            python)  CONFIGURED_PATH=$(python -c "import json,os; d=json.load(open(os.path.expanduser('~/.claude/batuta-config.json'))); print(d.get('batuta_claude_path',''))" 2>/dev/null) ;;
+        esac
+        [[ -n "$CONFIGURED_PATH" ]] && BATUTA_DOTS_LOCATIONS+=("$CONFIGURED_PATH")
+    fi
+
+    # (2) Relative to script (works when running from inside batuta-dots repo)
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-    BATUTA_DOTS_LOCATIONS=("$REPO_ROOT/BatutaClaude" "$HOME/.claude" "$HOME/batuta-dots" "/tmp/batuta-dots")
+    BATUTA_DOTS_LOCATIONS+=("$REPO_ROOT/BatutaClaude")
+
+    # (3) Well-known fallback paths
+    BATUTA_DOTS_LOCATIONS+=("$HOME/.claude" "$HOME/batuta-dots" "/tmp/batuta-dots")
+
     for bd_path in "${BATUTA_DOTS_LOCATIONS[@]}"; do
         if [[ -f "$bd_path/VERSION" ]]; then
             HUB_VERSION=$(<"$bd_path/VERSION")

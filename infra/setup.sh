@@ -385,6 +385,27 @@ install_hooks() {
         log_warning "infra/hooks/ not found — hook scripts not copied"
     fi
 
+    # WHY: Generate batuta-config.json so session-start.sh can find the VERSION
+    # file for drift detection. After installation, hooks live in ~/.claude/hooks/
+    # (not inside batuta-dots), so the relative path resolution fails.
+    # Skip for temp installs since the clone will be deleted.
+    local batuta_config="$target_dir/batuta-config.json"
+    if [[ "$REPO_ROOT" != *"/tmp/"* && "$REPO_ROOT" != *"batuta-dots-install-"* ]]; then
+        local claude_path="$REPO_ROOT/BatutaClaude"
+        # WORKAROUND: On Windows/MSYS2, paths like /e/BATUTA PROJECTS/... work in bash
+        # but not in Python. Store as-is (bash paths) since the hook reads with bash [[ -f ]]
+        # first, and uses os.path.expanduser for the Python fallback.
+        cat > "$batuta_config" << CONFIGEOF
+{
+  "batuta_dots_path": "$REPO_ROOT",
+  "batuta_claude_path": "$claude_path"
+}
+CONFIGEOF
+        log_success "Created $batuta_config (batuta-dots path for version drift detection)"
+    else
+        log_info "Skipping batuta-config.json (running from temporary install directory)"
+    fi
+
     if [[ ! -f "$target_settings" ]]; then
         # No existing settings — copy entire file
         cp -f "$source_settings" "$target_settings"
