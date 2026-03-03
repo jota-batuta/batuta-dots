@@ -151,9 +151,19 @@ MCP checks are cumulative across the pipeline: discover during explore, consult 
 Principle: "No busques lo que no sabes que tienes."
 Full protocol: see `sdd-explore` Step 2.6, `sdd-apply` Step 1.5, `ecosystem-creator` Step 4.5.
 
-### Ecosystem Auto-Update (summary)
-At end of projects with new skills, ask if they should propagate to batuta-dots.
-Full process: see `infra-agent` which has the evaluation → generalize → propagate flow.
+### Ecosystem Lifecycle (autonomous — v12)
+Managed by the `ecosystem-lifecycle` skill. Autonomous behaviors:
+
+| Trigger | Behavior | User Auth? |
+|---------|----------|------------|
+| After skill creation | Classify generic vs project → offer propagation | YES (hub) |
+| User reports rule violation | Self-heal: identify, propose fix, apply with auth | YES (CLAUDE.md) |
+| Any phase detects tech without skill | Continuous provisioning from global library | NO (local) |
+| User requests sync | Hub sync via `/batuta-sync` (internal, no bash) | YES (hub) |
+
+**Key principle**: Changes to batuta-dots hub ALWAYS require user authorization.
+Project-local operations (copying a skill from global) do NOT.
+Full protocol: see `ecosystem-lifecycle` skill.
 
 ---
 
@@ -172,6 +182,7 @@ Full process: see `infra-agent` which has the evaluation → generalize → prop
 | `/create <type> <name>` | infra → ecosystem-creator (type: skill/sub-agent/workflow) |
 | `/batuta-init` | Setup Batuta ecosystem in current project |
 | `/batuta-update` | Update Batuta ecosystem to latest version |
+| `/batuta-sync` | Sync skills between project and hub (internal, no bash) |
 
 ---
 
@@ -248,6 +259,7 @@ At conversation start (session.md is already injected by SessionStart hook):
 | **Continue / Resume** | "donde quedamos?", "let's keep going", "continua con inventario" | SDD Continue (Step 3c) |
 | **Backtrack / Rethink** | "esto no funciona como pense", "falta un caso", "cambio el requisito", "la API no se comporta asi" | SDD Backtrack (Step 3d) |
 | **Question / Explain** | "que es SDD?", "how does auth work?", "should I use Redis?" | Answer directly |
+| **Self-heal / Rule violation** | "violaste tus reglas", "no seguiste el execution gate", "esto debería ser una regla", "why didn't you use the skill?" | Self-Heal Flow (Step 3e) |
 | **Explicit command** | "/sdd-explore", "/sdd-continue", any `/` command | Execute that command (manual override) |
 
 ### Step 3a: SDD Pipeline (new work)
@@ -294,6 +306,21 @@ When the user reports something that invalidates a previous phase:
 - Inform: "Esto requiere ajustar el {spec/design/etc}. Lo actualizo?"
 - On approval: update the affected artifact, log in backtrack-log.md, re-run downstream phases as needed
 - Full backtrack rules are in pipeline-agent
+
+### Step 3e: Self-Heal Flow (rule violation)
+
+When the user reports a rule violation or proposes a new rule:
+1. Invoke `ecosystem-lifecycle` skill (Self-Heal behavior)
+2. The skill identifies the rule, verifies the violation, analyzes root cause, proposes a fix
+3. **MANDATORY STOP**: Present the proposed fix. NEVER auto-apply rule changes.
+4. If approved: update CLAUDE.md locally + in hub, GEMINI.md if applicable
+5. Present: "Cambios listos en batuta-dots. ¿Hago commit y push?"
+6. On approval: commit + push + run /batuta-update internally
+7. Log the self-heal in `.batuta/session.md` under "Decisions"
+
+This flow is the agent's mechanism for learning from mistakes.
+Without it, the same violation repeats across sessions.
+Full protocol: see `ecosystem-lifecycle` skill, Behavior 2.
 
 ### Transparency Rule
 
@@ -380,3 +407,41 @@ session.md is a BRIEFING DOCUMENT for a new agent taking over the project. It an
 5. Over 80 lines → trim oldest decisions and notes until compliant
 
 PROJECT context only. Personal preferences → MEMORY.md.
+
+---
+
+## Two-Layer Configuration (v12)
+
+CLAUDE.md uses a two-layer system to survive hub updates without losing project customizations:
+
+| Layer | File | Managed by | Updated by hub? |
+|-------|------|------------|-----------------|
+| Hub layer | `CLAUDE.md` (project root) | batuta-dots | YES — always overwritten by `/batuta-update` |
+| Project layer | `.claude/CLAUDE.md` | User / agent | NEVER — preserved across updates |
+
+Claude Code reads BOTH files. `.claude/CLAUDE.md` takes priority for this project.
+
+### What Goes Where
+
+**Hub layer (CLAUDE.md root)** — universal rules, same for all projects:
+- Personality, tone, language, philosophy
+- SDD pipeline, auto-routing, execution gate
+- Scope Rule, skill routing, provisioning
+- This file is the "operating system"
+
+**Project layer (.claude/CLAUDE.md)** — project-specific overrides:
+- Custom naming conventions for this project
+- Domain-specific rules ("all prices include IVA", "tenant ID is UUID")
+- Override defaults ("skip compliance-colombia", "use camelCase not snake_case")
+- Project-specific MCP instructions
+
+### How Updates Work
+1. `/batuta-update` overwrites root CLAUDE.md with latest hub version
+2. `.claude/CLAUDE.md` is NEVER touched by updates
+3. If root CLAUDE.md had a "## Project Customizations" section, `setup.sh --update`
+   migrates it to `.claude/CLAUDE.md` automatically on first update
+
+### Self-Heal Integration
+When the self-heal flow proposes a rule change:
+- Universal rules → update hub CLAUDE.md (propagates to all projects)
+- Project-specific rules → update `.claude/CLAUDE.md` (stays local)

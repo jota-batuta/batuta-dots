@@ -152,16 +152,28 @@ copy_gemini_md_global() {
 copy_gemini_md_project() {
     local source_file="$REPO_ROOT/BatutaAntigravity/GEMINI.md"
     local output_file="$PROJECT_DIR/GEMINI.md"
+    local override_file="$PROJECT_DIR/.gemini/GEMINI.md"
 
-    log_info "Copying GEMINI.md to project root ($PROJECT_DIR)"
+    log_info "Copying GEMINI.md to project root (hub layer)"
 
     if [[ ! -f "$source_file" ]]; then
         log_error "BatutaAntigravity/GEMINI.md not found at $source_file"
         return 1
     fi
 
+    # WHY two-layer config: root GEMINI.md = hub layer (overwritten on update),
+    # .gemini/GEMINI.md = project layer (never touched by setup).
+    # Gemini reads both; project layer takes precedence.
+    if [[ -f "$output_file" ]] && grep -q "^## Project Customizations" "$output_file" 2>/dev/null; then
+        if [[ ! -f "$override_file" ]]; then
+            mkdir -p "$PROJECT_DIR/.gemini"
+            sed -n '/^## Project Customizations/,$p' "$output_file" > "$override_file"
+            log_success "Migrated project customizations to .gemini/GEMINI.md"
+        fi
+    fi
+
     cp -f "$source_file" "$output_file"
-    log_success "Created $output_file"
+    log_success "Created $output_file (hub layer)"
 }
 
 # ============================================================================

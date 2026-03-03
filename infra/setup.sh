@@ -830,15 +830,36 @@ update_all() {
     # Phase 1: Global — sync skills, agents, commands, hooks, styles to ~/.claude/
     do_all
 
-    # Phase 2: Project CLAUDE.md — copy latest from batuta-dots
+    # Phase 2: Project CLAUDE.md — copy latest from batuta-dots (hub layer)
+    # BUSINESS RULE: Two-layer system (v12). Root CLAUDE.md is the hub layer
+    # (always overwritable). .claude/CLAUDE.md is the project layer (NEVER touched).
+    # If root CLAUDE.md has a "## Project Customizations" section, migrate it to
+    # .claude/CLAUDE.md before overwriting.
     echo ""
     log_header "Updating project: $project_path"
 
     local source_claude="$REPO_ROOT/BatutaClaude/CLAUDE.md"
     local target_claude="$project_path/CLAUDE.md"
+    local override_claude="$project_path/.claude/CLAUDE.md"
+
     if [[ -f "$source_claude" ]]; then
+        # Migrate project customizations if they exist in root CLAUDE.md
+        if [[ -f "$target_claude" ]] && grep -q "^## Project Customizations" "$target_claude" 2>/dev/null; then
+            if [[ ! -f "$override_claude" ]]; then
+                mkdir -p "$project_path/.claude"
+                sed -n '/^## Project Customizations/,$p' "$target_claude" > "$override_claude"
+                log_success "Migrated project customizations to .claude/CLAUDE.md"
+            else
+                log_info ".claude/CLAUDE.md already exists — project overrides preserved"
+            fi
+        fi
+
         cp -f "$source_claude" "$target_claude"
-        log_success "Updated $target_claude"
+        log_success "Updated $target_claude (hub layer)"
+
+        if [[ -f "$override_claude" ]]; then
+            log_info "Project overrides preserved in .claude/CLAUDE.md"
+        fi
     else
         log_error "BatutaClaude/CLAUDE.md not found"
     fi
