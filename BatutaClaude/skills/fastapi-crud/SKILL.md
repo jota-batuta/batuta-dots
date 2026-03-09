@@ -7,7 +7,7 @@ metadata:
   author: Batuta
   version: "1.0"
   created: "2026-02-23"
-  scope: [pipeline]
+  scope: [pipeline, infra]
   auto_invoke: "Creating FastAPI CRUD endpoints, REST API routes"
   platforms: [claude, antigravity]
 allowed-tools: Read Glob Grep Write Edit

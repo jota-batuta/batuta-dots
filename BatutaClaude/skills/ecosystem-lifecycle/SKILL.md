@@ -102,6 +102,18 @@ Check these required fields — flag any missing:
 If tech-specific skill: verify entry exists in `sdd-init/assets/skill-provisions.yaml`.
 If missing, add the detection rule.
 
+### Step 4b: Content Validation (defense-in-depth)
+
+Beyond frontmatter fields, verify these content requirements:
+
+| Check | What to Verify | If Missing |
+|-------|---------------|------------|
+| `## Purpose` section | Exists after frontmatter, before `## When to Use` | Flag: "Missing `## Purpose`. Every skill needs a business context paragraph." |
+| Scope coherence | If skill body contains code generation patterns (generate, scaffold, create files), `infra` must be in scope | Flag: "Scope may be incorrect. Code-generation skills need `infra` in scope." |
+| Owner agent consistency | If `metadata.owner_agent` is set, verify agent file exists in `BatutaClaude/agents/` | Flag: "Owner agent `{name}` not found in agents directory." |
+
+These are **flags** (warnings), not blocks. Only frontmatter completeness blocks classification.
+
 ### Step 5: Return Envelope
 
 ```yaml

@@ -13,8 +13,14 @@ metadata:
   auto_invoke: "{human-readable trigger for when this skill should be loaded}"
   platforms: [claude, antigravity]
   category: "{workflow | capability}"  # workflow = orchestrates multi-step processes; capability = domain expertise (default)
+  # owner_agent: "{agent-name}"  # Optional: agent that maintains this skill
 allowed-tools: Read Edit Write Glob Grep Bash
 ---
+
+## Purpose
+
+{One paragraph: what this skill does, who benefits, and why it exists.
+Non-technical readers should understand the skill's role from this alone.}
 
 ## When to Use
 

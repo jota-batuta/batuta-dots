@@ -160,6 +160,10 @@ metadata:
 allowed-tools: Read Edit Write Glob Grep Bash
 ---
 
+## Purpose
+
+{What this skill does, who it serves, why it matters}
+
 ## When to Use
 
 {Bullet points of when to use this skill}
@@ -199,7 +203,27 @@ allowed-tools: Read Edit Write Glob Grep Bash
 | `metadata.validated_date` | No | ISO date of last validation (e.g., `"2026-02-26"`). |
 | `metadata.platforms` | Yes | Target platforms for distribution (e.g., `[claude, antigravity]`). Stored under `metadata` per agentskills.io standard. |
 | `metadata.category` | No | `workflow` or `capability`. Workflow skills orchestrate multi-step processes (e.g., sdd-explore, ecosystem-creator); capability skills uplift agent behavior for a specific domain (e.g., tdd-workflow, api-design). Defaults to `capability` if absent. Aligns with agentskills.io Workflow vs Capability Uplift distinction. |
+| `metadata.owner_agent` | No | Agent that maintains this skill (e.g., `backend-agent`, `quality-agent`). Enables team routing. If not set, ownership is inferred from agent `skills:` lists. |
 | `allowed-tools` | Yes | Space-delimited tool list (agentskills.io standard). Defines which tools the skill can use. Example: `Read Edit Write Glob Grep Bash`. |
+
+### Scope Decision Tree (Mandatory)
+
+Before assigning `metadata.scope`, determine the correct value:
+
+| What does the skill DO? | Scope | Examples |
+|------------------------|-------|---------|
+| Orchestrates SDD phases, manages pipeline artifacts | `[pipeline]` | sdd-explore, sdd-propose, sdd-verify |
+| Provides domain patterns used during implementation | `[pipeline]` | api-design, tdd-workflow, react-nextjs |
+| Creates/organizes files, manages ecosystem components | `[infra]` | ecosystem-creator, scope-rule, ci-cd-pipeline |
+| Manages sessions, monitoring, context restoration | `[observability]` | observability |
+| Generates/scaffolds code AND is invoked during sdd-apply | `[pipeline, infra]` | sdd-apply, fastapi-crud, jwt-auth, sqlalchemy-models |
+| Audits code as part of verification pipeline | `[infra, pipeline]` | security-audit |
+
+**Rules:**
+- Skills that GENERATE files (code scaffolding, model generation) MUST include `infra`
+- SDD phase sub-agents always have `pipeline` as primary scope
+- Multiple scopes are valid when a skill genuinely spans domains
+- When in doubt, check existing skills with similar behavior for precedent
 
 ### Skill Content Guidelines
 
@@ -430,6 +454,8 @@ After creating ANY component, you MUST register it. This is the most commonly fo
 
 - [ ] Skill directory created at the correct destination (see table above)
 - [ ] SKILL.md has complete frontmatter (name, description with triggers, license, metadata including **scope** and **auto_invoke**, **allowed-tools**)
+- [ ] `## Purpose` section exists with business context paragraph
+- [ ] `metadata.scope` follows Scope Decision Tree (code-generation skills MUST include `infra`)
 - [ ] For **project-local** skills: No sync needed — Claude Code discovers `.claude/skills/` automatically
 - [ ] For **global** or **batuta-repo** skills: Claude Code discovers skills by their `description` field — no manual routing table updates needed
 - [ ] If the skill was in the project roadmap, update tracking accordingly
