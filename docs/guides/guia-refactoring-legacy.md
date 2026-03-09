@@ -1052,3 +1052,9 @@ Tu (proyecto desordenado)
 > despues de cada cambio, y nunca olvides que lo mas importante es que NADA de lo que
 > ya funciona deje de funcionar. Claude es tu contratista — el hace el trabajo pesado,
 > tu decides que se cambia y que se queda.
+
+---
+
+## Deployment Programatico
+
+Este tipo de proyecto puede deployarse via Agent SDK para automatizacion CI/CD. Ver [guia-sdk-deployment.md](guia-sdk-deployment.md).

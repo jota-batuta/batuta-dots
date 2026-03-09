@@ -127,4 +127,6 @@ Antes de crear el equipo, verifica que estos prerequisitos estan listos:
 
 ---
 
+**Nota v13**: Los domain agents (backend-agent, quality-agent, data-agent) aportan expertise embebida de dominio. En este template, pipeline-agent sigue siendo la mejor opcion para frontend (no existe frontend-agent aun). quality-agent puede asignarse a un reviewer o tester dedicado si se agrega al equipo. quality-agent esta disponible en todo proyecto.
+
 *Template basado en Pattern D (Cross-Layer) del team-orchestrator. Ajusta segun las necesidades especificas de tu proyecto.*

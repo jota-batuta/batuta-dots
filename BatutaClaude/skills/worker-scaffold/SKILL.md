@@ -11,7 +11,7 @@ metadata:
   scope: [pipeline]
   auto_invoke: false
   platforms: [claude, antigravity]
-allowed-tools: Read Glob Grep WebSearch
+allowed-tools: Read Write Edit Glob Grep Bash WebSearch
 ---
 
 # Worker Scaffold — Platform Specialist

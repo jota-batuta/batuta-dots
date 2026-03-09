@@ -940,3 +940,9 @@ Tu (carpeta vacia)
 > los pasos y describir que quieres que el agente haga. Claude es tu asistente — el programa,
 > tu decides. Como aprender a manejar: primero sigues las instrucciones al pie de la letra,
 > y con el tiempo lo haces naturalmente.
+
+---
+
+## Deployment Programatico
+
+Este tipo de proyecto puede deployarse via Agent SDK para automatizacion CI/CD. Ver [guia-sdk-deployment.md](guia-sdk-deployment.md).

@@ -5,6 +5,12 @@ description: >
   infrastructure, freshness checks, and context restoration across sessions.
 skills: [observability]
 memory: project
+sdk:
+  model: claude-sonnet-4-6
+  max_tokens: 8192
+  allowed_tools: [Read, Edit, Write, Bash, Glob, Grep, Task, Skill]
+  setting_sources: [project]
+  defer_loading: false
 ---
 
 # Observability Agent — Session & Quality Specialist

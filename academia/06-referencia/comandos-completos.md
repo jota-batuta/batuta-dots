@@ -1,6 +1,6 @@
 # Comandos completos
 
-Referencia rapida de todos los comandos disponibles en Batuta Dots v12.2.
+Referencia rapida de todos los comandos disponibles en Batuta Dots v13.
 
 > **Auto-routing**: Normalmente no necesitas escribir estos comandos. Batuta detecta
 > automaticamente lo que necesitas y ejecuta la fase correcta. Describe tu problema
@@ -142,6 +142,25 @@ Stack: Next.js, PostgreSQL, Redis
 /create-workflow deploy-production
 ```
 
+---
+
+## Comandos de evaluacion
+
+### /skill:eval
+**Que hace**: Evalua un skill con tests comportamentales definidos en SKILL.eval.yaml.
+**Cuando**: Despues de crear o modificar un skill, para verificar que se activa correctamente y produce resultados de calidad.
+
+```
+/skill:eval mi-skill
+```
+
+### /skill:benchmark
+**Que hace**: Ejecuta eval para todos los skills que tengan un archivo SKILL.eval.yaml. Genera un reporte de salud del ecosistema.
+**Cuando**: Quieres verificar que ningun skill se rompio despues de cambios en el ecosistema.
+
+```
+/skill:benchmark
+```
 
 ---
 
@@ -199,3 +218,5 @@ bash ~/batuta-dots/infra/setup.sh --update /path/to/mi-proyecto
 | Cerrar cambio | "Archiva el cambio" | `/sdd-archive` |
 | Empezar proyecto | — | `/sdd-init` |
 | Crear skill | — | `/create-skill nombre` |
+| Evaluar skill | — | `/skill:eval nombre` |
+| Benchmark skills | — | `/skill:benchmark` |

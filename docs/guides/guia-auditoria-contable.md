@@ -793,3 +793,9 @@ R: Si. Claude guarda su progreso en `.batuta/session.md`. Abre la terminal, nave
 > y a donde quieren que vayan. Claude se encarga del codigo.
 > Lo importante es el Discovery — entre mas le cuentes sobre el proceso
 > del cliente, mejor sera la solucion.
+
+---
+
+## Deployment Programatico
+
+Este tipo de proyecto puede deployarse via Agent SDK para automatizacion CI/CD. Ver [guia-sdk-deployment.md](guia-sdk-deployment.md).

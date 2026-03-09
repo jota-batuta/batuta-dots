@@ -12,6 +12,7 @@ metadata:
   scope: [{category}]
   auto_invoke: "{human-readable trigger for when this skill should be loaded}"
   platforms: [claude, antigravity]
+  category: "{workflow | capability}"  # workflow = orchestrates multi-step processes; capability = domain expertise (default)
 allowed-tools: Read Edit Write Glob Grep Bash
 ---
 

@@ -25,6 +25,7 @@ Verifican la **estructura interna** del ecosistema: consistencia numerica, archi
 | v6 | [audits/v6-calidad.md](audits/v6-calidad.md) | 13 hallazgos | Corregidos en v6 |
 | v7 | [audits/v7-calidad.md](audits/v7-calidad.md) | Auditoria post-teams | Corregidos en v7.1 |
 | v9 | [audits/v9-calidad.md](audits/v9-calidad.md) | Auditoria post-restructure | Corregidos en v9 |
+| v13 | [audits/v13-calidad.md](audits/v13-calidad.md) | Skills 2.0, SDK agents, domain agents | PASS (3 correcciones menores) |
 
 ## Logs de Correcciones
 
@@ -37,6 +38,7 @@ Documentan **que se corrigio** en cada version, archivo por archivo.
 | v7 | [corrections/v7-correcciones.md](corrections/v7-correcciones.md) |
 | v9 | [corrections/v9-correcciones.md](corrections/v9-correcciones.md) |
 | v9.2 | [corrections/v9.2-correcciones.md](corrections/v9.2-correcciones.md) |
+| v13 | [corrections/v13-correcciones.md](corrections/v13-correcciones.md) |
 
 ## Tests de Integracion
 
@@ -59,4 +61,4 @@ Simulan la **experiencia del usuario** siguiendo cada guia paso a paso. Identifi
 
 ---
 
-> Ultima actualizacion: 2026-02-23 (v9.2)
+> Ultima actualizacion: 2026-03-09 (v13)

@@ -36,8 +36,10 @@ Proyecto A (Claude Code)  ←→  batuta-dots (hub)  ←→  Proyecto B (Antigra
 3. Del hub se distribuye a todos los spokes (via `install.sh` para usuarios, o `setup.sh --update` / `setup-antigravity.sh --update` para desarrolladores)
 
 El campo `platforms` en el frontmatter de SKILL.md determina que plataformas reciben cada skill:
-- `platforms: [claude, antigravity]` — va a ambas (32 de 33 skills)
+- `platforms: [claude, antigravity]` — va a ambas (37 de 38 skills)
 - `platforms: [claude]` — solo Claude Code (1 skill que requiere Agent Teams)
+
+El bloque `sdk:` en los agents permite distribuirlos como AgentDefinitions programaticas para CI/CD y deployment automatizado. Es un canal de distribucion adicional: ademas de plataformas (Claude, Antigravity), los agentes pueden vivir en pipelines automatizados.
 
 ---
 
@@ -77,7 +79,7 @@ bash ~/batuta-dots/BatutaAntigravity/setup-antigravity.sh --all
 ```
 
 Esto:
-- Copia 33 skills a `.agent/skills/` (workspace) y `~/.gemini/antigravity/skills/` (global)
+- Copia 38 skills a `.agent/skills/` (workspace) y `~/.gemini/antigravity/skills/` (global)
 - Copia GEMINI.md al proyecto
 - Crea `.batuta/session.md` y `.batuta/ecosystem.json`
 
@@ -231,6 +233,7 @@ bash ~/batuta-dots/infra/setup.sh --update /path/to/mi-otro-proyecto
 - **Full Brain, Adapted Body**: GEMINI.md tiene el 100% del cerebro CTO. Solo la ejecucion se adapta (rules en vez de hooks, workflows en vez de commands).
 - **Paralelo, no secuencial**: Claude Code y Antigravity trabajan al mismo tiempo en tareas diferentes.
 - **`platforms` field**: Controla que plataformas reciben cada skill durante el sync.
+- **`sdk:` block**: Canal adicional de distribucion para agents via Claude Agent SDK (CI/CD, deployment automatizado).
 - **`ecosystem.json`**: Detecta version drift entre el hub y los proyectos.
 - **Gratis**: Antigravity es gratuito durante preview. Agrega capacidad sin costo adicional.
 

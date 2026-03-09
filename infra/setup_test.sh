@@ -395,17 +395,29 @@ test_claude_md_no_just_do_it_proceed() {
 # ============================================================================
 
 test_scope_agents_exist() {
-    log_test "3 scope agent files exist in BatutaClaude/agents/ (v5)"
+    log_test "3 scope agents + 3 domain agents exist in BatutaClaude/agents/ (v13)"
     local agents_dir="$REPO_ROOT/BatutaClaude/agents"
 
     assert_dir_exists "$agents_dir"
+
+    # Scope agents (hub machinery)
     assert_file_exists "$agents_dir/pipeline-agent.md"
     assert_file_exists "$agents_dir/infra-agent.md"
     assert_file_exists "$agents_dir/observability-agent.md"
 
-    # Verify agents have skill listings (auto-discovered, no more AUTO-GENERATED delimiters)
+    # Domain agents (provisioned to projects — v13)
+    assert_file_exists "$agents_dir/backend-agent.md"
+    assert_file_exists "$agents_dir/quality-agent.md"
+    assert_file_exists "$agents_dir/data-agent.md"
+
+    # Verify scope agents have skill listings (auto-discovered, no more AUTO-GENERATED delimiters)
     assert_file_contains "$agents_dir/pipeline-agent.md" "auto-discovered" "pipeline-agent notes auto-discovery"
     assert_file_contains "$agents_dir/infra-agent.md" "auto-discovered" "infra-agent notes auto-discovery"
+
+    # Verify domain agents have sdk: block (v13 mandatory)
+    assert_file_contains "$agents_dir/backend-agent.md" "sdk:" "backend-agent has sdk block"
+    assert_file_contains "$agents_dir/quality-agent.md" "sdk:" "quality-agent has sdk block"
+    assert_file_contains "$agents_dir/data-agent.md" "sdk:" "data-agent has sdk block"
 }
 
 # ============================================================================
@@ -709,10 +721,12 @@ test_claude_md_has_team_routing() {
 # ============================================================================
 
 test_scope_agents_have_spawn_prompts() {
-    log_test "All scope agents have Agent Team spawn prompts (v7)"
+    log_test "All agents (scope + domain) have Spawn Prompt and Team Context (v13)"
     local agents_dir="$REPO_ROOT/BatutaClaude/agents"
 
-    for agent in pipeline-agent infra-agent observability-agent; do
+    # WORKAROUND: Check both scope agents and domain agents in a single loop.
+    # Domain agents added in v13 follow the same structural pattern.
+    for agent in pipeline-agent infra-agent observability-agent backend-agent quality-agent data-agent; do
         local agent_file="$agents_dir/${agent}.md"
         if [[ -f "$agent_file" ]]; then
             if grep -q "Spawn Prompt" "$agent_file" 2>/dev/null; then
@@ -851,8 +865,8 @@ test_security_integration() {
 # 40. Total skill count is 15 (v9)
 # ============================================================================
 
-test_thirtythree_skills_total() {
-    log_test "33 skills total in BatutaClaude/skills/ (v12.2)"
+test_skill_count_total() {
+    log_test "38 skills total in BatutaClaude/skills/ (v13)"
     local skills_dir="$REPO_ROOT/BatutaClaude/skills"
 
     local skill_count=0
@@ -860,10 +874,10 @@ test_thirtythree_skills_total() {
         [[ -d "$d" && -f "$d/SKILL.md" ]] && skill_count=$((skill_count + 1))
     done
 
-    if [[ $skill_count -eq 33 ]]; then
-        log_pass "$skill_count skills (expected 33)"
+    if [[ $skill_count -eq 38 ]]; then
+        log_pass "$skill_count skills (expected 38)"
     else
-        log_fail "Expected 33 skills, found $skill_count"
+        log_fail "Expected 38 skills, found $skill_count"
     fi
 }
 
@@ -1045,12 +1059,13 @@ test_claude_md_has_doc_standard_rule() {
 # v9.4 Tests: SDD Command Wrappers + Colon-to-Hyphen Migration
 # ============================================================================
 
-test_eleven_commands_synced() {
-    log_test "11 commands exist in BatutaClaude/commands/ (v11.1)"
+test_thirteen_commands_synced() {
+    log_test "13 commands exist in BatutaClaude/commands/ (v13)"
     local cmd_dir="$REPO_ROOT/BatutaClaude/commands"
     local expected_commands=(
         "batuta-init.md"
         "batuta-update.md"
+        "batuta-sync.md"
         "create.md"
         "sdd-init.md"
         "sdd-explore.md"
@@ -1060,6 +1075,7 @@ test_eleven_commands_synced() {
         "sdd-apply.md"
         "sdd-verify.md"
         "sdd-archive.md"
+        "skill-eval.md"
     )
 
     local found=0
@@ -1072,7 +1088,7 @@ test_eleven_commands_synced() {
     done
 
     if [[ $found -eq ${#expected_commands[@]} ]]; then
-        log_pass "All 11 command files exist in BatutaClaude/commands/"
+        log_pass "All 13 command files exist in BatutaClaude/commands/"
     fi
 }
 
@@ -1257,6 +1273,101 @@ test_session_start_has_provisions_detection() {
 }
 
 # ============================================================================
+# v13 tests: Domain Agents + Agent Provisioning
+# ============================================================================
+
+test_agent_provisioning_rules_exist() {
+    log_test "skill-provisions.yaml has always_agents and agent_rules (v13)"
+    local provisions_file="$REPO_ROOT/BatutaClaude/skills/sdd-init/assets/skill-provisions.yaml"
+    if [[ -f "$provisions_file" ]]; then
+        local has_always_agents=$(grep -c "^always_agents:" "$provisions_file" 2>/dev/null || echo "0")
+        local has_agent_rules=$(grep -c "^agent_rules:" "$provisions_file" 2>/dev/null || echo "0")
+        if [[ "$has_always_agents" -ge 1 && "$has_agent_rules" -ge 1 ]]; then
+            log_pass "Both always_agents: and agent_rules: sections present"
+        else
+            log_fail "Missing always_agents: ($has_always_agents) or agent_rules: ($has_agent_rules) sections"
+        fi
+    else
+        log_skip "provisions file not found"
+    fi
+}
+
+test_sdd_init_has_agent_provisioning_step() {
+    log_test "sdd-init SKILL.md has Step 3.9 Agent Provisioning (v13)"
+    local skill_file="$REPO_ROOT/BatutaClaude/skills/sdd-init/SKILL.md"
+    assert_file_contains "$skill_file" "Step 3.9" "sdd-init has Step 3.9"
+    assert_file_contains "$skill_file" "Agent Provisioning" "sdd-init has Agent Provisioning"
+}
+
+test_domain_agents_have_embedded_expertise() {
+    log_test "Domain agents have embedded expertise sections (v13)"
+    local agents_dir="$REPO_ROOT/BatutaClaude/agents"
+
+    # Backend agent should have API and database conventions
+    assert_file_contains "$agents_dir/backend-agent.md" "API Design" "backend-agent has API Design section"
+    assert_file_contains "$agents_dir/backend-agent.md" "Database Conventions" "backend-agent has Database Conventions"
+
+    # Quality agent should have AI Validation Pyramid and TDD
+    assert_file_contains "$agents_dir/quality-agent.md" "AI Validation Pyramid" "quality-agent has AI Validation Pyramid"
+    assert_file_contains "$agents_dir/quality-agent.md" "TDD Workflow" "quality-agent has TDD Workflow"
+
+    # Data agent should have ETL and LLM patterns
+    assert_file_contains "$agents_dir/data-agent.md" "ETL Pipeline" "data-agent has ETL Pipeline section"
+    assert_file_contains "$agents_dir/data-agent.md" "LLM Classification" "data-agent has LLM Classification"
+}
+
+# ============================================================================
+# agentskills.io CLI Validation (v12.0 — optional, requires skills-ref)
+# ============================================================================
+
+test_agentskills_cli_validation() {
+    log_test "agentskills.io CLI validation (skills-ref validate)"
+
+    if ! command -v skills-ref &>/dev/null; then
+        log_skip "skills-ref not installed. Install: npm install -g skills-ref"
+        return
+    fi
+
+    local skills_dir="$REPO_ROOT/BatutaClaude/skills"
+    local failed=0
+    local checked=0
+
+    for skill_dir in "$skills_dir"/*/; do
+        [[ ! -f "$skill_dir/SKILL.md" ]] && continue
+        local skill_name
+        skill_name=$(basename "$skill_dir")
+        checked=$((checked + 1))
+        if ! skills-ref validate "$skill_dir" &>/dev/null; then
+            log_fail "agentskills.io validation failed: $skill_name"
+            failed=$((failed + 1))
+        fi
+    done
+
+    if [[ $failed -eq 0 ]]; then
+        log_pass "All $checked skills pass agentskills.io validation"
+    fi
+}
+
+test_skills_category_field_info() {
+    log_test "Skill category field adoption (informational)"
+
+    local skills_dir="$REPO_ROOT/BatutaClaude/skills"
+    local with_category=0
+    local total=0
+
+    for skill_dir in "$skills_dir"/*/; do
+        [[ ! -f "$skill_dir/SKILL.md" ]] && continue
+        total=$((total + 1))
+        if grep -q "category:" "$skill_dir/SKILL.md" 2>/dev/null; then
+            with_category=$((with_category + 1))
+        fi
+    done
+
+    # WORKAROUND: Informational only — category is optional, so no fail
+    log_info "$with_category/$total skills have metadata.category field (optional, default: capability)"
+}
+
+# ============================================================================
 # Run All Tests
 # ============================================================================
 
@@ -1321,7 +1432,7 @@ test_team_playbook_exists
 test_ten_guides_exist
 test_contract_first_protocol
 test_security_integration
-test_thirtythree_skills_total
+test_skill_count_total
 test_infra_agent_has_security
 
 # --- v9.1 tests: Integration Test Findings ---
@@ -1343,7 +1454,7 @@ test_sdd_apply_has_documentation_standard
 test_claude_md_has_doc_standard_rule
 
 # --- v9.4 tests: SDD Command Wrappers + Colon-to-Hyphen Migration ---
-test_eleven_commands_synced
+test_thirteen_commands_synced
 test_sdd_commands_use_hyphens_not_colons
 test_claude_md_commands_use_hyphens
 
@@ -1361,6 +1472,15 @@ test_do_all_calls_sync_output_styles
 test_skill_provisions_yaml_exists
 test_skill_provisions_has_always_and_sdd
 test_session_start_has_provisions_detection
+
+# --- v12.0 tests: agentskills.io Classification + Validation ---
+test_agentskills_cli_validation
+test_skills_category_field_info
+
+# --- v13 tests: Domain Agents + Agent Provisioning ---
+test_agent_provisioning_rules_exist
+test_sdd_init_has_agent_provisioning_step
+test_domain_agents_have_embedded_expertise
 
 # ============================================================================
 # Summary

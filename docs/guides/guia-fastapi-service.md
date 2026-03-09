@@ -1165,3 +1165,9 @@ Ayudame a diagnosticarlo y resolverlo.
 > **Recuerda**: No necesitas entender COMO funciona todo por dentro. Solo necesitas seguir los pasos
 > y confiar en el proceso. Como aprender a manejar: primero sigues las instrucciones al pie
 > de la letra, y con el tiempo lo haces naturalmente. Claude es tu asistente — el programa, tu decides.
+
+---
+
+## Deployment Programatico
+
+Este tipo de proyecto puede deployarse via Agent SDK para automatizacion CI/CD. Ver [guia-sdk-deployment.md](guia-sdk-deployment.md).

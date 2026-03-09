@@ -136,6 +136,131 @@ After teammates produce outputs, cross-review catches interface bugs:
 | Investigation | Bug report + hypothesis | Evidence report + confidence score |
 | Cross-Layer | API schema + data models | Implementation per layer |
 
+## Handoff Protocol
+
+Context loss is the #1 cause of multi-agent coordination failure. Structured handoffs prevent it. Every time a teammate finishes work and passes it to another, use one of these templates.
+
+### Standard Handoff (teammate → teammate)
+
+When a teammate completes a task and another teammate needs the results:
+
+```markdown
+## Handoff: {task-name}
+
+| Field | Value |
+|-------|-------|
+| **From** | {teammate-name} |
+| **To** | {teammate-name} |
+| **Task Reference** | {task ID from task list} |
+
+### Context
+- **Current state**: {what was completed, specific results}
+- **Relevant files**: {file paths with brief description of each}
+- **Dependencies**: {what this work depends on being complete}
+- **Constraints**: {technical or timeline constraints discovered}
+
+### Deliverable Request
+- **What is needed**: {specific, measurable deliverable}
+- **Acceptance criteria**:
+  - [ ] {criterion 1 — measurable}
+  - [ ] {criterion 2 — measurable}
+- **References**: {links to specs, design decisions, previous outputs}
+
+### Quality Expectations
+- **Must pass**: {specific quality criteria}
+- **Evidence required**: {what proof of completion looks like}
+```
+
+### QA Rejection Handoff (reviewer → implementer)
+
+When verification or review finds issues that need fixing:
+
+```markdown
+## QA Rejection: {task-name}
+
+| Field | Value |
+|-------|-------|
+| **Task** | {task ID} — {description} |
+| **Reviewer** | {reviewer-name} |
+| **Implementer** | {implementer-name} |
+| **Attempt** | {N} of 3 |
+
+### Issues Found
+
+**Issue 1**: {title}
+- **Category**: {lint / test / spec mismatch / security / docs}
+- **Severity**: {CRITICAL / HIGH / MEDIUM}
+- **Expected**: {what should happen}
+- **Actual**: {what actually happens}
+- **Fix instruction**: {specific and actionable — what to change, not just what's wrong}
+- **File(s)**: {exact paths to modify}
+
+{Repeat for each issue}
+
+### Retry Instructions
+- Fix ONLY the listed issues — do NOT introduce new changes
+- Re-submit when all issues are addressed
+- If attempt 3 fails → escalation (see below)
+```
+
+### Escalation Handoff (teammate → lead)
+
+When a task fails 3 attempts and needs lead intervention:
+
+```markdown
+## Escalation: {task-name}
+
+| Field | Value |
+|-------|-------|
+| **Task** | {task ID} — {description} |
+| **Attempts Exhausted** | 3/3 |
+| **Implementer** | {teammate-name} |
+| **Reviewer** | {teammate-name} |
+
+### Failure History
+- **Attempt 1**: {issues found} → {fixes applied} → {result}
+- **Attempt 2**: {issues found} → {fixes applied} → {result}
+- **Attempt 3**: {issues found} → {fixes applied} → {result}
+
+### Root Cause Analysis
+- **Why it keeps failing**: {pattern identified}
+- **Systemic issue?**: {yes/no — does this point to a deeper problem?}
+
+### Recommended Resolution
+Pick ONE:
+- [ ] **Reassign** to a different teammate with different expertise
+- [ ] **Decompose** into smaller sub-tasks: {proposed breakdown}
+- [ ] **Revise approach** — the design decision may need rethinking
+- [ ] **Accept with limitations** — document what doesn't work and why
+- [ ] **Defer** to a future change — remove from current scope
+
+### Impact
+- **Blocked tasks**: {task IDs that depend on this one}
+- **Timeline impact**: {how this affects the overall delivery}
+```
+
+### Handoff Readiness Checklist
+
+Before sending ANY handoff, the sender MUST verify:
+
+```
+HANDOFF READINESS:
+├── All acceptance criteria from MY contract are met
+├── Files I OWN are in a clean state (no partial implementations)
+├── My output is documented (not just "it works" — what exactly was done)
+├── Context the receiver needs is explicitly stated (not assumed)
+└── If I found issues outside my scope, they are noted in the handoff
+```
+
+### When to Use Each Template
+
+| Situation | Template |
+|-----------|----------|
+| Task complete, passing to next teammate | Standard Handoff |
+| Review/verify rejects implementation | QA Rejection |
+| 3 failed attempts on same task | Escalation |
+| Lead assigns initial work | Use Contract-First Protocol (above) — not a handoff |
+
 ## Composition Patterns
 
 **Pattern A: SDD Pipeline Team**

@@ -7,7 +7,7 @@ metadata:
   author: Batuta
   version: "1.0"
   created: 2025-06-01
-  scope: [pipeline]
+  scope: [pipeline, infra]
   auto_invoke: "Implementing task batches, /sdd-apply"
   platforms: [claude, antigravity]
 allowed-tools: Read Edit Write Glob Grep Bash

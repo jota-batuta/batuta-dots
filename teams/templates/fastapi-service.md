@@ -18,8 +18,8 @@
 
 | Teammate | Scope Agent | Responsabilidad | Archivos Propios |
 |----------|-------------|-----------------|------------------|
-| `api-dev` | pipeline-agent | Rutas, servicios, modelos Pydantic, logica de negocio | `features/*/routes/**`, `features/*/services/**`, `features/*/models/**` |
-| `test-dev` | pipeline-agent | Suite de tests, fixtures, mocks, cobertura | `tests/**`, `conftest.py` |
+| `api-dev` | backend-agent (recomendado) o pipeline-agent | Rutas, servicios, modelos Pydantic, logica de negocio | `features/*/routes/**`, `features/*/services/**`, `features/*/models/**` |
+| `test-dev` | quality-agent (recomendado) o pipeline-agent | Suite de tests, fixtures, mocks, cobertura | `tests/**`, `conftest.py` |
 | `infra-dev` | infra-agent | Docker, CI/CD, migraciones Alembic, configuracion | `Dockerfile`, `docker-compose.yml`, `alembic/**`, `.github/**` |
 
 **Lead coordina**: `pyproject.toml`, `core/main.py`, `core/config.py`, `README.md`, integracion general.
@@ -146,5 +146,7 @@ Antes de crear el equipo, verifica que estos prerequisitos estan listos:
 - [ ] Requisitos de despliegue claros (Coolify, Docker standalone, Kubernetes)
 
 ---
+
+**Nota v13**: Los domain agents (backend-agent, quality-agent, data-agent) aportan expertise embebida de dominio. backend-agent trae conocimiento de FastAPI, autenticacion, y patrones de base de datos. quality-agent trae TDD, debugging sistematico, y seguridad. quality-agent esta disponible en todo proyecto.
 
 *Template basado en Pattern D (Cross-Layer) del team-orchestrator. Ajusta la composicion si tu servicio no necesita infra dedicada (por ejemplo, un servicio interno puede prescindir de `infra-dev`).*

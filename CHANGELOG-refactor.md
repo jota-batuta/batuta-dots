@@ -4,6 +4,111 @@
 
 ---
 
+## v13.1.0 — Agent SDK Skill (2026-03-09)
+
+### Contexto
+
+Claude Agent SDK matured enough for dedicated skill support. Projects using `claude_agent_sdk` or `@anthropic-ai/claude-agent-sdk` now get specialized guidance auto-provisioned.
+
+### Changes
+
+- **NEW** `claude-agent-sdk` skill — patterns for `setting_sources`, `defer_loading`, hooks mapping, CI/CD deployment
+- **NEW** `docs/guides/guia-sdk-deployment.md` — complete deployment guide (Python + TypeScript)
+- **MODIFIED** `skill-provisions.yaml` — detection rule for Agent SDK dependencies
+- **MODIFIED** `CLAUDE.md` — added `claude-agent-sdk` to Specialist Skills table
+
+### Rollback
+
+```bash
+git revert <commit-hash>  # Removes claude-agent-sdk skill and SDK deployment guide
+# Projects without Agent SDK dependencies are unaffected
+```
+
+---
+
+## v13.0.0 — Agents Architecture Evolution (2026-03-09)
+
+### Contexto
+
+Evolved from 3 scope agents (document-only) to 6 agents (3 scope + 3 domain) with dual-purpose format: Claude Code reference documents AND SDK-deployable AgentDefinitions. Domain agents are provisioned to projects based on tech detection — batuta-dots is a factory of factories.
+
+### Changes
+
+#### Skill Eval Framework
+- **NEW** `skill-eval` skill — 3 modes: Eval (behavioral test), Improve (propose edits), Benchmark (health report)
+- **NEW** `SKILL.eval.yaml` format — behavioral test cases with quality_criteria and anti_criteria
+- **NEW** `/skill:eval` and `/skill:benchmark` commands
+- **NEW** 3 pilot evals: ecosystem-creator, sdd-apply, scope-rule
+- **MODIFIED** `ecosystem-creator/SKILL.md` Step 5.5 — structured eval invocation
+
+#### SDK-Deployable Agents
+- **MODIFIED** `pipeline-agent.md` — added `sdk:` block (model, max_tokens, allowed_tools, setting_sources, defer_loading)
+- **MODIFIED** `infra-agent.md` — added `sdk:` block
+- **MODIFIED** `observability-agent.md` — added `sdk:` block
+- **NEW** `agent-sdk-template.md` — template for SDK-deployable agents
+
+#### Domain Agents
+- **NEW** `backend-agent.md` — provisioned when backend frameworks detected (fastapi|django|express|nestjs)
+- **NEW** `quality-agent.md` — always provisioned, AI Validation Pyramid enforcement
+- **NEW** `data-agent.md` — provisioned when data/AI frameworks detected (pandas|langchain|anthropic)
+- **MODIFIED** `skill-provisions.yaml` — `always_agents` + `agent_rules` sections
+- **MODIFIED** `sdd-init/SKILL.md` — Step 3.9 Agent Provisioning
+- **MODIFIED** `ecosystem-creator/SKILL.md` — scope vs domain agent docs, sdk: block docs
+
+### Principio de diseno
+
+"Factory of factories" — domain agents live in the hub but are provisioned to projects. They carry embedded expertise (personality + patterns) plus skill pointers (loaded on-demand). The `sdk:` block enables programmatic deployment via Claude Agent SDK without changing the Claude Code experience.
+
+### Before/After
+
+| Aspect | v12 | v13 |
+|--------|-----|-----|
+| Agent count | 3 scope | 3 scope + 3 domain |
+| Agent format | Document-only | Document + SDK-deployable |
+| Agent provisioning | Global sync only | Global sync + tech-detected |
+| Skill testing | Manual RED-GREEN-REFACTOR | Structured skill-eval + SKILL.eval.yaml |
+| Skill count | 33 | 38 |
+
+### Rollback
+
+```bash
+git revert <commit-hash>  # Revert v13.0 commit
+# Domain agents removed, scope agents lose sdk: blocks
+# skill-eval skill removed, SKILL.eval.yaml files orphaned (safe to delete)
+# skill-provisions.yaml loses always_agents + agent_rules sections
+```
+
+---
+
+## v12.2.0 — Skill Classification & agentskills.io Validation (2026-03-09)
+
+### Contexto
+
+agentskills.io (launched December 2025) distinguishes two skill categories: Workflow (orchestrate multi-step processes) and Capability Uplift (teach domain expertise). batuta-dots was already a compliant superset of the spec, but lacked this classification. The March 2026 update added eval/benchmark tooling and a CLI validator (`skills-ref validate`). This version adopts the classification formally and adds optional CLI validation to the test suite.
+
+### Changes
+
+- **ecosystem-creator/assets/skill-template.md** — Added `metadata.category` field to template: `workflow | capability` (optional, defaults to `capability`)
+- **ecosystem-creator/SKILL.md:183-199** — New row in "Skill Frontmatter Fields" table documenting the `metadata.category` field with description and agentskills.io alignment
+- **ecosystem-lifecycle/SKILL.md:91-99** — New row in "Validate Frontmatter" table for optional `metadata.category` validation (defense-in-depth)
+- **setup_test.sh** — Two new test functions:
+  - `test_agentskills_cli_validation()`: runs `skills-ref validate` on all skills if CLI is installed, skips with instructions if not
+  - `test_skills_category_field_info()`: informational count of skills with category field (no fail — field is optional)
+
+### Principio de diseno
+
+- **Optional field, progressive adoption**: Existing 33 skills do not need immediate updates. The field defaults to `capability` when absent. Backfill is a separate future commit.
+- **External CLI is optional dependency**: `skills-ref` is not required — tests skip gracefully with install instructions.
+
+### Rollback
+
+```bash
+git revert <commit-hash>  # Removes category field from template and tables
+# No existing skills are affected — field was optional
+```
+
+---
+
 ## v12.1.0 — Deterministic Rules, Mandatory Gates & Session Budget (2026-02-26)
 
 ### Contexto

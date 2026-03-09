@@ -19,8 +19,8 @@
 | Teammate | Scope Agent | Responsabilidad | Archivos Propios |
 |----------|-------------|-----------------|------------------|
 | `workflow-dev` | pipeline-agent | Workflows, signal handlers, queries, workflow tests | `features/*/workflows/**` |
-| `activity-dev` | pipeline-agent | Activities de negocio, modelos de datos, logica de dominio | `features/*/activities/**`, `features/*/models/**` |
-| `api-dev` | pipeline-agent | API de control (iniciar workflows, consultar estado), health checks | `features/*/api/**`, `core/main.py` |
+| `activity-dev` | backend-agent (recomendado) o pipeline-agent | Activities de negocio, modelos de datos, logica de dominio | `features/*/activities/**`, `features/*/models/**` |
+| `api-dev` | backend-agent (recomendado) o pipeline-agent | API de control (iniciar workflows, consultar estado), health checks | `features/*/api/**`, `core/main.py` |
 | `infra-dev` | infra-agent | Docker, docker-compose (Temporal server + workers), configuracion | `Dockerfile`, `docker-compose.yml`, `core/config.py` |
 
 **Lead coordina**: `requirements.txt`/`pyproject.toml`, `core/database.py`, `core/temporal_client.py`, `README.md`, integracion general.
@@ -171,5 +171,7 @@ Antes de crear el equipo, verifica que estos prerequisitos estan listos:
 - [ ] Requisitos de Docker claros (Temporal server, worker, API)
 
 ---
+
+**Nota v13**: Los domain agents (backend-agent, quality-agent, data-agent) aportan expertise embebida de dominio. backend-agent es recomendado para `activity-dev` y `api-dev` porque trae expertise en FastAPI, auth, y patrones de base de datos. quality-agent esta disponible en todo proyecto.
 
 *Template basado en Pattern D (Cross-Layer) del team-orchestrator. La composicion incluye `infra-dev` porque Temporal requiere infraestructura dedicada (server + workers). Para aplicaciones que usan Temporal Cloud en vez de self-hosted, `infra-dev` puede simplificarse.*

@@ -362,6 +362,70 @@ Show the user what was provisioned (non-interactive — no approval needed per s
 > To add MCPs later: Phase 3.5 cross-references tech_rules with mcps fields automatically.
 ```
 
+### Step 3.9: Agent Provisioning (v13)
+
+After skill provisioning (Step 3.8), provision agents from the same `skill-provisions.yaml`.
+
+Agents are domain specialists with embedded expertise. Unlike skills (which provide patterns and templates), agents carry coordination-level knowledge and team context for Agent Teams.
+
+#### Phase 1 — Always Agents
+
+```
+1. Read `always_agents` from skill-provisions.yaml
+2. For each agent in the list:
+   a. Source: ~/.claude/agents/{agent-name}.md
+      (fallback: BatutaClaude/agents/{agent-name}.md if hub is available)
+   b. If source exists:
+      - Create .claude/agents/ directory if it does not exist
+      - Copy {agent-name}.md to .claude/agents/
+      - Log: "Provisioned agent: {agent-name} (always)"
+   c. If source NOT found:
+      - Log: "Agent '{agent-name}' not found in global library — skip"
+```
+
+#### Phase 2 — Technology-Detected Agents
+
+```
+1. Read `agent_rules` from skill-provisions.yaml
+2. For each rule:
+   a. Check detection signals (same logic as tech_rules in Step 3.8):
+      - content_pattern: grep dependency files for regex matches
+      - project_type: match against Step 1 detection
+   b. If ANY signal matches → collect rule's agents[]
+3. Deduplicate against already-provisioned agents (from Phase 1)
+4. For each matched agent:
+   a. Copy from ~/.claude/agents/ (or hub fallback) to .claude/agents/
+   b. Log: "Provisioned agent: {agent-name} (detected: {technology})"
+```
+
+#### Phase 3 — Update Provisions Manifest
+
+Update `.claude/skills/.provisions.json` to include provisioned agents:
+
+```json
+{
+  "skills": ["...existing skills..."],
+  "agents": [
+    {"agent": "pipeline-agent", "source": "global", "provisioned_at": "2026-03-09", "reason": "always"},
+    {"agent": "quality-agent", "source": "global", "provisioned_at": "2026-03-09", "reason": "always"},
+    {"agent": "backend-agent", "source": "global", "provisioned_at": "2026-03-09", "reason": "detected: fastapi"},
+    {"agent": "data-agent", "source": "global", "provisioned_at": "2026-03-09", "reason": "detected: langchain"}
+  ]
+}
+```
+
+#### Phase 4 — Present Summary
+
+Append agent provisioning to the Step 3.8 summary:
+
+```markdown
+**Agents provisioned ({count})**:
+- **Always**: pipeline-agent, infra-agent, observability-agent, quality-agent
+- **Tech-matched**: {list of domain agents} (detected: {technologies})
+
+> To add agents later: `sdd-explore` Skill Gap Detection can also identify missing domain agents.
+```
+
 ### Step 4: Return Summary
 
 Return a structured summary:

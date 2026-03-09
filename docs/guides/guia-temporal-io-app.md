@@ -464,3 +464,9 @@ Anota tus resultados reales cuando ejecutes cada paso. Eso mejora el sistema.
 > **Recuerda**: No necesitas entender COMO funciona Temporal por dentro.
 > Solo necesitas describir los pasos de tu proceso, y Claude se encarga del resto.
 > Como aprender a manejar: primero sigues las instrucciones, despues lo haces naturalmente.
+
+---
+
+## Deployment Programatico
+
+Este tipo de proyecto puede deployarse via Agent SDK para automatizacion CI/CD. Ver [guia-sdk-deployment.md](guia-sdk-deployment.md).

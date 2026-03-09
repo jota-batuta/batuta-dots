@@ -269,6 +269,68 @@ Identify the solution type from design.md and apply additional checks:
 
 Report solution type and additional checks in the verification report under a "Solution Type Testing" section.
 
+### Step 4.9: Reality Check Protocol
+
+**Principle**: Default to NEEDS WORK. The burden of proof is on the implementation, not the verifier. First iterations typically need 2-3 revision cycles — a C+/B- rating is normal and acceptable. A+ requires extraordinary evidence.
+
+Before moving to documentation verification, run these five adversarial questions. Each challenges a different assumption that standard verification takes for granted:
+
+```
+REALITY CHECK (mandatory — never skip):
+
+├── Q1: "Is the spec itself correct?"
+│   ├── Re-read the original proposal.md
+│   ├── Compare proposal intent vs spec requirements
+│   ├── Does the spec capture what the user actually asked for, or was something lost in translation?
+│   └── Flag: WARNING if spec diverges from proposal intent
+│
+├── Q2: "Did we build what the user needs vs what we specified?"
+│   ├── Does the implementation solve the original problem (proposal), not just satisfy the spec?
+│   ├── Could a user use this and still be unsatisfied because the spec missed the point?
+│   └── Flag: WARNING if implementation is spec-correct but proposal-incomplete
+│
+├── Q3: "Is there scope creep?"
+│   ├── Does the implementation include features NOT in the spec or tasks?
+│   ├── Were files modified that weren't in the design's File Changes table?
+│   ├── Is there "improvement" code beyond what was requested?
+│   └── Flag: WARNING if scope grew beyond spec (even if the additions seem useful)
+│
+├── Q4: "Does this only work on the happy path?"
+│   ├── What happens with empty input? Null? Unexpected types?
+│   ├── What happens under concurrent access, high load, or network failure?
+│   ├── Do error paths return meaningful feedback, or silently fail?
+│   ├── Are there scenarios the tests DON'T cover that a real user would trigger?
+│   └── Flag: WARNING if golden-path bias detected, CRITICAL if error paths are unhandled
+│
+└── Q5: "Is the evidence real or self-reported?"
+    ├── Were tests actually RUN (not just "tests exist")?
+    ├── Were linting results from this session (not cached/stale)?
+    ├── Do pass/fail claims match actual tool output?
+    ├── Are there "PASS" verdicts on layers that were never executed?
+    └── Flag: CRITICAL if evidence is fabricated or assumed, WARNING if evidence is stale
+```
+
+**Automatic Fail Triggers** — if ANY of these appear in the verification, escalate to CRITICAL:
+
+- "Zero issues found" claim without comprehensive evidence
+- Perfect scores (100%, all-PASS) on a first implementation
+- "Production ready" verdict when Pyramid Layers 1-3 were not all executed
+- Claims that contradict actual tool output (e.g., "tests pass" when test runner reported failures)
+- PASS on a layer that was marked SKIP
+
+**Integration with report**: Include Reality Check results as a new section in the verification report, between "Testing Detail" and "Documentation Verification":
+
+```markdown
+### Reality Check
+| Question | Verdict | Notes |
+|----------|---------|-------|
+| Spec correctness | PASS / WARNING | {details} |
+| User need alignment | PASS / WARNING | {details} |
+| Scope creep | PASS / WARNING | {details} |
+| Happy-path bias | PASS / WARNING / CRITICAL | {details} |
+| Evidence authenticity | PASS / WARNING / CRITICAL | {details} |
+```
+
 ### Step 5: Documentation Verification
 
 Verify that ALL documentation promised or implied during the design phase was actually created or updated. Documentation is a first-class deliverable, not an afterthought.

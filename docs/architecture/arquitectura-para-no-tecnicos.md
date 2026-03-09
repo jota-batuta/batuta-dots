@@ -49,7 +49,7 @@ Cada **skill** es una receta especifica. Por ejemplo:
 | `temporal-worker` | Como cocinar platos que llevan muchos pasos y pueden fallar |
 | `nextjs-portal` | Como montar el plato para que se vea bonito (la cara que ve el cliente) |
 
-El chef tiene **22 recetas basicas** que siempre estan disponibles (incluyendo 6 recetas de estrategia CTO), y puede **aprender recetas nuevas** cuando las necesita.
+El chef tiene **38 recetas** que siempre estan disponibles (incluyendo 6 recetas de estrategia CTO y 12 recetas tecnicas), y puede **aprender recetas nuevas** cuando las necesita.
 
 **Detalle importante**: Las recetas NO se leen todas al empezar. El chef solo abre la
 receta que necesita para el plato que esta preparando. Esto se llama "carga bajo demanda"
@@ -236,7 +236,7 @@ vuelve con un reporte. El chef principal nunca toca una olla.
 
 ---
 
-## Los Jefes de Area (Scope Agents)
+## Los Jefes de Area y Especialistas (Scope + Domain Agents)
 
 Pero el chef principal no le habla directamente a cada sub-chef. Tiene **jefes de area**
 que coordinan grupos de sub-chefs:
@@ -249,12 +249,21 @@ que coordinan grupos de sub-chefs:
 
 Los sub-chefs (skills) se asignan automaticamente a cada jefe de area basandose en su descripcion — no hace falta asignarlos manualmente.
 
+Ademas de los 3 jefes de area (pipeline, infra, observability) que manejan la cocina central, ahora hay 3 **especialistas** (backend, quality, data) que se envian a las sucursales segun lo que cocinen. Los jefes de area siempre estan en la cocina central; los especialistas viajan a donde se necesiten.
+
+| Especialista | Que hace |
+|-------------|---------|
+| **Chef de linea** (backend-agent) | El chef de linea — sabe cocinar platos salados (APIs, autenticacion, bases de datos) |
+| **Inspector de calidad** (quality-agent) | El inspector de calidad — revisa que cada plato cumpla estandares antes de servirse (siempre presente) |
+| **Sous chef de reposteria** (data-agent) | El sous chef de reposteria — especialista en datos, transformaciones y recetas con IA |
+
 El chef principal SOLO decide a que jefe de area pasarle el pedido. El jefe de area
-decide cuales sub-chefs necesita y los coordina.
+decide cuales sub-chefs y especialistas necesita y los coordina.
 
 **Por que es mejor asi?** Porque el chef principal no necesita recordar todos los recetarios.
-Solo necesita saber 3 numeros de telefono: el del jefe de cocina, el del jefe de almacen,
-y el del jefe de calidad. Cada jefe de area conoce en detalle las recetas de su area.
+Solo necesita saber 3 numeros de telefono (jefes de area) y asignar especialistas segun
+el tipo de cocina. Cada jefe de area conoce en detalle las recetas de su area, y cada
+especialista domina su tipo de plato.
 
 ---
 
@@ -284,6 +293,24 @@ de cocinar y uno que improvisa. El checklist previene errores ANTES de que ocurr
 
 ---
 
+## Probando las Recetas (Skill Eval) — v13
+
+Antes, probabas un plato una vez y confiabas en tu instinto. Ahora hay un **protocolo de degustacion**: le das la misma receta a dos cocineros (uno con el manual de estilo y otro sin el) y comparas los resultados. Si el que tiene el manual no produce algo notablemente mejor, el manual necesita mejorar.
+
+Esto es lo que hace el sistema de evaluacion de recetas (skill-eval). Tiene 3 modos:
+
+| Modo | Que hace | Analogia |
+|------|---------|----------|
+| **Evaluar** | Ejecuta una tarea con la receta y califica el resultado | Un juez de cocina prueba el plato y le pone nota segun criterios claros |
+| **Mejorar** | Lee los resultados de la evaluacion y propone cambios a la receta | El juez le dice al chef: "la sal esta bien, pero le falta acido — agrega limon en el paso 3" |
+| **Benchmark** | Evalua MUCHAS recetas al mismo tiempo y genera un reporte de salud | Una auditoria general de la cocina: cuales recetas son excelentes, cuales necesitan trabajo |
+
+El protocolo de degustacion usa un formato especial (SKILL.eval.yaml) que define: que criterios de calidad tiene cada receta, que tareas de prueba se usan, y como se califica. Es como tener una ficha de degustacion estandar para todo el restaurante.
+
+**Por que esto importa**: Antes solo sabias si una receta era buena por intuicion. Ahora tienes datos: "esta receta mejora la calidad del plato en un 35% comparado con cocinar sin ella". Si una receta no aporta valor medible, se mejora o se retira.
+
+---
+
 ## El Inventario Automatico (Sync)
 
 Imagina que cada vez que un chef agrega una receta nueva al libro, el sistema
@@ -292,6 +319,8 @@ automaticamente actualiza:
 2. La lista de recetas de cada jefe de area (para los sub-chefs)
 
 Nadie tiene que recordar hacerlo. Es automatico.
+
+El inventario automatico ahora tambien asigna especialistas (agents) segun lo que el proyecto necesite cocinar. Cuando se inicializa un proyecto (`sdd-init`), el sistema detecta que tipo de cocina se va a hacer (APIs, datos, IA) y envia a los especialistas correspondientes. El inspector de calidad (quality-agent) siempre se asigna — porque la calidad no es opcional.
 
 Ademas, `setup.sh --all` tambien instala las **alarmas automaticas** (hooks) que
 hacen que el checklist y la bitacora funcionen automaticamente.
@@ -551,7 +580,8 @@ Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
 |-----|---------|---------|
 | **Dueno del restaurante** | Tu (el usuario) | Decides que platos ofrecer, apruebas propuestas |
 | **Chef principal (router)** | Claude Code + CLAUDE.md | Recibe pedidos y los pasa al jefe de area correcto. Nunca cocina. |
-| **Jefes de area** | Scope Agents (pipeline, infra, observability) | Coordinan a los sub-chefs de su area |
+| **Jefes de area** | Scope Agents (pipeline, infra, observability) | Coordinan a los sub-chefs de su area (siempre en la cocina central) |
+| **Especialistas** | Domain Agents (backend, quality, data) | Se envian a las sucursales segun lo que cocinen (quality siempre presente) |
 | **Sub-chefs** | Sub-agentes SDD | Hacen el trabajo pesado: investigar, disenar, cocinar, verificar |
 | **Recetas** | Skills (SKILL.md) | Instrucciones detalladas para cada plato/tecnologia |
 | **Organizacion de cocina** | Scope Rule | Donde va cada cosa |
@@ -572,6 +602,8 @@ Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
 | **Consultores especializados** | 6 skills CTO (v10) | Procesos, IA, datos, infra, compliance |
 | **Cocina rapida** | Antigravity Lite (v11.2) | Segunda cocina para brainstorming y prototipado rapido, con el mismo recetario |
 | **Libro maestro compartido** | batuta-dots hub (v11.0) | Todas las recetas en un solo lugar, sincronizadas entre ambas cocinas |
+| **Protocolo de degustacion** | skill-eval (v13) | Evalua recetas con criterios medibles, propone mejoras, audita el ecosistema |
+| **Instructivo de franquicia** | SDK Deployment (v13) | Ficha tecnica en cada agent para desplegar sucursales automaticamente via CI/CD |
 
 ---
 
@@ -667,6 +699,20 @@ Es como la diferencia entre un albanil que trabaja con lo que tiene en el bolsil
 ### Review en 2 etapas — Como una revision de planos
 
 Un arquitecto diseña los planos, pero antes de construir: un ingeniero estructural verifica que cumple con las normas (revision de spec), y un inspector de calidad verifica que los materiales son correctos (revision de calidad). Solo cuando ambos aprueban, se construye. En Batuta v11.0, las tareas complejas pasan por esta misma doble revision automatica.
+
+---
+
+## El Instructivo de Franquicia (SDK Deployment) — v13
+
+Ademas de coordinar en la cocina, los jefes de area y especialistas ahora tienen un manual que permite **abrir sucursales automaticamente**. El bloque `sdk:` es como un instructivo de franquicia que un programa de computadora puede leer para replicar al equipo.
+
+Antes, los jefes de area y especialistas solo existian dentro de la cocina principal (tu sesion de Claude Code). Ahora, cada uno tiene una ficha tecnica (`sdk:`) que dice exactamente:
+- Que modelo de chef usar (como decir "necesito un chef nivel senior")
+- Cuanto presupuesto tiene (maximo de tokens)
+- Que herramientas puede usar (cuchillos, horno, batidora)
+- De donde leer su configuracion (que manuales consultar)
+
+Esto permite que un sistema automatizado (CI/CD) lea esa ficha y despliegue al especialista como un servicio independiente — sin que un humano tenga que configurar nada manualmente. Es la diferencia entre abrir una sucursal contratando uno por uno vs tener un manual de franquicia que replica todo el equipo automaticamente.
 
 ---
 

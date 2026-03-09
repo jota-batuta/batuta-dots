@@ -2,7 +2,7 @@
 
 ## La version corta
 
-Batuta Dots es un ecosistema que convierte a Claude Code (un asistente de IA) en tu equipo completo de desarrollo de software. En vez de un asistente generico que responde preguntas, tienes un **CTO virtual** con 33 especialidades, un proceso de trabajo profesional, y la capacidad de construir software real desde una idea hasta un producto funcionando.
+Batuta Dots es un ecosistema que convierte a Claude Code (un asistente de IA) en tu equipo completo de desarrollo de software. En vez de un asistente generico que responde preguntas, tienes un **CTO virtual** con 38 especialidades, un proceso de trabajo profesional, y la capacidad de construir software real desde una idea hasta un producto funcionando.
 
 ---
 
@@ -12,7 +12,7 @@ Imagina que vas a abrir un restaurante. Podrias hacerlo tu solo — cocinar, ser
 
 Ahora imagina que tienes:
 - Un **chef ejecutivo** que disena el menu (el CTO, que es Batuta)
-- **Cocineros especializados** — uno para entradas, otro para platos fuertes, otro para postres (los 33 skills)
+- **Cocineros especializados** — uno para entradas, otro para platos fuertes, otro para postres (los 38 skills)
 - Un **maitre** que coordina el servicio (el pipeline SDD)
 - **Inspectores de calidad** que revisan cada plato antes de servir (los gates y la validacion)
 - Un **manual de operaciones** que documenta cada receta (las especificaciones)
@@ -22,11 +22,11 @@ Batuta Dots funciona igual, pero para software:
 | Restaurante | Batuta Dots | Que hace |
 |------------|------------|---------|
 | Chef ejecutivo | CLAUDE.md (personalidad CTO) | Define las reglas, el tono, y la filosofia |
-| Cocineros | 33 skills especializados | Cada uno sabe hacer algo especifico muy bien |
+| Cocineros | 38 skills especializados | Cada uno sabe hacer algo especifico muy bien |
 | Maitre | Pipeline SDD (9 fases) | Coordina el orden: primero pensar, luego disenar, luego construir |
 | Inspectores | Gates (G0.5, G1, G2) | Verifican calidad antes de avanzar |
 | Recetas | Especificaciones (openspec/) | Documentan exactamente que se va a construir |
-| Personal de apoyo | 3 agentes (pipeline, infra, observability) | Manejan areas especificas del trabajo |
+| Personal de apoyo | 6 agentes (3 scope + 3 domain) | Coordinan areas del trabajo y aportan expertise especializado |
 
 ---
 
@@ -67,17 +67,23 @@ Empiezan con `/`. Son tu forma de comunicarte con el sistema:
 - `/sdd-verify` — Verifica que todo esta bien
 
 ### Los skills (lo que el sistema sabe hacer)
-Son 33 especialidades. Algunos se activan solos cuando el sistema detecta que los necesita:
+Son 38 especialidades. Algunos se activan solos cuando el sistema detecta que los necesita:
 - **sdd-explore** — Investigar y entender problemas
 - **security-audit** — Revisar seguridad
 - **process-analyst** — Mapear procesos complejos
-- Y 30 mas...
+- **skill-eval** — Verificar que los skills funcionan correctamente
+- Y 33 mas...
 
 ### Los agentes (quien coordina)
-Son 3 coordinadores, cada uno maneja un area:
+Son 3 coordinadores + 3 especialistas. Los coordinadores (scope agents) manejan la cocina — siempre estan presentes:
 - **Pipeline** — El flujo de trabajo (explorar → disenar → construir → verificar)
 - **Infra** — La organizacion de archivos y creacion de herramientas
 - **Observability** — El seguimiento y la calidad
+
+Los especialistas (domain agents) se envian a cada proyecto segun lo que cocina:
+- **Backend** — Expertise en APIs, bases de datos, y servicios
+- **Quality** — Testing, validacion, y buenas practicas (siempre presente)
+- **Data** — Pipelines de datos, ETL, y procesamiento
 
 ### El pipeline SDD (como se trabaja)
 9 fases que van desde "tengo una idea" hasta "esta en produccion":

@@ -171,4 +171,6 @@ Antes de crear el equipo, verifica que estos prerequisitos estan listos:
 
 ---
 
+**Nota v13**: Los domain agents (backend-agent, quality-agent, data-agent) aportan expertise embebida de dominio. quality-agent puede asignarse a `integration-tester` para aprovechar expertise en TDD, debugging sistematico, y testing. quality-agent esta disponible en todo proyecto.
+
 *Template basado en Pattern A (SDD Pipeline, simplificado) del team-orchestrator. Para automatizaciones mas complejas con infraestructura dedicada (e.g., n8n auto-hosted con monitoreo), considera agregar un tercer teammate `infra-dev` y escalar a Pattern D.*

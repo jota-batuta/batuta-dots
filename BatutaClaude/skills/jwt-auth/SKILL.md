@@ -7,7 +7,7 @@ metadata:
   author: Batuta
   version: "1.0"
   created: "2026-02-23"
-  scope: [infra]
+  scope: [pipeline]
   auto_invoke: "Implementing JWT authentication, login/register endpoints"
   platforms: [claude, antigravity]
 allowed-tools: Read Glob Grep Write Edit

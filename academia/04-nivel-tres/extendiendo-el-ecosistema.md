@@ -29,6 +29,16 @@ El **ecosystem-creator** te guia paso a paso:
 
 Resultado: Un archivo `SKILL.md` en `~/.claude/skills/mi-nuevo-skill/`
 
+### Verificar que el skill funciona
+
+Despues de crear un skill, usa el framework de evaluacion para verificar que se activa correctamente y produce resultados de calidad:
+
+```
+/skill:eval mi-nuevo-skill
+```
+
+El **skill-eval** ejecuta tests comportamentales definidos en un archivo `SKILL.eval.yaml` — escenarios reales que verifican que el skill responde como esperamos. Si el skill no tiene eval, skill-eval te ayuda a crear uno.
+
 ### Ejemplo: crear skill para React Native
 
 ```
@@ -57,6 +67,10 @@ Los agentes coordinan skills. Crealos cuando:
 - Tienes 3+ skills que trabajan juntos en un dominio
 - Necesitas logica de coordinacion entre skills
 - Quieres encapsular un area de conocimiento
+
+Cada agente incluye un bloque `sdk:` en su template, que define como deployar el agente programaticamente via Claude Agent SDK. Esto permite que el agente funcione tanto dentro de Batuta como en pipelines de CI/CD automatizados.
+
+Si el agente es un **domain agent** (especialista en un dominio como backend o data), puedes registrarlo en la tabla de provisioning de `sdd-init` para que se copie automaticamente a proyectos que usen esa tecnologia.
 
 ---
 

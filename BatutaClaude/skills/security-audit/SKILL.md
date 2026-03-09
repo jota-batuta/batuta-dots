@@ -214,6 +214,68 @@ Use this template during **sdd-design** to identify security risks before implem
 Document conscious decisions to accept risk — these must be reviewed before deploy.}
 ```
 
+## STRIDE Threat Enumeration
+
+Complement the free-form Threat Model Template above with a systematic STRIDE analysis. STRIDE ensures no threat category is accidentally omitted by enumerating all six categories per system component.
+
+### Step 0: Data Flow Diagram (DFD)
+
+Before enumerating threats, identify the system's trust boundaries:
+
+```
+DFD MAPPING:
+├── List all External Actors (users, third-party APIs, webhooks)
+├── List all Processes (services, workers, APIs, LLM pipelines)
+├── List all Data Stores (databases, caches, file systems, queues)
+├── List all Data Flows between them (HTTP, gRPC, events, file I/O)
+├── Draw trust boundaries (public internet → API gateway → internal services → database)
+└── Each boundary crossing is a potential attack surface
+```
+
+### Step 1: STRIDE per Component
+
+For each component identified in the DFD, enumerate threats across all six categories:
+
+| Category | Question to Ask | What to Look For |
+|----------|----------------|-----------------|
+| **S**poofing | Can someone pretend to be this component? | Missing authentication, weak identity verification, token reuse |
+| **T**ampering | Can someone modify data in transit or at rest? | Unsigned payloads, missing HMAC/checksums, unencrypted storage |
+| **R**epudiation | Can someone deny performing an action? | Missing audit logs, mutable log storage, no non-repudiation controls |
+| **I**nfo Disclosure | Can someone access data they shouldn't? | Verbose errors, log leaks, missing encryption at rest, debug endpoints |
+| **D**enial of Service | Can someone make this unavailable? | No rate limiting, unbounded queries, missing connection pool limits, no circuit breakers |
+| **E**levation of Privilege | Can someone gain unauthorized access? | IDOR, role confusion, missing RBAC checks, insecure direct object references |
+
+### Step 2: STRIDE Analysis Template
+
+```markdown
+## STRIDE Analysis: {Change Title}
+
+### Trust Boundaries
+{DFD summary: actors → processes → data stores, with boundary markers}
+
+### Threats by Component
+
+| Component | Category | Threat | Risk | Mitigation | Status |
+|-----------|----------|--------|------|------------|--------|
+| {API Gateway} | Spoofing | Unauthenticated requests bypass auth | HIGH | JWT validation middleware on all routes | {TODO/DONE} |
+| {API Gateway} | DoS | Unbounded request rate exhausts resources | HIGH | Rate limiting (100 req/min per IP) + WAF | {TODO/DONE} |
+| {Database} | Tampering | SQL injection modifies data | CRITICAL | Parameterized queries only (see checklist #2) | {TODO/DONE} |
+| {Database} | Info Disclosure | Direct access to production data | HIGH | Network segmentation, encrypted at rest | {TODO/DONE} |
+| {User Actions} | Repudiation | User denies performing a transaction | MEDIUM | Immutable audit log with user ID + timestamp | {TODO/DONE} |
+| {Admin Panel} | Elevation | Regular user accesses admin functions | CRITICAL | RBAC middleware + session isolation + IDOR checks | {TODO/DONE} |
+| {Message Queue} | Tampering | Message payload modified in transit | MEDIUM | HMAC signatures on messages | {TODO/DONE} |
+| {LLM Pipeline} | Info Disclosure | System prompt leaked to user | HIGH | Separate system/user messages, output filtering | {TODO/DONE} |
+```
+
+### When to Use STRIDE vs Free-Form Threat Model
+
+| Scenario | Use |
+|----------|-----|
+| Quick security review (< 3 components) | Free-form Threat Model Template (above) |
+| Full feature with multiple trust boundaries | STRIDE Analysis (this section) |
+| sdd-design phase | STRIDE (comprehensive, catches gaps early) |
+| sdd-verify cross-layer check | Free-form checklist (faster, verification-focused) |
+
 ## Secrets Scanning Protocol
 
 Run before any commit or deploy:

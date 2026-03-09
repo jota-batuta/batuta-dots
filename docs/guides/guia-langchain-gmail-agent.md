@@ -551,3 +551,9 @@ Anota tus resultados reales para mejorar el sistema.
 > **Recuerda**: No necesitas entender COMO funciona la IA por dentro.
 > Solo necesitas describir que quieres que el agente haga, y Claude se encarga del resto.
 > Como aprender a manejar: primero sigues las instrucciones, despues lo haces naturalmente.
+
+---
+
+## Deployment Programatico
+
+Este tipo de proyecto puede deployarse via Agent SDK para automatizacion CI/CD. Ver [guia-sdk-deployment.md](guia-sdk-deployment.md).

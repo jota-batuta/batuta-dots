@@ -188,3 +188,9 @@ Si el agente reporta que la version local esta desactualizada, ejecuta `/batuta-
 | Antigravity Preview | Gratis | Gemini 3 Pro | Generoso (preview) |
 
 **Estrategia recomendada**: Usa ambos en paralelo. Claude Code para produccion seria que requiere arquitectura, SDD completo, y precision. Antigravity Lite para brainstorming, prototipado rapido, scripts, configs, docs, y tareas mecanicas. El ahorro no es en dinero (Antigravity es gratis) sino en **throughput** — mas cosas hechas al mismo tiempo.
+
+---
+
+## Deployment Programatico
+
+Este tipo de proyecto puede deployarse via Agent SDK para automatizacion CI/CD. Ver [guia-sdk-deployment.md](guia-sdk-deployment.md).

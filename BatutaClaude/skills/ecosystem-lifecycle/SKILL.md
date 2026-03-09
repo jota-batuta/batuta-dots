@@ -97,6 +97,7 @@ Check these required fields — flag any missing:
 | `allowed-tools` | Yes | Space-delimited (agentskills.io standard), non-empty |
 | `metadata.platforms` | Yes | `[claude]` or `[claude, antigravity]` (under metadata per agentskills.io) |
 | `metadata.version` | Yes | Semantic version string |
+| `metadata.category` | No | `workflow` or `capability` — recommended for v12+ skills (agentskills.io standard) |
 
 If tech-specific skill: verify entry exists in `sdd-init/assets/skill-provisions.yaml`.
 If missing, add the detection rule.

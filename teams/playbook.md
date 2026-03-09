@@ -86,19 +86,21 @@ Tu tarea modifica...
 
 ## Mejores Practicas por Tipo de Proyecto
 
-| Tipo de Proyecto | Nivel Recomendado | Template | Patron |
-|------------------|-------------------|----------|--------|
-| SaaS web app | Team (Level 3) | `nextjs-saas` | Cross-Layer (D) |
-| Microservicio API | Team o Subagent | `fastapi-service` | Cross-Layer (D) |
-| Automatizacion n8n | Subagent (Level 2) | `n8n-automation` | SDD Pipeline (A) |
-| AI Agent / Bot | Team (Level 3) | `ai-agent` | Investigation (C) |
-| Data pipeline | Team (Level 3) | `data-pipeline` | Cross-Layer (D) |
-| Refactoring legacy | Team (Level 3) | `refactoring` | SDD Pipeline (A) |
-| Bug fix aislado | Solo (Level 1) | N/A | N/A |
-| Documentacion | Solo (Level 1) | N/A | N/A |
-| CLI tool | Subagent (Level 2) | N/A | SDD Pipeline (A) |
+| Tipo de Proyecto | Nivel Recomendado | Template | Patron | Domain Agents Recomendados |
+|------------------|-------------------|----------|--------|---------------------------|
+| SaaS web app | Team (Level 3) | `nextjs-saas` | Cross-Layer (D) | quality-agent |
+| Microservicio API | Team o Subagent | `fastapi-service` | Cross-Layer (D) | backend-agent, quality-agent |
+| Automatizacion n8n | Subagent (Level 2) | `n8n-automation` | SDD Pipeline (A) | quality-agent |
+| AI Agent / Bot | Team (Level 3) | `ai-agent` | Investigation (C) | data-agent, quality-agent |
+| Data pipeline | Team (Level 3) | `data-pipeline` | Cross-Layer (D) | data-agent, quality-agent |
+| Refactoring legacy | Team (Level 3) | `refactoring` | SDD Pipeline (A) | quality-agent |
+| Bug fix aislado | Solo (Level 1) | N/A | N/A | N/A |
+| Documentacion | Solo (Level 1) | N/A | N/A | N/A |
+| CLI tool | Subagent (Level 2) | N/A | SDD Pipeline (A) | quality-agent |
 
 > Los templates viven en `teams/templates/{nombre}.md`. Si no existe el que necesitas, crea uno nuevo (ver seccion "Como Crear tu Propio Template").
+>
+> **Nota v13**: quality-agent esta disponible para cualquier equipo. backend-agent y data-agent aportan expertise de dominio especifica cuando el proyecto usa sus tecnologias.
 
 ---
 
@@ -145,9 +147,12 @@ Cuando ningun template existente aplica, crea uno siguiendo estos pasos:
 | Investigation | C | Necesitas explorar hipotesis en paralelo (debugging, research) |
 | Cross-Layer | D | El cambio cruza capas arquitectonicas (frontend, backend, infra) |
 
-### Paso 2: Define teammates con sus scope agents
+### Paso 2: Define teammates con sus scope o domain agents
 
-Lista cada teammate con: nombre, scope agent asignado (`pipeline-agent`, `infra-agent`, `observability-agent`), responsabilidad principal, y archivos propios.
+Lista cada teammate con: nombre, scope o domain agent asignado, responsabilidad principal, y archivos propios.
+
+**Scope agents** (disponibles en todo proyecto): `pipeline-agent`, `infra-agent`, `observability-agent`.
+**Domain agents** (provisionados por tech detection): `backend-agent`, `quality-agent`, `data-agent`. Los domain agents aportan expertise embebida de dominio — el teammate hereda conocimiento especializado del agente asignado.
 
 ### Paso 3: Escribe contratos input/output
 
@@ -203,6 +208,8 @@ Lead sintetiza: hallazgos, prioriza, asigna correcciones
 
 Regla de la Piramide: si la base esta rota (lint/types fallan), no se pasa a revision humana.
 
+**Con domain agents (v13)**: Los reviewers pueden usar `quality-agent` para aprovechar expertise embebida en TDD, debugging sistematico, y seguridad.
+
 ### Patron C: Investigation Team
 
 Para debugging complejo con multiples hipotesis.
@@ -226,6 +233,8 @@ infra-dev    → Docker, CI/CD, variables de entorno, despliegue
 
 Lead coordina: API contracts, puntos de integracion, cross-review
 ```
+
+**Con domain agents (v13)**: En proyectos backend, `backend-dev` puede usar `backend-agent` en vez de `pipeline-agent` para aprovechar expertise en FastAPI, auth, DB. En proyectos de datos/IA, el teammate de transformacion puede usar `data-agent` para expertise en pipelines LLM, RAG, embeddings.
 
 ---
 
@@ -273,4 +282,4 @@ La regla de oro: **si puedes hacerlo solo en menos de 5 minutos, no armes un equ
 
 ---
 
-*Playbook v1.0 — Basado en team-orchestrator v2.0 y lecciones del template nextjs-saas.*
+*Playbook v1.1 — Basado en team-orchestrator v2.0, lecciones del template nextjs-saas, y domain agents v13.*

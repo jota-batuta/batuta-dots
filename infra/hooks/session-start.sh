@@ -22,6 +22,11 @@
 
 set -euo pipefail
 
+# WORKAROUND: This hook uses $HOME directly (not resolve_home()) because hooks
+# always run in Git Bash context where $HOME is already /c/Users/<user>.
+# The resolve_home() function in setup.sh/sync.sh handles edge cases for scripts
+# that may be invoked from different shell contexts.
+
 # Read JSON from stdin (Claude Code hooks protocol)
 INPUT=$(cat)
 

@@ -14,6 +14,12 @@ skills:
   - sdd-verify
   - sdd-archive
 memory: project
+sdk:
+  model: claude-sonnet-4-6
+  max_tokens: 16384
+  allowed_tools: [Read, Edit, Write, Bash, Glob, Grep, Task, Skill, WebFetch, WebSearch]
+  setting_sources: [project]
+  defer_loading: true
 ---
 
 # Pipeline Agent — SDD Specialist

@@ -25,8 +25,8 @@
 
 | Teammate | Scope Agent | Responsabilidad | Archivos Propios |
 |----------|-------------|-----------------|------------------|
-| `agent-dev` | pipeline-agent | Logica del agente, tools, chains, memory | `features/agent/**`, `features/agent/tools/**`, `features/agent/chains/**` |
-| `prompt-engineer` | pipeline-agent | System prompts, few-shot examples, evaluacion | `features/agent/prompts/**`, `features/agent/evaluations/**` |
+| `agent-dev` | data-agent (recomendado) o pipeline-agent | Logica del agente, tools, chains, memory | `features/agent/**`, `features/agent/tools/**`, `features/agent/chains/**` |
+| `prompt-engineer` | data-agent (recomendado) o pipeline-agent | System prompts, few-shot examples, evaluacion | `features/agent/prompts/**`, `features/agent/evaluations/**` |
 | `security-reviewer` | infra-agent | Defensa contra prompt injection, manejo de PII, control de costos | `security/**` (solo reportes, no modifica codigo) |
 
 **Lead owns**: `main.py` / `index.ts`, archivos de configuracion, `README.md`, integracion final.
@@ -126,3 +126,7 @@ Antes de crear el equipo, el Lead verifica:
 - [ ] Presupuesto de costos establecido (max tokens por request, por dia)
 - [ ] Modelo de LLM seleccionado (Claude, GPT-4, Gemini — afecta diseyo de prompts)
 - [ ] Casos de prueba basicos escritos (minimo 5 conversaciones esperadas)
+
+---
+
+**Nota v13**: Los domain agents (backend-agent, quality-agent, data-agent) aportan expertise embebida de dominio. data-agent es el agente recomendado para `agent-dev` y `prompt-engineer` porque trae expertise en LLM pipelines, RAG, embeddings, y prompt engineering. quality-agent esta disponible en todo proyecto.

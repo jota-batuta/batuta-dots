@@ -66,6 +66,8 @@ What are you creating?
 | "The orchestrator needs a verification step for RLS" | **Sub-Agent** (`sdd-verify-rls`) |
 | "I want `/report:costs` to generate cost reports" | **Workflow** (`/report:costs`) |
 
+> **Scope Agents vs Domain Agents (v13)**: Scope agents (`pipeline-agent`, `infra-agent`, `observability-agent`) are hub machinery — they manage the SDD pipeline, file organization, and session continuity. Domain agents (`backend-agent`, `quality-agent`, `data-agent`) carry embedded expertise for a specific technical domain and are PROVISIONED to projects based on detected technologies. Scope agents are never provisioned (they live in the hub). Domain agents are always provisioned via `skill-provisions.yaml`. When creating a new agent, decide: is it hub machinery (scope) or project expertise (domain)?
+
 ---
 
 ## Naming Conventions
@@ -196,6 +198,7 @@ allowed-tools: Read Edit Write Glob Grep Bash
 | `metadata.mcp_source` | No | `"Context7"` / `"WebFetch"` / `"WebSearch"` / `"none"` — validation source. |
 | `metadata.validated_date` | No | ISO date of last validation (e.g., `"2026-02-26"`). |
 | `metadata.platforms` | Yes | Target platforms for distribution (e.g., `[claude, antigravity]`). Stored under `metadata` per agentskills.io standard. |
+| `metadata.category` | No | `workflow` or `capability`. Workflow skills orchestrate multi-step processes (e.g., sdd-explore, ecosystem-creator); capability skills uplift agent behavior for a specific domain (e.g., tdd-workflow, api-design). Defaults to `capability` if absent. Aligns with agentskills.io Workflow vs Capability Uplift distinction. |
 | `allowed-tools` | Yes | Space-delimited tool list (agentskills.io standard). Defines which tools the skill can use. Example: `Read Edit Write Glob Grep Bash`. |
 
 ### Skill Content Guidelines
@@ -255,6 +258,39 @@ Use the template from [assets/agent-template.json](assets/agent-template.json). 
   }
 }
 ```
+
+### Agent `sdk:` Block (v13 — Mandatory)
+
+Every agent MUST include an `sdk:` block in its YAML frontmatter. This block declares the agent's runtime configuration for the Claude Agent SDK:
+
+```yaml
+sdk:
+  model: claude-sonnet-4-6          # Model to use when spawning this agent
+  max_tokens: 16384                 # Max output tokens per response
+  allowed_tools: [Read, Edit, ...]  # Tools this agent can use
+  setting_sources: [project]        # Where to read settings from
+  defer_loading: true               # true = load on first use, false = load immediately
+```
+
+**Key decisions**:
+- `defer_loading: false` for agents that must be available immediately (quality-agent, observability-agent)
+- `defer_loading: true` for domain agents loaded only when their expertise is needed (backend-agent, data-agent)
+- `allowed_tools`: Scope to minimum required. Quality agents do not need WebFetch/WebSearch. Data agents do.
+
+### Domain Agent Pattern (v13 — "Thick Persona")
+
+Domain agents (`backend-agent`, `quality-agent`, `data-agent`) follow the "thick persona" pattern: they embed coordination-level domain knowledge directly in the agent body rather than deferring everything to skills.
+
+**What goes in the agent** (embedded expertise):
+- Decision trees and conventions that apply across ALL skills in the domain
+- Coordination rules for Agent Teams (own/coordinate/do-not-touch boundaries)
+- Quick-reference tables that the agent needs without loading a full skill
+
+**What stays in skills** (loaded on demand):
+- Detailed implementation patterns, code templates, step-by-step processes
+- Technology-specific configuration and commands
+
+The agent body should be 80-120 lines. If it grows beyond that, extract detailed patterns into a skill.
 
 ### Agent System Prompt Guidelines
 
@@ -510,23 +546,25 @@ Skill Gap Detected: "{technology}" has no active skill
 │     Show: Proposed skill scope (project vs global)
 │     ASK: "¿Apruebas este skill o quieres ajustar algo?"
 │
-├─ 5.5. VALIDATE — RED-GREEN-REFACTOR for skills (Superpowers pattern)
-│     ├── RED: Run a representative task WITHOUT the skill loaded
-│     │   ├── Use a subagent (Task tool) with the skill NOT in context
-│     │   ├── Give it a task the skill should handle
-│     │   └── Document: what the agent does wrong or suboptimally
-│     ├── GREEN: Load the draft skill and re-run the SAME task
-│     │   ├── Use a subagent WITH the skill loaded
-│     │   ├── Give it the identical task
-│     │   └── Verify: the specific failures from RED are now corrected
-│     ├── REFACTOR: Test common rationalizations
-│     │   ├── "This is simple, I don't need the skill" → trigger still fires?
-│     │   ├── "I'll just do it quickly" → full process enforced?
-│     │   └── If bypassed → strengthen triggers or add enforcement rules
-│     └── Decision:
-│         ├── GREEN fixes RED → proceed to REGISTER
-│         ├── GREEN does NOT fix RED → revise skill, return to DRAFT
-│         └── SKIP if: pure reference skill or technology unavailable for testing
+├─ 5.5. VALIDATE — Skill Behavioral Testing
+│     If SKILL.eval.yaml exists in the skill directory:
+│     ├── Invoke skill-eval in eval mode for the new skill
+│     ├── PASS → proceed to REGISTER (Step 6)
+│     ├── FAIL → invoke skill-eval in improve mode
+│     │   ├── Review proposed edits with user
+│     │   ├── On approval: apply edits, re-run eval
+│     │   └── Loop until PASS or user decides to skip
+│     └── PARTIAL → document which cases pass/fail, proceed with warning
+│     If SKILL.eval.yaml does NOT exist:
+│     ├── Use legacy RED-GREEN-REFACTOR (manual subagent comparison)
+│     │   ├── RED: Run task WITHOUT skill, document failures
+│     │   ├── GREEN: Run task WITH skill, verify fixes
+│     │   └── REFACTOR: Test rationalization bypass scenarios
+│     └── Note: "Consider creating SKILL.eval.yaml for automated validation"
+│     Decision:
+│     ├── Eval PASS or GREEN fixes RED → proceed to REGISTER
+│     ├── Eval FAIL and improve exhausted → revise skill, return to DRAFT
+│     └── SKIP if: pure reference skill or technology unavailable for testing
 │
 └─ 6. REGISTER — Follow full Registration Checklist
       Destination: Based on SCOPE DECISION — project-local (.claude/skills/), global (~/.claude/skills/), or batuta-repo (BatutaClaude/skills/)

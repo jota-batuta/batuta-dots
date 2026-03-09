@@ -25,8 +25,8 @@
 
 | Teammate | Scope Agent | Responsabilidad | Archivos Propios |
 |----------|-------------|-----------------|------------------|
-| `pipeline-dev` | pipeline-agent | Logica ETL/ELT, transformaciones, scheduling | `features/ingestion/**`, `features/transformation/**`, `features/loading/**`, `core/scheduling/**` |
-| `data-validator` | pipeline-agent | Checks de calidad, validacion de esquemas, tests | `features/validation/**`, `tests/**`, `core/schemas/**` |
+| `pipeline-dev` | data-agent (recomendado) o pipeline-agent | Logica ETL/ELT, transformaciones, scheduling | `features/ingestion/**`, `features/transformation/**`, `features/loading/**`, `core/scheduling/**` |
+| `data-validator` | quality-agent (recomendado) o pipeline-agent | Checks de calidad, validacion de esquemas, tests | `features/validation/**`, `tests/**`, `core/schemas/**` |
 | `infra-dev` | infra-agent | Docker, configuracion de orquestador, almacenamiento | `Dockerfile`, `docker-compose.yml`, `infra/**` |
 
 **Lead owns**: `main.py` / `run.py`, configuracion global, `README.md`, integracion entre capas.
@@ -148,3 +148,7 @@ Antes de crear el equipo, el Lead verifica:
 - [ ] Orquestador seleccionado (Airflow, Prefect, cron, manual)
 - [ ] Datos de prueba preparados (incluir edge cases: nulls, duplicados, tipos incorrectos)
 - [ ] Volumen estimado (afecta decisiones de batch vs stream, timeouts, recursos)
+
+---
+
+**Nota v13**: Los domain agents (backend-agent, quality-agent, data-agent) aportan expertise embebida de dominio. data-agent es el agente recomendado para `pipeline-dev` porque trae expertise en ETL, pandas/polars, data quality, y pipelines de datos. quality-agent esta disponible en todo proyecto.

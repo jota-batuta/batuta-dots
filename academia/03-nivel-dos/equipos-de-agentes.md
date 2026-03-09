@@ -1,6 +1,6 @@
 # Equipos de agentes
 
-Ya conoces los 3 niveles: Solo, Subagente, y Agent Team. Aqui aprendes cuando y como usar cada uno para maximizar resultados.
+Ya conoces los 3 niveles: Solo, Subagente, y Agent Team. Con 6 agentes disponibles (3 scope + 3 domain), aqui aprendes cuando y como usar cada uno para maximizar resultados.
 
 ---
 
@@ -34,6 +34,7 @@ Nueva tarea llega
               +-- No (archivos diferentes)
               |     -> NIVEL 3 (Agent Team)
               |     Ejemplo: frontend + backend + BD
+              |     Domain agents como teammates especializados
               |
               +-- Si (mismos archivos)
                     -> NIVEL 2 (subagentes secuenciales)
@@ -48,13 +49,13 @@ Nueva tarea llega
 
 Para implementar una feature completa:
 
-| Teammate | Fase | Tarea |
-|----------|------|-------|
-| researcher | explore + propose | Investigar y proponer |
-| architect | spec + design | Especificar y disenar |
-| implementor-1 | apply batch 1 | Implementar backend |
-| implementor-2 | apply batch 2 | Implementar frontend |
-| reviewer | verify | Verificar todo |
+| Teammate | Fase | Tarea | Domain Agent opcional |
+|----------|------|-------|---------------------|
+| researcher | explore + propose | Investigar y proponer | — |
+| architect | spec + design | Especificar y disenar | backend-agent o data-agent |
+| implementor-1 | apply batch 1 | Implementar backend | backend-agent |
+| implementor-2 | apply batch 2 | Implementar frontend | — |
+| reviewer | verify | Verificar todo | quality-agent |
 
 ### Patron B: Revision Paralela (Piramide)
 
@@ -81,11 +82,14 @@ Para debugging complejo:
 
 Para cambios que cruzan capas:
 
-| Teammate | Capa | Archivos |
-|----------|------|----------|
-| backend-dev | API | Routes, services |
-| frontend-dev | UI | Components, pages |
-| infra-dev | Deploy | Docker, CI/CD |
+| Teammate | Capa | Archivos | Domain Agent |
+|----------|------|----------|-------------|
+| backend-dev | API | Routes, services | backend-agent |
+| frontend-dev | UI | Components, pages | — |
+| infra-dev | Deploy | Docker, CI/CD | — |
+| quality-dev | Tests | E2E, integration | quality-agent |
+
+Los domain agents aportan expertise de dominio al equipo — en vez de un agente generico, el equipo tiene un especialista. Por ejemplo, backend-agent sabe de patrones FastAPI y JWT, mientras que data-agent conoce ETL y pipelines de datos.
 
 ---
 
@@ -113,7 +117,7 @@ Si un teammate intenta tocar archivos que no le pertenecen, el sistema lo detect
 | 2 | 1.2-1.5x | Tareas medianas, ganas velocidad |
 | 3 | 3-5x | Tareas complejas, ganas calidad y paralelismo |
 
-**Regla**: Si la tarea te tomaria mas de 2 horas en Nivel 1, probablemente vale Nivel 3.
+**Regla**: Si la tarea te tomaria mas de 2 horas en Nivel 1, probablemente vale Nivel 3. Los domain agents no agregan costo extra — son expertise embebido, no agentes adicionales.
 
 ---
 

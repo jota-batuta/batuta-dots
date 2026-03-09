@@ -1,6 +1,6 @@
 # Skills que tienes
 
-Batuta Dots tiene 33 skills — especialistas que se activan cuando los necesitas. El sistema los activa automaticamente, pero conocerlos te da poder para pedir exactamente lo que necesitas.
+Batuta Dots tiene 38 skills — especialistas que se activan cuando los necesitas. El sistema los activa automaticamente, pero conocerlos te da poder para pedir exactamente lo que necesitas.
 
 ---
 
@@ -41,7 +41,7 @@ Cada skill tiene un campo `description` en su archivo que empieza con "Use when.
 | **llm-pipeline-design** | Pipelines de IA | Clasificadores, prompts |
 | **worker-scaffold** | Workers y deploy | Temporal, Docker, Coolify |
 
-### Infraestructura (5 skills)
+### Infraestructura (7 skills)
 
 | Skill | Que hace | Comando |
 |-------|---------|---------|
@@ -50,6 +50,8 @@ Cada skill tiene un campo `description` en su archivo que empieza con "Use when.
 | **scope-rule** | Decide donde va cada archivo | Automatico |
 | **team-orchestrator** | Solo, subagente, o equipo | Automatico |
 | **security-audit** | OWASP, secrets, amenazas | En design/verify |
+| **skill-eval** | Tests comportamentales para skills (SKILL.eval.yaml) | `/skill:eval nombre` |
+| **claude-agent-sdk** | Patrones de deployment via Claude Agent SDK | Automatico |
 
 ### Patrones reutilizables (3 skills)
 
@@ -59,7 +61,7 @@ Cada skill tiene un campo `description` en su archivo que empieza con "Use when.
 | **jwt-auth** | Autenticacion JWT con bcrypt |
 | **sqlalchemy-models** | Modelos BD con relaciones |
 
-### Tecnologias y Metodologias (10 skills)
+### Tecnologias y Metodologias (13 skills)
 
 | Skill | Que hace |
 |-------|---------|
@@ -73,6 +75,9 @@ Cada skill tiene un campo `description` en su archivo que empieza con "Use when.
 | **message-queues** | Colas de mensajes (RabbitMQ, Redis, SQS) |
 | **ci-cd-pipeline** | Pipelines CI/CD (GitHub Actions, GitLab) |
 | **observability** | Monitoreo, logging, tracing, alertas |
+| **accessibility-audit** | Cumplimiento WCAG y accesibilidad web |
+| **performance-testing** | Load testing, benchmarks, y metricas de rendimiento |
+| **technical-writer** | Generacion de documentacion tecnica profesional |
 
 ---
 

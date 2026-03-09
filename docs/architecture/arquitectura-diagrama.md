@@ -1,4 +1,4 @@
-# Diagrama de Arquitectura — Ecosistema Batuta (v12.2)
+# Diagrama de Arquitectura — Ecosistema Batuta (v13)
 
 ## Vista General del Ecosistema
 
@@ -12,6 +12,12 @@ flowchart TB
         AG_PIPELINE["pipeline-agent.md"]
         AG_INFRA["infra-agent.md"]
         AG_OBS["observability-agent.md"]
+    end
+
+    subgraph DOMAIN_SRC["DOMAIN AGENTS (provisioned)"]
+        AG_BACKEND["backend-agent.md"]
+        AG_QUALITY["quality-agent.md"]
+        AG_DATA["data-agent.md"]
     end
 
     subgraph SETUP["SCRIPTS"]
@@ -38,6 +44,7 @@ flowchart TB
 
     CLAUDE_SRC --> SETUP_SH
     AGENTS_SRC --> SETUP_SH
+    DOMAIN_SRC --> SETUP_SH
     SETUP_SH -->|"--claude"| CLAUDE_GEN
     SETUP_SH -->|"--sync"| SKILLS_LOCAL
     SETUP_SH -->|"--sync"| COMMANDS_LOCAL
@@ -47,11 +54,12 @@ flowchart TB
     style GENERADO fill:#1a1a1a,stroke:#666,color:#999,stroke-dasharray: 5 5
     style SKILLS_LOCAL fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
     style COMMANDS_LOCAL fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style DOMAIN_SRC fill:#2d2d2d,stroke:#9B7AB8,color:#F5EDE4
 ```
 
 ---
 
-## Scope Agents: Routing del Agente Principal (v11.3)
+## Scope + Domain Agents: Routing del Agente Principal (v13)
 
 ```mermaid
 flowchart TD
@@ -60,10 +68,16 @@ flowchart TD
     AUTOROUTE["Auto-Routing<br/>Clasifica intent:<br/>Build | Fix | Continue | Backtrack | Question"]
     ROUTER["CLAUDE.md (Router)<br/>~220 lineas: personalidad,<br/>reglas, auto-routing"]
 
-    subgraph AGENTS["SCOPE AGENTS (skills auto-descubiertos por description)"]
+    subgraph SCOPE_AGENTS["SCOPE AGENTS (siempre cargados — maquinaria del hub)"]
         PIPELINE["pipeline-agent<br/>SDD State Machine<br/>(9 skills)"]
         INFRA["infra-agent<br/>Infraestructura<br/>(5 skills)"]
         OBS["observability-agent<br/>Ciclo de sesion<br/>(sin skills activos)"]
+    end
+
+    subgraph DOMAIN_AGENTS["DOMAIN AGENTS (provisionados por tech detection)"]
+        BACKEND["backend-agent<br/>API, auth, DB patterns"]
+        QUALITY["quality-agent<br/>TDD, debugging, security<br/>(siempre provisionado)"]
+        DATA["data-agent<br/>ETL, RAG, LLM pipelines"]
     end
 
     subgraph SKILLS["SKILLS (carga lazy)"]
@@ -82,9 +96,15 @@ flowchart TD
     AUTOROUTE -->|"Question"| DIRECT
     AUTOROUTE -->|"Quick fix"| GATE --> RESULT
     PIPELINE --> SDD
+    PIPELINE --> BACKEND
+    PIPELINE --> QUALITY
+    PIPELINE --> DATA
     INFRA --> ECO
     SDD --> RESULT
     ECO --> RESULT
+    BACKEND --> RESULT
+    QUALITY --> RESULT
+    DATA --> RESULT
 
     style ROUTER fill:#D4956A,color:#fff
     style BOOTSTRAP fill:#D47272,color:#fff
@@ -92,11 +112,16 @@ flowchart TD
     style PIPELINE fill:#7AAFC4,color:#fff
     style INFRA fill:#8BB87A,color:#fff
     style OBS fill:#9B7AB8,color:#fff
+    style SCOPE_AGENTS fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style DOMAIN_AGENTS fill:#2d2d2d,stroke:#9B7AB8,color:#F5EDE4
+    style BACKEND fill:#C4A47A,color:#fff
+    style QUALITY fill:#D47272,color:#fff
+    style DATA fill:#7AC4A4,color:#fff
     style DIRECT fill:#666,color:#fff
     style GATE fill:#E8B84D,color:#000
 ```
 
-> El agente principal es un **router** con **auto-routing**. Clasifica el intent del usuario (Build, Fix, Continue, Backtrack, Question) y delega automaticamente — el usuario no necesita escribir slash commands. Los comandos existen como override manual. Los skills son auto-descubiertos por Claude Code basandose en su campo `description`.
+> El agente principal es un **router** con **auto-routing**. Clasifica el intent del usuario (Build, Fix, Continue, Backtrack, Question) y delega automaticamente — el usuario no necesita escribir slash commands. Los comandos existen como override manual. Los skills son auto-descubiertos por Claude Code basandose en su campo `description`. Los **scope agents** siempre estan cargados (maquinaria del hub). Los **domain agents** se provisionan a cada proyecto segun su tech stack — excepto quality-agent que siempre esta presente.
 
 ---
 
@@ -126,18 +151,48 @@ flowchart LR
 
 ---
 
-### Flujo de Provisioning de Skills (v11.3)
+### Flujo de Provisioning de Skills y Agents (v13)
 
-```
-sdd-init → lee skill-provisions.yaml → detecta tech stack → copia skills relevantes a .claude/skills/
+```mermaid
+flowchart TD
+    INIT["sdd-init"]
+    READ["Lee skill-provisions.yaml"]
+    DETECT["Detecta tech stack"]
+
+    subgraph SKILLS_PROV["Provisioning de Skills"]
+        COPY_SKILLS["Copia skills relevantes<br/>a .claude/skills/"]
+    end
+
+    subgraph AGENTS_PROV["Provisioning de Agents"]
+        ALWAYS["always_agents:<br/>quality-agent<br/>(siempre provisionado)"]
+        RULES["agent_rules:<br/>backend-agent → Python|Node|Go<br/>data-agent → pandas|ETL|RAG|LLM"]
+        COPY_AGENTS["Copia agents relevantes<br/>a .claude/agents/ (proyecto)"]
+    end
+
+    MANIFEST[".provisions.json<br/>(skills + agents)"]
+
+    INIT --> READ --> DETECT
+    DETECT --> COPY_SKILLS
+    DETECT --> ALWAYS
+    DETECT --> RULES
+    ALWAYS --> COPY_AGENTS
+    RULES --> COPY_AGENTS
+    COPY_SKILLS --> MANIFEST
+    COPY_AGENTS --> MANIFEST
+
+    style SKILLS_PROV fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
+    style AGENTS_PROV fill:#2d2d2d,stroke:#9B7AB8,color:#F5EDE4
+    style ALWAYS fill:#D47272,color:#fff
+    style RULES fill:#E8B84D,color:#000
+    style MANIFEST fill:#7AAFC4,color:#fff
 ```
 
 session-start.sh usa logica 3-way:
-- `.provisions.json` existe → SOLO skills locales (proyecto provisionado)
+- `.provisions.json` existe → SOLO skills y agents locales (proyecto provisionado)
 - `.claude/skills/` sin manifest → locales + globales (backward compatible)
 - Sin skills locales → solo globales (backward compatible)
 
-> El provisioning permite que cada proyecto reciba exactamente los skills que necesita segun su tech stack, sin contaminar con skills irrelevantes. La logica 3-way garantiza compatibilidad hacia atras con proyectos existentes.
+> El provisioning permite que cada proyecto reciba exactamente los skills y agents que necesita segun su tech stack. `always_agents` garantiza que quality-agent este en todos los proyectos. `agent_rules` mapea tecnologias detectadas a domain agents especificos. La logica 3-way garantiza compatibilidad hacia atras con proyectos existentes.
 
 ---
 
@@ -219,7 +274,7 @@ graph LR
 
 ---
 
-## Carga Lazy de Skills (3 niveles)
+## Carga Lazy de Skills (4 niveles — v13)
 
 ```mermaid
 flowchart TD
@@ -227,24 +282,33 @@ flowchart TD
     READ["Nivel 1: Lee CLAUDE.md<br/>(~220 lineas: personalidad,<br/>reglas, scope routing table)"]
     TASK["Usuario pide tarea"]
     GATE["Execution Gate<br/>clasifica scope"]
-    LOAD_AGENT["Nivel 2: Carga scope-agent<br/>(~80-120 lineas:<br/>reglas del scope)"]
+    LOAD_AGENT["Nivel 2: Carga agent<br/>(scope o domain, ~80-120 lineas:<br/>reglas del scope/dominio)"]
     LOAD_SKILL["Nivel 3: Carga SKILL.md<br/>(~200-500 lineas:<br/>patrones especificos)"]
     WORK["Ejecuta la tarea"]
     SIMPLE{"Pregunta simple?"}
     DIRECT["Responde directo<br/>(sin routing)"]
 
+    subgraph SDK_LEVEL["Nivel 4: SDK Deployment"]
+        SDK_BLOCK["sdk: block en agent<br/>(model, max_tokens,<br/>allowed_tools, settings)"]
+        CI_CD["CI/CD lee sdk: block<br/>→ deploya agente como<br/>servicio independiente"]
+    end
+
     START --> READ --> TASK --> SIMPLE
     SIMPLE -->|"Si"| DIRECT
     SIMPLE -->|"No"| GATE --> LOAD_AGENT --> LOAD_SKILL --> WORK
+    LOAD_AGENT -.->|"deployment channel"| SDK_BLOCK --> CI_CD
 
     style READ fill:#D4956A,color:#fff
     style LOAD_AGENT fill:#7AAFC4,color:#fff
     style LOAD_SKILL fill:#8BB87A,color:#fff
     style GATE fill:#E8B84D,color:#000
     style DIRECT fill:#666,color:#fff
+    style SDK_LEVEL fill:#2d2d2d,stroke:#D47272,color:#F5EDE4
+    style SDK_BLOCK fill:#D47272,color:#fff
+    style CI_CD fill:#9B7AB8,color:#fff
 ```
 
-> Claude lee ~220 lineas al iniciar (Nivel 1). El scope agent agrega ~100 lineas (Nivel 2). El skill agrega ~200-500 lineas (Nivel 3). Solo se carga lo que se necesita.
+> Claude lee ~220 lineas al iniciar (Nivel 1). El agent (scope o domain) agrega ~100 lineas (Nivel 2). El skill agrega ~200-500 lineas (Nivel 3). Solo se carga lo que se necesita. El **Nivel 4** es un canal de deployment: el bloque `sdk:` en cada agent define model, max_tokens, allowed_tools y settings, permitiendo que CI/CD despliegue agentes como servicios independientes.
 
 ---
 
@@ -800,18 +864,19 @@ flowchart TD
 
 ---
 
-## Hub & Spoke: Sync Multi-Plataforma (v11.3)
+## Hub & Spoke: Sync Multi-Plataforma (v13)
 
 ```mermaid
 flowchart TD
     subgraph HUB["batuta-dots (HUB)"]
-        BC["BatutaClaude/<br/>skills/ (33)"]
-        BA["BatutaAntigravity/<br/>skills/ (32, filtrados)"]
+        BC["BatutaClaude/<br/>skills/ (38) + agents/ (6)"]
+        BA["BatutaAntigravity/<br/>skills/ (filtrados)"]
         SYNC["infra/sync.sh"]
     end
 
     subgraph SPOKE_CLAUDE["Proyecto A (Claude Code)"]
         PC_SKILLS["~/.claude/skills/"]
+        PC_AGENTS[".claude/agents/<br/>(domain agents provisionados)"]
         PC_LOCAL[".claude/skills/<br/>(proyecto-local)"]
         PC_ECO[".batuta/ecosystem.json"]
     end
@@ -822,6 +887,7 @@ flowchart TD
     end
 
     BC -->|"setup.sh --sync"| PC_SKILLS
+    BC -->|"sdd-init provisioning"| PC_AGENTS
     BC -->|"sync.sh --to-antigravity"| BA
     BA -->|"setup-antigravity.sh"| PA_SKILLS
 
@@ -835,13 +901,14 @@ flowchart TD
     style SPOKE_CLAUDE fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
     style SPOKE_ANTIGRAVITY fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
     style SYNC fill:#E8B84D,color:#000
+    style PC_AGENTS fill:#9B7AB8,color:#fff
 ```
 
-> batuta-dots es el **hub central**. Los proyectos y plataformas son **spokes**. Skills fluyen: spoke → hub → all spokes. `sync.sh --push` combina import + cross-sync + commit + push en un solo comando. El campo `platforms` en SKILL.md filtra que skills van a cada plataforma. `ecosystem.json` detecta drift de version.
+> batuta-dots es el **hub central**. Los proyectos y plataformas son **spokes**. Skills y agents fluyen: hub → spokes. Los proyectos reciben tanto skills como domain agents provisionados segun su tech stack. `sync.sh --push` combina import + cross-sync + commit + push en un solo comando. El campo `platforms` en SKILL.md filtra que skills van a cada plataforma. `ecosystem.json` detecta drift de version.
 
 ---
 
-## Folder Structure (v11.3)
+## Folder Structure (v13)
 
 ```mermaid
 flowchart TD
@@ -858,8 +925,8 @@ flowchart TD
 
     subgraph CLAUDE_DETAIL["BatutaClaude/"]
         CLAUDE_MD["CLAUDE.md (router)"]
-        AGENTS["agents/<br/>pipeline, infra, observability"]
-        SKILLS_33["skills/ (33 skills)<br/>pipeline (24: 9 SDD + 6 CTO + 9 tech),<br/>infra (8),<br/>observability (1)"]
+        AGENTS["agents/ (6 agents)<br/>Scope: pipeline, infra, observability<br/>Domain: backend, quality, data"]
+        SKILLS_38["skills/ (38 skills)<br/>pipeline (27: 9 SDD + 6 CTO + 12 tech),<br/>infra (9: +skill-eval),<br/>observability (2)"]
     end
 
     subgraph ANTIGRAVITY_DETAIL["BatutaAntigravity/ (Lite)"]
@@ -870,7 +937,7 @@ flowchart TD
 
     subgraph DOCS_DETAIL["docs/"]
         ARCH["architecture/<br/>diagrama, para-no-tecnicos"]
-        GUIDES["guides/<br/>13 guias de uso"]
+        GUIDES["guides/<br/>14 guias de uso"]
         QA["qa/<br/>auditorias, correcciones,<br/>tests integracion, smoke tests"]
     end
 
@@ -884,6 +951,95 @@ flowchart TD
     style DOCS_DETAIL fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
     style TEAMS fill:#E8B84D,color:#000
 ```
+
+---
+
+## Agent Types: Scope vs Domain (v13)
+
+```mermaid
+flowchart TD
+    subgraph SCOPE["SCOPE AGENTS (siempre cargados — maquinaria del hub)"]
+        direction TB
+        PIPELINE["pipeline-agent<br/>SDD lifecycle<br/>(explore → archive)"]
+        INFRA["infra-agent<br/>File/skill/agent creation<br/>(scope-rule, ecosystem-creator)"]
+        OBS["observability-agent<br/>Session continuity<br/>(session.md, hooks)"]
+    end
+
+    subgraph DOMAIN["DOMAIN AGENTS (provisionados a proyectos)"]
+        direction TB
+        BACKEND["backend-agent<br/>API, auth, DB patterns<br/>(provisionado: Python|Node|Go)"]
+        QUALITY["quality-agent<br/>TDD, debugging, security<br/>(siempre provisionado)"]
+        DATA["data-agent<br/>ETL, RAG, LLM pipelines<br/>(provisionado: pandas|ETL|RAG|LLM)"]
+    end
+
+    subgraph SDK["SDK DEPLOYABLE (todos los agents)"]
+        SDK_BLOCK["Bloque sdk: en frontmatter<br/>model, max_tokens,<br/>allowed_tools, setting_sources,<br/>defer_loading"]
+    end
+
+    SCOPE --> SDK_BLOCK
+    DOMAIN --> SDK_BLOCK
+
+    style SCOPE fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style DOMAIN fill:#2d2d2d,stroke:#9B7AB8,color:#F5EDE4
+    style SDK fill:#2d2d2d,stroke:#D47272,color:#F5EDE4
+    style PIPELINE fill:#7AAFC4,color:#fff
+    style INFRA fill:#8BB87A,color:#fff
+    style OBS fill:#9B7AB8,color:#fff
+    style BACKEND fill:#C4A47A,color:#fff
+    style QUALITY fill:#D47272,color:#fff
+    style DATA fill:#7AC4A4,color:#fff
+    style SDK_BLOCK fill:#D47272,color:#fff
+```
+
+> Los **scope agents** son la maquinaria del hub — siempre cargados, manejan el ciclo de vida SDD, la infraestructura y la continuidad de sesion. Los **domain agents** son especialistas provisionados a cada proyecto segun su tech stack. quality-agent es la excepcion: siempre se provisiona porque la calidad aplica a todo proyecto. Todos los agents (6 en total) tienen un bloque `sdk:` que permite desplegarlos como servicios independientes via CI/CD.
+
+---
+
+## Eval Flow: Skill Evaluation Framework (v13)
+
+```mermaid
+flowchart TD
+    subgraph EVAL_MODE["Eval Mode"]
+        direction LR
+        E_TASK["Tarea de prueba"]
+        E_EXEC["Executor<br/>(ejecuta tarea con skill)"]
+        E_GRADE["Grader<br/>(evalua quality_criteria<br/>de SKILL.eval.yaml)"]
+        E_REPORT["Eval Report<br/>(score + detalles)"]
+        E_TASK --> E_EXEC --> E_GRADE --> E_REPORT
+    end
+
+    subgraph IMPROVE_MODE["Improve Mode"]
+        direction LR
+        I_READ["Lee SKILL.md +<br/>resultados de eval"]
+        I_ANALYZE["Analyzer<br/>(identifica debilidades)"]
+        I_PROPOSAL["Proposal<br/>(ediciones especificas<br/>al SKILL.md)"]
+        I_READ --> I_ANALYZE --> I_PROPOSAL
+    end
+
+    subgraph BENCHMARK_MODE["Benchmark Mode"]
+        direction LR
+        B_ITER["Iterator<br/>(ejecuta eval para<br/>N skills)"]
+        B_COMPARE["Comparator<br/>(compara scores<br/>entre skills)"]
+        B_HEALTH["Health Report<br/>(estado del<br/>ecosistema)"]
+        B_ITER --> B_COMPARE --> B_HEALTH
+    end
+
+    EVAL_YAML["SKILL.eval.yaml<br/>(quality_criteria,<br/>test_tasks,<br/>grading_rubric)"]
+
+    EVAL_YAML --> E_EXEC
+    E_REPORT -.->|"alimenta"| I_READ
+    E_REPORT -.->|"alimenta"| B_ITER
+
+    style EVAL_MODE fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
+    style IMPROVE_MODE fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style BENCHMARK_MODE fill:#2d2d2d,stroke:#E8B84D,color:#F5EDE4
+    style EVAL_YAML fill:#D4956A,color:#fff
+    style E_GRADE fill:#8BB87A,color:#fff
+    style I_PROPOSAL fill:#7AAFC4,color:#fff
+    style B_HEALTH fill:#E8B84D,color:#000
+```
+
+> **Eval Mode**: ejecuta una tarea con y sin el skill, compara la calidad usando criterios definidos en SKILL.eval.yaml. **Improve Mode**: analiza los resultados del eval y propone ediciones concretas al SKILL.md para mejorar su efectividad. **Benchmark Mode**: corre eval para multiples skills y genera un reporte de salud del ecosistema. El formato SKILL.eval.yaml define quality_criteria, test_tasks y grading_rubric para testing conductual de skills.
 
 ---
 

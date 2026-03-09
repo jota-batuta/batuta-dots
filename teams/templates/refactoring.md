@@ -28,7 +28,7 @@
 | `analyst` | pipeline-agent | Analisis de codigo, mapeo de dependencias, evaluacion de riesgos | `analysis/**` (solo reportes, no modifica codigo de produccion) |
 | `implementor-1` | pipeline-agent | Refactoring batch 1 (Modulo A) | Definidos explicitamente por el Lead en el plan de batches |
 | `implementor-2` | pipeline-agent | Refactoring batch 2 (Modulo B) | Definidos explicitamente por el Lead en el plan de batches |
-| `reviewer` | pipeline-agent | Verificar que el refactoring preserva comportamiento, ejecutar tests | Ninguno (acceso read-only para revision) |
+| `reviewer` | quality-agent (recomendado) o pipeline-agent | Verificar que el refactoring preserva comportamiento, ejecutar tests | Ninguno (acceso read-only para revision) |
 
 **Lead owns**: Plan de batches, asignacion de archivos, coordinacion entre batches, resolucion de conflictos.
 
@@ -165,3 +165,7 @@ Antes de crear el equipo, el Lead verifica:
 - [ ] Criterio de exito definido (que significa "refactoring exitoso"?)
 - [ ] Estrategia de rollback definida (como revertir si algo sale mal?)
 - [ ] Backward compatibility requirements documentados (APIs publicas, interfaces externas)
+
+---
+
+**Nota v13**: Los domain agents (backend-agent, quality-agent, data-agent) aportan expertise embebida de dominio. quality-agent es el agente recomendado para `reviewer` porque trae expertise en TDD, debugging sistematico, y seguridad. quality-agent esta disponible en todo proyecto.

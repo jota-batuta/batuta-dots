@@ -6,13 +6,21 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 
 ## A
 
+**Agent Provisioning**: Proceso automatico de copiar agents del hub a un proyecto basado en tecnologias detectadas. Lo ejecuta `sdd-init` en Step 3.9, comparando el tech stack del proyecto con la tabla de provisioning.
+
 **Agent Team (Equipo de agentes)**: Nivel 3 de ejecucion. Multiples agentes trabajando en paralelo con comunicacion bidireccional. Para tareas complejas de 4+ archivos.
 
 **AI Validation Pyramid (Piramide de Validacion)**: 5 capas de verificacion. L1: linting/tipos/build. L2: tests unitarios. L3: tests integracion. L4: revision humana. L5: pruebas manuales. Regla: base rota = no hay revision humana.
 
+**always_agents**: Agents que se provisionan a todo proyecto sin importar su tech stack. Actualmente solo quality-agent tiene este flag — todo proyecto necesita calidad.
+
 **Apply**: Fase 7 del pipeline SDD. Implementar codigo siguiendo las tareas definidas.
 
 **Archive**: Fase 9 del pipeline SDD. Cerrar un cambio, sincronizar specs, documentar lecciones.
+
+## B
+
+**Benchmark (Skill Eval)**: Modo que ejecuta eval para multiples skills y genera un reporte de salud del ecosistema. Comando: `/skill:benchmark`. Util para verificar que ningun skill se rompio despues de cambios.
 
 ## C
 
@@ -28,9 +36,13 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 
 ## D
 
+**defer_loading**: Configuracion SDK que habilita Tool Search para descubrir herramientas on-demand en vez de cargarlas todas al inicio. Reduce consumo de tokens ~85%. Se configura en el bloque `sdk:` de los agents.
+
 **Design**: Fase 5 del pipeline SDD. Definir arquitectura, componentes, y decisiones tecnicas.
 
 **Discovery Completeness**: 5 preguntas obligatorias antes de proponer: todos los tipos? excepciones? categorias externas? participantes? ramas?
+
+**Domain Agent**: Agente especializado en un dominio (backend, quality, data) que se provisiona a proyectos segun su tech stack. A diferencia de los scope agents que siempre estan cargados, los domain agents viajan al proyecto que los necesita. Ver: Agent Provisioning.
 
 **Domain Experts**: Configuracion por proyecto en `openspec/domain-experts.md`. Expertos de dominio (finanzas, RRHH, legal) con reglas de negocio especificas.
 
@@ -90,13 +102,21 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 
 ## S
 
+**Scope Agent**: Agente de infraestructura del hub (pipeline, infra, observability) que siempre esta cargado. Coordina el proceso pero no aporta expertise de dominio. Ver: Domain Agent para el tipo complementario.
+
 **Scope Rule**: Regla de organizacion. 1 feature -> features/{name}/. 2+ -> shared/. Toda app -> core/. Nunca utils/ o helpers/ en raiz.
+
+**SDK Block (sdk:)**: Bloque YAML en frontmatter de agents que habilita deployment programatico via Claude Agent SDK. Define model, max_turns, tools, defer_loading y otras configuraciones para ejecutar el agente como servicio.
 
 **SDD (Spec-Driven Development)**: Metodologia. Primero especificar, luego implementar.
 
 **Security Audit**: Skill que revisa seguridad (OWASP 10 puntos, secrets, dependencies, threat model).
 
-**Skill**: Archivo SKILL.md que le ensena a Claude una especialidad. 33 skills en v12.2.
+**Skill**: Archivo SKILL.md que le ensena a Claude una especialidad. 38 skills en v13.
+
+**Skill Eval**: Framework para testing comportamental de skills usando sub-agentes y criterios de calidad. Ejecuta escenarios reales definidos en SKILL.eval.yaml y evalua si el skill responde correctamente. Comando: `/skill:eval nombre`.
+
+**SKILL.eval.yaml**: Archivo de test cases para un skill. Contiene escenarios con input, expected behavior, quality_criteria (lo que debe pasar) y anti_criteria (lo que no debe pasar). Vive junto al SKILL.md del skill que evalua.
 
 **Skill Gap Detection**: Mecanismo que detecta cuando falta un skill para una tecnologia y ofrece crearlo.
 

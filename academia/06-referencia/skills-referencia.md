@@ -1,6 +1,6 @@
 # Skills — Referencia tecnica
 
-Ficha tecnica de cada uno de los 33 skills del ecosistema Batuta Dots v12.2.
+Ficha tecnica de cada uno de los 38 skills del ecosistema Batuta Dots v13.
 
 ---
 
@@ -134,6 +134,18 @@ Ficha tecnica de cada uno de los 33 skills del ecosistema Batuta Dots v12.2.
 - **Tools**: Read, Glob, Grep, Bash
 - **Que hace**: Checklist 10 puntos OWASP, threat model, secrets scan, dependency audit, seccion especial IA (prompt injection, PII, cost control)
 
+### skill-eval
+- **Scope**: infra
+- **Auto-invoke**: No (invocado via `/skill:eval nombre`)
+- **Tools**: Read, Glob, Grep, Bash, Task
+- **Que hace**: Ejecuta tests comportamentales para skills usando SKILL.eval.yaml. Lanza sub-agentes que simulan escenarios reales, evalua quality_criteria y anti_criteria, genera reporte de salud. Modo benchmark para evaluar multiples skills
+
+### claude-agent-sdk
+- **Scope**: infra
+- **Auto-invoke**: Si (al trabajar con Claude Agent SDK)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Patrones de deployment para Claude Agent SDK: AgentDefinitions, defer_loading, Tool Search, configuracion de agents como servicios programaticos
+
 ---
 
 ## Patrones reutilizables
@@ -155,7 +167,7 @@ Ficha tecnica de cada uno de los 33 skills del ecosistema Batuta Dots v12.2.
 
 ---
 
-## Tecnologias y Metodologias (v12.2)
+## Tecnologias y Metodologias (v13)
 
 ### react-nextjs
 - **Scope**: pipeline
@@ -216,3 +228,21 @@ Ficha tecnica de cada uno de los 33 skills del ecosistema Batuta Dots v12.2.
 - **Auto-invoke**: Si (al implementar monitoreo)
 - **Tools**: Read, Edit, Write, Glob, Grep, Bash
 - **Que hace**: Structured logging, distributed tracing (OpenTelemetry), metricas, dashboards, alertas, health checks
+
+### accessibility-audit
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al verificar accesibilidad)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Auditoria WCAG 2.1/2.2, roles ARIA, contraste de colores, navegacion por teclado, lectores de pantalla, compliance Section 508
+
+### performance-testing
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al implementar pruebas de rendimiento)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Load testing (k6, Artillery, Locust), benchmarks, metricas de rendimiento (TTFB, P95, P99), profiling, capacity planning
+
+### technical-writer
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al generar documentacion tecnica)
+- **Tools**: Read, Edit, Write, Glob, Grep
+- **Que hace**: Generacion de documentacion tecnica profesional: guias de usuario, API docs, changelogs, release notes, documentacion de arquitectura para stakeholders no-tecnicos

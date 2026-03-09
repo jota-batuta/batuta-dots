@@ -29,7 +29,7 @@ Inspired by [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.
 - **Batuta Bootstrap** — "The Rule" enforcement via SessionStart hook: if a skill applies, you MUST use it.
 - **MCP Discovery** — active web search for beneficial MCP servers during explore phase.
 - **Superpowers-Style Review** — 2-stage review loop (spec + quality) for complex tasks.
-- **Trigger-Only Descriptions** — all 33 skill descriptions follow "Use when..." convention for reliable activation.
+- **Trigger-Only Descriptions** — all 38 skill descriptions follow "Use when..." convention for reliable activation.
 
 ---
 
@@ -73,7 +73,7 @@ git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-i
 
 | Platform | Destination | Contents |
 |----------|-------------|----------|
-| **Claude Code** | `~/.claude/` | 33 skills, 3 agents, 11 commands, 2 hooks, settings.json, output-styles |
+| **Claude Code** | `~/.claude/` | 38 skills, 6 agents, 13 commands, 2 hooks, settings.json, output-styles |
 | **Claude Code** | Current directory | `CLAUDE.md` + `.batuta/` (session, ecosystem.json) |
 | **Antigravity** | `~/.gemini/antigravity/` | Antigravity-compatible skills, workflows, GEMINI.md |
 
@@ -103,10 +103,13 @@ batuta-dots/
 │   ├── commands/                      # Global slash commands
 │   │   ├── batuta-init.md             # /batuta-init — import ecosystem
 │   │   ├── batuta-update.md           # /batuta-update — pull latest
-│   ├── agents/                        # Scope agents (skills auto-discovered by description)
-│   │   ├── pipeline-agent.md          # SDD Pipeline specialist (9 skills)
-│   │   ├── infra-agent.md             # Infrastructure specialist (5 skills)
-│   │   └── observability-agent.md     # O.R.T.A. engine (no active skills)
+│   ├── agents/                        # Scope + Domain agents
+│   │   ├── pipeline-agent.md          # Scope: SDD Pipeline specialist (9 skills)
+│   │   ├── infra-agent.md             # Scope: Infrastructure specialist (5 skills)
+│   │   ├── observability-agent.md     # Scope: O.R.T.A. engine (no active skills)
+│   │   ├── backend-agent.md           # Domain: provisioned when backend frameworks detected
+│   │   ├── quality-agent.md           # Domain: always provisioned (AI Validation Pyramid)
+│   │   └── data-agent.md              # Domain: provisioned when data/AI frameworks detected
 │   └── skills/                        # Skill definitions (lazy-loaded)
 │       ├── ecosystem-creator/         # Bootstrap skill
 │       │   ├── SKILL.md
@@ -136,7 +139,7 @@ batuta-dots/
 │   ├── architecture/                  # Architecture and design
 │   │   ├── arquitectura-diagrama.md   # Mermaid architecture diagrams (15+ diagrams)
 │   │   └── arquitectura-para-no-tecnicos.md  # Non-technical guide (restaurant analogy, 15+ roles)
-│   ├── guides/                        # Step-by-step execution guides (12 guides, Spanish)
+│   ├── guides/                        # Step-by-step execution guides (14 guides, Spanish)
 │   │   ├── guia-batuta-app.md         # Dashboard app — full lifecycle guide
 │   │   ├── guia-temporal-io-app.md    # Temporal.io workflows — full lifecycle guide
 │   │   ├── guia-langchain-gmail-agent.md  # LangChain + Gmail agent guide
@@ -156,15 +159,16 @@ batuta-dots/
 │       ├── integration-tests/         # Integration test reports (12 guides)
 │       └── smoke-tests/              # Smoke test reports (5 reports)
 ├── teams/                             # Agent Team assets
-│   ├── templates/                     # Pre-built team compositions per stack
+│   ├── templates/                     # Pre-built team compositions per stack (7 templates)
 │   │   ├── nextjs-saas.md             # Next.js SaaS team template
 │   │   ├── fastapi-service.md         # FastAPI microservice team template
 │   │   ├── n8n-automation.md          # n8n automation team template
 │   │   ├── ai-agent.md               # AI agent team template
 │   │   ├── data-pipeline.md          # Data pipeline team template
+│   │   ├── temporal-io-app.md         # Temporal.io workflow team template
 │   │   └── refactoring.md            # Legacy refactoring team template
 │   └── playbook.md                    # Team patterns and best practices
-├── CHANGELOG-refactor.md              # Refactoring trace document (v1-v11.0)
+├── CHANGELOG-refactor.md              # Refactoring trace document (v1-v13.1)
 ├── academia/                          # Training course (8 modules, 53 lessons)
 └── infra/                             # Infrastructure & setup scripts
     ├── setup.sh                       # Claude Code setup (primary)
@@ -196,10 +200,15 @@ CLAUDE.md (personality + rules — ~220 lines)
     │     ├── infra: scope-rule, ecosystem-creator, ecosystem-lifecycle, team-orchestrator, security-audit
     │     └── observability: (no active skills)
     │
-    ├──> Scope Agents (skills auto-discovered by description field)
+    ├──> Scope Agents (always loaded, skills auto-discovered by description)
     │     ├── pipeline-agent (dependency graph, orchestrator rules)
     │     ├── infra-agent (Skill Gap Detection, Ecosystem Auto-Update)
     │     └── observability-agent (session lifecycle)
+    │
+    ├──> Domain Agents (provisioned by tech detection)
+    │     ├── backend-agent (fastapi|django|express|nestjs)
+    │     ├── quality-agent (always provisioned)
+    │     └── data-agent (pandas|langchain|anthropic)
     │
     └──> Agent Team (Level 3) ──> spawn teammates from scope agents
 ```
@@ -274,9 +283,11 @@ Users describe what they need in natural language. The agent classifies intent a
 | Question / Explain | Answer directly |
 | Explicit `/sdd-*` command | Manual override |
 
-### Scope Agents
+### Agents (Scope + Domain)
 
-Three scope agents organize skills by domain. Skills are auto-discovered by Claude Code based on their `description` field:
+Batuta uses two types of agents: **3 Scope Agents** (always loaded) organize skills by domain, and **3 Domain Agents** (provisioned by tech detection) carry embedded expertise for specific technology stacks.
+
+**Scope Agents** — always loaded, skills auto-discovered by `description` field:
 
 | Scope Agent | Domain | Skills |
 |-------------|--------|--------|
@@ -284,7 +295,15 @@ Three scope agents organize skills by domain. Skills are auto-discovered by Clau
 | `infra-agent` | File organization, ecosystem, security | scope-rule, ecosystem-creator, ecosystem-lifecycle, team-orchestrator, security-audit |
 | `observability-agent` | Session lifecycle | (no active skills) |
 
-This keeps the principal agent lightweight (~220 lines) and each scope agent focused on its domain.
+**Domain Agents** — provisioned to projects based on detected technologies:
+
+| Domain Agent | Provisioned When | Expertise |
+|--------------|-----------------|-----------|
+| `backend-agent` | fastapi, django, express, nestjs detected | Backend architecture, API patterns, DB design |
+| `quality-agent` | Always provisioned | AI Validation Pyramid enforcement, testing strategy |
+| `data-agent` | pandas, langchain, anthropic detected | Data pipelines, LLM integration, RAG patterns |
+
+Domain agents carry personality + patterns + skill pointers and include an `sdk:` block for programmatic deployment via Claude Agent SDK. This keeps the principal agent lightweight (~220 lines) and each agent focused on its domain.
 
 ### Execution Gate
 
@@ -329,9 +348,14 @@ Agent Teams spawn real Claude Code sessions that work in parallel with a shared 
 
 When new skills are created in a project, Claude proposes propagating them back to batuta-dots so other projects benefit.
 
-### Project Skill Provisioning (v11.3)
+### Project Skill Provisioning (v11.3) & Agent Provisioning (v13.0)
 
 During `/sdd-init`, only relevant skills are copied from the global library to your project. The agent sees only what it needs, keeping context clean as the ecosystem grows to 100+ skills.
+
+Agent provisioning follows the same principle. The `skill-provisions.yaml` manifest defines:
+
+- **`always_agents`**: agents provisioned to every project (currently: `quality-agent`)
+- **`agent_rules`**: conditional provisioning based on detected dependencies (e.g., `backend-agent` when fastapi/django/express detected, `data-agent` when pandas/langchain/anthropic detected)
 
 ### Deterministic Rules & Mandatory Gates
 
@@ -343,7 +367,7 @@ Output scales to task complexity via three tiers (MICRO/STANDARD/COMPLEX). Sessi
 
 ---
 
-## Available Skills (33 + 3 scope agents)
+## Available Skills (38 + 6 agents)
 
 | Skill | Scope | Description |
 |-------|-------|-------------|
@@ -351,6 +375,8 @@ Output scales to task complexity via three tiers (MICRO/STANDARD/COMPLEX). Sessi
 | `scope-rule` | infra | Enforce scope-based file organization |
 | `team-orchestrator` | infra | Evaluate when to escalate to Agent Teams, spawn and coordinate |
 | `ecosystem-lifecycle` | infra | Classify, self-heal, provision skills lifecycle |
+| `skill-eval` | infra | Evaluate skill quality: Eval (behavioral test), Improve (propose edits), Benchmark (health report) |
+| `claude-agent-sdk` | infra | Claude Agent SDK patterns: setting_sources, defer_loading, hooks mapping, CI/CD deployment |
 | `security-audit` | infra, pipeline | AI-first security: OWASP + prompt injection + secrets scanning + dependency audit |
 | `sdd-init` through `sdd-archive` | pipeline | 9-phase SDD pipeline |
 | `process-analyst` | pipeline | Complex process analysis with 3+ case variants |
@@ -359,6 +385,9 @@ Output scales to task complexity via three tiers (MICRO/STANDARD/COMPLEX). Sessi
 | `data-pipeline-design` | pipeline | ETL, ERP integrations, data quality patterns |
 | `llm-pipeline-design` | pipeline | LLM classifiers, prompt engineering, drift detection |
 | `worker-scaffold` | pipeline | Temporal workers, Docker, Coolify deploy, monitoring |
+| `accessibility-audit` | pipeline | Accessibility audit: WCAG compliance, screen reader testing, keyboard navigation |
+| `performance-testing` | pipeline | Performance testing: load testing, profiling, bottleneck analysis |
+| `technical-writer` | pipeline | Technical writing: API docs, user guides, architecture decision records |
 | `fastapi-crud` | infra | FastAPI CRUD patterns and best practices |
 | `jwt-auth` | infra | JWT authentication implementation patterns |
 | `sqlalchemy-models` | infra | SQLAlchemy ORM model patterns |
@@ -412,7 +441,7 @@ The `--all` flag: syncs skills and agents → installs hooks + permissions → c
 
 ## Guides
 
-Step-by-step execution guides (12 guides) covering the full lifecycle: ecosystem installation → SDD pipeline → build → test → deploy → production → archive.
+Step-by-step execution guides (14 guides) covering the full lifecycle: ecosystem installation → SDD pipeline → build → test → deploy → production → archive.
 
 | Guide | Description |
 |-------|-------------|
@@ -428,6 +457,8 @@ Step-by-step execution guides (12 guides) covering the full lifecycle: ecosystem
 | [AI Agent (Google ADK)](docs/guides/guia-ai-agent-adk.md) | Build a conversational AI agent with Google ADK |
 | [Accounting Audit](docs/guides/guia-auditoria-contable.md) | Bank reconciliation — CTO v11.0 flow |
 | [Personnel Selection](docs/guides/guia-seleccion-personal.md) | Resume screening with LLM + compliance |
+| [Antigravity Lite](docs/guides/guia-batuta-antigravity.md) | Antigravity setup and workflow guide |
+| [SDK Deployment](docs/guides/guia-sdk-deployment.md) | Deploy agents via Claude Agent SDK (Python + TypeScript) |
 
 ## Academia (Training Manual)
 
@@ -472,6 +503,13 @@ Complete training course for Batuta Dots — from zero to autonomous usage. 53 l
 1. Create `BatutaClaude/agents/<scope>-agent.md` with native frontmatter (`name`, `description`, `skills`, `memory`)
 2. Update SKILL.md frontmatters to reference the new scope
 3. Run `./infra/setup.sh --all`
+
+### Adding a New Domain Agent
+
+1. Create `BatutaClaude/agents/<domain>-agent.md` with frontmatter including `sdk:` block (model, max_tokens, allowed_tools, setting_sources, defer_loading)
+2. Add provisioning rule to `BatutaClaude/skills/sdd-init/assets/skill-provisions.yaml` under `agent_rules` (detection patterns + target agent)
+3. If the agent should be provisioned to all projects, add it to `always_agents` instead
+4. Run `./infra/setup.sh --all`
 
 ---
 

@@ -29,7 +29,7 @@ Inspirado en [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman
 - **Batuta Bootstrap** — "La Regla" via hook SessionStart: si un skill aplica, DEBES usarlo.
 - **MCP Discovery** — busqueda activa de servidores MCP durante la fase explore.
 - **Review Superpowers** — loop de revision en 2 etapas (spec + calidad) para tareas complejas.
-- **Descripciones Trigger-Only** — las 33 descripciones de skills siguen la convencion "Use when..." para activacion confiable.
+- **Descripciones Trigger-Only** — las 38 descripciones de skills siguen la convencion "Use when..." para activacion confiable.
 
 ---
 
@@ -73,7 +73,7 @@ git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-i
 
 | Plataforma | Destino | Contenido |
 |------------|---------|-----------|
-| **Claude Code** | `~/.claude/` | 33 skills, 3 agentes, 11 comandos, 2 hooks, settings.json, output-styles |
+| **Claude Code** | `~/.claude/` | 38 skills, 6 agentes, 13 comandos, 2 hooks, settings.json, output-styles |
 | **Claude Code** | Directorio actual | `CLAUDE.md` + `.batuta/` (session, ecosystem.json) |
 | **Antigravity** | `~/.gemini/antigravity/` | Skills compatibles, workflows, GEMINI.md |
 
@@ -103,10 +103,13 @@ batuta-dots/
 │   ├── commands/                      # Slash commands globales
 │   │   ├── batuta-init.md             # /batuta-init — importar ecosistema
 │   │   ├── batuta-update.md           # /batuta-update — actualizar
-│   ├── agents/                        # Agentes de scope (skills auto-descubiertos por description)
-│   │   ├── pipeline-agent.md          # Especialista SDD Pipeline (9 skills)
-│   │   ├── infra-agent.md             # Especialista infraestructura (5 skills)
-│   │   └── observability-agent.md     # Motor O.R.T.A. (sin skills activos)
+│   ├── agents/                        # Agentes de Scope + Dominio
+│   │   ├── pipeline-agent.md          # Scope: Especialista SDD Pipeline (9 skills)
+│   │   ├── infra-agent.md             # Scope: Especialista infraestructura (5 skills)
+│   │   ├── observability-agent.md     # Scope: Motor O.R.T.A. (sin skills activos)
+│   │   ├── backend-agent.md           # Dominio: provisionado cuando se detectan frameworks backend
+│   │   ├── quality-agent.md           # Dominio: siempre provisionado (AI Validation Pyramid)
+│   │   └── data-agent.md              # Dominio: provisionado cuando se detectan frameworks data/IA
 │   └── skills/                        # Skills instalables (carga lazy)
 │       ├── ecosystem-creator/         # Skill bootstrap
 │       │   ├── SKILL.md
@@ -136,7 +139,7 @@ batuta-dots/
 │   ├── architecture/                  # Arquitectura y diseno
 │   │   ├── arquitectura-diagrama.md   # Diagramas Mermaid de arquitectura (15+ diagramas)
 │   │   └── arquitectura-para-no-tecnicos.md  # Guia sin tecnicismos (analogia restaurante, 15+ roles)
-│   ├── guides/                        # Guias de ejecucion paso a paso (12 guias, Espanol)
+│   ├── guides/                        # Guias de ejecucion paso a paso (14 guias, Espanol)
 │   │   ├── guia-batuta-app.md         # Dashboard app — guia ciclo completo
 │   │   ├── guia-temporal-io-app.md    # Temporal.io workflows — guia ciclo completo
 │   │   ├── guia-langchain-gmail-agent.md  # Agente LangChain + Gmail — guia ciclo completo
@@ -156,15 +159,16 @@ batuta-dots/
 │       ├── integration-tests/         # Reportes de tests de integracion (12 guias)
 │       └── smoke-tests/              # Reportes de smoke tests (5 reportes)
 ├── teams/                             # Assets de Agent Teams
-│   ├── templates/                     # Composiciones pre-armadas por stack
+│   ├── templates/                     # Composiciones pre-armadas por stack (7 templates)
 │   │   ├── nextjs-saas.md             # Template equipo Next.js SaaS
 │   │   ├── fastapi-service.md         # Template equipo microservicio FastAPI
 │   │   ├── n8n-automation.md          # Template equipo automatizacion n8n
 │   │   ├── ai-agent.md               # Template equipo agente IA
 │   │   ├── data-pipeline.md          # Template equipo pipeline de datos
+│   │   ├── temporal-io-app.md         # Template equipo workflows Temporal.io
 │   │   └── refactoring.md            # Template equipo refactoring legacy
 │   └── playbook.md                    # Patrones y mejores practicas de equipos
-├── CHANGELOG-refactor.md              # Documento de traza de refactorizaciones (v1-v11.0)
+├── CHANGELOG-refactor.md              # Documento de traza de refactorizaciones (v1-v13.1)
 ├── academia/                          # Curso de capacitacion (8 modulos, 53 lecciones)
 └── infra/                             # Infraestructura y scripts de setup
     ├── setup.sh                       # Script principal (Claude Code)
@@ -197,10 +201,15 @@ CLAUDE.md (personalidad + reglas — ~220 lineas)
     │     ├── infra: scope-rule, ecosystem-creator, ecosystem-lifecycle, team-orchestrator, security-audit
     │     └── observability: (sin skills activos)
     │
-    ├──> Scope Agents (skills auto-descubiertos por campo description)
+    ├──> Scope Agents (siempre cargados, skills auto-descubiertos por description)
     │     ├── pipeline-agent (dependency graph, orchestrator rules)
     │     ├── infra-agent (Skill Gap Detection, Ecosystem Auto-Update)
     │     └── observability-agent (session lifecycle)
+    │
+    ├──> Domain Agents (provisionados por deteccion de tecnologia)
+    │     ├── backend-agent (fastapi|django|express|nestjs)
+    │     ├── quality-agent (siempre provisionado)
+    │     └── data-agent (pandas|langchain|anthropic)
     │
     └──> Agent Team (Nivel 3) ──> spawn desde scope agents
 ```
@@ -275,9 +284,11 @@ El usuario describe lo que necesita en lenguaje natural. El agente clasifica el 
 | Pregunta / Explicar | Responde directamente |
 | Comando `/sdd-*` explicito | Override manual |
 
-### Scope Agents
+### Agentes (Scope + Dominio)
 
-Tres agentes de scope organizan skills por dominio. Los skills son auto-descubiertos por Claude Code basandose en su campo `description`:
+Batuta usa dos tipos de agentes: **3 Agentes de Scope** (siempre cargados) organizan skills por dominio, y **3 Agentes de Dominio** (provisionados por deteccion de tecnologia) llevan expertise embebida para stacks tecnologicos especificos.
+
+**Agentes de Scope** — siempre cargados, skills auto-descubiertos por campo `description`:
 
 | Agente de Scope | Dominio | Skills |
 |-----------------|---------|--------|
@@ -285,7 +296,15 @@ Tres agentes de scope organizan skills por dominio. Los skills son auto-descubie
 | `infra-agent` | Organizacion, ecosistema, seguridad | scope-rule, ecosystem-creator, ecosystem-lifecycle, team-orchestrator, security-audit |
 | `observability-agent` | Ciclo de sesion | (sin skills activos) |
 
-Esto mantiene al agente principal liviano (~220 lineas) y a cada agente de scope enfocado en su dominio.
+**Agentes de Dominio** — provisionados a proyectos segun tecnologias detectadas:
+
+| Agente de Dominio | Provisionado Cuando | Expertise |
+|-------------------|---------------------|-----------|
+| `backend-agent` | fastapi, django, express, nestjs detectado | Arquitectura backend, patrones API, diseno de BD |
+| `quality-agent` | Siempre provisionado | Enforcement de AI Validation Pyramid, estrategia de testing |
+| `data-agent` | pandas, langchain, anthropic detectado | Pipelines de datos, integracion LLM, patrones RAG |
+
+Los agentes de dominio llevan personalidad + patrones + punteros a skills e incluyen un bloque `sdk:` para deployment programatico via Claude Agent SDK. Esto mantiene al agente principal liviano (~220 lineas) y a cada agente enfocado en su dominio.
 
 ### Execution Gate (Puerta de Ejecucion)
 
@@ -339,9 +358,14 @@ Los Agent Teams crean sesiones reales de Claude Code que trabajan en paralelo co
 
 Cuando se crean skills nuevos en un proyecto, Claude propone propagarlos de vuelta a batuta-dots para que otros proyectos se beneficien.
 
-### Provisioning de Skills por Proyecto (v11.3)
+### Provisioning de Skills por Proyecto (v11.3) y Agentes (v13.0)
 
 Durante `/sdd-init`, solo los skills relevantes se copian de la libreria global al proyecto. El agente solo ve lo que necesita, manteniendo el contexto limpio mientras el ecosistema crece a 100+ skills.
+
+El provisioning de agentes sigue el mismo principio. El manifiesto `skill-provisions.yaml` define:
+
+- **`always_agents`**: agentes provisionados a todo proyecto (actualmente: `quality-agent`)
+- **`agent_rules`**: provisioning condicional basado en dependencias detectadas (e.g., `backend-agent` cuando se detecta fastapi/django/express, `data-agent` cuando se detecta pandas/langchain/anthropic)
 
 ### Reglas Deterministicas y Gates Mandatorios
 
@@ -353,7 +377,7 @@ El output escala con la complejidad de la tarea via tres tiers (MICRO/STANDARD/C
 
 ---
 
-## Skills Disponibles (33 + 3 agentes de scope)
+## Skills Disponibles (38 + 6 agentes)
 
 | Skill | Scope | Descripcion |
 |-------|-------|-------------|
@@ -361,6 +385,8 @@ El output escala con la complejidad de la tarea via tres tiers (MICRO/STANDARD/C
 | `scope-rule` | infra | Organiza archivos por alcance (feature / shared / core) |
 | `team-orchestrator` | infra | Evalua cuando escalar a Agent Teams, spawn y coordinacion |
 | `ecosystem-lifecycle` | infra | Clasifica, auto-repara y provisiona el ciclo de vida de skills |
+| `skill-eval` | infra | Evalua calidad de skills: Eval (test conductual), Improve (proponer ediciones), Benchmark (reporte de salud) |
+| `claude-agent-sdk` | infra | Patrones Claude Agent SDK: setting_sources, defer_loading, hooks mapping, CI/CD deployment |
 | `security-audit` | infra, pipeline | Seguridad AI-first: OWASP + inyeccion de prompts + escaneo de secretos + auditoria de dependencias |
 | `sdd-init` a `sdd-archive` | pipeline | Pipeline SDD de 9 fases |
 | `process-analyst` | pipeline | Analisis de procesos complejos con 3+ variantes de caso |
@@ -369,6 +395,9 @@ El output escala con la complejidad de la tarea via tres tiers (MICRO/STANDARD/C
 | `data-pipeline-design` | pipeline | ETL, integraciones ERP, patrones de calidad de datos |
 | `llm-pipeline-design` | pipeline | Clasificadores LLM, prompt engineering, deteccion de drift |
 | `worker-scaffold` | pipeline | Workers Temporal, Docker, Coolify deploy, monitoreo |
+| `accessibility-audit` | pipeline | Auditoria de accesibilidad: WCAG, lectores de pantalla, navegacion por teclado |
+| `performance-testing` | pipeline | Testing de rendimiento: pruebas de carga, profiling, analisis de cuellos de botella |
+| `technical-writer` | pipeline | Escritura tecnica: docs de API, guias de usuario, registros de decisiones arquitecturales |
 | `fastapi-crud` | infra | Patrones CRUD para FastAPI |
 | `jwt-auth` | infra | Patrones de autenticacion JWT |
 | `sqlalchemy-models` | infra | Patrones de modelos SQLAlchemy ORM |
@@ -422,7 +451,7 @@ El flag `--all`: sincroniza skills y agentes → instala hooks + permisos → co
 
 ## Guias
 
-Guias de ejecucion paso a paso (12 guias) cubriendo el ciclo completo: instalacion del ecosistema → pipeline SDD → construccion → pruebas → deploy → produccion → archive.
+Guias de ejecucion paso a paso (14 guias) cubriendo el ciclo completo: instalacion del ecosistema → pipeline SDD → construccion → pruebas → deploy → produccion → archive.
 
 | Guia | Descripcion |
 |------|-------------|
@@ -438,6 +467,8 @@ Guias de ejecucion paso a paso (12 guias) cubriendo el ciclo completo: instalaci
 | [Agente IA (Google ADK)](docs/guides/guia-ai-agent-adk.md) | Construir agente conversacional con Google ADK |
 | [Auditoria Contable](docs/guides/guia-auditoria-contable.md) | Conciliacion bancaria — flujo CTO v11.0 completo |
 | [Seleccion de Personal](docs/guides/guia-seleccion-personal.md) | Evaluacion de CVs con LLM + compliance |
+| [Antigravity Lite](docs/guides/guia-batuta-antigravity.md) | Guia de setup y workflows de Antigravity |
+| [SDK Deployment](docs/guides/guia-sdk-deployment.md) | Deploy de agentes via Claude Agent SDK (Python + TypeScript) |
 
 ## Academia (Manual de Capacitacion)
 
@@ -482,6 +513,13 @@ Curso completo de Batuta Dots — desde cero hasta uso autonomo. 53 lecciones en
 1. Crear `BatutaClaude/agents/<scope>-agent.md` con frontmatter nativo (`name`, `description`, `skills`, `memory`)
 2. Actualizar frontmatters de SKILL.md para referenciar el nuevo scope
 3. Ejecutar `./infra/setup.sh --all`
+
+### Agregar un Agente de Dominio Nuevo
+
+1. Crear `BatutaClaude/agents/<dominio>-agent.md` con frontmatter incluyendo bloque `sdk:` (model, max_tokens, allowed_tools, setting_sources, defer_loading)
+2. Agregar regla de provisioning en `BatutaClaude/skills/sdd-init/assets/skill-provisions.yaml` bajo `agent_rules` (patrones de deteccion + agente destino)
+3. Si el agente debe provisionarse a todos los proyectos, agregarlo a `always_agents` en lugar de `agent_rules`
+4. Ejecutar `./infra/setup.sh --all`
 
 ---
 

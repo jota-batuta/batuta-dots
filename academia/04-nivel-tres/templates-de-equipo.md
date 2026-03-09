@@ -15,6 +15,7 @@ Skills pre-cargados: scope-rule, security-audit
 Para: Servicios backend con FastAPI
 Equipo: api-dev, db-dev, test-dev
 Skills pre-cargados: fastapi-crud, jwt-auth, sqlalchemy-models
+Domain agent disponible: **backend-agent** — aporta expertise en patrones API y autenticacion
 
 ### 3. n8n-automation
 Para: Automatizaciones con n8n
@@ -25,6 +26,7 @@ Skills pre-cargados: data-pipeline-design
 Para: Agentes de IA con LangChain/LangGraph
 Equipo: agent-dev, pipeline-dev, eval-dev
 Skills pre-cargados: llm-pipeline-design, security-audit
+Domain agent disponible: **data-agent** — aporta expertise en pipelines de datos y procesamiento IA
 
 ### 5. data-pipeline
 Para: Pipelines de datos y ETL
@@ -82,6 +84,8 @@ Los templates son un punto de partida. Puedes:
 - Agregar skills adicionales
 
 Los templates viven en `teams/templates/` dentro del repositorio batuta-dots.
+
+> **Nota**: El **quality-agent** esta disponible para cualquier template — no es exclusivo de uno. Todo equipo puede beneficiarse de un especialista en testing y validacion.
 
 ---
 

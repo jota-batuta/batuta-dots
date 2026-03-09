@@ -182,6 +182,8 @@ Full protocol: see `ecosystem-lifecycle` skill.
 | `/create <type> <name>` | infra → ecosystem-creator (type: skill/sub-agent/workflow) |
 | `/batuta-init` | Setup Batuta ecosystem in current project |
 | `/batuta-update` | Update Batuta ecosystem to latest version |
+| `/skill:eval <name>` | infra → skill-eval |
+| `/skill:benchmark` | infra → skill-eval (benchmark mode) |
 | `/batuta-sync` | Sync skills between project and hub (internal, no bash) |
 
 ---
@@ -211,6 +213,8 @@ Strategic capabilities integrated from the CTO expert layer. These enrich the SD
 | `e2e-testing` | Implementing E2E tests with Playwright or Cypress |
 | `security-audit` | Security review, OWASP checks, secrets scanning, threat modeling |
 | `ci-cd-pipeline` | GitHub Actions, testing pipelines, deployment automation, Coolify |
+| `skill-eval` | Testing, evaluating, or benchmarking skills. Eval/Improve/Benchmark modes |
+| `claude-agent-sdk` | Scaffolding Agent SDK deployments, `setting_sources`, `defer_loading` patterns |
 
 ### Enriched SDD Phases
 - **sdd-explore**: Discovery Completeness (5 questions) + Domain Expert consultation + Process Complexity Detection

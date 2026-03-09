@@ -159,6 +159,11 @@ tech_rules:
       content_pattern: "pika|aio-pika|rabbitmq|amqplib|celery|bullmq|kafkajs|confluent.kafka"
     skills: [message-queues]
 
+  # Claude Agent SDK
+  - detect:
+      content_pattern: "claude.agent.sdk|claude-agent-sdk|@anthropic-ai/claude-agent-sdk|claude_agent_sdk"
+    skills: [claude-agent-sdk]
+
 # --- MCP Servers ---
 # Each rule has: detect (signals) + mcp (server config)
 # Config values with YOUR_*_HERE are placeholders the user must fill in.
@@ -254,3 +259,28 @@ mcp_rules:
       type: stdio
       command: supergateway
       args: ["--streamableHttp", "YOUR_N8N_MCP_URL_HERE"]
+
+# --- Agents: Always provisioned ---
+# Scope agents (hub machinery) + quality-agent (universal)
+# These agents are copied to .claude/agents/ in every Batuta project.
+always_agents:
+  - pipeline-agent
+  - infra-agent
+  - observability-agent
+  - quality-agent
+
+# --- Agents: Technology-detected ---
+# Domain agents provisioned based on project tech stack.
+# Detection logic mirrors tech_rules: file signals, content patterns, project types.
+agent_rules:
+  # Backend frameworks — any server-side framework triggers backend-agent
+  - detect:
+      content_pattern: "fastapi|django|express|nestjs|gin|fiber|flask|spring"
+      project_type: webapp
+    agents: [backend-agent]
+
+  # Data / AI / ML — data processing or AI frameworks trigger data-agent
+  - detect:
+      content_pattern: "pandas|temporalio|langchain|langgraph|anthropic|openai|google-adk|polars|dagster"
+      project_type: [ai-agent, data-pipeline]
+    agents: [data-agent]

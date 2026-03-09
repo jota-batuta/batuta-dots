@@ -21,7 +21,7 @@
 # Platform: Windows (Git Bash / MSYS2 / MINGW) and native Unix
 # ============================================================================
 
-set -e
+set -euo pipefail
 
 cleanup() {
     rm -f "${REPO_ROOT:-/tmp}/BatutaClaude/CLAUDE.md.tmp" 2>/dev/null

@@ -687,3 +687,9 @@ R: Si — es exactamente para eso el Recursion Designer. El hiring manager actua
 > **Recuerda**: El sistema SUGIERE, no DECIDE. Siempre hay un humano que confirma.
 > Esto no es solo buena practica — es un requisito de la Circular SIC 002/2024.
 > La IA es tu asistente, no tu reemplazo.
+
+---
+
+## Deployment Programatico
+
+Este tipo de proyecto puede deployarse via Agent SDK para automatizacion CI/CD. Ver [guia-sdk-deployment.md](guia-sdk-deployment.md).
