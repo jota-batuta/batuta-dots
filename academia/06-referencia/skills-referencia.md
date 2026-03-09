@@ -2,6 +2,8 @@
 
 Ficha tecnica de cada uno de los 38 skills del ecosistema Batuta Dots v13.
 
+> **Nota sobre domain agents**: Los skills marcados como pertenecientes a un domain agent se cargan bajo demanda (`defer_loading: true`) cuando ese agente se auto-invoca. No necesitas activarlos manualmente — el router (CLAUDE.md) detecta la tecnologia y delega al agente correcto, que a su vez carga el skill necesario.
+
 ---
 
 ## Pipeline SDD
@@ -108,7 +110,7 @@ Ficha tecnica de cada uno de los 38 skills del ecosistema Batuta Dots v13.
 - **Scope**: infra
 - **Auto-invoke**: Si (al crear skills/agentes/workflows)
 - **Tools**: Read, Edit, Write, Glob, Grep, Bash, WebFetch, WebSearch, Task
-- **Que hace**: Crea SKILL.md, agent .md, workflow definitions con frontmatter correcto. Step 5.5: RED-GREEN-REFACTOR para validar skills empiricamente antes de registrarlos
+- **Que hace**: Crea SKILL.md, agent .md, workflow definitions con frontmatter correcto. Para agentes, genera thick persona (80-120 lineas de expertise embebido) y bloque `sdk:` con `defer_loading`. Step 5.5: RED-GREEN-REFACTOR para validar skills empiricamente antes de registrarlos. Despues de crear, invoca ecosystem-lifecycle para clasificar (generico vs proyecto-especifico)
 
 ### ecosystem-lifecycle
 - **Scope**: infra
@@ -144,24 +146,29 @@ Ficha tecnica de cada uno de los 38 skills del ecosistema Batuta Dots v13.
 - **Scope**: infra
 - **Auto-invoke**: Si (al trabajar con Claude Agent SDK)
 - **Tools**: Read, Edit, Write, Glob, Grep, Bash
-- **Que hace**: Patrones de deployment para Claude Agent SDK: AgentDefinitions, defer_loading, Tool Search, configuracion de agents como servicios programaticos
+- **Que hace**: Patrones de deployment para Claude Agent SDK: AgentDefinitions, `defer_loading` (carga de skills bajo demanda en domain agents), `setting_sources` (configuracion por proyecto), Tool Search, configuracion de agents como servicios programaticos
 
 ---
 
 ## Patrones reutilizables
 
+> Estos skills se cargan bajo demanda dentro de **backend-agent** (`defer_loading: true`).
+
 ### fastapi-crud
 - **Scope**: pipeline
+- **Domain agent**: backend-agent
 - **Auto-invoke**: Si (al construir APIs FastAPI)
 - **Que hace**: Genera CRUD completo: models, schemas, services, routes con SQLAlchemy
 
 ### jwt-auth
 - **Scope**: pipeline
+- **Domain agent**: backend-agent
 - **Auto-invoke**: Si (al implementar auth)
 - **Que hace**: Register, login, token validation, password hashing con bcrypt
 
 ### sqlalchemy-models
 - **Scope**: pipeline
+- **Domain agent**: backend-agent
 - **Auto-invoke**: Si (al crear modelos BD)
 - **Que hace**: Patrones one-to-many, many-to-many, database session, migrations
 

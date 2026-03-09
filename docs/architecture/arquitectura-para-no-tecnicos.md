@@ -1,4 +1,4 @@
-# Entendiendo la Arquitectura de Batuta — Sin Palabras Tecnicas
+# Entendiendo la Arquitectura de Batuta — Sin Palabras Tecnicas (v13.1)
 
 > **Para quien es esto**: Para cualquier persona que quiera entender COMO funciona
 > el ecosistema Batuta sin necesitar saber programar. Si puedes entender como funciona
@@ -35,6 +35,49 @@ siempre cocina igual, siempre bien.
 
 > **Regla importante**: Solo hay UN archivo de instrucciones. Si quieres cambiar algo,
 > cambias CLAUDE.md y todas las sucursales (proyectos) se actualizan.
+
+---
+
+## El Sistema de Expertos del Restaurante (Mixture of Experts)
+
+Imagina que el restaurante funciona asi: cuando un cliente hace un pedido, el chef principal
+NO cocina el mismo. Lee el pedido, identifica de que tipo es, y lo pasa al **experto correcto**.
+
+Es como un hospital con especialistas:
+
+```
+Cliente dice: "Me duele la rodilla"
+   ↓
+Recepcion (el router): "Esto es traumatologia"
+   ↓
+Traumatologo (el experto): Examina, diagnostica, trata
+   ↓
+Protocolos medicos (los parametros): Guia especifica para lesion de rodilla
+```
+
+En Batuta funciona igual:
+
+| Parte del sistema | Rol en el restaurante | Que hace |
+|-------------------|----------------------|---------|
+| **Las instrucciones del chef** (CLAUDE.md) | La recepcion del hospital — decide a que especialista mandarte | Lee el pedido y detecta pistas: si mencionas "API" o "base de datos" → lo manda al chef de linea. Si mencionas "datos" o "inteligencia artificial" → lo manda al sous chef de reposteria. Si mencionas "pruebas" o "seguridad" → lo manda al inspector |
+| **Los especialistas** (Domain Agents) | Los doctores especialistas — cada uno experto en su area | Cada especialista tiene 80-120 lineas de conocimiento profundo en su area. Saben que hacer sin que nadie les explique lo basico |
+| **Las recetas** (Skills) | Los protocolos medicos — instrucciones especificas | Dentro de cada especialista, se cargan las recetas que necesita para ESE plato en particular |
+
+### Por que no cocina el chef principal?
+
+Porque es mas eficiente. Si el chef principal tuviera que recordar TODAS las recetas de
+TODOS los tipos de cocina, se le olvidarian cosas. En cambio:
+
+- El chef principal solo recuerda a QUIEN pasarle cada pedido (~220 lineas de instrucciones)
+- Cada especialista recuerda TODO sobre SU area (~80-120 lineas de expertise)
+- Las recetas especificas se abren solo cuando hacen falta
+
+Es como la diferencia entre un medico general que intenta hacer TODO vs un hospital con
+especialistas: el general sabe un poco de todo pero el especialista sabe TODO de lo suyo.
+
+**Lo mejor**: Los especialistas trabajan en su propia cocina (su propio espacio de trabajo).
+No comparten espacio con el chef principal. Esto significa que el restaurante funciona mas
+rapido — cada quien tiene lo que necesita sin estorbarse.
 
 ---
 
@@ -221,7 +264,7 @@ y aprende antes de empezar.
 
 ## El Sub-Chef (Sub-Agente)
 
-El chef principal NO hace todo el mismo. Tiene sub-chefs especializados:
+El chef principal NO hace todo el mismo. Tiene sub-chefs para el proceso de planificacion:
 
 | Sub-chef | Que hace |
 |----------|---------|
@@ -233,6 +276,12 @@ El chef principal NO hace todo el mismo. Tiene sub-chefs especializados:
 
 El chef principal SOLO coordina. Le dice al sub-chef: "Investiga esto" y el sub-chef
 vuelve con un reporte. El chef principal nunca toca una olla.
+
+**Diferencia entre sub-chefs y especialistas**: Los sub-chefs manejan *fases del proceso*
+(investigar, proponer, ejecutar). Los especialistas manejan *dominios de conocimiento*
+(backend, datos, calidad). Un especialista puede ser invocado DURANTE la fase de ejecucion
+del sub-chef — por ejemplo, cuando el sub-chef de ejecucion necesita escribir codigo de API,
+el chef principal llama al especialista de backend (chef de linea) para que lo haga.
 
 ---
 
@@ -249,21 +298,39 @@ que coordinan grupos de sub-chefs:
 
 Los sub-chefs (skills) se asignan automaticamente a cada jefe de area basandose en su descripcion — no hace falta asignarlos manualmente.
 
-Ademas de los 3 jefes de area (pipeline, infra, observability) que manejan la cocina central, ahora hay 3 **especialistas** (backend, quality, data) que se envian a las sucursales segun lo que cocinen. Los jefes de area siempre estan en la cocina central; los especialistas viajan a donde se necesiten.
+Ademas de los 3 jefes de area (pipeline, infra, observability) que manejan la cocina central, hay 3 **especialistas** (backend, quality, data) que se envian a las sucursales segun lo que cocinen. Los jefes de area siempre estan en la cocina central; los especialistas viajan a donde se necesiten.
 
-| Especialista | Que hace |
-|-------------|---------|
-| **Chef de linea** (backend-agent) | El chef de linea — sabe cocinar platos salados (APIs, autenticacion, bases de datos) |
-| **Inspector de calidad** (quality-agent) | El inspector de calidad — revisa que cada plato cumpla estandares antes de servirse (siempre presente) |
-| **Sous chef de reposteria** (data-agent) | El sous chef de reposteria — especialista en datos, transformaciones y recetas con IA |
+| Especialista | Que hace | Cuando se activa automaticamente |
+|-------------|---------|----------------------------------|
+| **Chef de linea** (backend-agent) | Sabe cocinar platos salados (APIs, autenticacion, bases de datos) | Cuando el pedido menciona "API", "login", "base de datos", "ORM" |
+| **Inspector de calidad** (quality-agent) | Revisa que cada plato cumpla estandares antes de servirse | Siempre presente — la calidad no es opcional |
+| **Sous chef de reposteria** (data-agent) | Especialista en datos, transformaciones y recetas con IA | Cuando el pedido menciona "datos", "ETL", "inteligencia artificial", "RAG" |
 
-El chef principal SOLO decide a que jefe de area pasarle el pedido. El jefe de area
-decide cuales sub-chefs y especialistas necesita y los coordina.
+### La delegacion automatica
+
+Lo importante es que el chef principal **detecta automaticamente** a que especialista
+llamar. No necesitas decirle "usa al chef de linea" — simplemente describes lo que
+necesitas y el chef principal identifica las pistas:
+
+```
+Tu dices: "Necesito un endpoint de login con JWT"
+   ↓
+Chef principal detecta: "API" + "autenticacion" → Chef de linea (backend-agent)
+   ↓
+Chef de linea trabaja EN SU PROPIA COCINA (subproceso autonomo)
+   ↓
+Resultado vuelve al chef principal → te lo presenta
+```
+
+Cada especialista trabaja en su propia cocina temporal. Esto significa que:
+- El chef principal NO se llena la cabeza con los detalles de cada especialidad
+- Cada especialista carga solo lo que necesita para SU trabajo
+- Es mas rapido y mas barato (menos "memoria" usada)
 
 **Por que es mejor asi?** Porque el chef principal no necesita recordar todos los recetarios.
-Solo necesita saber 3 numeros de telefono (jefes de area) y asignar especialistas segun
-el tipo de cocina. Cada jefe de area conoce en detalle las recetas de su area, y cada
-especialista domina su tipo de plato.
+Solo necesita saber 3 numeros de telefono (jefes de area) y detectar automaticamente que
+especialista necesita segun las pistas del pedido. Cada jefe de area conoce en detalle
+las recetas de su area, y cada especialista domina su tipo de plato.
 
 ---
 
@@ -370,6 +437,40 @@ Al final de cada proyecto, Claude te pregunta:
 
 ---
 
+## El Ciclo de Vida de un Especialista (Agent Lifecycle)
+
+Los especialistas (domain agents) no aparecen de la nada. Tienen un ciclo de vida completo, como contratar personal para una franquicia de restaurantes:
+
+```
+1. CREAR       → El restaurante necesita un nuevo tipo de especialista
+                  (ej: "necesitamos un chef de sushi")
+   ↓
+2. CLASIFICAR  → Es un especialista que sirve para CUALQUIER sucursal?
+                  O solo para ESTA sucursal?
+   ↓
+3. SINCRONIZAR → Si sirve para todas: se agrega al manual de franquicia
+                  (el hub) y se distribuye a todas las sucursales
+   ↓
+4. PROVISIONAR → Cuando se abre una sucursal nueva, se asignan los
+                  especialistas que necesita segun su tipo de cocina
+   ↓
+5. DEVOLVER    → Si una sucursal inventa un gran especialista, puede
+                  proponerlo al manual de franquicia para que todos
+                  lo tengan (siempre con tu autorizacion)
+```
+
+### Cuantos especialistas puede haber?
+
+| Tipo | Cuantos | Regla |
+|------|---------|-------|
+| **Jefes de area** (pipeline, infra, calidad) | Siempre 3 | Son la estructura fija del restaurante — no crece |
+| **Especialistas** (backend, quality, data) | Entre 3 y 8 | Solo se agrega uno nuevo cuando hay un tipo de cocina que NADIE existente sabe hacer (ej: cocina molecular, cocina asiatica) |
+| **Especialistas de sucursal** | Los que se necesiten | Se quedan en esa sucursal, no se comparten a menos que demuestren ser utiles para todas |
+
+**La regla de oro**: No contratar por contratar. Un nuevo especialista solo se justifica cuando (1) tiene una tecnica propia diferente a los demas, (2) maneja al menos 3 recetas, y (3) tiene un area clara que no se cruza con los otros.
+
+---
+
 ## El Cuaderno del Turno (Continuidad de Sesion)
 
 Imagina que en el restaurante hay tres turnos de chefs. Si el chef del turno de la mañana
@@ -401,9 +502,9 @@ Pero imagina que llega un pedido ENORME: un banquete para 200 personas, con 5 pl
 
 | Nivel | Analogia | Cuando se usa |
 |-------|----------|---------------|
-| **Solo** | El chef cocina un plato el mismo | Arreglar un error, responder una pregunta, editar algo simple |
-| **Sub-chef** | El chef le pide ayuda puntual a un colega | "Investiga esto y dime que encuentras" — el resultado vuelve al chef |
-| **Equipo temporal** | El chef arma un squad con cocina propia | Cada cocinero tiene su propia estacion, su propio espacio, y se comunican entre ellos |
+| **Nivel 1: Solo** | El chef (router) resuelve pedidos simples el mismo | Arreglar un error, responder una pregunta, editar algo simple |
+| **Nivel 2: Especialistas** | El chef detecta el tipo de pedido y llama al especialista correcto (backend, data, quality) | El especialista trabaja en su propia cocina y devuelve el resultado |
+| **Nivel 3: Equipo temporal** | El chef arma un squad completo con cocina propia | Cada cocinero tiene su propia estacion, su propio espacio, y se comunican entre ellos — para banquetes grandes |
 
 ### Como funciona el equipo temporal
 
@@ -579,11 +680,11 @@ Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
 | Rol | Quien es | Que hace |
 |-----|---------|---------|
 | **Dueno del restaurante** | Tu (el usuario) | Decides que platos ofrecer, apruebas propuestas |
-| **Chef principal (router)** | Claude Code + CLAUDE.md | Recibe pedidos y los pasa al jefe de area correcto. Nunca cocina. |
+| **Chef principal (router MoE)** | Claude Code + CLAUDE.md | Recibe pedidos, detecta pistas, y delega al especialista correcto. Nunca cocina — solo coordina |
 | **Jefes de area** | Scope Agents (pipeline, infra, observability) | Coordinan a los sub-chefs de su area (siempre en la cocina central) |
-| **Especialistas** | Domain Agents (backend, quality, data) | Se envian a las sucursales segun lo que cocinen (quality siempre presente) |
+| **Especialistas (experts MoE)** | Domain Agents (backend, quality, data) | Expertos con conocimiento profundo de su area. Trabajan en su propia cocina (subproceso autonomo). Se activan automaticamente segun las pistas del pedido |
 | **Sub-chefs** | Sub-agentes SDD | Hacen el trabajo pesado: investigar, disenar, cocinar, verificar |
-| **Recetas** | Skills (SKILL.md) | Instrucciones detalladas para cada plato/tecnologia |
+| **Recetas (parameters MoE)** | Skills (SKILL.md) | Instrucciones detalladas para cada plato/tecnologia — se cargan dentro de cada especialista |
 | **Organizacion de cocina** | Scope Rule | Donde va cada cosa |
 | **Checklist pre-cocina** | Execution Gate | Verifica antes de cocinar: ingredientes, ubicacion, impacto |
 | **Control de calidad** | sdd-verify + O.R.T.A. | Verifican que todo salga bien |
@@ -604,6 +705,7 @@ Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
 | **Libro maestro compartido** | batuta-dots hub (v11.0) | Todas las recetas en un solo lugar, sincronizadas entre ambas cocinas |
 | **Protocolo de degustacion** | skill-eval (v13) | Evalua recetas con criterios medibles, propone mejoras, audita el ecosistema |
 | **Instructivo de franquicia** | SDK Deployment (v13) | Ficha tecnica en cada agent para desplegar sucursales automaticamente via CI/CD |
+| **Filosofia justo lo necesario** | Anti-Overengineering (v13.1) | Solo 4 alarmas obligatorias, el resto son guias. El chef actua con criterio, no pide permiso para cada paso |
 
 ---
 
@@ -678,7 +780,31 @@ R: Solo para tareas grandes que tienen muchas partes independientes. Piensa en l
 R: Si. Cada cocinero temporal es como tener otro chef completo trabajando. Si armas un equipo de 3, es como pagar 3 chefs. Por eso solo se usa cuando la tarea es lo suficientemente grande para justificarlo.
 
 **P: Por que el chef principal nunca cocina directamente?**
-R: Porque un CTO (director tecnico) no escribe codigo el mismo. Coordina al equipo, toma decisiones, y se asegura de que todo siga el plan. Si el CTO se pone a cocinar, nadie esta viendo el panorama completo.
+R: Porque un CTO (director tecnico) no escribe codigo el mismo. Coordina al equipo, toma decisiones, y se asegura de que todo siga el plan. Si el CTO se pone a cocinar, nadie esta viendo el panorama completo. Ademas, si el chef principal cargara TODO el conocimiento de TODOS los especialistas, se le llenaria la memoria y seria mas lento y mas caro.
+
+**P: Que es eso de "Mixture of Experts"?**
+R: Es un concepto de inteligencia artificial donde, en vez de usar UN solo modelo gigante para todo, se usan VARIOS especialistas y un "router" que decide cual usar para cada tarea. Batuta aplica la misma idea: el chef principal (router) decide a que especialista (experto) llamar, y cada especialista carga solo las recetas (parametros) que necesita. Es como la diferencia entre un medico general que intenta saber todo vs un hospital con especialistas — el hospital es mas eficiente.
+
+**P: Batuta tiene demasiadas reglas?**
+R: Batuta tiene pocas reglas OBLIGATORIAS (4 puntos de aprobacion humana) y muchas GUIAS (sugerencias de estilo y formato). Las guias ayudan al chef a cocinar mejor, pero no lo detienen en cada paso. Si una regla no aporta valor, se revisa y se ajusta — hay un proceso para eso (self-heal).
+
+---
+
+## La Filosofia del "Justo lo Necesario" (Anti-Overengineering) — v13.1
+
+Un restaurante puede tener demasiadas reglas. Si el chef tiene que llenar un formulario de 20 paginas antes de hacer un sandwich, algo esta mal. Las reglas deben proteger contra errores reales, no crear burocracia.
+
+En Batuta, esto se traduce a un principio simple:
+
+| Tipo de instruccion | Como se escribe | Ejemplo |
+|---------------------|----------------|---------|
+| **Puntos de aprobacion humana** (4 en total) | Con enfasis fuerte — son paradas obligatorias | "No avanzar sin aprobacion del usuario" |
+| **Reglas de estilo y formato** | Con tono de guia — orientan pero no bloquean | "Preferir respuesta directa para tareas simples" |
+| **Consejos operativos** | Con tono de sugerencia — el chef usa su criterio | "Delegar cuando las tareas pueden correr en paralelo" |
+
+**La analogia**: Imagina que en la cocina hay 4 alarmas contra incendios (las aprobaciones humanas) y 20 letreros de "lavese las manos" (las guias de estilo). Las alarmas son OBLIGATORIAS — si suenan, paras todo. Los letreros son recordatorios importantes, pero el chef no necesita parar a releerlos cada vez que toca una olla.
+
+El objetivo es un chef que actue con **criterio propio**, no uno que pida permiso para cada paso. Si el chef necesita picar una cebolla, simplemente la pica — no llena un formulario. Pero si va a cambiar todo el menu del restaurante, ahi si necesita tu aprobacion.
 
 ---
 

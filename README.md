@@ -8,7 +8,7 @@
 
 ## What is Batuta?
 
-Batuta is an AI agent ecosystem that gives Claude Code a complete set of skills, workflows, and development methodology. You write your conventions once in `CLAUDE.md`, and skills are lazy-loaded on demand based on context. When you are ready to extend to other platforms, a replication script generates the equivalent for Gemini, Copilot, Codex, or OpenCode.
+Batuta is an AI agent ecosystem built as a **Mixture of Experts (MoE)** for software development. `CLAUDE.md` acts as the **router** (intent classification + routing), **domain agents** are the **experts** (backend, data, quality — each carrying 80-120 lines of embedded expertise), and **skills** are the **parameters** (loaded on demand based on context). You write your conventions once, and the right expert activates automatically. When you are ready to extend to other platforms, a replication script generates the equivalent for Gemini, Copilot, Codex, or OpenCode.
 
 Inspired by [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.Dots), adapted for:
 
@@ -17,7 +17,8 @@ Inspired by [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.
 - **Scope Rule** that organizes files by who uses them, not by type.
 - **Skill Gap Detection** with automatic research via Context7.
 - **Lazy skill loading** — Claude reads ~220 lines at startup, skills load on demand.
-- **Scope agents** — 3 agents with skills auto-discovered by description field.
+- **MoE architecture** — CLAUDE.md routes, domain agents are experts, skills are parameters.
+- **6 agents** — 3 scope agents (pipeline, infra, observability) + 3 domain agents (backend, data, quality) with auto-discovered skills.
 - **Execution Gate** — mandatory pre-validation before any code change.
 - **Native hooks** — SessionStart, Stop.
 - **O.R.T.A. framework** (Observability, Repeatability, Traceability, Auto-supervision).
@@ -30,6 +31,7 @@ Inspired by [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.
 - **MCP Discovery** — active web search for beneficial MCP servers during explore phase.
 - **Superpowers-Style Review** — 2-stage review loop (spec + quality) for complex tasks.
 - **Trigger-Only Descriptions** — all 38 skill descriptions follow "Use when..." convention for reliable activation.
+- **Domain Agents** — 3 domain experts (backend, data, quality) with thick persona, auto-invoked as autonomous subprocesses based on technology signals.
 
 ---
 
@@ -184,18 +186,21 @@ batuta-dots/
 
 ## How It Works
 
-1. **CLAUDE.md** is the single entry point. It defines personality, rules, Scope Rule, Execution Gate, and SDD commands. Skills are auto-discovered by Claude Code based on their `description` field.
-2. **setup.sh --all** syncs skills and agents, installs hooks + permissions to `~/.claude/settings.json`, then copies the updated CLAUDE.md to root.
-3. **Claude Code** reads CLAUDE.md at conversation start (~220 lines), then uses 3-level lazy loading: principal agent → scope agent → skill.
+Batuta operates as a **Mixture of Experts (MoE)** system:
+
+1. **CLAUDE.md** is the **router** — the single entry point (~220 lines). It classifies user intent, enforces rules (Scope Rule, Execution Gate, SDD gates), and routes to the right expert. Skills are auto-discovered by Claude Code based on their `description` field.
+2. **Domain agents** are the **experts** — autonomous subprocesses carrying "thick persona" (80-120 lines of embedded domain knowledge). They run via the Task tool, not as inline context, keeping the main agent lightweight.
+3. **Skills** are the **parameters** — loaded on demand when an expert needs specific patterns (e.g., FastAPI CRUD, JWT auth, SQLAlchemy models).
+4. **setup.sh --all** syncs skills and agents, installs hooks + permissions to `~/.claude/settings.json`, then copies the updated CLAUDE.md to root.
 
 ```
-CLAUDE.md (personality + rules — ~220 lines)
+CLAUDE.md — THE ROUTER (intent classification + rules — ~220 lines)
     │
     ├──> Hooks (settings.json)
     │     ├── SessionStart → inject session.md as context
     │     └── Stop → update session.md + log session end
     │
-    ├──> Skills (auto-discovered by Claude Code via description)
+    ├──> PARAMETERS — Skills (auto-discovered by Claude Code via description)
     │     ├── pipeline: sdd-init...sdd-archive (9 skills)
     │     ├── infra: scope-rule, ecosystem-creator, ecosystem-lifecycle, team-orchestrator, security-audit
     │     └── observability: (no active skills)
@@ -205,12 +210,12 @@ CLAUDE.md (personality + rules — ~220 lines)
     │     ├── infra-agent (Skill Gap Detection, Ecosystem Auto-Update)
     │     └── observability-agent (session lifecycle)
     │
-    ├──> Domain Agents (provisioned by tech detection)
-    │     ├── backend-agent (fastapi|django|express|nestjs)
-    │     ├── quality-agent (always provisioned)
-    │     └── data-agent (pandas|langchain|anthropic)
+    ├──> EXPERTS — Domain Agents (autonomous subprocesses, provisioned by tech detection)
+    │     ├── backend-agent (fastapi|django|express|nestjs) — API, auth, DB expertise
+    │     ├── quality-agent (always provisioned) — testing, security, debugging
+    │     └── data-agent (pandas|langchain|anthropic) — ETL, AI/ML, RAG expertise
     │
-    └──> Agent Team (Level 3) ──> spawn teammates from scope agents
+    └──> Agent Team (Level 3) ──> spawn teammates from scope + domain agents
 ```
 
 ### Multi-Platform: Claude Code + Antigravity Lite
@@ -283,9 +288,9 @@ Users describe what they need in natural language. The agent classifies intent a
 | Question / Explain | Answer directly |
 | Explicit `/sdd-*` command | Manual override |
 
-### Agents (Scope + Domain)
+### Agents (Scope + Domain) — The MoE Experts
 
-Batuta uses two types of agents: **3 Scope Agents** (always loaded) organize skills by domain, and **3 Domain Agents** (provisioned by tech detection) carry embedded expertise for specific technology stacks.
+Batuta's 6 agents form the "experts" layer of the MoE architecture. **3 Scope Agents** (always loaded) organize the SDD pipeline machinery, and **3 Domain Agents** (provisioned by tech detection) carry "thick persona" — 80-120 lines of embedded domain expertise that run as autonomous subprocesses, not inline context.
 
 **Scope Agents** — always loaded, skills auto-discovered by `description` field:
 
@@ -295,15 +300,22 @@ Batuta uses two types of agents: **3 Scope Agents** (always loaded) organize ski
 | `infra-agent` | File organization, ecosystem, security | scope-rule, ecosystem-creator, ecosystem-lifecycle, team-orchestrator, security-audit |
 | `observability-agent` | Session lifecycle | (no active skills) |
 
-**Domain Agents** — provisioned to projects based on detected technologies:
+**Domain Agents** — auto-invoked based on technology signals, run as subprocesses via Task tool:
 
 | Domain Agent | Provisioned When | Expertise |
 |--------------|-----------------|-----------|
-| `backend-agent` | fastapi, django, express, nestjs detected | Backend architecture, API patterns, DB design |
-| `quality-agent` | Always provisioned | AI Validation Pyramid enforcement, testing strategy |
-| `data-agent` | pandas, langchain, anthropic detected | Data pipelines, LLM integration, RAG patterns |
+| `backend-agent` | fastapi, django, express, nestjs detected | API design, auth flows, DB schema, middleware |
+| `quality-agent` | Always provisioned | AI Validation Pyramid, testing strategy, security audits, debugging |
+| `data-agent` | pandas, langchain, anthropic detected | ETL pipelines, AI/ML integration, RAG patterns |
 
 Domain agents carry personality + patterns + skill pointers and include an `sdk:` block for programmatic deployment via Claude Agent SDK. This keeps the principal agent lightweight (~220 lines) and each agent focused on its domain.
+
+**Agent Lifecycle** — agents follow the same sync model as skills:
+
+1. **Create**: `ecosystem-creator` generates the agent in `BatutaClaude/agents/` (hub)
+2. **Classify**: `ecosystem-lifecycle` determines if the agent is generic (hub) or project-specific (local)
+3. **Sync to global**: `setup.sh --sync` copies hub agents to `~/.claude/agents/`
+4. **Provision to projects**: `sdd-init` copies relevant agents from global to `.claude/agents/` based on detected technologies
 
 ### Execution Gate
 
@@ -318,13 +330,13 @@ Before any code change, a mandatory pre-validation runs. Cannot be skipped.
 
 Before writing code with any technology, Claude checks if an active skill exists. If not, it stops and offers to research via Context7 and create the skill before proceeding.
 
-### Lazy Loading (3 levels)
+### Lazy Loading (3 levels — MoE in action)
 
-| Level | What loads | Lines |
-|-------|-----------|-------|
-| 1 | CLAUDE.md (router) | ~220 |
-| 2 | Scope agent | ~80-120 |
-| 3 | Individual skill | ~200-500 |
+| Level | MoE Role | What loads | Lines |
+|-------|----------|-----------|-------|
+| 1 | Router | CLAUDE.md (intent classification + rules) | ~220 |
+| 2 | Expert | Scope or domain agent | ~80-120 |
+| 3 | Parameters | Individual skill | ~200-500 |
 
 Only the needed level loads. A simple question never reaches level 3.
 
@@ -367,7 +379,7 @@ Output scales to task complexity via three tiers (MICRO/STANDARD/COMPLEX). Sessi
 
 ---
 
-## Available Skills (38 + 6 agents)
+## Available Skills (38 skills + 6 agents)
 
 | Skill | Scope | Description |
 |-------|-------|-------------|

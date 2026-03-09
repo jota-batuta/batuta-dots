@@ -81,7 +81,7 @@ Stack: Next.js, PostgreSQL, Redis
 ---
 
 ### /sdd-apply
-**Que hace**: Implementa codigo siguiendo las tareas del cambio activo.
+**Que hace**: Implementa codigo siguiendo las tareas del cambio activo. Durante la implementacion, los domain agents (backend, quality, data) se auto-invocan segun las tecnologias de cada tarea — no necesitas activarlos manualmente.
 **Cuando**: Las fases de planificacion estan completas.
 **Resultado**: Codigo implementado, documentado, con Scope Rule aplicada.
 
@@ -127,8 +127,9 @@ Stack: Next.js, PostgreSQL, Redis
 ```
 
 ### /create-sub-agent
-**Que hace**: Crea un agente nuevo.
-**Cuando**: Tienes 3+ skills que necesitan coordinacion.
+**Que hace**: Crea un agente nuevo con thick persona (expertise embebido). Despues de crearlo, `ecosystem-lifecycle` lo clasifica como generico o especifico del proyecto.
+**Cuando**: Tienes 3+ skills que necesitan coordinacion y un dominio con convenciones propias.
+**Ciclo de vida**: crear → clasificar → sincronizar → provisionar. Ver [Extendiendo el ecosistema](../04-nivel-tres/extendiendo-el-ecosistema.md).
 
 ```
 /create-sub-agent mobile-agent

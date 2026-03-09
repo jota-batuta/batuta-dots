@@ -83,9 +83,25 @@ Cada skill tiene un campo `description` en su archivo que empieza con "Use when.
 
 ## Como se activan
 
+Los skills se activan de tres formas:
+
 **Automatica**: Escribes `/sdd-explore` → pipeline-agent activa sdd-explore.
 **Por deteccion**: sdd-explore detecta 3+ variantes → sugiere process-analyst.
 **Manual**: "Necesito analizar variantes con process-analyst".
+
+### Skills dentro de domain agents (carga bajo demanda)
+
+Los domain agents (backend, quality, data) tienen un mecanismo especial: sus skills se cargan **bajo demanda** (`defer_loading: true`). Esto significa que el agente no carga todos sus skills al arrancar — los busca y activa cuando los necesita.
+
+Por ejemplo, cuando backend-agent recibe una tarea sobre autenticacion, busca y activa jwt-auth en ese momento. Si la tarea fuera sobre modelos de base de datos, activaria sqlalchemy-models en su lugar. Esto ahorra tokens y mantiene al agente enfocado.
+
+| Domain Agent | Skills disponibles | Cuando se cargan |
+|-------------|-------------------|-----------------|
+| backend-agent | fastapi-crud, jwt-auth, sqlalchemy-models, api-design, message-queues, typescript-node | Al detectar la tecnologia en la tarea |
+| quality-agent | tdd-workflow, debugging-systematic, security-audit, e2e-testing, accessibility-audit, performance-testing | Siempre disponibles (no usa defer_loading) |
+| data-agent | data-pipeline-design, llm-pipeline-design, vector-db-rag | Al detectar la tecnologia en la tarea |
+
+Nota que quality-agent es la excepcion: sus skills estan disponibles inmediatamente porque las verificaciones de calidad deben poder ejecutarse en cualquier momento, sin espera.
 
 ## Si falta un skill
 

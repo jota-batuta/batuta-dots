@@ -66,11 +66,35 @@ Ahora, cada vez que trabajes en un proyecto React Native, Batuta aplica automati
 Los agentes coordinan skills. Crealos cuando:
 - Tienes 3+ skills que trabajan juntos en un dominio
 - Necesitas logica de coordinacion entre skills
-- Quieres encapsular un area de conocimiento
+- Quieres encapsular un area de conocimiento con criterio propio (thick persona)
 
 Cada agente incluye un bloque `sdk:` en su template, que define como deployar el agente programaticamente via Claude Agent SDK. Esto permite que el agente funcione tanto dentro de Batuta como en pipelines de CI/CD automatizados.
 
 Si el agente es un **domain agent** (especialista en un dominio como backend o data), puedes registrarlo en la tabla de provisioning de `sdd-init` para que se copie automaticamente a proyectos que usen esa tecnologia.
+
+### El ciclo de vida de un agente
+
+Los agentes siguen el mismo ciclo de vida que los skills — nacen en un lugar y pueden propagarse a otros:
+
+```
+crear → clasificar → sincronizar → provisionar → sincronizar de vuelta
+```
+
+Paso a paso:
+
+1. **Crear**: `ecosystem-creator` genera el agente en `BatutaClaude/agents/` (si es en el hub) o `.claude/agents/` (si es en un proyecto)
+2. **Clasificar**: `ecosystem-lifecycle` determina si el agente es generico (util para todos) o especifico del proyecto (se queda local)
+3. **Sincronizar al global**: `setup.sh --sync` o `/batuta-update` copia los agentes del hub a `~/.claude/agents/` (tu libreria personal)
+4. **Provisionar a proyectos**: `sdd-init` detecta tecnologias y copia los agentes relevantes desde `~/.claude/agents/` a `.claude/agents/` del proyecto
+5. **Sincronizar de vuelta**: Si un proyecto crea un agente util y generico, `ecosystem-lifecycle` recomienda propagarlo al hub. Con tu aprobacion, `/batuta-update` lo distribuye a futuros proyectos
+
+Los agentes viven en tres niveles, igual que los skills:
+
+| Nivel | Ubicacion | Proposito |
+|-------|-----------|-----------|
+| Hub | `BatutaClaude/agents/` | La fuente de verdad — los agentes "oficiales" |
+| Global | `~/.claude/agents/` | Tu libreria personal, sincronizada desde el hub |
+| Proyecto | `.claude/agents/` | Solo los agentes relevantes para este proyecto |
 
 ---
 
@@ -98,19 +122,19 @@ No siempre necesitas crear skills proactivamente. El sistema detecta gaps automa
 
 ---
 
-## Propagando skills entre proyectos
+## Propagando skills y agentes entre proyectos
 
-Si creas un skill en un proyecto y quieres que este disponible en todos:
+Si creas un skill o agente en un proyecto y quieres que este disponible en todos:
 
 **Opcion rapida** (un solo comando):
 ```bash
 bash ~/batuta-dots/infra/sync.sh --push /path/to/mi-proyecto
 ```
-Esto importa skills nuevos al hub, cross-syncs a Antigravity, y hace commit + push automaticamente.
+Esto importa skills y agentes nuevos al hub, cross-syncs a Antigravity, y hace commit + push automaticamente.
 
-**Opcion automatica**: Al terminar el proyecto, Batuta pregunta: "Quieres propagar estos skills a batuta-dots?" Si dices si, ejecuta el proceso por ti.
+**Opcion automatica**: Al terminar el proyecto, Batuta pregunta: "Quieres propagar estos skills/agentes a batuta-dots?" Si dices si, ejecuta el proceso por ti.
 
-En tu proximo proyecto, el skill ya esta disponible via `/batuta-update`.
+En tu proximo proyecto, el skill o agente ya esta disponible via `/batuta-update`.
 
 ---
 

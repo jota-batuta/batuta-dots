@@ -2,6 +2,8 @@
 
 Ya conoces los 3 niveles: Solo, Subagente, y Agent Team. Con 6 agentes disponibles (3 scope + 3 domain), aqui aprendes cuando y como usar cada uno para maximizar resultados.
 
+Recuerda: los domain agents se auto-invocan — no necesitas pedirlos. En Nivel 2, Batuta los activa como subagentes que entran, ejecutan, y devuelven el resultado. En Nivel 3, se integran como teammates con contratos formales y comunicacion entre ellos.
+
 ---
 
 ## El arbol de decision completo
@@ -89,7 +91,18 @@ Para cambios que cruzan capas:
 | infra-dev | Deploy | Docker, CI/CD | — |
 | quality-dev | Tests | E2E, integration | quality-agent |
 
-Los domain agents aportan expertise de dominio al equipo — en vez de un agente generico, el equipo tiene un especialista. Por ejemplo, backend-agent sabe de patrones FastAPI y JWT, mientras que data-agent conoce ETL y pipelines de datos.
+Los domain agents aportan su **thick persona** al equipo — 80-120 lineas de expertise embebido que les permite tomar decisiones de dominio sin consultar al agente principal. Por ejemplo, backend-agent sabe de patrones FastAPI y JWT, mientras que data-agent conoce ETL y pipelines de datos.
+
+### Domain agents en Nivel 2 vs Nivel 3
+
+| Aspecto | Nivel 2 (Subagente) | Nivel 3 (Teammate) |
+|---------|--------------------|--------------------|
+| **Invocacion** | Auto-invocado por el router | Asignado en el equipo con contrato |
+| **Comunicacion** | Unidireccional (recibe tarea, devuelve resultado) | Bidireccional (lee y escribe en contexto compartido) |
+| **Skills** | Cargados bajo demanda (`defer_loading`) | Cargados bajo demanda (`defer_loading`) |
+| **Autonomia** | Ejecuta una tarea y sale | Mantiene contexto durante toda la sesion del equipo |
+
+En Nivel 2, piensa en el domain agent como un consultor externo: le das una tarea, la ejecuta, y te devuelve el resultado. En Nivel 3, es un miembro del equipo con escritorio propio: tiene acceso al contexto compartido y puede coordinarse con otros teammates.
 
 ---
 
@@ -117,7 +130,7 @@ Si un teammate intenta tocar archivos que no le pertenecen, el sistema lo detect
 | 2 | 1.2-1.5x | Tareas medianas, ganas velocidad |
 | 3 | 3-5x | Tareas complejas, ganas calidad y paralelismo |
 
-**Regla**: Si la tarea te tomaria mas de 2 horas en Nivel 1, probablemente vale Nivel 3. Los domain agents no agregan costo extra — son expertise embebido, no agentes adicionales.
+**Regla**: Si la tarea te tomaria mas de 2 horas en Nivel 1, probablemente vale Nivel 3. Los domain agents en Nivel 2 no agregan costo significativo — son auto-invocados segun la necesidad. En Nivel 3, el costo viene de la coordinacion entre teammates, no de la expertise en si.
 
 ---
 

@@ -4,6 +4,58 @@
 
 ---
 
+## v13.2.0 — MoE Router Optimization + Agent Auto-Invocation (2026-03-09)
+
+### Contexto
+
+Anthropic publico en marzo 2026 que el lenguaje agresivo (NEVER/MUST/ALWAYS excesivo) perjudica la precision de routing en Claude 4.6 — el modelo sobre-dispara reglas en contextos donde no aplican. Paralelamente, el sistema de agentes carecia de delegacion automatica: el agente principal ejecutaba todo en lugar de delegar a los domain agents (backend, data, quality). Esta version optimiza CLAUDE.md como router MoE (Mixture of Experts) y agrega auto-invocacion de agentes de dominio.
+
+### Changes
+
+#### CLAUDE.md — Optimizacion de tono
+- **MODIFIED** `CLAUDE.md` — Suavizadas 21 instancias de lenguaje agresivo (NEVER/MUST/ALWAYS → instrucciones directas). Solo 4 puntos de enfasis permanecen en gates de aprobacion humana (proposal approval, task plan approval, self-heal fix approval, THE RULE).
+- **MODIFIED** `CLAUDE.md` — Reemplazada tabla redundante de Specialist Skills (23 lineas) con referencia de 2 lineas a auto-discovery. Las skills ya se inyectan en session start — la tabla duplicaba informacion y arriesgaba desincronizacion.
+
+#### CLAUDE.md — Delegacion de Domain Agents
+- **NEW** Subseccion "Domain Agent Delegation (Auto-Invocation)" en Scope Routing — tabla de routing que mapea senales de tecnologia a domain agents (backend-agent, data-agent, quality-agent). Incluye protocolo de delegacion (5 pasos), tabla de cuando-NO-delegar, e integracion con Agent Teams.
+- **NEW** Documentacion de Agent Lifecycle — ciclo completo (create → classify → sync → provision → sync back to hub). Incluye expectativas de conteo por tipo: 3 scope agents fijos, 3-8 domain agents, project-specific agents variables. Documenta criterios para justificar nuevos domain agents.
+- **NEW** Prompt anti-overengineering en seccion Behavior — aborda la tendencia de Opus 4.6 a sobre-delegar con instruccion directa de preferir accion inline para tareas simples.
+
+#### setup.sh
+- **MODIFIED** `setup.sh` — Cambiados mensajes de log "scope agents" → "agents" en funcion de sync (5 ubicaciones) para reflejar que TODOS los tipos de agentes (scope + domain) se sincronizan.
+
+#### ecosystem-creator — Agent Registration Checklist
+- **MODIFIED** `ecosystem-creator/SKILL.md` — Reescrito checklist de registro de agentes para coincidir con el flujo de sync actual. Reemplaza referencias obsoletas a opencode.json. Documenta destino por tipo de agente (scope vs domain), requisitos de frontmatter, reglas de deteccion en skill-provisions.yaml, y actualizaciones a tabla de routing en CLAUDE.md.
+
+### Arquitectura
+
+- **MoE framing**: Arquitectura Batuta explicitamente enmarcada como Mixture of Experts — CLAUDE.md es el Router (ligero, solo routing), domain agents son los Experts (personas densas, ejecucion autonoma), skills son los Parameters (cargados bajo demanda dentro de los experts).
+- **Sistema de 3 niveles validado**: Main agent → domain agents → skills. Los domain agents cargan 80-120 lineas de expertise embebido ("thick persona"). Nuevas sub-especialidades NO crean nuevos agentes — se convierten en skills cargadas por domain agents existentes.
+
+### Base de investigacion
+
+- Guia de Anthropic (marzo 2026): lenguaje agresivo perjudica precision de routing en Claude 4.6
+- Consenso de industria: 3-5 agentes es optimo para coordinacion multi-agente
+- Patron Orchestrator-Worker (recomendado por Anthropic) coincide con el diseno de Batuta
+- Divulgacion progresiva de skills validada como best practice
+
+### Principio de diseno
+
+- **Router ligero, experts densos**: CLAUDE.md no ejecuta — clasifica y delega. Los domain agents llevan el expertise. Esto reduce el tamano del contexto del router y mejora la precision de routing.
+- **Tono calibrado al modelo**: Las instrucciones se adaptan al comportamiento observado del modelo. Claude 4.6 responde mejor a instrucciones directas que a enfasis agresivo repetido.
+- **Anti-overengineering**: Tareas simples se ejecutan inline. La delegacion tiene un costo de contexto — solo se justifica cuando el domain agent aporta expertise que el router no tiene.
+
+### Rollback
+
+```bash
+git revert <commit-hash>  # Revierte optimizacion MoE y auto-invocacion
+# CLAUDE.md vuelve a version con lenguaje agresivo y sin delegacion de domain agents
+# setup.sh vuelve a mensajes "scope agents"
+# ecosystem-creator pierde checklist actualizado
+```
+
+---
+
 ## v13.1.0 — Agent SDK Skill (2026-03-09)
 
 ### Contexto

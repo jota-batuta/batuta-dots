@@ -1,4 +1,4 @@
-# Diagrama de Arquitectura — Ecosistema Batuta (v13)
+# Diagrama de Arquitectura — Ecosistema Batuta (v13.1)
 
 ## Vista General del Ecosistema
 
@@ -56,6 +56,69 @@ flowchart TB
     style COMMANDS_LOCAL fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
     style DOMAIN_SRC fill:#2d2d2d,stroke:#9B7AB8,color:#F5EDE4
 ```
+
+---
+
+## Mixture of Experts (MoE): Modelo Conceptual (v13.1)
+
+Batuta sigue una arquitectura **Mixture of Experts** adaptada a agentes de IA:
+
+```mermaid
+flowchart TD
+    INPUT["Prompt del usuario"]
+
+    subgraph ROUTER["ROUTER (CLAUDE.md — ~220 lineas)"]
+        CLASSIFY["Clasifica intent:<br/>Build | Fix | Continue |<br/>Backtrack | Question"]
+        ROUTE["Routing table:<br/>API/auth/ORM → backend-agent<br/>ETL/AI/RAG → data-agent<br/>tests/security → quality-agent"]
+    end
+
+    subgraph EXPERTS["EXPERTS (Domain Agents — 80-120 lineas c/u)"]
+        direction LR
+        BACKEND_E["backend-agent<br/>Thick persona:<br/>API, auth, DB patterns"]
+        DATA_E["data-agent<br/>Thick persona:<br/>ETL, RAG, LLM pipelines"]
+        QUALITY_E["quality-agent<br/>Thick persona:<br/>TDD, debugging, security"]
+    end
+
+    subgraph PARAMETERS["PARAMETERS (Skills — carga lazy)"]
+        direction LR
+        SK1["fastapi-crud<br/>jwt-auth<br/>sqlalchemy-models"]
+        SK2["data-pipeline-design<br/>llm-pipeline-design"]
+        SK3["security-audit<br/>tdd-workflow<br/>e2e-testing"]
+    end
+
+    OUTPUT["Resultado especializado"]
+
+    INPUT --> ROUTER
+    CLASSIFY --> ROUTE
+    ROUTE -->|"senales tech"| EXPERTS
+    BACKEND_E --> SK1
+    DATA_E --> SK2
+    QUALITY_E --> SK3
+    SK1 --> OUTPUT
+    SK2 --> OUTPUT
+    SK3 --> OUTPUT
+
+    style ROUTER fill:#D4956A,color:#fff
+    style EXPERTS fill:#2d2d2d,stroke:#9B7AB8,color:#F5EDE4
+    style PARAMETERS fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
+    style CLASSIFY fill:#E8B84D,color:#000
+    style ROUTE fill:#E8B84D,color:#000
+    style BACKEND_E fill:#C4A47A,color:#fff
+    style DATA_E fill:#7AC4A4,color:#fff
+    style QUALITY_E fill:#D47272,color:#fff
+```
+
+> **Analogia con MoE en ML**: En un modelo Mixture of Experts, un router decide que experto procesa cada token. En Batuta: el **Router** (CLAUDE.md) clasifica el intent del usuario y las senales tecnologicas. Los **Experts** (domain agents) son subprocesos autonomos con 80-120 lineas de expertise embebido ("thick persona"). Los **Parameters** (skills) son patrones cargados bajo demanda dentro de cada experto. Esta separacion ahorra tokens — cada domain agent corre en su propio contexto via Task tool, sin inyectar su expertise en el agente principal.
+
+### Tabla de Routing: Senales → Experto
+
+| Senales en el prompt | Experto activado | Delegacion |
+|---------------------|-----------------|------------|
+| API endpoints, auth flows, ORM, migrations, REST | `backend-agent` | Implementacion server-side, esquema DB, middleware auth |
+| ETL, transformaciones de datos, LLM, RAG, vector DBs | `data-agent` | Diseno de pipeline, implementacion AI/ML, arquitectura de datos |
+| Tests, debugging, security review, code quality, E2E | `quality-agent` | Planes de test, debugging sistematico, auditorias de seguridad |
+
+Los domain agents corren como **subprocesos autonomos** (Task tool), no como inyeccion de contexto inline. Esto significa que cada experto carga su propio contexto y skills, manteniendo al agente principal ligero.
 
 ---
 
@@ -196,6 +259,42 @@ session-start.sh usa logica 3-way:
 
 ---
 
+## Ciclo de Vida de un Agent (v13.1)
+
+```mermaid
+flowchart LR
+    CREATE["CREATE<br/>ecosystem-creator<br/>genera agent en<br/>BatutaClaude/agents/<br/>o .claude/agents/"]
+    CLASSIFY["CLASSIFY<br/>ecosystem-lifecycle<br/>generic vs<br/>project-specific"]
+    SYNC["SYNC<br/>setup.sh --sync<br/>copia hub agents<br/>a ~/.claude/agents/"]
+    PROVISION["PROVISION<br/>sdd-init<br/>copia agents relevantes<br/>a .claude/agents/"]
+    SYNCBACK["SYNC BACK<br/>ecosystem-lifecycle<br/>propagacion al hub<br/>(requiere auth)"]
+
+    CREATE --> CLASSIFY
+    CLASSIFY -->|"generic"| SYNC --> PROVISION
+    CLASSIFY -->|"project-specific"| PROVISION
+    PROVISION -.->|"agent util para otros"| SYNCBACK --> SYNC
+
+    style CREATE fill:#8BB87A,color:#fff
+    style CLASSIFY fill:#E8B84D,color:#000
+    style SYNC fill:#7AAFC4,color:#fff
+    style PROVISION fill:#9B7AB8,color:#fff
+    style SYNCBACK fill:#D4956A,color:#fff
+```
+
+> **Ciclo completo**: crear → clasificar → sincronizar → provisionar → (opcionalmente) sincronizar de vuelta al hub. Los agents **genericos** (utiles para cualquier proyecto) fluyen al hub y de ahi a todos los proyectos. Los agents **project-specific** se quedan locales. Si un agent local demuestra utilidad general, `ecosystem-lifecycle` propone propagarlo al hub — siempre con autorizacion del usuario.
+
+### Modelo de Cantidad de Agents
+
+| Tipo | Cantidad | Criterio de crecimiento |
+|------|----------|------------------------|
+| **Scope agents** (pipeline, infra, observability) | Fijo en 3 | Maquinaria del SDD pipeline — no crece |
+| **Domain agents** (backend, quality, data) | 3-8 total | Solo crece para dominios genuinamente nuevos (mobile, DevOps, frontend) |
+| **Project-specific** | Variable | Se quedan locales, no sincronizan al hub a menos que se generalicen |
+
+Un domain agent nuevo solo se justifica cuando el dominio tiene: (1) convenciones propias que difieren de agents existentes, (2) 3+ skills que le pertenecen, y (3) limites de scope claros (own/coordinate/don't-touch).
+
+---
+
 ## Flujo de Trabajo SDD (Spec-Driven Development) — v11 State Machine
 
 ```mermaid
@@ -308,7 +407,7 @@ flowchart TD
     style CI_CD fill:#9B7AB8,color:#fff
 ```
 
-> Claude lee ~220 lineas al iniciar (Nivel 1). El agent (scope o domain) agrega ~100 lineas (Nivel 2). El skill agrega ~200-500 lineas (Nivel 3). Solo se carga lo que se necesita. El **Nivel 4** es un canal de deployment: el bloque `sdk:` en cada agent define model, max_tokens, allowed_tools y settings, permitiendo que CI/CD despliegue agentes como servicios independientes.
+> **Mapeo MoE**: El Nivel 1 es el **router** (CLAUDE.md, ~220 lineas). El Nivel 2 carga al **expert** (domain agent, ~80-120 lineas de thick persona). El Nivel 3 carga los **parameters** (skill, ~200-500 lineas de patrones especificos). Solo se carga lo que se necesita — los domain agents corren como subprocesos autonomos (Task tool), no como contexto inyectado en el agente principal. El **Nivel 4** es un canal de deployment: el bloque `sdk:` en cada agent define model, max_tokens, allowed_tools y settings, permitiendo que CI/CD despliegue agentes como servicios independientes.
 
 ---
 
@@ -434,22 +533,30 @@ flowchart TD
 
 ---
 
-## Modelo de Ejecucion de 3 Niveles (v7)
+## Modelo de Ejecucion de 3 Niveles (v13.1)
 
 ```mermaid
 flowchart TD
     USER["Usuario pide tarea"]
     GATE["Execution Gate<br/>clasifica complejidad"]
 
-    subgraph NIVEL1["NIVEL 1 — Solo Session"]
-        SOLO["Claude trabaja solo<br/>Bug fix, pregunta, edicion<br/>CLAUDE.md → Gate → skill → ejecutar"]
+    subgraph NIVEL1["NIVEL 1 — Main Agent (CLAUDE.md router)"]
+        SOLO["Claude trabaja solo<br/>Bug fix, pregunta, edicion<br/>CLAUDE.md → Gate → skill → ejecutar<br/><br/>Maneja tareas simples directamente.<br/>El router MoE decide si escalar."]
     end
 
-    subgraph NIVEL2["NIVEL 2 — Subagents (Task tool)"]
-        SUBAGENT["Fire-and-forget<br/>Investigacion, verificacion<br/>Resultado vuelve al contexto"]
+    subgraph NIVEL2["NIVEL 2 — Domain Agents (subagents via Task tool)"]
+        direction TB
+        SUBAGENT["Domain agents como subprocesos autonomos<br/>Cada uno con su propio contexto + skills"]
+        BACKEND_SUB["backend-agent<br/>(API/auth/DB)"]
+        DATA_SUB["data-agent<br/>(ETL/AI/RAG)"]
+        QUALITY_SUB["quality-agent<br/>(tests/debug/security)"]
+
+        SUBAGENT --> BACKEND_SUB
+        SUBAGENT --> DATA_SUB
+        SUBAGENT --> QUALITY_SUB
     end
 
-    subgraph NIVEL3["NIVEL 3 — Agent Teams"]
+    subgraph NIVEL3["NIVEL 3 — Agent Teams (orquestacion completa)"]
         LEAD["Lead (coordinador)"]
         TM1["Teammate 1<br/>(sesion independiente)"]
         TM2["Teammate 2<br/>(sesion independiente)"]
@@ -468,8 +575,8 @@ flowchart TD
 
     USER --> GATE
     GATE -->|"1 archivo, simple"| NIVEL1
-    GATE -->|"investigacion,<br/>verificacion puntual"| NIVEL2
-    GATE -->|"multi-modulo,<br/>pipeline completo,<br/>debugging complejo"| NIVEL3
+    GATE -->|"implementacion de dominio,<br/>investigacion, verificacion"| NIVEL2
+    GATE -->|"multi-modulo,<br/>pipeline completo,<br/>4+ archivos multi-scope"| NIVEL3
 
     style NIVEL1 fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
     style NIVEL2 fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
@@ -478,9 +585,12 @@ flowchart TD
     style LEAD fill:#D4956A,color:#fff
     style MAILBOX fill:#9B7AB8,color:#fff
     style TASKLIST fill:#7AAFC4,color:#fff
+    style BACKEND_SUB fill:#C4A47A,color:#fff
+    style DATA_SUB fill:#7AC4A4,color:#fff
+    style QUALITY_SUB fill:#D47272,color:#fff
 ```
 
-> **Nivel 1** = Developer senior trabajando solo. **Nivel 2** = Developer pide ayuda puntual a un colega. **Nivel 3** = CTO arma un squad dedicado para un sprint. El Execution Gate recomienda el nivel segun la complejidad.
+> **Nivel 1** = Main agent (CLAUDE.md como router MoE). Maneja tareas simples directamente. **Nivel 2** = Domain agents como subprocesos autonomos via Task tool. Cada experto carga su propio contexto, ahorrando tokens en el agente principal. **Nivel 3** = Agent Teams con orquestacion completa: teammates con sesiones independientes, mailbox para comunicacion y task list con dependencias. El Execution Gate recomienda el nivel segun la complejidad.
 
 ---
 
@@ -954,31 +1064,44 @@ flowchart TD
 
 ---
 
-## Agent Types: Scope vs Domain (v13)
+## Agent Types: Scope vs Domain — MoE Mapping (v13.1)
 
 ```mermaid
 flowchart TD
-    subgraph SCOPE["SCOPE AGENTS (siempre cargados — maquinaria del hub)"]
+    subgraph MOE_LABEL["MIXTURE OF EXPERTS — Roles"]
+        direction LR
+        MOE_ROUTER["Router = CLAUDE.md"]
+        MOE_EXPERTS["Experts = Domain Agents"]
+        MOE_PARAMS["Parameters = Skills"]
+    end
+
+    subgraph SCOPE["SCOPE AGENTS (maquinaria del hub — no son 'experts' MoE)"]
         direction TB
         PIPELINE["pipeline-agent<br/>SDD lifecycle<br/>(explore → archive)"]
         INFRA["infra-agent<br/>File/skill/agent creation<br/>(scope-rule, ecosystem-creator)"]
         OBS["observability-agent<br/>Session continuity<br/>(session.md, hooks)"]
     end
 
-    subgraph DOMAIN["DOMAIN AGENTS (provisionados a proyectos)"]
+    subgraph DOMAIN["DOMAIN AGENTS (los 'experts' del MoE — thick persona)"]
         direction TB
-        BACKEND["backend-agent<br/>API, auth, DB patterns<br/>(provisionado: Python|Node|Go)"]
-        QUALITY["quality-agent<br/>TDD, debugging, security<br/>(siempre provisionado)"]
-        DATA["data-agent<br/>ETL, RAG, LLM pipelines<br/>(provisionado: pandas|ETL|RAG|LLM)"]
+        BACKEND["backend-agent<br/>API, auth, DB patterns<br/>(80-120 lineas expertise)<br/>(provisionado: Python|Node|Go)"]
+        QUALITY["quality-agent<br/>TDD, debugging, security<br/>(80-120 lineas expertise)<br/>(siempre provisionado)"]
+        DATA["data-agent<br/>ETL, RAG, LLM pipelines<br/>(80-120 lineas expertise)<br/>(provisionado: pandas|ETL|RAG|LLM)"]
     end
 
     subgraph SDK["SDK DEPLOYABLE (todos los agents)"]
         SDK_BLOCK["Bloque sdk: en frontmatter<br/>model, max_tokens,<br/>allowed_tools, setting_sources,<br/>defer_loading"]
     end
 
+    MOE_ROUTER -.-> SCOPE
+    MOE_EXPERTS -.-> DOMAIN
     SCOPE --> SDK_BLOCK
     DOMAIN --> SDK_BLOCK
 
+    style MOE_LABEL fill:#2d2d2d,stroke:#E8B84D,color:#F5EDE4
+    style MOE_ROUTER fill:#D4956A,color:#fff
+    style MOE_EXPERTS fill:#9B7AB8,color:#fff
+    style MOE_PARAMS fill:#8BB87A,color:#fff
     style SCOPE fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
     style DOMAIN fill:#2d2d2d,stroke:#9B7AB8,color:#F5EDE4
     style SDK fill:#2d2d2d,stroke:#D47272,color:#F5EDE4
@@ -991,7 +1114,7 @@ flowchart TD
     style SDK_BLOCK fill:#D47272,color:#fff
 ```
 
-> Los **scope agents** son la maquinaria del hub — siempre cargados, manejan el ciclo de vida SDD, la infraestructura y la continuidad de sesion. Los **domain agents** son especialistas provisionados a cada proyecto segun su tech stack. quality-agent es la excepcion: siempre se provisiona porque la calidad aplica a todo proyecto. Todos los agents (6 en total) tienen un bloque `sdk:` que permite desplegarlos como servicios independientes via CI/CD.
+> En el modelo **MoE**: CLAUDE.md es el **router** (clasifica intent, activa expertos). Los **domain agents** son los **experts** — subprocesos autonomos con "thick persona" de 80-120 lineas de expertise embebido que corren via Task tool, no como contexto inyectado. Los **skills** son los **parameters** — patrones cargados bajo demanda dentro de cada experto. Los **scope agents** no son "experts" en el sentido MoE — son la maquinaria fija del hub (SDD lifecycle, infraestructura, sesion). quality-agent siempre se provisiona; la calidad aplica a todo proyecto. Todos los agents (6 en total) tienen un bloque `sdk:` para deployment independiente.
 
 ---
 
@@ -1040,6 +1163,23 @@ flowchart TD
 ```
 
 > **Eval Mode**: ejecuta una tarea con y sin el skill, compara la calidad usando criterios definidos en SKILL.eval.yaml. **Improve Mode**: analiza los resultados del eval y propone ediciones concretas al SKILL.md para mejorar su efectividad. **Benchmark Mode**: corre eval para multiples skills y genera un reporte de salud del ecosistema. El formato SKILL.eval.yaml define quality_criteria, test_tasks y grading_rubric para testing conductual de skills.
+
+---
+
+## Anti-Overengineering: Principios de Calibracion (v13.1)
+
+El modelo Opus 4.6 se beneficia de instrucciones **calmadas y directas**. El lenguaje agresivo (NEVER/MUST/ALWAYS en exceso) causa overtriggering — el agente interpreta instrucciones informativas como gates obligatorios.
+
+### Principios
+
+| Principio | Aplicacion en Batuta |
+|-----------|---------------------|
+| **Enfasis selectivo** | Solo 4 puntos de aprobacion humana usan lenguaje imperativo fuerte (proposal approval, task plan approval, y 2 gates de produccion) |
+| **Reglas como advisory** | Las reglas de estilo, tono y formato son "advisory" — guian pero no bloquean |
+| **Gates como mandatory** | Solo los gates del pipeline y el Execution Gate son puntos de parada obligatorios |
+| **Accion directa sobre delegacion** | Preferir accion directa para tareas simples. Delegar via subagent solo cuando las tareas pueden correr en paralelo, requieren contexto aislado, o involucran workstreams independientes |
+
+> El objetivo es un agente que actue con criterio, no uno que pida permiso para cada linea de codigo. Las reglas existen para prevenir errores recurrentes, no para crear burocracia. Cuando una regla no agrega valor, se revisa via self-heal — no se ignora ni se duplica.
 
 ---
 

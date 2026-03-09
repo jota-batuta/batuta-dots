@@ -6,15 +6,19 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 
 ## A
 
+**Agent Auto-Invocation (Auto-invocacion de agentes)**: Mecanismo por el cual CLAUDE.md (el router) detecta senales tecnologicas en la peticion del usuario y delega automaticamente al domain agent correspondiente. No requiere intervencion manual — el usuario describe su problema y Batuta invoca al experto correcto. Ver: Router (MoE).
+
+**Agent Lifecycle (Ciclo de vida del agente)**: Las 5 etapas de un agente: crear (ecosystem-creator) → clasificar (ecosystem-lifecycle, generico vs proyecto) → sincronizar al global (setup.sh --sync) → provisionar a proyectos (sdd-init) → sincronizar de vuelta al hub (si el agente es util para todos). Mismo mecanismo que los skills.
+
 **Agent Provisioning**: Proceso automatico de copiar agents del hub a un proyecto basado en tecnologias detectadas. Lo ejecuta `sdd-init` en Step 3.9, comparando el tech stack del proyecto con la tabla de provisioning.
 
-**Agent Team (Equipo de agentes)**: Nivel 3 de ejecucion. Multiples agentes trabajando en paralelo con comunicacion bidireccional. Para tareas complejas de 4+ archivos.
+**Agent Team (Equipo de agentes)**: Nivel 3 de ejecucion. Multiples agentes trabajando en paralelo con comunicacion bidireccional. Los domain agents se integran como teammates con contratos formales. Para tareas complejas de 4+ archivos.
 
 **AI Validation Pyramid (Piramide de Validacion)**: 5 capas de verificacion. L1: linting/tipos/build. L2: tests unitarios. L3: tests integracion. L4: revision humana. L5: pruebas manuales. Regla: base rota = no hay revision humana.
 
 **always_agents**: Agents que se provisionan a todo proyecto sin importar su tech stack. Actualmente solo quality-agent tiene este flag — todo proyecto necesita calidad.
 
-**Apply**: Fase 7 del pipeline SDD. Implementar codigo siguiendo las tareas definidas.
+**Apply**: Fase 7 del pipeline SDD. Implementar codigo siguiendo las tareas definidas. Los domain agents se auto-invocan durante esta fase segun las tecnologias de cada tarea.
 
 **Archive**: Fase 9 del pipeline SDD. Cerrar un cambio, sincronizar specs, documentar lecciones.
 
@@ -42,7 +46,7 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 
 **Discovery Completeness**: 5 preguntas obligatorias antes de proponer: todos los tipos? excepciones? categorias externas? participantes? ramas?
 
-**Domain Agent**: Agente especializado en un dominio (backend, quality, data) que se provisiona a proyectos segun su tech stack. A diferencia de los scope agents que siempre estan cargados, los domain agents viajan al proyecto que los necesita. Ver: Agent Provisioning.
+**Domain Agent**: Agente especializado en un dominio (backend, quality, data) con thick persona (80-120 lineas de expertise embebido). Se auto-invoca cuando el router detecta senales tecnologicas en la peticion del usuario. A diferencia de los scope agents que siempre estan cargados, los domain agents se activan bajo demanda y cargan sus skills dinamicamente (`defer_loading`). Actualmente hay 3, con capacidad de crecer a 8. Ver: Agent Auto-Invocation, Thick Persona.
 
 **Domain Experts**: Configuracion por proyecto en `openspec/domain-experts.md`. Expertos de dominio (finanzas, RRHH, legal) con reglas de negocio especificas.
 
@@ -51,6 +55,8 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 **Ecosystem Creator**: Skill para crear nuevos skills, agentes, y workflows.
 
 **Execution Gate**: Validacion obligatoria antes de escribir codigo. Modo LIGHT (1 linea) o FULL (plan completo).
+
+**Expert (MoE)**: En la analogia Mixture of Experts, un Expert es un domain agent (backend-agent, quality-agent, data-agent) que ejecuta tareas dentro de su area de especialidad. El router (CLAUDE.md) decide que expert atiende cada peticion. Ver: Router (MoE).
 
 **Explore**: Fase 2 del pipeline SDD. Investigar el problema antes de proponer soluciones.
 
@@ -100,6 +106,8 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 
 **RLS (Row-Level Security)**: Seguridad a nivel de fila en PostgreSQL. Cada tenant solo ve sus datos.
 
+**Router (MoE)**: En la analogia Mixture of Experts, el Router es CLAUDE.md — el agente principal que clasifica la intencion del usuario y delega al domain agent correcto. No ejecuta tareas de dominio directamente, sino que las enruta. Analogia: el director de orquesta que senala al musico correcto. Ver: Expert (MoE), Agent Auto-Invocation.
+
 ## S
 
 **Scope Agent**: Agente de infraestructura del hub (pipeline, infra, observability) que siempre esta cargado. Coordina el proceso pero no aporta expertise de dominio. Ver: Domain Agent para el tipo complementario.
@@ -131,6 +139,8 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 **Team Orchestrator**: Skill que decide el nivel de ejecucion (solo/subagente/team) y coordina equipos.
 
 **Temporal.io**: Sistema de orquestacion de workflows. Garantiza completitud y reintento de tareas.
+
+**Thick Persona (Persona densa)**: Un domain agent con 80-120 lineas de expertise embebido — no solo sabe que herramientas usar, sino que tiene criterio propio sobre como usarlas. Ejemplo: backend-agent no solo sabe que existe FastAPI, sino que tiene convenciones sobre versionado de APIs, formatos de error, y patrones de validacion. Esto lo distingue de un skill suelto que solo sigue instrucciones.
 
 **Tombstoning**: Patron de borrado logico. Marcar datos como eliminados sin borrarlos fisicamente (para compliance).
 
