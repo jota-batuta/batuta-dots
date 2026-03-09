@@ -622,14 +622,14 @@ sync_claude() {
 }
 
 # ============================================================================
-# Sync Scope Agents to ~/.claude/agents/
+# Sync Agents to ~/.claude/agents/
 # ============================================================================
 
 sync_agents() {
     local agents_src="$REPO_ROOT/BatutaClaude/agents"
     local agents_dir="$HOME_DIR/.claude/agents"
 
-    log_info "Syncing scope agents to ~/.claude/agents/ ..."
+    log_info "Syncing agents to ~/.claude/agents/ ..."
 
     if [[ ! -d "$agents_src" ]]; then
         log_warning "No agents directory found at $agents_src"
@@ -941,7 +941,7 @@ verify() {
             [[ -f "$f" ]] && agent_count=$((agent_count + 1))
         done
         if [[ $agent_count -gt 0 ]]; then
-            log_success "$agent_count scope agents synced to ~/.claude/agents/"
+            log_success "$agent_count agents synced to ~/.claude/agents/"
         else
             log_warning "~/.claude/agents/ exists but no agents found"
         fi
@@ -949,14 +949,14 @@ verify() {
         log_warning "~/.claude/agents/ does not exist (run --all to sync)"
     fi
 
-    # Check scope agents exist in source (v5)
+    # Check agents exist in source (v5)
     local agents_src="$REPO_ROOT/BatutaClaude/agents"
     if [[ -d "$agents_src" ]]; then
         local src_agent_count=0
         for f in "$agents_src"/*.md; do
             [[ -f "$f" ]] && src_agent_count=$((src_agent_count + 1))
         done
-        log_success "$src_agent_count scope agents in BatutaClaude/agents/"
+        log_success "$src_agent_count agents in BatutaClaude/agents/"
     else
         log_warning "BatutaClaude/agents/ directory not found"
     fi
@@ -1053,7 +1053,7 @@ Options:
   --all         Full setup: sync skills + agents + commands + hooks + output-styles
                   to ~/.claude/ only (does NOT update project files)
   --sync        Sync skills, agents, and commands to ~/.claude/
-                  Copies all SKILL.md files, assets, scope agents,
+                  Copies all SKILL.md files, assets, agents,
                   and slash commands so Claude Code can route and load.
   --hooks       Install hooks and permissions to ~/.claude/settings.json
                   Merges Batuta hooks (5), env vars, and permissions.

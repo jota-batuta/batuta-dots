@@ -464,11 +464,21 @@ After creating ANY component, you MUST register it. This is the most commonly fo
 
 ### Agent Registration Checklist
 
-- [ ] Agent definition added to `opencode.json` (or equivalent agent config)
-- [ ] Agent entry added to **CLAUDE.md** if it references skills
-- [ ] System prompt references relevant skills by path
-- [ ] Agent has proper model, tools, and maxTokens configuration
-- [ ] Agent metadata includes category and skill references
+**Destination depends on agent type:**
+
+| Type | Destination | Sync |
+|------|------------|------|
+| **Scope agent** (pipeline, infra, observability) | `BatutaClaude/agents/` only — synced to `~/.claude/agents/` by `setup.sh` | Automatic via `/batuta-update` |
+| **Domain agent** (backend, quality, data, custom) | `BatutaClaude/agents/` + detection rule in `skill-provisions.yaml` | Automatic via `/batuta-update` |
+
+- [ ] Agent `.md` file created in `BatutaClaude/agents/{agent-name}.md`
+- [ ] Frontmatter complete: `name`, `description` (with "Use when" trigger), `skills`, `memory`, `sdk:` block
+- [ ] `description` includes clear trigger phrases for auto-routing (e.g., "Use when working with server-side development")
+- [ ] Agent body follows thick persona pattern: embedded expertise (80-120 lines), skill references, Spawn Prompt, Team Context
+- [ ] `sdk:` block has correct `defer_loading` value (`true` for domain agents, `false` for always-on agents)
+- [ ] If domain agent: add detection rule to `sdd-init/assets/skill-provisions.yaml` under `agent_rules`
+- [ ] If domain agent: verify CLAUDE.md Domain Agent Delegation table includes the new agent
+- [ ] Run `setup.sh --sync` or `/batuta-update` to sync to `~/.claude/agents/` (makes it available as `subagent_type`)
 
 ### Sub-Agent Registration Checklist
 

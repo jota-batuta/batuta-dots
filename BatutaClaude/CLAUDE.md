@@ -3,7 +3,7 @@
 ## Rules
 
 ### Core
-- NEVER add "Co-Authored-By" or any AI attribution to commits. Use conventional commits format only.
+- Do not add "Co-Authored-By" or any AI attribution to commits. Use conventional commits format only.
 - Never build after changes unless explicitly asked.
 - When asking user a question, STOP and wait for response. Never continue or assume answers.
 - Never agree with user claims without verification. Say "let me verify that" and check code/docs first.
@@ -12,33 +12,33 @@
 - Verify technical claims before stating them. If unsure, investigate first.
 - Produce documentation that non-technical stakeholders can understand.
 - When creating documentation, include a "What This Means" summary section.
-- Every file generated or modified MUST include: (1) module docstring with business context, (2) docstrings on all public functions (what, args, returns), (3) WHY comments on non-obvious decisions using prefixes: `# SECURITY:`, `# BUSINESS RULE:`, `# WORKAROUND:`. Code without documentation is incomplete code. Full standard: see sdd-apply skill.
+- Every file generated or modified includes: (1) module docstring with business context, (2) docstrings on all public functions (what, args, returns), (3) WHY comments on non-obvious decisions using prefixes: `# SECURITY:`, `# BUSINESS RULE:`, `# WORKAROUND:`. Code without documentation is incomplete code. Full standard: see sdd-apply skill.
 
 ### Scope & File Creation
-- Before creating ANY file, ALWAYS run the Scope Rule decision tree. Ask "Who will use this?" to determine location. See scope-rule skill for full decision tree.
-- NEVER create root-level `utils/`, `helpers/`, `lib/`, or `components/` directories.
+- Before creating a file, run the Scope Rule decision tree. Ask "Who will use this?" to determine location. See scope-rule skill for full decision tree.
+- Do not create root-level `utils/`, `helpers/`, `lib/`, or `components/` directories.
 
 ### SDD Pipeline
-- When executing SDD phases, ALWAYS invoke the registered skill via pipeline-agent. NEVER write SDD artifacts (proposal.md, spec.md, design.md, tasks.md, verify-report.md) manually — skills contain mandatory templates and gates that manual writes bypass (GAP-07).
+- When executing SDD phases, invoke the registered skill via pipeline-agent. Do not write SDD artifacts (proposal.md, spec.md, design.md, tasks.md, verify-report.md) manually — skills contain templates and gates that manual writes bypass (GAP-07).
 - NEVER auto-advance past a proposal or task plan without explicit user approval ("go ahead", "proceed", "dale", "si"). These are MANDATORY STOP points in the pipeline.
-- Before sdd-apply writes code, ALWAYS verify patterns using the MCP fallback chain: (1) Active MCP, (2) WebFetch official docs, (3) WebSearch, (4) Training data — flag as risk if relying on training data. Stale training data causes bugs.
-- BEFORE any production code change, run the Execution Gate. Cannot be skipped. LIGHT mode for single-file/clear-scope; FULL mode for 2+ files/architecture/destructive ops. See Execution Gate section for details.
+- Before sdd-apply writes code, verify patterns using the MCP fallback chain: (1) Active MCP, (2) WebFetch official docs, (3) WebSearch, (4) Training data — flag as risk if relying on training data. Stale training data causes bugs.
+- Before any production code change, run the Execution Gate. LIGHT mode for single-file/clear-scope; FULL mode for 2+ files/architecture/destructive ops. See Execution Gate section for details.
 
 ### Ecosystem Lifecycle
-- After creating ANY skill/agent/workflow via ecosystem-creator, ALWAYS invoke ecosystem-lifecycle for classification (generic vs project-specific). Do NOT stop at registration — classification determines whether the skill propagates to the hub.
-- When user reports a rule violation ("violaste tus reglas", "no seguiste X"), ALWAYS invoke ecosystem-lifecycle self-heal. Verify the violation first, then propose a fix. NEVER dismiss or rationalize.
-- During ANY SDD phase, if the agent uses a technology without a matching skill in `.claude/skills/`, check `~/.claude/skills/` for a global match and auto-copy. If no global match, flag as skill gap. Exception: standard language features and stdlib do not require skills.
+- After creating a skill/agent/workflow via ecosystem-creator, invoke ecosystem-lifecycle for classification (generic vs project-specific). Do not stop at registration — classification determines whether the skill propagates to the hub.
+- When user reports a rule violation ("violaste tus reglas", "no seguiste X"), invoke ecosystem-lifecycle self-heal. Verify the violation first, then propose a fix. Do not dismiss or rationalize.
+- During SDD phases, if the agent uses a technology without a matching skill in `.claude/skills/`, check `~/.claude/skills/` for a global match and auto-copy. If no global match, flag as skill gap. Exception: standard language features and stdlib do not require skills.
 
 ### Session & Output
-- Session.md is a BRIEFING DOCUMENT (max 80 lines), not a project README. Must answer: WHERE are we (state + phase), WHY did we get here (decisions + rationale), HOW to continue (next steps + conventions). NEVER include file path inventories, test counts, or implementation details — those live in code and openspec/. See Session Continuity section for budget.
-- Output MUST scale to task complexity: MICRO (1-2 files, Execution Gate LIGHT) = 1-paragraph summary + file list, no tables; STANDARD (3-5 files) = full skill template; COMPLEX (6+ files, multi-scope) = full detail + team consideration. Over-documentation on simple tasks wastes context and causes compaction cascades. See Output Tiers section for detail_level mapping.
+- Session.md is a BRIEFING DOCUMENT (max 80 lines), not a project README. Must answer: WHERE are we (state + phase), WHY did we get here (decisions + rationale), HOW to continue (next steps + conventions). Do not include file path inventories, test counts, or implementation details — those live in code and openspec/. See Session Continuity section for budget.
+- Output scales to task complexity: MICRO (1-2 files, Execution Gate LIGHT) = 1-paragraph summary + file list, no tables; STANDARD (3-5 files) = full skill template; COMPLEX (6+ files, multi-scope) = full detail + team consideration. Over-documentation on simple tasks wastes context and causes compaction cascades. See Output Tiers section for detail_level mapping.
 
 ### Auto-Routing
-- In Batuta projects (`.batuta/` exists), ALWAYS classify user intent and route automatically. Do NOT ask user to type slash commands — act on their behalf. Slash commands exist as manual overrides only.
+- In Batuta projects (`.batuta/` exists), classify user intent and route automatically. Do not ask user to type slash commands — act on their behalf. Slash commands exist as manual overrides only.
 
 ## Mandatory Gates
 
-Every gate is a STOP point. The agent MUST NOT advance past a gate without meeting its criteria. Gates are enforced by pipeline-agent; details of each gate's checklist are in pipeline-agent and the corresponding skill.
+Every gate is a STOP point. Do not advance past a gate without meeting its criteria. Gates are enforced by pipeline-agent; details of each gate's checklist are in pipeline-agent and the corresponding skill.
 
 | Gate | When | Criteria | Blocks |
 |------|------|----------|--------|
@@ -83,7 +83,7 @@ automation (n8n), databases (PostgreSQL), testing, documentation.
 
 ---
 
-## Scope Rule (ALWAYS enforce)
+## Scope Rule
 
 Before creating ANY file, ask: "Who will use this?"
 
@@ -93,7 +93,7 @@ Before creating ANY file, ask: "Who will use this?"
 | 2+ features | `features/shared/{type}/{name}` |
 | Entire app | `core/{type}/{name}` |
 
-NEVER create root-level `utils/`, `helpers/`, `lib/`, or `components/`.
+Do not create root-level `utils/`, `helpers/`, `lib/`, or `components/`.
 For full decision tree and anti-patterns, see the `scope-rule` skill.
 
 ---
@@ -125,6 +125,52 @@ For complex tasks, escalate from solo/subagent to Agent Teams:
 **When NOT to**: sequential tasks, same-file edits, routine changes.
 
 Full orchestration rules: see the `team-orchestrator` skill.
+
+### Domain Agent Delegation (Auto-Invocation)
+
+Domain agents carry embedded expertise ("thick persona") and run as subprocesses via the Task tool.
+Unlike skills (which inject knowledge into the main agent's context), domain agents execute autonomously — saving tokens and keeping the main agent lightweight.
+
+**When to delegate** (ordered by priority):
+
+| Signal | Agent | What to Delegate |
+|--------|-------|-----------------|
+| API endpoints, auth flows, ORM models, migrations, REST design | `backend-agent` | Server-side implementation, DB schema, auth middleware |
+| ETL pipelines, data transformations, LLM classifiers, RAG, vector DBs | `data-agent` | Pipeline design, AI/ML implementation, data architecture |
+| Test strategy, debugging, security review, code quality, E2E tests | `quality-agent` | Test plans, systematic debugging, security audits, accessibility |
+
+**When NOT to delegate** (main agent handles directly):
+
+| Situation | Why |
+|-----------|-----|
+| User asks a question about the domain ("should I use JWT or sessions?") | Questions need dialogue, not execution |
+| Single-line fix or config change | Spawning an agent costs more than doing it |
+| SDD artifact creation (proposals, specs, designs) | Pipeline-agent + skills handle SDD phases |
+| File organization / scope decisions | Infra-agent + scope-rule handle this |
+
+**Delegation protocol**:
+1. During `sdd-apply`, check each task's technology stack against the delegation table
+2. If a domain agent matches → spawn via `Task(subagent_type="{agent-name}")` with the task description
+3. The domain agent loads its own skills on demand (`defer_loading: true`)
+4. The main agent receives the result and continues with the next task
+5. For multi-domain tasks (e.g., API + tests): spawn sequentially — backend-agent implements, then quality-agent tests
+
+**Integration with Agent Teams (Level 3)**:
+When the Execution Gate recommends Level 3 (4+ files, multi-scope), spawn domain agents as teammates instead of subagents. Each agent uses its Spawn Prompt and Team Context for coordination.
+
+**Agent lifecycle (creation → sync → provisioning)**:
+1. **Create**: `ecosystem-creator` generates agent in `BatutaClaude/agents/` (hub) or `.claude/agents/` (project)
+2. **Classify**: `ecosystem-lifecycle` determines if agent is generic (hub) or project-specific (stays local)
+3. **Sync to global**: `setup.sh --sync` or `/batuta-update` copies hub agents to `~/.claude/agents/`
+4. **Provision to projects**: `sdd-init` Step 3.9 copies relevant agents from `~/.claude/agents/` to `.claude/agents/` based on detected technologies
+5. **Sync back to hub**: When a project creates a useful generic agent, `ecosystem-lifecycle` classify mode recommends propagation to `BatutaClaude/agents/`. User approves, then `/batuta-update` distributes it.
+
+**Agent count by type**:
+- Scope agents (pipeline, infra, observability): Fixed at 3 — the SDD pipeline machinery
+- Domain agents (backend, quality, data): 3-8 total — only grow when a genuinely new domain emerges (e.g., mobile, DevOps, frontend)
+- Project-specific agents: Created per project, stay local. Do not sync to hub unless generalized.
+
+New domain agents are only justified when the domain has: (1) its own conventions that differ from existing agents, (2) 3+ skills that belong to it, and (3) clear scope boundaries (own/coordinate/don't-touch).
 
 ### Skill Gap Detection (gate — not a suggestion)
 During `sdd-explore`, identify ALL technologies without a matching skill in `~/.claude/skills/`. If HIGH gaps exist, the explore phase is **NOT complete** until the user decides how to handle each gap: create skill, defer with justification, or continue without. This is a blocking gate — do not advance to `sdd-propose`.
@@ -161,7 +207,7 @@ Managed by the `ecosystem-lifecycle` skill. Autonomous behaviors:
 | Any phase detects tech without skill | Continuous provisioning from global library | NO (local) |
 | User requests sync | Hub sync via `/batuta-sync` (internal, no bash) | YES (hub) |
 
-**Key principle**: Changes to batuta-dots hub ALWAYS require user authorization.
+**Key principle**: Changes to batuta-dots hub require user authorization.
 Project-local operations (copying a skill from global) do NOT.
 Full protocol: see `ecosystem-lifecycle` skill.
 
@@ -197,24 +243,8 @@ Strategic capabilities integrated from the CTO expert layer. These enrich the SD
 - **G1 — Solution Worth Building**: Scope, stakeholders, risks check before spec/design
 - **G2 — Ready for Production**: AI Pyramid, docs, rollback verified before archive
 
-### Specialist Skills (invoke when needed)
-| Skill | When to Use |
-|-------|-------------|
-| `process-analyst` | 3+ case variants, complex processes, multiple actors |
-| `recursion-designer` | External taxonomies, categories that change, learning systems |
-| `compliance-colombia` | Personal data, AI on personal data, international transfers, tax retention |
-| `data-pipeline-design` | ETL, ERP integrations, bank files, DIAN, data quality |
-| `llm-pipeline-design` | LLM classifiers, prompt engineering, confidence scoring, drift detection |
-| `worker-scaffold` | Temporal workers, Docker, Coolify deploy, monitoring |
-| `tdd-workflow` | TDD methodology needed, red-green-refactor cycles |
-| `debugging-systematic` | Systematic debugging with binary search, hypothesis testing |
-| `api-design` | Designing REST APIs, versioning, error contracts |
-| `observability` | Implementing monitoring, logging, tracing, alerting |
-| `e2e-testing` | Implementing E2E tests with Playwright or Cypress |
-| `security-audit` | Security review, OWASP checks, secrets scanning, threat modeling |
-| `ci-cd-pipeline` | GitHub Actions, testing pipelines, deployment automation, Coolify |
-| `skill-eval` | Testing, evaluating, or benchmarking skills. Eval/Improve/Benchmark modes |
-| `claude-agent-sdk` | Scaffolding Agent SDK deployments, `setting_sources`, `defer_loading` patterns |
+### Specialist Skills
+Skills are auto-discovered by their `description` field. See the skill list injected at session start for available skills and their triggers.
 
 ### Enriched SDD Phases
 - **sdd-explore**: Discovery Completeness (5 questions) + Domain Expert consultation + Process Complexity Detection
@@ -234,6 +264,7 @@ Strategic capabilities integrated from the CTO expert layer. These enrich the SD
 - Correct errors explaining the technical WHY, never just "that's wrong"
 - When asking questions, STOP immediately — never answer your own questions
 - After completing each major task (SDD phase, feature, bug fix), update `.batuta/session.md` following the Session Budget. Replace, don't append. Prune completed work to 1-line summaries. Sessions can end abruptly — save state, not history. Significant work thresholds: completed SDD phase, 3+ files modified, resolved a bug, or 5+ exchanges.
+- Prefer direct action over delegation for simple tasks. Spawning a subagent for a single grep or file read wastes more tokens than doing it inline. Delegate when tasks can run in parallel, require isolated context, or involve independent workstreams.
 
 ---
 
@@ -336,8 +367,8 @@ not "Ejecuta /sdd-explore para comenzar."
 
 ## Execution Gate (Mandatory Pre-Validation)
 
-BEFORE any code change, run the Execution Gate. Cannot be skipped.
-This is a cognitive rule — always validate before implementing.
+Before any code change, run the Execution Gate.
+This is a cognitive rule — validate before implementing.
 
 ### Gate Modes
 
@@ -383,7 +414,7 @@ When a skill receives `detail_level`:
 - **standard** = STANDARD tier: all template sections, 5 bullets max per section
 - **deep** = COMPLEX tier: all sections, unlimited depth and analysis
 
-Pipeline-agent MUST set detail_level before invoking any skill. Calculation: sdd-explore and sdd-propose always use `standard` (discovery needs full context, file count is unknown). From sdd-spec onward, use file count: 1-2 files or Execution Gate LIGHT → `concise`; 3-5 files → `standard`; 6+ files or multi-scope → `deep`.
+Pipeline-agent sets detail_level before invoking any skill. Calculation: sdd-explore and sdd-propose always use `standard` (discovery needs full context, file count is unknown). From sdd-spec onward, use file count: 1-2 files or Execution Gate LIGHT → `concise`; 3-5 files → `standard`; 6+ files or multi-scope → `deep`.
 
 ---
 
@@ -407,7 +438,7 @@ session.md is a BRIEFING DOCUMENT for a new agent taking over the project. It an
 1. Completed SDD changes → REMOVE from Active Changes (they're in openspec/archive/)
 2. Decisions now obvious from code → REMOVE
 3. Next Steps already done → REMOVE
-4. Individual file paths → NEVER list (use summaries: "4 parsers, 48 tests")
+4. Individual file paths → Do not list (use summaries: "4 parsers, 48 tests")
 5. Over 80 lines → trim oldest decisions and notes until compliant
 
 PROJECT context only. Personal preferences → MEMORY.md.
