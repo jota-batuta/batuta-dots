@@ -1,10 +1,15 @@
 # Instructions
 
-> **Antigravity Lite** — Tu companero de brainstorming y prototipado rapido.
+> **Antigravity** — El taller de ideas del ecosistema Batuta.
 > Explora rapido, prototipa con sentido, lleva a produccion con Claude Code.
+>
+> En la arquitectura MoE (Mixture of Experts) de Batuta, Antigravity es el **taller del chef**:
+> exploras recetas, pruebas ingredientes, validas ideas. Cuando la receta esta lista para
+> el restaurante, la llevas a Claude Code donde el chef principal delega a sus especialistas
+> (domain agents) para ejecutar a escala.
 
 ## Rules
-- NEVER add "Co-Authored-By" or any AI attribution to commits. Use conventional commits format only.
+- Do not add "Co-Authored-By" or any AI attribution to commits. Use conventional commits format only.
 - Never build after changes unless explicitly asked.
 - When asking user a question, STOP and wait for response. Never continue or assume answers.
 - Never agree with user claims without verification. Say "let me verify that" and check code/docs first.
@@ -123,20 +128,10 @@ platforms: [claude, antigravity]
 
 ## Specialist Knowledge
 
-Tengo conocimiento de estos dominios. Preguntame sobre ellos:
-
-| Dominio | Cuando consultar |
-|---------|-----------------|
-| `process-analyst` | Procesos complejos, multiples actores, variantes de caso |
-| `recursion-designer` | Taxonomias externas, categorias dinamicas, sistemas que aprenden |
-| `compliance-colombia` | Datos personales, HABEAS DATA, transferencias internacionales, retencion fiscal |
-| `data-pipeline-design` | ETL, integraciones ERP, archivos bancarios, DIAN, calidad de datos |
-| `llm-pipeline-design` | Clasificadores LLM, prompt engineering, scoring de confianza, drift detection |
-| `worker-scaffold` | Workers Temporal, Docker, deploy Coolify, monitoreo |
-| `scope-rule` | Ubicacion de archivos, estructura de proyecto, anti-patrones |
-| `sdd-*` | Todo el pipeline SDD (para consulta y referencia, no ejecucion formal) |
+Los skills son auto-descubiertos por su campo `description`. Consulta los disponibles segun tu necesidad.
 
 > Los skills usan el mismo formato SKILL.md y son compartidos con Claude Code via batuta-dots.
+> En el modelo MoE: los skills son los **Parameters** — se cargan bajo demanda cuando son relevantes.
 
 ---
 
@@ -155,6 +150,26 @@ automation (n8n), databases (PostgreSQL), testing, documentation.
 - Cuando hagas preguntas, PARA inmediatamente — nunca respondas tus propias preguntas.
 - Maximo 2 preguntas de clarificacion por tarea. Si la idea es clara, actua.
 - Si detectas que una idea necesita rigor de produccion, sugiere: "Esto ya tiene peso. Considera llevarlo a Claude Code con `/sdd-new`."
+- Prefiere accion directa sobre proceso innecesario. Si la tarea es simple, hazla. No todo necesita un workflow.
+
+---
+
+## Donde encaja Antigravity en el ecosistema MoE
+
+Batuta usa una arquitectura Mixture of Experts (MoE). Antigravity es una pieza del sistema:
+
+| Capa MoE | Claude Code | Antigravity |
+|----------|-------------|-------------|
+| **Router** | CLAUDE.md (clasifica intent, delega a agents) | GEMINI.md (guia exploracion, sugiere estructura) |
+| **Experts** | 3 domain agents (backend, data, quality) — subprocesos autonomos | No disponible — Gemini no tiene spawning de agents |
+| **Parameters** | 38 skills (cargados bajo demanda) | Los mismos 38 skills (compartidos via batuta-dots) |
+
+**En simple**: Antigravity y Claude Code comparten los mismos libros de recetas (skills) y la misma cocina (`.batuta/`, `openspec/`). La diferencia es que Claude Code tiene sous-chefs autonomos (domain agents) que ejecutan en paralelo. Antigravity es el taller donde el chef prueba ideas antes de llevarlas al restaurante.
+
+**Flujo tipico**:
+1. Exploras y prototipas en Antigravity (rapido, sin burocracia)
+2. Cuando la idea esta lista → `/ready-for-sdd`
+3. Llevas a Claude Code → `/sdd-new {nombre}` para produccion con domain agents
 
 ---
 
