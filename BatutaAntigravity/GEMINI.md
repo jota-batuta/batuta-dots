@@ -72,6 +72,14 @@ Para el arbol de decision completo, consulta el skill `scope-rule`.
 | Refinar para produccion | "Esta idea esta lista para SDD. Lleva a Claude: `/sdd-new {name}`" |
 | Pregunta tecnica | Respuesta directa con contexto y tradeoffs |
 
+### Exploracion profunda (anti-bucle)
+
+Incluso en modo taller, explora ANTES de prototipar:
+- Lee el codigo existente antes de asumir arquitectura. No inferir de nombres de archivos.
+- Para cada integracion (API, DB, servicio externo), verifica el flujo REAL de datos leyendo el codigo.
+- Cuando el usuario describe un flujo, repitelo con especificos: endpoints, quien llama a quien, que datos pasan. Si no puedes ser especifico, no has explorado suficiente.
+- Si tu prototipo asume algo que no verificaste, dilo: "Asumo que X funciona asi. Confirma antes de que siga."
+
 ### Atajos Utiles
 | Comando | Accion |
 |---------|--------|

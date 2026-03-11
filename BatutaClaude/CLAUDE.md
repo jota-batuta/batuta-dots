@@ -254,6 +254,33 @@ Skills are auto-discovered by their `description` field. See the skill list inje
 - **sdd-archive**: Learning Loop (6 questions for ecosystem improvement)
 - **sdd-init**: Domain experts template + Project-level hooks generation
 
+### Discovery Depth (anti-shallow-loop)
+
+Shallow discovery causes execution loops — the agent assumes wrong architecture, the user
+corrects, the agent re-implements, the user corrects again. This is the most expensive failure
+mode because it wastes tokens AND user patience.
+
+**During sdd-explore**:
+- Read existing code BEFORE asking questions. Do not assume architecture from file names alone.
+- For each integration point (API, DB, queue, external service), verify the ACTUAL data flow
+  by reading the code, not by inferring from docs or naming conventions.
+- When the user describes a flow, restate it back with specifics: endpoints, who calls whom,
+  what data passes where. If you can't be specific, you haven't explored enough.
+- Minimum exploration before proposing: read the main entry point, the data models, and at
+  least one complete request flow end-to-end.
+
+**During sdd-propose**:
+- The proposal must include a **Technical Assumptions** section listing every assumption
+  about existing architecture. Example: "n8n calls POST /run with config in body",
+  "PostgreSQL stores configs directly, no API CRUD needed".
+- The user reviews assumptions BEFORE approving. Wrong assumptions caught here cost nothing.
+  Wrong assumptions caught during apply cost an entire re-implementation cycle.
+- For complex workflows (3+ actors, external integrations, async flows), include a
+  sequence diagram or flow description showing who calls whom in what order.
+
+**The rule**: If the proposal can't answer "what calls what, with what data, in what order"
+for every integration point — the discovery is not complete. Return to explore.
+
 ---
 
 ## Behavior (advisory — style, tone, format)
@@ -277,10 +304,25 @@ Slash commands remain as manual overrides if the user types them explicitly.
 **Precondition**: Auto-routing is only active when `.batuta/` exists in the project
 (session.md was injected by SessionStart). In non-Batuta projects, respond normally.
 
+### Step 0: Check Gate Status (before anything else)
+
+Before classifying intent, check if a gate is pending:
+1. Read `## Gate Status` from session.md → `AWAITING_APPROVAL` field
+2. If `AWAITING_APPROVAL` is `proposal` or `task_plan`:
+   - The ONLY valid responses are approval tokens ("dale", "proceed", "go ahead", "si", "sigue")
+     or rejection/feedback (anything else)
+   - On approval → advance to next phase, clear gate status
+   - On feedback → incorporate feedback, re-present the artifact
+   - Do NOT classify intent further. The gate takes priority over all routing.
+3. If `AWAITING_APPROVAL` is `none` → proceed to Step 1
+
+This prevents the router from bypassing gates. Gates live in the router, not in skills.
+
 ### Step 1: Read State
 
 At conversation start (session.md is already injected by SessionStart hook):
 - Parse **Active SDD Changes** from session.md → current phase
+- Parse **Gate Status** from session.md → pending approval?
 - Check if `openspec/` exists → SDD initialized?
 - Always verify phase by checking actual artifacts in `openspec/changes/` —
   session.md is a hint, not source of truth. The filesystem is the source of truth.
@@ -304,11 +346,16 @@ Advance automatically, pausing at human checkpoints:
 1. `openspec/` missing → run sdd-init silently, then continue
 2. No change directory for this topic → run sdd-explore, summarize findings
 3. explore.md exists, no proposal.md → run sdd-propose, present to user
-4. **MANDATORY STOP**: Present the proposal. NEVER auto-advance past a proposal
-   without the user saying "go ahead", "proceed", "dale", "si", or equivalent.
-5. After approval → run sdd-spec, sdd-design (can parallel), sdd-tasks
-6. **STOP**: Present the task plan. Wait for "proceed" before sdd-apply.
-7. After approval → run sdd-apply per task batch
+4. **MANDATORY STOP — GATE: proposal**
+   - Present the proposal. NEVER auto-advance past a proposal.
+   - Set `AWAITING_APPROVAL: proposal` in session.md Gate Status.
+   - STOP. Do not continue until the user explicitly approves.
+5. After approval → clear gate → run sdd-spec, sdd-design (can parallel), sdd-tasks
+6. **MANDATORY STOP — GATE: task_plan**
+   - Present the task plan.
+   - Set `AWAITING_APPROVAL: task_plan` in session.md Gate Status.
+   - STOP. Do not continue until the user explicitly approves.
+7. After approval → clear gate → run sdd-apply per task batch
 
 Between phases, respect gates (G0.5, G1, G2) from pipeline-agent.
 When a gate requires confirmation, STOP and present the checklist.
@@ -328,11 +375,15 @@ inform the user and switch to SDD Pipeline route.
 
 ### Step 3c: SDD Continue (resume work)
 
-If session.md shows an active change:
+**FIRST**: Check Gate Status. If `AWAITING_APPROVAL != none`, this is NOT a continuation —
+it's a gate response. Route to Step 0 (gate handling), not here.
+
+If no gate is pending and session.md shows an active change:
 - Detect phase using sdd-continue state machine (check artifacts on disk)
+- Verify on disk: does the next phase require a gate? (proposal exists but no spec → gate pending)
 - Tell user: "Retomamos {change-name} — esta en fase {phase}. Continuo con {next-phase}?"
-- If user's message clearly implies continuation ("dale", "sigue", "keep going"),
-  proceed without asking.
+- If user's message clearly implies continuation ("dale", "sigue", "keep going")
+  AND no gate is pending on disk → proceed without asking.
 
 ### Step 3d: SDD Backtrack (rethink)
 
@@ -430,9 +481,19 @@ session.md is a BRIEFING DOCUMENT for a new agent taking over the project. It an
 
 | Question | Section | What Goes Here | What Does NOT |
 |----------|---------|----------------|---------------|
-| **WHERE are we?** | Project + Active Changes | Type, stack, 1-line status, current SDD phase | File inventories, test counts |
+| **WHERE are we?** | Project + Active Changes + Gate Status | Type, stack, 1-line status, current SDD phase, pending gate | File inventories, test counts |
 | **WHY did we get here?** | Key Decisions + Conventions | Decisions with rationale, discovered patterns (date formats, money handling) | Implementation details, regex, S3 paths, operational data |
 | **HOW to continue?** | Next Steps | Actionable items, blockers, what to do first | Historical notes already acted on |
+
+**Gate Status section** (required in session.md when an SDD change is active):
+```
+## Gate Status
+AWAITING_APPROVAL: none | proposal | task_plan
+Change: [change-name or empty]
+```
+Update this section every time a gate is set or cleared. The auto-router reads this
+BEFORE classifying intent (Step 0). Without this field, gate enforcement depends on
+disk artifact detection only, which is slower and less reliable.
 
 **Pruning rules (enforce on every update):**
 1. Completed SDD changes → REMOVE from Active Changes (they're in openspec/archive/)
