@@ -46,6 +46,8 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 
 **Discovery Completeness**: 5 preguntas obligatorias antes de proponer: todos los tipos? excepciones? categorias externas? participantes? ramas?
 
+**Discovery Depth (Profundidad de discovery)**: Principio que exige que la exploracion verifique flujos de codigo reales en vez de asumir comportamiento por nombres de funciones o estructura de carpetas. La discovery superficial causa el modo de fallo mas caro del pipeline: asumir mal → implementar → usuario corrige → reimplementar. Reglas: leer codigo antes de asumir, verificar flujos de datos reales, reformular con datos especificos, incluir "Technical Assumptions" en la propuesta. Ver: Discovery Completeness, Technical Assumptions.
+
 **Domain Agent**: Agente especializado en un dominio (backend, quality, data) con thick persona (80-120 lineas de expertise embebido). Se auto-invoca cuando el router detecta senales tecnologicas en la peticion del usuario. A diferencia de los scope agents que siempre estan cargados, los domain agents se activan bajo demanda y cargan sus skills dinamicamente (`defer_loading`). Actualmente hay 3, con capacidad de crecer a 8. Ver: Agent Auto-Invocation, Thick Persona.
 
 **Domain Experts**: Configuracion por proyecto en `openspec/domain-experts.md`. Expertos de dominio (finanzas, RRHH, legal) con reglas de negocio especificas.
@@ -67,6 +69,8 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 ## G
 
 **Gate**: Punto de control entre fases SDD. G0.5 (Discovery Complete), G1 (Solution Worth Building), G2 (Ready for Production).
+
+**Gate Status (Estado del gate)**: Campo `AWAITING_APPROVAL` en la seccion `## Gate Status` de session.md que registra si hay una aprobacion pendiente. Valores posibles: `proposal` (propuesta presentada, esperando aprobacion), `task_plan` (plan de tareas presentado, esperando aprobacion), `none` (sin gate pendiente). El auto-router lee este campo en Step 0, ANTES de clasificar el intent del usuario. Si hay un gate pendiente, solo se aceptan tokens de aprobacion o feedback. Ver: Step 0 (Gate Check).
 
 ## H
 
@@ -130,6 +134,8 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 
 **Spec**: Fase 4 del pipeline SDD. Escribir requisitos exactos en Given/When/Then.
 
+**Step 0 (Gate Check)**: Verificacion pre-routing que ejecuta el auto-router ANTES de clasificar el intent del usuario. Lee el campo `AWAITING_APPROVAL` de session.md. Si hay un gate pendiente (proposal o task_plan), el router bloquea cualquier intent que no sea aprobacion ("dale", "proceed", "si") o feedback ("ajusta X", "cambia Y") — impidiendo que la clasificacion de intent confunda una aprobacion con un comando de continuacion. Principio: "Los gates viven en el router, no en las skills". Ver: Gate Status, Auto-Routing.
+
 **Subagente**: Nivel 2 de ejecucion. Un agente delegado para una tarea especifica (via Task tool).
 
 ## T
@@ -137,6 +143,8 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 **Tasks**: Fase 6 del pipeline SDD. Dividir el trabajo en tareas concretas con dependencias.
 
 **Team Orchestrator**: Skill que decide el nivel de ejecucion (solo/subagente/team) y coordina equipos.
+
+**Technical Assumptions (Supuestos Tecnicos)**: Seccion obligatoria en las propuestas (sdd-propose) que lista explicitamente los supuestos de arquitectura que el agente hizo durante la exploracion. Cada supuesto es algo que el agente CREE que es verdad pero que el usuario debe confirmar antes de avanzar a especificacion. Ejemplo: "Asumo que `processOrder()` calcula impuestos internamente" o "Asumo que la API del ERP acepta JSON". Introducido como parte de Discovery Depth para prevenir implementaciones basadas en suposiciones incorrectas. Ver: Discovery Depth.
 
 **Temporal.io**: Sistema de orquestacion de workflows. Garantiza completitud y reintento de tareas.
 

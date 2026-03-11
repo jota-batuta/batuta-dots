@@ -4,6 +4,57 @@
 
 ---
 
+## v13.2.1 — Gate Bypass Fix + Anti-Shallow Discovery (2026-03-11)
+
+### Contexto
+
+Dos reglas en CLAUDE.md se cancelaban mutuamente: Step 3a (MANDATORY STOP en gate de proposal) y Step 3c (proceder con "dale" para continuacion). Cuando un gate estaba pendiente y el usuario decia "dale", el router lo clasificaba como Continue (Step 3c) en lugar de Gate Approval (Step 3a), saltandose el mandatory stop por completo. Adicionalmente, la exploracion superficial durante sdd-explore causaba loops de ejecucion donde el agente asumia arquitectura incorrecta y el usuario tenia que seguir corrigiendo.
+
+### Changes
+
+#### Auto-Routing — Gate Enforcement (3 fixes)
+- **NEW** Step 0 (Gate Status check) — se ejecuta ANTES de la clasificacion de intent. Si `AWAITING_APPROVAL != none` en session.md, solo acepta tokens de aprobacion o feedback. Toda otra clasificacion de intent queda bloqueada.
+- **MODIFIED** Step 3a — los gates ahora escriben estado explicito (`AWAITING_APPROVAL: proposal | task_plan`) en la seccion Gate Status de session.md. Cada mandatory stop setea el gate, cada aprobacion lo limpia.
+- **MODIFIED** Step 3c — ahora verifica Gate Status PRIMERO. Si hay gate pendiente, redirige a Step 0 en lugar de continuar. "Dale" con gate pendiente = respuesta al gate, no continuacion.
+
+#### Session Budget — Gate Status
+- **NEW** Seccion `## Gate Status` requerida en session.md cuando hay un SDD change activo. Campos: `AWAITING_APPROVAL: none | proposal | task_plan`, `Change: [name]`.
+- El auto-router lee este campo antes de clasificar intent (Step 0). Los gates ahora viven en el router, no en las skills.
+
+#### Discovery Depth (anti-shallow-loop)
+- **NEW** Seccion "Discovery Depth" en Enriched SDD Phases. Reglas:
+  - Leer codigo existente ANTES de hacer preguntas — no asumir arquitectura por nombres de archivo
+  - Para cada punto de integracion, verificar el flujo de datos REAL leyendo codigo
+  - Reformular la descripcion del flujo del usuario con especificos (endpoints, caller, data)
+  - Exploracion minima: leer entry point principal, modelos de datos, y un request flow completo
+- **NEW** Las proposals deben incluir seccion "Technical Assumptions" listando cada asuncion sobre arquitectura existente. El usuario revisa asunciones antes de aprobar.
+- **NEW** Workflows complejos (3+ actores) requieren diagrama de secuencia mostrando quien-llama-a-quien.
+- **RULE** Si la proposal no puede responder "que llama a que, con que datos, en que orden" para cada punto de integracion → discovery no esta completa.
+
+#### GEMINI.md — Antigravity
+- **NEW** Seccion "Exploracion profunda (anti-bucle)" con reglas anti-shallow adaptadas para modo workshop.
+
+### Root cause
+
+Los gates estaban delegados a skills de pipeline-agent, pero el auto-router corre antes que las skills. Si el router elegia Step 3c, las skills nunca veian el trafico. Los gates deben vivir en el router para ser ejecutables.
+
+### Principio de diseno
+
+- **"Los gates deben vivir en el router, no en las skills"**: Las skills pueden implementar la logica del gate, pero el ENFORCEMENT debe ocurrir en el router (auto-routing Step 0). De lo contrario, el router puede desviar trafico alrededor del gate sin que la skill lo sepa.
+- **Discovery profunda antes de proponer**: Asumir arquitectura sin leer codigo causa loops correctivos que cuestan mas tokens que la exploracion inicial.
+
+### Rollback
+
+```bash
+git revert <commit-hash>  # Revierte gate bypass fix y anti-shallow discovery
+# CLAUDE.md pierde Step 0, Gate Status, y Discovery Depth
+# GEMINI.md pierde seccion anti-bucle
+# session.md pierde seccion Gate Status
+# Riesgo: gates vuelven a ser bypasseables via Step 3c
+```
+
+---
+
 ## v13.2.0 — MoE Router Optimization + Agent Auto-Invocation (2026-03-09)
 
 ### Contexto

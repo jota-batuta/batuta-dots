@@ -1,4 +1,4 @@
-# Entendiendo la Arquitectura de Batuta — Sin Palabras Tecnicas (v13.1)
+# Entendiendo la Arquitectura de Batuta — Sin Palabras Tecnicas (v13.2)
 
 > **Para quien es esto**: Para cualquier persona que quiera entender COMO funciona
 > el ecosistema Batuta sin necesitar saber programar. Si puedes entender como funciona
@@ -153,6 +153,22 @@ Imagina que empiezas a cocinar sin receta:
 
 Con los 9 pasos, la mayoria de esos problemas se detectan ANTES de empezar a cocinar. Y si aparece uno nuevo durante la coccion, hay un proceso claro para manejarlo sin empezar de cero.
 
+### La investigacion profunda (Discovery Depth) — v13.2
+
+Imagina que un cliente pide "pasta con mariscos". Un chef novato escucha "pasta" y "mariscos" y empieza a cocinar inmediatamente. Un chef experimentado PRIMERO investiga: que tipo de pasta? que mariscos hay disponibles? el cliente es alergico a algo? como se quiere la coccion?
+
+El error mas caro en un restaurante no es equivocarse con la sal — es preparar un plato ENTERO basandose en suposiciones incorrectas. Si asumiste que queria linguini y queria ravioli, perdiste todos los ingredientes y el tiempo.
+
+En Batuta funciona igual: la **discovery superficial** (investigar a medias) es el modo de fallo mas caro. Si el chef asume como funciona un sistema sin revisarlo, implementa algo incorrecto, tu lo corriges, y hay que reimplementar todo.
+
+**Las reglas de investigacion profunda**:
+- **Revisar antes de asumir**: No adivinar que hace una funcion por su nombre — abrirla y leerla
+- **Verificar los flujos reales**: Como una cadena de produccion en cocina — saber exactamente que ingrediente va a donde y en que orden
+- **Escribir los supuestos**: La propuesta ahora incluye una lista de "Supuestos Tecnicos" — cosas que el chef CREE que son verdad pero que tu debes confirmar
+- **Diagramar los pasos complejos**: Para recetas complicadas, un diagrama de "quien hace que, cuando, y con que" es obligatorio
+
+> **La prueba de fuego**: Si la propuesta del chef dice "se conecta con el proveedor" pero no puede explicar COMO se conecta, con que datos, y que pasa si falla — necesita investigar mas.
+
 ---
 
 ## La Capa CTO (CTO Strategy Layer) — v11.0
@@ -172,6 +188,20 @@ Antes de ciertos pasos, el chef debe pasar un "control de calidad estrategico":
 | **G0.5 — Entiendo el problema?** | Antes de proponer una solucion | Que todas las variantes del plato estan identificadas, que los ingredientes especiales estan mapeados, que se sabe quien lo va a comer |
 | **G1 — Vale la pena?** | Antes de empezar a planear | Que el costo de hacer el plato no supera lo que van a pagar por el, que hay suficientes clientes que lo pedirian |
 | **G2 — Listo para servir?** | Antes de cerrar | Que todos los controles de calidad pasaron, que la receta esta documentada, que si algo sale mal se puede corregir |
+
+### La nota del mesero (Gate Status) — v13.2
+
+Imagina que el mesero toma tu orden y te pregunta: "Pediste el pollo al horno con ensalada, sin gluten. Confirmas?" Tu no puedes pedirle otra cosa hasta que confirmes o cambies tu orden. **No se puede cambiar de opinion despues de que la cocina empieza a preparar el plato.**
+
+Eso es exactamente lo que hace el **Gate Status**: cuando el chef te presenta una propuesta o un plan de tareas, anota en su cuaderno "ESPERANDO CONFIRMACION". Hasta que no digas "dale" o "quiero cambiar algo", el chef NO empieza otra cosa. No importa si le pides algo diferente — primero hay que resolver la orden pendiente.
+
+**Por que esto importa**: Sin esta nota, a veces el chef se confundia. Decias "dale, continua" y el creia que le estabas pidiendo continuar con OTRA cosa en vez de aprobar la propuesta que te acababa de mostrar. Ahora, con la nota del mesero, el chef sabe exactamente en que estado esta cada pedido.
+
+```
+Tu: "Quiero un plato de pollo" → Chef propone receta → Anota: ESPERANDO CONFIRMACION
+Tu: "Dale"                     → Chef confirma aprobacion → Borra nota → Avanza
+Tu: "Quiero cambiar la salsa"  → Chef entiende: es feedback a la propuesta → Ajusta
+```
 
 ### Los consultores especializados (6 skills nuevos)
 
@@ -484,9 +514,12 @@ Claude termina un trabajo importante, anota:
 - Que decisiones tomo
 - Que le falta por hacer
 - Que convenciones descubrio del proyecto
+- **Estado del gate**: Hay alguna orden pendiente de confirmar? (la "nota del mesero")
 
 La proxima vez que abras Claude, el lee el cuaderno del turno y sabe exactamente
-donde quedaste. Ya no necesitas repetirle "estabamos haciendo X con Y".
+donde quedaste. Ya no necesitas repetirle "estabamos haciendo X con Y". Y si habia
+una propuesta esperando tu aprobacion, el chef lo sabe inmediatamente — no te pide
+otra cosa hasta que resuelvas esa orden pendiente.
 
 ---
 
@@ -689,6 +722,8 @@ Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
 | **Checklist pre-cocina** | Execution Gate | Verifica antes de cocinar: ingredientes, ubicacion, impacto |
 | **Control de calidad** | sdd-verify + O.R.T.A. | Verifican que todo salga bien |
 | **Bitacora del turno** | .batuta/session.md | El cuaderno donde el chef anota en que quedo para el proximo turno |
+| **Nota del mesero** | Gate Status (v13.2) | La nota que dice "ESPERANDO CONFIRMACION" cuando hay una orden pendiente — el chef no empieza otra cosa hasta resolver |
+| **Investigacion profunda** | Discovery Depth (v13.2) | Regla de investigar a fondo antes de proponer — no asumir, verificar los flujos reales |
 | **Inventario automatico** | sync.sh | Actualiza el inventario de recetas automaticamente |
 | **Aprendiz que investiga** | ecosystem-creator | Cuando falta una receta, investiga y la crea |
 | **Equipo temporal** | Agent Teams (v7) | Cocineros extra para banquetes grandes — trabajan en paralelo, cada uno con su estacion |

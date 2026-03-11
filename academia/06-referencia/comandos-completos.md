@@ -1,12 +1,17 @@
 # Comandos completos
 
-Referencia rapida de todos los comandos disponibles en Batuta Dots v13.
+Referencia rapida de todos los comandos disponibles en Batuta Dots v13.2.
 
 > **Auto-routing**: Normalmente no necesitas escribir estos comandos. Batuta detecta
 > automaticamente lo que necesitas y ejecuta la fase correcta. Describe tu problema
 > en lenguaje natural y Batuta actua. Estos comandos existen como **override manual**
 > para cuando quieras controlar un paso especifico directamente.
 > Ver: [Auto-routing](../01-nivel-cero/el-pipeline-sdd.md#auto-routing-conversacion-natural)
+>
+> **Gate Status (v13.2)**: Si hay un gate pendiente (propuesta o plan de tareas esperando
+> aprobacion), el auto-router solo acepta aprobacion ("dale", "proceed") o feedback
+> ("ajusta X"). Cualquier otro input se interpreta como feedback al gate pendiente,
+> no como un nuevo comando. Esto aplica tanto al auto-routing como a los comandos manuales.
 
 ---
 
@@ -32,9 +37,10 @@ Stack: Next.js, PostgreSQL, Redis
 ---
 
 ### /sdd-explore
-**Que hace**: Investiga un tema sin comprometerse a construir.
+**Que hace**: Investiga un tema sin comprometerse a construir. Aplica **Discovery Depth**: lee codigo real antes de asumir, verifica flujos de datos, y documenta supuestos tecnicos.
 **Cuando**: Quieres analizar opciones, validar ideas, o entender el codebase.
-**Resultado**: Analisis estructurado con opciones, riesgos, y recomendaciones.
+**Resultado**: Analisis estructurado con opciones, riesgos, recomendaciones, y Technical Assumptions verificables.
+**Regla anti-shallow**: Si la exploracion no puede responder el flujo de datos para cada integracion, debe profundizar mas antes de avanzar a propuesta.
 
 ```
 /sdd-explore "Deberiamos migrar a microservicios?"
@@ -44,10 +50,11 @@ Stack: Next.js, PostgreSQL, Redis
 ---
 
 ### /sdd-new
-**Que hace**: Inicia un cambio nuevo. Ejecuta explore + propose automaticamente.
+**Que hace**: Inicia un cambio nuevo. Ejecuta explore + propose automaticamente. La exploracion aplica Discovery Depth; la propuesta incluye Technical Assumptions.
 **Cuando**: Decidiste construir algo.
 **Resultado**: Exploracion + propuesta en `openspec/changes/{nombre}/`.
 **Gates**: G0.5 (Discovery) + G1 (Worth Building).
+**Gate Status**: Al presentar la propuesta, el sistema escribe `AWAITING_APPROVAL: proposal` en session.md. Hasta que apruebes o des feedback, no acepta nuevos intents.
 
 ```
 /sdd-new conciliacion-bancaria
@@ -82,8 +89,9 @@ Stack: Next.js, PostgreSQL, Redis
 
 ### /sdd-apply
 **Que hace**: Implementa codigo siguiendo las tareas del cambio activo. Durante la implementacion, los domain agents (backend, quality, data) se auto-invocan segun las tecnologias de cada tarea — no necesitas activarlos manualmente.
-**Cuando**: Las fases de planificacion estan completas.
+**Cuando**: Las fases de planificacion estan completas y el plan de tareas fue aprobado.
 **Resultado**: Codigo implementado, documentado, con Scope Rule aplicada.
+**Gate Status**: El plan de tareas previo escribe `AWAITING_APPROVAL: task_plan`. Solo se procede con apply despues de aprobacion explicita.
 
 ```
 /sdd-apply
@@ -212,6 +220,8 @@ bash ~/batuta-dots/infra/setup.sh --update /path/to/mi-proyecto
 |-----------|------------------------------|-----------------|
 | Construir algo nuevo | "Necesito un dashboard de ventas" | `/sdd-new nombre` |
 | Investigar idea | "Como funciona el auth actual?" | `/sdd-explore "tema"` |
+| Aprobar propuesta pendiente | "Dale", "proceed", "si" | (Gate Status lo detecta automaticamente) |
+| Dar feedback a propuesta | "Cambia X", "falta el caso Y" | (Gate Status lo detecta como feedback) |
 | Continuar donde quede | "Donde quedamos?" | `/sdd-continue` |
 | Avanzar rapido por planificacion | "Dale, avanza con todo" | `/sdd-ff` |
 | Implementar | "Arranca con el codigo" | `/sdd-apply` |

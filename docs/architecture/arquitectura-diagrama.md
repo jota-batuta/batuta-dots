@@ -1,4 +1,4 @@
-# Diagrama de Arquitectura — Ecosistema Batuta (v13.1)
+# Diagrama de Arquitectura — Ecosistema Batuta (v13.2)
 
 ## Vista General del Ecosistema
 
@@ -122,14 +122,18 @@ Los domain agents corren como **subprocesos autonomos** (Task tool), no como iny
 
 ---
 
-## Scope + Domain Agents: Routing del Agente Principal (v13)
+## Scope + Domain Agents: Routing del Agente Principal (v13.2)
 
 ```mermaid
 flowchart TD
     USER["Usuario escribe prompt"]
     BOOTSTRAP["Batuta Bootstrap<br/>La Regla: skill aplica? USALO.<br/>MCP disponible? CONSULTALO."]
-    AUTOROUTE["Auto-Routing<br/>Clasifica intent:<br/>Build | Fix | Continue | Backtrack | Question"]
     ROUTER["CLAUDE.md (Router)<br/>~220 lineas: personalidad,<br/>reglas, auto-routing"]
+
+    STEP0{"Step 0: Gate Check<br/>session.md → AWAITING_APPROVAL?"}
+    GATE_LOCK["Solo acepta:<br/>aprobacion o feedback<br/>(dale/proceed/si/no/ajusta...)"]
+
+    AUTOROUTE["Step 1-2: Auto-Routing<br/>Clasifica intent:<br/>Build | Fix | Continue | Backtrack | Question"]
 
     subgraph SCOPE_AGENTS["SCOPE AGENTS (siempre cargados — maquinaria del hub)"]
         PIPELINE["pipeline-agent<br/>SDD State Machine<br/>(9 skills)"]
@@ -152,7 +156,9 @@ flowchart TD
     DIRECT["Responde directo<br/>(preguntas simples)"]
     GATE["Execution Gate<br/>LIGHT | FULL"]
 
-    USER --> BOOTSTRAP --> ROUTER --> AUTOROUTE
+    USER --> BOOTSTRAP --> ROUTER --> STEP0
+    STEP0 -->|"AWAITING_APPROVAL:<br/>proposal | task_plan"| GATE_LOCK --> RESULT
+    STEP0 -->|"AWAITING_APPROVAL:<br/>none"| AUTOROUTE
     AUTOROUTE -->|"Build/Continue/Backtrack"| PIPELINE
     AUTOROUTE -->|"scope: infra"| INFRA
     AUTOROUTE -->|"scope: observability"| OBS
@@ -171,6 +177,8 @@ flowchart TD
 
     style ROUTER fill:#D4956A,color:#fff
     style BOOTSTRAP fill:#D47272,color:#fff
+    style STEP0 fill:#D47272,color:#fff
+    style GATE_LOCK fill:#D47272,color:#fff
     style AUTOROUTE fill:#E8B84D,color:#000
     style PIPELINE fill:#7AAFC4,color:#fff
     style INFRA fill:#8BB87A,color:#fff
@@ -184,7 +192,7 @@ flowchart TD
     style GATE fill:#E8B84D,color:#000
 ```
 
-> El agente principal es un **router** con **auto-routing**. Clasifica el intent del usuario (Build, Fix, Continue, Backtrack, Question) y delega automaticamente — el usuario no necesita escribir slash commands. Los comandos existen como override manual. Los skills son auto-descubiertos por Claude Code basandose en su campo `description`. Los **scope agents** siempre estan cargados (maquinaria del hub). Los **domain agents** se provisionan a cada proyecto segun su tech stack — excepto quality-agent que siempre esta presente.
+> El agente principal es un **router** con **auto-routing** y un **Step 0 (Gate Check)** previo a la clasificacion de intent. Antes de clasificar, el router lee `AWAITING_APPROVAL` de session.md. Si hay un gate pendiente (proposal o task_plan), SOLO se aceptan tokens de aprobacion o feedback — cualquier otro input se interpreta como feedback al gate, no como un nuevo intent. Principio: **"Los gates viven en el router, no en las skills"**. Si no hay gate pendiente, el routing continua normalmente: clasifica el intent del usuario (Build, Fix, Continue, Backtrack, Question) y delega automaticamente. Los **scope agents** siempre estan cargados (maquinaria del hub). Los **domain agents** se provisionan a cada proyecto segun su tech stack — excepto quality-agent que siempre esta presente.
 
 ---
 
@@ -371,6 +379,20 @@ graph LR
 
 > **spec** y **design** en paralelo. Lineas punteadas = backtracks (retrocesos cuando se descubren problemas). Gates G0.25 (MCP Ready), G0.5 (Discovery Complete), G1 (Solution Worth Building) y G2 (Production Ready) son checkpoints estrategicos. Cada backtrack se registra en `backtrack-log.md` para trazabilidad. 6 specialist skills se invocan condicionalmente: process-analyst, recursion-designer, llm-pipeline-design, data-pipeline-design, worker-scaffold, compliance-colombia.
 
+### Discovery Depth (anti-shallow-loop) — v13.2
+
+La discovery superficial causa el modo de fallo mas caro del pipeline: asumir mal -> implementar -> usuario corrige -> re-implementar -> repetir. Para prevenir esto:
+
+| Regla | Que significa | Ejemplo |
+|-------|-------------|---------|
+| **Leer antes de asumir** | Explorar codigo existente antes de proponer | Verificar que un endpoint realmente existe antes de integrarlo |
+| **Verificar flujos reales** | No asumir comportamiento por nombre de funcion | Leer `processOrder()` para saber que realmente hace, no adivinarlo |
+| **Reafirmar con especificos** | Reformular flujos con datos concretos | "La factura se crea en `billing.create()` que llama a `tax.calculate(subtotal, iva_rate)`" |
+| **Technical Assumptions** | Seccion obligatoria en proposals | Lista explicita de supuestos de arquitectura para revision del usuario |
+| **Diagramas de secuencia** | Obligatorios para workflows complejos | Quien llama a quien, con que datos, en que orden |
+
+> **Test de completitud**: Si la propuesta no puede responder el flujo de datos para CADA integracion, la exploracion necesita profundizar mas. Una propuesta que dice "se conecta con el ERP" sin especificar el endpoint, formato de datos y manejo de errores es una propuesta incompleta.
+
 ---
 
 ## Carga Lazy de Skills (4 niveles — v13)
@@ -411,32 +433,34 @@ flowchart TD
 
 ---
 
-## Continuidad de Sesion
+## Continuidad de Sesion (con Gate Status)
 
 ```mermaid
 flowchart TD
     START["Claude inicia conversacion"]
     CHECK{"Existe<br/>.batuta/session.md?"}
     READ_SESSION["Lee session.md:<br/>estado SDD, decisiones,<br/>convenciones del proyecto"]
+    READ_GATE["Lee Gate Status:<br/>AWAITING_APPROVAL =<br/>proposal | task_plan | none"]
     NO_SESSION["Procede normalmente<br/>(proyecto nuevo)"]
     WORK["Trabaja en la tarea"]
     SIGNIFICANT{"Trabajo<br/>significativo?"}
-    UPDATE["Actualiza .batuta/session.md<br/>con estado actual"]
+    UPDATE["Actualiza .batuta/session.md<br/>con estado actual +<br/>Gate Status"]
     END_SESSION["Fin de sesion"]
 
     START --> CHECK
-    CHECK -->|"Si"| READ_SESSION --> WORK
+    CHECK -->|"Si"| READ_SESSION --> READ_GATE --> WORK
     CHECK -->|"No"| NO_SESSION --> WORK
     WORK --> SIGNIFICANT
     SIGNIFICANT -->|"Si (fase SDD,<br/>feature, bugfix)"| UPDATE --> END_SESSION
     SIGNIFICANT -->|"No (pregunta<br/>rapida)"| END_SESSION
 
     style READ_SESSION fill:#8BB87A,color:#fff
+    style READ_GATE fill:#D47272,color:#fff
     style UPDATE fill:#7AAFC4,color:#fff
     style NO_SESSION fill:#666,color:#fff
 ```
 
-> Cada conversacion empieza leyendo el contexto de la anterior. Al terminar trabajo significativo, actualiza el archivo para la proxima sesion.
+> Cada conversacion empieza leyendo el contexto de la anterior. El campo `AWAITING_APPROVAL` en la seccion `## Gate Status` de session.md es critico: el auto-router lo lee en Step 0 ANTES de clasificar el intent del usuario. Si un gate esta pendiente, el router bloquea cualquier intent que no sea aprobacion o feedback. Los gates escriben este estado explicitamente al presentar una propuesta o plan de tareas. Al terminar trabajo significativo, se actualiza el archivo incluyendo el estado del gate.
 
 ---
 

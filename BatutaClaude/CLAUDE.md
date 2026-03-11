@@ -315,6 +315,8 @@ Before classifying intent, check if a gate is pending:
    - On feedback → incorporate feedback, re-present the artifact
    - Do NOT classify intent further. The gate takes priority over all routing.
 3. If `AWAITING_APPROVAL` is `none` → proceed to Step 1
+4. If the Gate Status section is missing from session.md, treat `AWAITING_APPROVAL` as `none`
+   and proceed to Step 1. This handles legacy session files created before v13.2.1.
 
 This prevents the router from bypassing gates. Gates live in the router, not in skills.
 

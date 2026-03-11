@@ -12,11 +12,17 @@ En Batuta funciona asi:
 
 | Rol MoE | En Batuta | Que hace |
 |---------|-----------|---------|
-| **Router** | CLAUDE.md (agente principal) | Clasifica la intencion del usuario y delega |
+| **Router** | CLAUDE.md (agente principal) | Clasifica la intencion del usuario y delega. Incluye Step 0 (Gate Check) que verifica si hay un gate pendiente antes de clasificar |
 | **Experts** | Domain agents (backend, quality, data) | Ejecutan la tarea con conocimiento especializado |
 | **Parameters** | Skills (fastapi-crud, tdd-workflow, etc.) | Los instrumentos que cada experto toca |
 
 No necesitas activar nada manualmente. Batuta detecta las senales en tu peticion (APIs, tests, datos) y delega al agente correcto de forma automatica. A esto le llamamos **auto-invocacion**.
+
+### Step 0: Gate Check (v13.2)
+
+Antes de clasificar tu intencion, el router hace una verificacion previa: lee el campo `AWAITING_APPROVAL` en session.md. Si hay un gate pendiente (por ejemplo, una propuesta esperando tu aprobacion), el router **solo acepta aprobacion o feedback** — no permite que otro intent "se cuele" y desvie el flujo. Esto evita que digas "dale, continua" y el router lo interprete como continuar con OTRA cosa en vez de aprobar la propuesta pendiente.
+
+Principio: **"Los gates viven en el router, no en las skills"**. Las skills presentan las propuestas; el router se encarga de que la aprobacion se respete.
 
 ---
 
@@ -84,6 +90,19 @@ Esto ahorra tokens: el agente principal se mantiene liviano mientras los experto
 - Cambios de una sola linea o configuracion — el costo de invocar un agente supera el beneficio
 - Creacion de artefactos SDD (propuestas, specs) — eso lo maneja pipeline-agent + skills
 - Organizacion de archivos — eso lo maneja infra-agent + scope-rule
+
+### Discovery Depth: investigar antes de implementar (v13.2)
+
+La delegacion automatica funciona bien cuando el agente entiende correctamente el problema. Pero si la exploracion fue superficial, el domain agent recibe instrucciones incorrectas y produce codigo que hay que rehacer. Este es el modo de fallo mas caro del ecosistema: asumir mal -> implementar -> usuario corrige -> reimplementar.
+
+Para prevenir esto, la fase de exploracion (`sdd-explore`) ahora exige **profundidad verificable**:
+
+- **Leer codigo antes de asumir**: Si la tarea menciona una funcion existente, el agente DEBE leerla — no asumir por el nombre
+- **Verificar flujos de datos reales**: Trazar quien llama a quien, con que datos, en que orden
+- **Supuestos Tecnicos en la propuesta**: Lista explicita de lo que el agente cree que es verdad, para que el usuario valide
+- **Diagramas de secuencia para workflows complejos**: Obligatorios cuando hay 2+ integraciones
+
+Sin discovery profundo, la auto-invocacion del domain agent correcto no compensa — un experto excelente con instrucciones incorrectas produce resultados incorrectos.
 
 ---
 
