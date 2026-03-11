@@ -26,8 +26,8 @@
 
 ### Slice Sequencing (gate — no es sugerencia)
 
-Una directiva CTO puede estar etiquetada como slice directive cuando incluye
-`slice_current` y `slice_total` en su BATUTA CONFIG.
+Una directiva CTO está etiquetada como slice directive cuando el mensaje contiene
+un bloque ```batuta-config``` con `slice_current` y `slice_total`.
 
 Reglas para slice directives:
 - Solo el slice con número `slice_current` está activo. No leer ni ejecutar slices futuros.
@@ -320,6 +320,28 @@ Slash commands remain as manual overrides if the user types them explicitly.
 **Precondition**: Auto-routing is only active when `.batuta/` exists in the project
 (session.md was injected by SessionStart). In non-Batuta projects, respond normally.
 
+### BATUTA CONFIG — Formato de directiva CTO
+
+Las directivas del CTO se identifican por un bloque con language tag `batuta-config`.
+El agente detecta este bloque por parsing de code fence, no por texto libre.
+
+Formato canónico:
+```batuta-config
+slice_current: 1
+slice_total: 2
+slice_exit_criteria: "descripción verificable y específica"
+slice_next_trigger: "cuando slice 1 pase criterio → traer aquí antes de continuar"
+sdd_entry: /sdd:new nombre-kebab-case
+agent_team: single agent | [template-name]
+skills_sugeridos: [skill-a, skill-b]
+```
+
+Regla de detección (Step 0):
+- Mensaje contiene bloque ```batuta-config``` con `slice_current` y `slice_total`
+  → es directiva CTO → activar Slice Sequencing
+- Mensaje NO contiene ese bloque
+  → es instrucción directa del usuario → flujo normal, skip Slice Sequencing
+
 ### Step 0: Check Gate Status (before anything else)
 
 Before classifying intent, check if a gate is pending:
@@ -334,7 +356,15 @@ Before classifying intent, check if a gate is pending:
 4. If the Gate Status section is missing from session.md, treat `AWAITING_APPROVAL` as `none`
    and proceed to Step 1. This handles legacy session files created before v13.2.1.
 
-**Slice check** (after gate check):
+**BATUTA CONFIG check** (before gate check):
+- Scan the message for a ```batuta-config``` code fence with `slice_current` and `slice_total`
+- If found → this message is a CTO directive.
+  Extract fields and activate Slice Sequencing (see ### SDD Pipeline → Slice Sequencing).
+- If not found → this message is a direct user instruction.
+  Ignore Slice Sequencing entirely.
+
+**Slice check** (after BATUTA CONFIG check):
+- Only applies if a slice directive is active (batuta-config block detected)
 - Read `## Slice Status` from session.md
 - If `exit_criteria_met: no | partial` → DO NOT start next slice.
   Inform: "El slice anterior no pasó su criterio de salida.

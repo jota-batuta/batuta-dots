@@ -41,33 +41,52 @@ git revert <commit-hash>
 
 ---
 
-## v13.3.0 — Slice Sequencing Protocol (2026-03-11)
+## v13.3.0 — Slice Sequencing Protocol + BATUTA CONFIG Formal (2026-03-11)
 
 ### Contexto
 
-El flujo todo-en-Claude-Code produce el ciclo mas caro: discovery superficial → directiva grande → ejecucion paralela → piezas no conectan → refactor. Solucion: separar en dos capas. CTO (Claude.ai Projects) hace discovery profundo, arquitectura, y slice maps. Claude Code ejecuta un slice vertical a la vez via SDD Pipeline.
+El flujo anterior tenía dos problemas. Primero: directivas grandes → ejecución paralela →
+piezas que no conectan → refactor. Segundo: la detección de slice directives dependía de
+buscar palabras en texto libre ("slice_current" suelto en el mensaje), lo que era frágil
+y ambiguo. Esta versión introduce el protocolo de slice sequencing con BATUTA CONFIG como
+contrato explícito: un code fence con language tag `batuta-config` que el agente detecta
+por parsing, no por heurística de texto.
 
 ### Changes
 
-#### SDD Pipeline — Slice Sequencing (gate)
-- **NEW** Subseccion "Slice Sequencing" en SDD Pipeline rules. Cuando una directiva incluye `slice_current` y `slice_total` en su BATUTA CONFIG, solo el slice activo se ejecuta. Al completar sdd-verify, el agente PARA y reporta estado al usuario para llevar al CTO.
+#### CLAUDE.md — 5 inserciones quirúrgicas
 
-#### Mandatory Gates — G0.75
-- **NEW** Gate G0.75 (Slice Map Approved): requerido antes de la primera directiva en soluciones multi-change. El slice map debe ser presentado y aprobado explicitamente por el usuario antes de ejecutar cualquier directiva.
+- **NEW** `### BATUTA CONFIG` en Auto-Routing — define el formato canónico del bloque
+  `batuta-config` y la regla de detección: parsing de code fence, no texto libre.
+- **NEW** `### Slice Sequencing` en `### SDD Pipeline` — reglas para slice directives:
+  solo un slice activo, PARAR al terminar, reportar criterio de salida.
+- **NEW** Gate `G0.75 — Slice Map Approved` en tabla de Mandatory Gates.
+- **NEW** `## Slice Status` en Session Budget — estado del slice activo en session.md.
+- **NEW** BATUTA CONFIG check + Slice check en `### Step 0` del auto-router.
 
-#### Session Continuity — Slice Status
-- **MODIFIED** Tabla Session Budget: WHERE row ahora incluye `+ Slice Status` junto a Gate Status.
-- **NEW** Seccion `## Slice Status` en session.md con campos: `active_slice`, `exit_criteria`, `exit_criteria_met`, `notes`. Se actualiza al completar sdd-verify de cada slice. Se limpia al archivar el ultimo slice.
+#### BatutaClaude/CLAUDE.md
+- **SYNC** Copia exacta de root CLAUDE.md.
 
-#### Auto-Routing — Slice Check (Step 0)
-- **NEW** Bloque "Slice check" en Step 0, despues del gate check. Lee `## Slice Status` de session.md y bloquea inicio de siguiente slice si `exit_criteria_met` es `no` o `partial`. Maneja gracefully sesiones legacy sin la seccion.
+### Principio de diseño
 
-### Principio
+- **Contrato explícito sobre convención implícita**: el agente detecta directivas CTO
+  por un bloque de código con language tag específico, no por palabras en texto libre.
+  Esto elimina la ambigüedad entre el usuario hablando de slices y una directiva real.
+- **Un slice a la vez**: Claude Code nunca ejecuta trabajo sobre terreno no verificado.
+- **session.md como puente**: el estado compartido entre CTO (Claude.ai) y Claude Code.
 
-Claude Code es capa de ejecucion. No descubre, no arquitecta, no decide scope de slices. Recibe directivas del CTO layer y ejecuta una a la vez. El session.md es el puente entre ambas capas.
+### Compatibilidad
+
+Backward compatible. Las secciones de slice solo se activan cuando la directiva
+contiene un bloque `batuta-config`. Proyectos y sesiones sin CTO layer no son afectados.
 
 ### Rollback
-Revertir los 4 bloques insertados en CLAUDE.md. Buscar: "Slice Sequencing", "G0.75", "Slice Status", "Slice check".
+
+```bash
+git revert <commit-hash>
+# CLAUDE.md pierde: BATUTA CONFIG, Slice Sequencing, G0.75, Slice Status, checks en Step 0
+# Riesgo: detección de slice directives vuelve a ser frágil (texto libre)
+```
 
 ---
 
