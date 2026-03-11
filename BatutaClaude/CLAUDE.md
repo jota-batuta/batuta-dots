@@ -24,6 +24,21 @@
 - Before sdd-apply writes code, verify patterns using the MCP fallback chain: (1) Active MCP, (2) WebFetch official docs, (3) WebSearch, (4) Training data — flag as risk if relying on training data. Stale training data causes bugs.
 - Before any production code change, run the Execution Gate. LIGHT mode for single-file/clear-scope; FULL mode for 2+ files/architecture/destructive ops. See Execution Gate section for details.
 
+### Slice Sequencing (gate — no es sugerencia)
+
+Una directiva CTO puede estar etiquetada como slice directive cuando incluye
+`slice_current` y `slice_total` en su BATUTA CONFIG.
+
+Reglas para slice directives:
+- Solo el slice con número `slice_current` está activo. No leer ni ejecutar slices futuros.
+- Al terminar sdd-verify para el slice activo, actualizar session.md con Slice Status (ver Session Continuity).
+- PARAR. No iniciar el siguiente slice. Reportar al usuario:
+  "Slice {N}/{M} completo. Criterio de salida: {criterio}.
+   Estado: {met | not met | partial}.
+   Trae este reporte al CTO para continuar con Slice {N+1}."
+- Si el criterio no fue met: describir qué falló con evidencia específica.
+  No intentar arreglar solo — esperar instrucciones del CTO.
+
 ### Ecosystem Lifecycle
 - After creating a skill/agent/workflow via ecosystem-creator, invoke ecosystem-lifecycle for classification (generic vs project-specific). Do not stop at registration — classification determines whether the skill propagates to the hub.
 - When user reports a rule violation ("violaste tus reglas", "no seguiste X"), invoke ecosystem-lifecycle self-heal. Verify the violation first, then propose a fix. Do not dismiss or rationalize.
@@ -45,6 +60,7 @@ Every gate is a STOP point. Do not advance past a gate without meeting its crite
 | **Execution Gate** | Before ANY code change | LIGHT: 1-line confirm. FULL: 7-point checklist (scope, location, impact, SDD, skill, pyramid, team) | Writing production code |
 | **G0.25 — Skill Gaps** | After sdd-explore | All HIGH gaps resolved: create skill, defer + justify, or skip + document | Advance to G0.5 |
 | **G0.5 — Discovery Complete** | Before sdd-propose | 5 questions answered YES. Any NO → return to explore | Advance to propose |
+| **G0.75 — Slice Map Approved** | Antes de primera directiva en soluciones multi-change | Slice map presentado y aprobado explícitamente por el usuario | Ejecutar cualquier directiva de la solución |
 | **G1 — Worth Building** | Before sdd-spec | Scope, stakeholders, risks validated | Advance to spec/design |
 | **Proposal Approval** | After sdd-propose | User explicitly approves ("dale", "proceed", "si") | Advance to spec |
 | **Task Plan Approval** | After sdd-tasks | User explicitly approves | Advance to sdd-apply |
@@ -318,6 +334,15 @@ Before classifying intent, check if a gate is pending:
 4. If the Gate Status section is missing from session.md, treat `AWAITING_APPROVAL` as `none`
    and proceed to Step 1. This handles legacy session files created before v13.2.1.
 
+**Slice check** (after gate check):
+- Read `## Slice Status` from session.md
+- If `exit_criteria_met: no | partial` → DO NOT start next slice.
+  Inform: "El slice anterior no pasó su criterio de salida.
+  Trae el reporte al CTO antes de continuar."
+- If `exit_criteria_met: yes` → the CTO will have sent the next directive. Proceed with it.
+- If `exit_criteria_met: pending` → slice in progress, continue normally.
+- If section is missing → no active slice (legacy or non-CTO-layer work).
+
 This prevents the router from bypassing gates. Gates live in the router, not in skills.
 
 ### Step 1: Read State
@@ -483,7 +508,7 @@ session.md is a BRIEFING DOCUMENT for a new agent taking over the project. It an
 
 | Question | Section | What Goes Here | What Does NOT |
 |----------|---------|----------------|---------------|
-| **WHERE are we?** | Project + Active Changes + Gate Status | Type, stack, 1-line status, current SDD phase, pending gate | File inventories, test counts |
+| **WHERE are we?** | Project + Active Changes + Gate Status + Slice Status | Type, stack, 1-line status, current SDD phase, pending gate | File inventories, test counts |
 | **WHY did we get here?** | Key Decisions + Conventions | Decisions with rationale, discovered patterns (date formats, money handling) | Implementation details, regex, S3 paths, operational data |
 | **HOW to continue?** | Next Steps | Actionable items, blockers, what to do first | Historical notes already acted on |
 
@@ -496,6 +521,18 @@ Change: [change-name or empty]
 Update this section every time a gate is set or cleared. The auto-router reads this
 BEFORE classifying intent (Step 0). Without this field, gate enforcement depends on
 disk artifact detection only, which is slower and less reliable.
+
+**Slice Status section** (required in session.md when a slice directive is active):
+```
+## Slice Status
+active_slice: N / total: M
+exit_criteria: [criterio copiado de BATUTA CONFIG]
+exit_criteria_met: yes | no | partial | pending
+notes: [evidencia breve de por qué met o no met]
+```
+Update after completing sdd-verify for each slice.
+Clean up when the last slice is archived.
+If this section is missing → no active slice (legacy or non-CTO-layer work).
 
 **Pruning rules (enforce on every update):**
 1. Completed SDD changes → REMOVE from Active Changes (they're in openspec/archive/)

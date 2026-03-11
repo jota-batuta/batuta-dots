@@ -4,6 +4,36 @@
 
 ---
 
+## v13.3.0 — Slice Sequencing Protocol (2026-03-11)
+
+### Contexto
+
+El flujo todo-en-Claude-Code produce el ciclo mas caro: discovery superficial → directiva grande → ejecucion paralela → piezas no conectan → refactor. Solucion: separar en dos capas. CTO (Claude.ai Projects) hace discovery profundo, arquitectura, y slice maps. Claude Code ejecuta un slice vertical a la vez via SDD Pipeline.
+
+### Changes
+
+#### SDD Pipeline — Slice Sequencing (gate)
+- **NEW** Subseccion "Slice Sequencing" en SDD Pipeline rules. Cuando una directiva incluye `slice_current` y `slice_total` en su BATUTA CONFIG, solo el slice activo se ejecuta. Al completar sdd-verify, el agente PARA y reporta estado al usuario para llevar al CTO.
+
+#### Mandatory Gates — G0.75
+- **NEW** Gate G0.75 (Slice Map Approved): requerido antes de la primera directiva en soluciones multi-change. El slice map debe ser presentado y aprobado explicitamente por el usuario antes de ejecutar cualquier directiva.
+
+#### Session Continuity — Slice Status
+- **MODIFIED** Tabla Session Budget: WHERE row ahora incluye `+ Slice Status` junto a Gate Status.
+- **NEW** Seccion `## Slice Status` en session.md con campos: `active_slice`, `exit_criteria`, `exit_criteria_met`, `notes`. Se actualiza al completar sdd-verify de cada slice. Se limpia al archivar el ultimo slice.
+
+#### Auto-Routing — Slice Check (Step 0)
+- **NEW** Bloque "Slice check" en Step 0, despues del gate check. Lee `## Slice Status` de session.md y bloquea inicio de siguiente slice si `exit_criteria_met` es `no` o `partial`. Maneja gracefully sesiones legacy sin la seccion.
+
+### Principio
+
+Claude Code es capa de ejecucion. No descubre, no arquitecta, no decide scope de slices. Recibe directivas del CTO layer y ejecuta una a la vez. El session.md es el puente entre ambas capas.
+
+### Rollback
+Revertir los 4 bloques insertados en CLAUDE.md. Buscar: "Slice Sequencing", "G0.75", "Slice Status", "Slice check".
+
+---
+
 ## v13.2.1 — Gate Bypass Fix + Anti-Shallow Discovery (2026-03-11)
 
 ### Contexto
