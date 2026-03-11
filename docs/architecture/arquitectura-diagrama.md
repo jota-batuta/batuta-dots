@@ -1,4 +1,4 @@
-# Diagrama de Arquitectura — Ecosistema Batuta (v13.2)
+# Diagrama de Arquitectura — Ecosistema Batuta (v13.3)
 
 ## Vista General del Ecosistema
 
@@ -461,6 +461,83 @@ flowchart TD
 ```
 
 > Cada conversacion empieza leyendo el contexto de la anterior. El campo `AWAITING_APPROVAL` en la seccion `## Gate Status` de session.md es critico: el auto-router lo lee en Step 0 ANTES de clasificar el intent del usuario. Si un gate esta pendiente, el router bloquea cualquier intent que no sea aprobacion o feedback. Los gates escriben este estado explicitamente al presentar una propuesta o plan de tareas. Al terminar trabajo significativo, se actualiza el archivo incluyendo el estado del gate.
+
+---
+
+## Flujo CTO → Ejecucion: Two-Layer Pipeline (v13.3)
+
+```mermaid
+flowchart TD
+    JNMZ(["JNMZ"])
+
+    subgraph CTO ["CAPA CTO — Claude.ai"]
+        direction TB
+        IDEA["Idea / Problema"]
+
+        subgraph PENSAR ["PENSAR"]
+            PD["00 Product Designer"]
+            G0{"Gate 0\nProblem Worth Solving?"}
+            PRE["Pre-G1 Filters"]
+            PA["14 Process Analyst"]
+            RD["15 Recursion Designer"]
+            KG["16 Knowledge Gap Detector"]
+            G05{"Gate 0.5\nDiscovery Complete?"}
+            G1{"Gate 1\nSolution Worth Building?"}
+            AR["01 Solution Architect"]
+            SM["Slice Map"]
+            G075{"Gate 0.75\nSlice Map Approved?"}
+        end
+
+        DIR["Directiva Slice N + BATUTA CONFIG"]
+    end
+
+    subgraph DEVOPS ["CAPA EJECUCION — Claude Code"]
+        SDD["SDD Pipeline\nExplore - Spec - Apply - Verify"]
+        CONSTRUIR["02 Data - 03 LLM - 04 Platform"]
+        REPORT["Reporte: criterio met / not met"]
+    end
+
+    subgraph PROD ["PRODUCTIVIZAR"]
+        P1["05 Security - 06 Compliance\n07 QA - 08 Tech Writer"]
+        ORTA["10 O.R.T.A. — Gate 2"]
+    end
+
+    subgraph OPERAR ["OPERAR"]
+        OP["09 Cost - 13 Client Success"]
+        FB["Feedback"]
+    end
+
+    JNMZ --> IDEA --> PD --> G0
+    G0 -->|NO-GO| JNMZ
+    G0 -->|GO| PRE
+    PRE --> PA & RD & KG
+    KG -->|"GAP — skill-creator"| JNMZ
+    PA & RD --> G05
+    G05 -->|"INCOMPLETO"| PD
+    G05 -->|COMPLETO| G1
+    G1 -->|KILL/ITERATE| JNMZ
+    G1 -->|BUILD| AR --> SM --> G075
+    G075 -->|"AJUSTAR"| AR
+    G075 -->|APROBADO| DIR
+
+    DIR --> SDD --> CONSTRUIR --> REPORT
+    REPORT -->|not met| DIR
+    REPORT -->|"met - N+1"| DIR
+    REPORT -->|ultimo slice met| PROD
+
+    PROD --> P1 --> ORTA
+    ORTA -->|FIX| PROD
+    ORTA -->|"SHIP"| OPERAR
+    OPERAR --> OP --> FB --> IDEA
+
+    style G05 fill:#e74c3c,color:#fff
+    style G075 fill:#e74c3c,color:#fff
+    style KG fill:#f39c12,color:#fff
+    style DIR fill:#2ecc71,color:#fff
+    style ORTA fill:#3498db,color:#fff
+```
+
+> **Flujo de dos capas (v13.3)**: La capa CTO (Claude.ai Projects) hace discovery profundo, arquitectura, y corta en slices verticales. La capa de ejecucion (Claude Code) recibe una directiva por slice via bloque `batuta-config`, ejecuta el SDD Pipeline completo, y reporta criterio de salida. JNMZ es el puente humano entre ambas capas — lleva reportes al CTO y directivas a Claude Code. El Knowledge Gap Detector (16) puede detener el flujo si detecta tecnologias sin skill, devolviendo al usuario para crear el skill antes de continuar. Gate 0.75 (Slice Map Approved) es el punto donde el usuario valida que los slices del CTO cubren toda la solucion antes de ejecutar la primera directiva.
 
 ---
 

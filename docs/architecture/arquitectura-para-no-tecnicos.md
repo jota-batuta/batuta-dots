@@ -1,4 +1,4 @@
-# Entendiendo la Arquitectura de Batuta — Sin Palabras Tecnicas (v13.2)
+# Entendiendo la Arquitectura de Batuta — Sin Palabras Tecnicas (v13.3)
 
 > **Para quien es esto**: Para cualquier persona que quiera entender COMO funciona
 > el ecosistema Batuta sin necesitar saber programar. Si puedes entender como funciona
@@ -520,6 +520,47 @@ La proxima vez que abras Claude, el lee el cuaderno del turno y sabe exactamente
 donde quedaste. Ya no necesitas repetirle "estabamos haciendo X con Y". Y si habia
 una propuesta esperando tu aprobacion, el chef lo sabe inmediatamente — no te pide
 otra cosa hasta que resuelvas esa orden pendiente.
+
+---
+
+## Las Dos Ventanas: El Director y la Cocina (v13.3)
+
+Imagina que el restaurante crece y ahora tiene un **director general** (CTO) que planifica
+los menus y un **jefe de cocina** (Claude Code) que los ejecuta. No trabajan en la misma
+oficina — el director esta en su despacho pensando estrategia, y el jefe de cocina esta
+en la cocina con las manos en la masa.
+
+El flujo funciona asi:
+
+1. **El director piensa**: Analiza el problema, consulta con especialistas (Product Designer,
+   Process Analyst, Recursion Designer), y diseña la solucion completa.
+
+2. **El director corta en porciones**: En lugar de mandar toda la receta de golpe, la divide
+   en "porciones" (slices). Cada porcion es un plato que se puede servir solo — no depende
+   de los otros para funcionar.
+
+3. **El director manda UNA porcion**: Le da al jefe de cocina una "directiva" — un papel
+   con instrucciones claras que incluye un bloque especial llamado `batuta-config` que dice
+   "esta es la porcion 1 de 3, y el plato esta listo cuando pasa este criterio".
+
+4. **El jefe de cocina ejecuta**: Sigue su proceso normal (SDD Pipeline), cocina el plato,
+   lo prueba, y reporta: "Porcion 1 de 3 lista. Criterio: cumplido."
+
+5. **JNMZ lleva el reporte al director**: El humano es el puente. Toma el reporte de la
+   cocina y se lo lleva al director, que decide si mandar la siguiente porcion.
+
+**Por que dos ventanas en lugar de una?** Porque cuando el director y el jefe de cocina
+trabajan en la misma sala, el jefe de cocina empieza a cocinar antes de que el director
+termine de pensar. El resultado: platos a medio hacer que no conectan entre si. Separar
+las funciones evita ese problema.
+
+**Como sabe el chef que es una orden del director?** Por el bloque `batuta-config` en la
+directiva — un formato especifico que solo el director usa. Si un cliente (usuario directo)
+pide algo sin ese formato, el chef sabe que es un pedido normal, no una directiva del CTO.
+
+**El cuaderno del turno como puente**: session.md ahora tiene una seccion `## Slice Status`
+que dice en que porcion esta y si el criterio se cumplio. El director lee esto para decidir
+que mandar despues.
 
 ---
 
