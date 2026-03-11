@@ -540,6 +540,9 @@ If this section is missing → no active slice (legacy or non-CTO-layer work).
 3. Next Steps already done → REMOVE
 4. Individual file paths → Do not list (use summaries: "4 parsers, 48 tests")
 5. Over 80 lines → trim oldest decisions and notes until compliant
+6. `## AC Status` → populate when starting sdd-verify, clean up when archiving.
+   Format: `AC-{id}: pending | pass | fail | blocked`
+   The CTO needs this field to evaluate slice exit criteria for verify slices.
 
 PROJECT context only. Personal preferences → MEMORY.md.
 

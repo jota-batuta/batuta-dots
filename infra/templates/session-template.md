@@ -1,24 +1,51 @@
-# Session — {project-name}
-
-> Briefing for a new agent: WHERE are we, WHY, HOW to continue.
-> Budget: 80 lines max. Details live in code and openspec/.
+# Session — {PROJECT_NAME}
 
 ## Project
-- **Type**: {webapp|automation|ai-agent|infrastructure|data-pipeline|library}
-- **Stack**: {detected stack}
-- **Status**: {1-line current status summary}
+- **Name**: {PROJECT_NAME}
+- **Type**: automation | agent | saas | service | pipeline | other
+- **Stack**: {technologies}
+- **Description**: {one-line description}
+- **Status**: {current status}
 
-## Active SDD Changes
+## Current State
+- **SDD Phase**: explore | propose | spec | design | tasks | apply | verify | archive
+- **Active change**: `{change-name}`
 
-| Change | Phase | Last Updated |
-|--------|-------|--------------|
-| — | — | — |
+## Gate Status
+AWAITING_APPROVAL: none | proposal | task_plan
+Change:
 
-## Key Decisions (WHY we got here)
-- {date}: {decision + rationale — 1-2 lines max each}
+## Slice Status
+active_slice: {N} / total: {M}
+exit_criteria: {criterio copiado de BATUTA CONFIG}
+exit_criteria_met: pending | yes | no | partial
+notes:
+
+## AC Status
+<!--
+Poblar cuando hay verify pendiente.
+Copiar los IDs de los acceptance criteria del spec.md.
+-->
+<!-- AC-01: pending | pass | fail | blocked -->
+<!-- AC-02: pending | pass | fail | blocked -->
+
+## Decisions
+<!--
+Decisiones arquitectónicas con su razón.
+Formato: [decisión] — [por qué]
+Ejemplo: ODBC 17 (no 18) — SQL Server 2017 legacy, evita TLS handshake issues
+-->
 
 ## Conventions
-- {project-specific patterns: date formats, money handling, naming, etc.}
+<!--
+Reglas de negocio que el agente debe respetar.
+Formato: RN-XX: [regla]
+-->
 
-## Next Steps (HOW to continue)
-- [ ] {actionable item}
+## Next Steps
+<!--
+Máximo 3 ítems accionables. Si hay más, el proyecto necesita re-planificación.
+-->
+1.
+2.
+3.

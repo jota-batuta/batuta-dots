@@ -4,6 +4,43 @@
 
 ---
 
+## v13.3.1 — Session Template: AC Status + Slice Status (2026-03-11)
+
+### Contexto
+
+El session.md template anterior incluía `## Implemented Files` (ruido para el CTO)
+y no incluía `## AC Status` ni `## Slice Status` (necesarios para el flujo CTO → Claude Code).
+Esta versión alinea el template con el protocolo de slice sequencing de v13.3.
+
+### Changes
+
+- **MODIFIED** `infra/templates/session-template.md` — Reescrito:
+  - **REMOVED** `## Implemented Files` — el CTO no necesita la lista de archivos
+  - **NEW** `## AC Status` — estado de acceptance criteria durante sdd-verify
+  - **NEW** `## Slice Status` — estado del slice activo (de v13.3)
+  - **KEPT** Gate Status, Decisions, Conventions, Next Steps (sin cambios)
+  - Next Steps limitado a 3 ítems máximo (comentario explícito)
+- **MODIFIED** `BatutaClaude/CLAUDE.md` — Pruning rule #6: AC Status lifecycle
+- **SYNC** `CLAUDE.md` → `BatutaClaude/CLAUDE.md`
+
+### Principio de diseño
+
+- **Session.md responde WHERE/WHY/HOW para el CTO, no para el developer**:
+  El CTO necesita saber qué acceptance criteria pasaron, no qué archivos existen.
+  Los archivos están en el código — no en el briefing.
+- **AC Status como criterio de salida verificable**:
+  Sin este campo, el CTO no puede evaluar si un slice de verify está met o not met.
+
+### Rollback
+
+```bash
+git revert <commit-hash>
+# Template vuelve a versión sin AC Status y con Implemented Files
+# CLAUDE.md pierde pruning rule #6
+```
+
+---
+
 ## v13.3.0 — Slice Sequencing Protocol (2026-03-11)
 
 ### Contexto
