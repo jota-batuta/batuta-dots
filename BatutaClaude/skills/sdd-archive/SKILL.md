@@ -260,9 +260,13 @@ Lessons learned have been captured for team knowledge sharing.
 Ready for the next change.
 ```
 
-### Step 5.5: Notion KB — Knowledge Persistence (Advisory)
+### Step 5.5: Notion Sync (Advisory)
 
-Read `lessons-learned.md` and `explore.md` from the archived change. Evaluate if any knowledge TRANSCENDS this project — patterns, edge cases, decisions that would help future projects.
+Read `lessons-learned.md` and `explore.md` from the archived change. This step persists knowledge and updates project status in Notion. It has two parts.
+
+#### 5.5a — KB Persistence
+
+Evaluate if any knowledge TRANSCENDS this project — patterns, edge cases, decisions that would help future projects.
 
 ```
 KB PERSISTENCE CHECK:
@@ -274,25 +278,47 @@ KB PERSISTENCE CHECK:
 │   └── Add to proposal table
 ├── Present to user — do NOT create automatically
 ├── If user approves AND Notion MCP is available:
-│   └── Create entries in Notion KB
+│   └── Create entries in Notion KB (data_source_id: 58433974-5511-45b8-bd09-54551f6c0c23)
 └── If Notion MCP is NOT available:
     └── Document proposed entries in lessons-learned.md for manual persistence
 ```
 
-Output (append to Step 5 summary):
+#### 5.5b — Proyecto Status Update
+
+If Notion MCP is available, update the project's status in the Proyectos database.
+
+```
+PROYECTO STATUS UPDATE:
+├── If Notion MCP is available:
+│   ├── Search Proyectos DB (data_source_id: 7ad4e5bf-b548-4fa0-b8b0-b1e2c30ec8a5) for this project
+│   ├── If found → update Estado based on archive result:
+│   │   ├── All slices archived → Estado = "Completado"
+│   │   ├── This slice archived, more remain → Estado = "En Progreso"
+│   │   └── Archive with warnings → Estado = "En Revisión"
+│   └── If not found → skip with note "Project not found in Notion Proyectos DB"
+└── If Notion MCP is NOT available:
+    └── Skip with note: "Notion MCP no disponible — actualizar manualmente"
+```
+
+#### Output (append to Step 5 summary):
 
 ```markdown
-### Notion KB — Knowledge Persistence
+### Notion Sync
 
+#### Knowledge Persistence
 | # | Título propuesto | Campo | Tipo | Confianza |
 |---|-----------------|-------|------|-----------|
 | 1 | {título} | {campo} | {tipo} | {confianza} |
 
 {Si no hay: "No se identificó conocimiento que trascienda este proyecto."}
 ¿Persistir en Notion KB? (requiere Notion MCP)
+
+#### Proyecto Status
+{Si Notion MCP disponible: "Proyecto [nombre] actualizado a Estado = [estado]"}
+{Si no: "Notion MCP no disponible — actualizar manualmente"}
 ```
 
-**IMPORTANT**: This step is advisory only — it does NOT block archiving. If Notion MCP is unavailable, document and continue. If no transcendent knowledge is found, skip the table entirely.
+**IMPORTANT**: This step is advisory only — it does NOT block archiving. If Notion MCP is unavailable, document and continue. If no transcendent knowledge is found, skip the KB table entirely.
 
 ## Sub-Agent Output Contract
 
