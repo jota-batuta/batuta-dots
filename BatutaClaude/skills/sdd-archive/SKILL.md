@@ -260,6 +260,40 @@ Lessons learned have been captured for team knowledge sharing.
 Ready for the next change.
 ```
 
+### Step 5.5: Notion KB — Knowledge Persistence (Advisory)
+
+Read `lessons-learned.md` and `explore.md` from the archived change. Evaluate if any knowledge TRANSCENDS this project — patterns, edge cases, decisions that would help future projects.
+
+```
+KB PERSISTENCE CHECK:
+├── Read lessons-learned.md → extract reusable insights
+├── Read explore.md → extract approach decisions and edge cases
+├── For each reusable piece:
+│   ├── Determine: Campo (de acción), Tipo (Discovery/Decisión/Edge Case/Regla de Negocio/Patrón/Lesson Learned)
+│   ├── Determine: ERP relevance, Confianza level
+│   └── Add to proposal table
+├── Present to user — do NOT create automatically
+├── If user approves AND Notion MCP is available:
+│   └── Create entries in Notion KB
+└── If Notion MCP is NOT available:
+    └── Document proposed entries in lessons-learned.md for manual persistence
+```
+
+Output (append to Step 5 summary):
+
+```markdown
+### Notion KB — Knowledge Persistence
+
+| # | Título propuesto | Campo | Tipo | Confianza |
+|---|-----------------|-------|------|-----------|
+| 1 | {título} | {campo} | {tipo} | {confianza} |
+
+{Si no hay: "No se identificó conocimiento que trascienda este proyecto."}
+¿Persistir en Notion KB? (requiere Notion MCP)
+```
+
+**IMPORTANT**: This step is advisory only — it does NOT block archiving. If Notion MCP is unavailable, document and continue. If no transcendent knowledge is found, skip the table entirely.
+
 ## Sub-Agent Output Contract
 
 Every response back to the orchestrator MUST include the following structured envelope:

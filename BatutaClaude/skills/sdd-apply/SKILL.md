@@ -219,6 +219,23 @@ MCP DOCUMENTATION CHECK:
 └── Document all verification results
 ```
 
+#### Existing Solutions Check
+
+After verifying documentation, check if the exploration phase identified reusable solutions:
+
+```
+EXISTING SOLUTIONS CHECK:
+├── Read explore.md → find "Approach Research" section
+├── If libraries/APIs were identified:
+│   ├── Check if installed (package.json / requirements.txt / pyproject.toml)
+│   ├── If not installed: evaluate install+adapt vs build custom
+│   ├── If install: use Context7 MCP to verify API patterns before coding
+│   └── Document decision in Implementation Progress
+├── If no libraries identified → proceed with custom implementation
+└── If explore.md has no Approach Research section → flag as risk
+    (exploration pre-dates this gate — not a blocker, just a note)
+```
+
 Include verification results in the Implementation Progress summary:
 
 ```markdown
