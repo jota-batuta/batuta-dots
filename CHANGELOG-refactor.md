@@ -4,6 +4,69 @@
 
 ---
 
+## v14.0.0 — Research Gate + CTO Artifact Detection + Notion KB (2026-03-14)
+
+### Contexto
+
+Tres problemas: (1) el agente construía custom sin buscar si alguien ya resolvió el problema,
+(2) cuando el CTO producía artefactos SDD y se copiaban al repo, Claude Code los re-generaba,
+(3) el conocimiento no se persistía en Notion durante el trabajo.
+
+### Changes
+
+#### sdd-explore — 1 inserción
+- **NEW** Step 2.8 "Approach Research": busca en Notion KB y web ANTES de proponer approaches.
+  Dos fuentes: KB empresarial (por campo de acción) + web (por tipo de problema).
+  Incluye exit gate: KB consultada + web search + conclusión build/adapt/reuse.
+  Respeta `detail_level = concise` (1-2 líneas de conclusión).
+
+#### sdd-apply — 1 expansión
+- **EXPANDED** Step 1.5: "Existing Solutions Check" agregado después del MCP Fallback Chain.
+  Lee explore.md → busca Approach Research → verifica si librerías están instaladas →
+  evalúa install+adapt vs build custom. Si explore.md no tiene Approach Research → flag como risk.
+
+#### sdd-archive — 1 reestructuración
+- **RESTRUCTURED** Step 5.5: renombrado de "Notion KB — Knowledge Persistence" a "Notion Sync".
+  Ahora tiene dos partes:
+  - **5.5a — KB Persistence**: persiste conocimiento que trasciende el proyecto en Notion KB.
+  - **5.5b — Proyecto Status Update**: actualiza Estado del proyecto en Notion Proyectos DB.
+  Advisory only — no bloquea el pipeline.
+
+#### CLAUDE.md — 3 inserciones
+- **NEW** SDD Pipeline bullet: research awareness (Approach Research verification)
+- **NEW** SDD Pipeline bullet: Notion awareness (sdd-archive syncs KB + project status)
+- **NEW** Step 1.5 en Step 3a: CTO Artifact Detection — detecta artefactos pre-existentes
+  del CTO layer y salta fases ya cubiertas.
+- **NEW** `artifacts_from: cto` en BATUTA CONFIG — señal explícita de artefactos pre-generados.
+
+#### pipeline-agent.md — 2 inserciones
+- **NEW** Rule 10: CTO Artifact Detection antes de cada fase SDD.
+- **NEW** State Machine nota: artefactos del CTO layer son artefactos SDD válidos.
+
+#### mcp-servers.template.json — 1 inserción
+- **NEW** Notion MCP entry con `@notionhq/notion-mcp-server` + description con DB IDs.
+
+### Principio de diseño
+
+- **Research before build**: "¿Quién más resolvió esto?" antes de construir custom.
+  Previene reinvención cuando la solución ya existe en la KB o como librería.
+- **Same pipeline, two layers**: CTO y Claude Code usan el MISMO pipeline SDD
+  con los MISMOS artefactos. El CTO puede producir explore.md o proposal.md
+  desde Claude.ai, y Claude Code los detecta y continúa sin re-discovery.
+- **Advisory Notion sync**: el pipeline NUNCA se bloquea por Notion.
+  Persistir conocimiento es valioso pero no crítico — si el MCP no está,
+  se documenta para persistencia manual.
+
+### Rollback
+
+```bash
+git revert <commit-hash>
+# Reverts: Step 2.8, Existing Solutions Check, Step 5.5b, CTO Artifact Detection,
+# artifacts_from, Notion MCP entry, CLAUDE.md awareness bullets, pipeline-agent rule 10
+```
+
+---
+
 ## v13.3.1 — Session Template: AC Status + Slice Status (2026-03-11)
 
 ### Contexto

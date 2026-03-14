@@ -24,6 +24,7 @@
 - Before sdd-apply writes code, verify patterns using the MCP fallback chain: (1) Active MCP, (2) WebFetch official docs, (3) WebSearch, (4) Training data — flag as risk if relying on training data. Stale training data causes bugs.
 - Before any production code change, run the Execution Gate. LIGHT mode for single-file/clear-scope; FULL mode for 2+ files/architecture/destructive ops. See Execution Gate section for details.
 - Before sdd-explore proposes approaches, verify Approach Research was executed: Notion KB consulted + web search for existing approaches. Explore.md without "Approach Research" section is flagged as incomplete (not blocking for pre-v14 explorations).
+- When Notion MCP is available, sdd-archive syncs knowledge to KB and updates project status. This is advisory — pipeline completes regardless of Notion availability.
 
 ### Slice Sequencing (gate — no es sugerencia)
 
