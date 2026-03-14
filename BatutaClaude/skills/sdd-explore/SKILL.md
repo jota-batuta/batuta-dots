@@ -59,7 +59,7 @@ From the orchestrator:
 
 Rules:
 - `detail_level` controls output depth; architecture-wide explorations may require deep reports.
-- When `detail_level` = `concise`: Discovery Completeness uses 1-line per question (not full table), Approaches section shows 1 recommendation only (skip alternatives), MCP Discovery Map section is OMITTED, Process Complexity section is OMITTED, max 3 bullets per section. This reduces output ~70% for simple explorations.
+- When `detail_level` = `concise`: Discovery Completeness uses 1-line per question (not full table), Approaches section shows 1 recommendation only (skip alternatives), MCP Discovery Map section is OMITTED, Process Complexity section is OMITTED, Approach Research uses 1-2 line conclusion (skip full KB/Web detail), max 3 bullets per section. This reduces output ~70% for simple explorations.
 - If mode resolves to `none`, return result only.
 - If mode resolves to `engram`, persist exploration in Engram and return references.
 - If mode resolves to `openspec`, `explore.md` may be created when a change name is provided.
@@ -285,6 +285,40 @@ DOMAIN EXPERT CHECK:
 
 Domain experts are configured per-project (not global). They provide business context that pure code analysis misses — e.g., a Finance expert knows that Colombian tax rules require specific rounding, or an HR expert knows that competency frameworks change per role type.
 
+### Step 2.8: Approach Research
+
+Before proposing approaches, search for existing solutions. The goal is "¿quién más resolvió esto?" — not reinventing what already exists.
+
+**Source 1 — Notion KB** (enterprise knowledge base):
+
+```
+NOTION KB SEARCH:
+├── If Notion MCP is configured:
+│   ├── Search by campo de acción relevant to the problem
+│   ├── Search by technology/pattern keywords
+│   ├── Extract: decisions, edge cases, patterns, lessons learned
+│   └── Note KB-IDs of relevant entries for traceability
+├── If Notion MCP is NOT configured:
+│   └── Skip with note: "Notion MCP no configurado — KB no consultada"
+└── Record all searches performed (even if no results)
+```
+
+**Source 2 — Web** (how others solved this TYPE of problem):
+
+```
+WEB APPROACH SEARCH:
+├── Search for the LOGIC, not a SaaS: "how to {problem type} {technology}"
+├── Look for: patterns, approaches, what worked, what didn't
+├── If libraries implement the approach:
+│   ├── Note: name, what it solves, applicability to this project
+│   └── Check license compatibility
+└── Record searches and sources
+```
+
+**detail_level behavior**:
+- `concise`: 1-2 line conclusion only ("Notion KB: sin resultados. Web: {approach} es estándar. Conclusión: build custom.")
+- `standard` / `deep`: Full Approach Research section with all sub-sections
+
 ### Step 3: Analyze Options
 
 If there are multiple approaches, compare them:
@@ -403,6 +437,12 @@ Return EXACTLY this format to the orchestrator (and write the same content to `e
 - **Business Stakeholders**: {How this affects product owners, executives, clients}
 - **Tenant/Client Impact**: {For multi-tenant changes: which tenants are affected}
 
+### Approach Research
+**Notion KB**: {búsquedas realizadas} → {hallazgos o "sin resultados previos" o "Notion MCP no configurado"}
+**Web**: {búsquedas realizadas} → {approaches encontrados con fuentes}
+**Librerías/APIs**: {nombre → qué resuelve → aplicabilidad}
+**Conclusión**: construir custom / adaptar existente / reutilizar → {justificación}
+
 ### Approaches
 1. **{Approach name}** -- {brief description}
    - Pros: {list}
@@ -467,6 +507,13 @@ PROCESS COMPLEXITY EXIT GATE:
 ├── [ ] If signals detected → recommendation included in output
 ├── [ ] Process Complexity section included in structured output
 └── [ ] Domain experts consulted (if openspec/domain-experts.md exists)
+
+APPROACH RESEARCH EXIT GATE:
+├── [ ] Notion KB consultada por campo de acción (o MCP no disponible — documented)
+├── [ ] Web search ejecutado para tipo de problema
+├── [ ] Approach Research section incluida en explore.md
+├── [ ] Librerías/APIs identificadas (si existen)
+└── [ ] Conclusión build/adapt/reuse documentada
 ```
 
 **If the user chooses to skip ALL high gaps**, document the justification clearly in the output under "Skill Gap Analysis". The orchestrator will include this in the audit trail.

@@ -77,6 +77,7 @@ You are the **SDD Pipeline specialist** for the Batuta software factory. You man
 - `spec` and `design` CAN run in parallel. Both MUST complete before `tasks`.
 - Each phase produces artifacts that feed downstream phases.
 - `apply` also invokes `infra-agent` for Scope Rule file placement.
+- **CTO Layer Integration**: Artifacts may arrive pre-generated from the CTO layer (claude.ai or Claude Desktop). These artifacts follow identical format and structure. The state machine treats them as if the corresponding phase completed successfully. Detection: check artifact existence in `openspec/changes/{change-name}/` at pipeline start.
 
 **Backward transitions** (backtracks): See Backtrack Triggers section below.
 
@@ -91,6 +92,7 @@ You are the **SDD Pipeline specialist** for the Batuta software factory. You man
 7. **Auto-Routing Integration**: The router (CLAUDE.md) may invoke you automatically based on user intent classification. When invoked this way, follow the same state machine and gates — the only difference is the user didn't type a slash command.
 8. **Backtrack Management**: When a sub-agent output or user feedback triggers a backtrack, follow the Backtrack Protocol. Log every backtrack. Never delete artifacts — update in-place.
 9. **detail_level Propagation**: Before invoking ANY skill, set `detail_level` and pass it as a parameter. Calculation: sdd-explore and sdd-propose always use `standard` (discovery/proposal need full context, file count is unknown). From sdd-spec onward: Execution Gate LIGHT or 1-2 files → `concise`; 3-5 files → `standard`; 6+ files or multi-scope → `deep`. Skills MUST honor the `detail_level` they receive — see CLAUDE.md Output Tiers section for definitions.
+10. **CTO Artifact Detection**: Before starting any SDD phase, check if the artifact for that phase already exists in `openspec/changes/{change-name}/`. Pre-existing artifacts from the CTO layer are valid SDD artifacts — do NOT regenerate them. Skip to the first phase whose artifact is missing. When BATUTA CONFIG includes `artifacts_from: cto`, always start by scanning for existing artifacts before deciding which phase to invoke.
 
 ## Gates (Puntos de Validacion Estrategica)
 
