@@ -439,6 +439,11 @@ _merge_settings_jq() {
     # Hooks: replace entirely (Batuta is source of truth)
     # Env: keep existing, add missing from source
     # Permissions: union arrays (deduplicated)
+    # mcpServers: additive merge — source adds new entries, target entries preserved
+    #   WHY: User may have configured tokens in target (e.g., Notion token). We add
+    #   new MCP keys from source (Batuta defaults) but never overwrite existing keys.
+    #   This allows setup.sh --all/--update to propagate new MCPs to ~/.claude/settings.json
+    #   without breaking user-configured tokens.
     jq -s '
       .[0] as $source | .[1] as $target |
       $target
@@ -447,11 +452,12 @@ _merge_settings_jq() {
       | .permissions.deny = ((.permissions.deny // []) + ($source.permissions.deny // []) | unique)
       | .permissions.ask = ((.permissions.ask // []) + ($source.permissions.ask // []) | unique)
       | .permissions.allow = ((.permissions.allow // []) + ($source.permissions.allow // []) | unique)
+      | .mcpServers = (($source.mcpServers // {}) + (.mcpServers // {}))
     ' "$source" "$target" > "$tmp"
 
     if [[ -s "$tmp" ]]; then
         mv -f "$tmp" "$target"
-        log_success "Merged hooks, env, and permissions into $target"
+        log_success "Merged hooks, env, permissions, and mcpServers into $target"
     else
         rm -f "$tmp"
         log_error "jq merge produced empty output — settings not modified"
@@ -489,6 +495,14 @@ try:
         merged = list(dict.fromkeys(tgt_perms + src_perms))
         tgt.setdefault('permissions', {})[perm_type] = merged
 
+    # Merge mcpServers: source adds new entries, target entries preserved
+    # WHY: User may have configured real tokens in target (e.g., Notion integration token).
+    # We add new MCP keys from source (Batuta defaults) but target keys win on conflict.
+    src_mcp = src.get('mcpServers', {})
+    tgt_mcp = tgt.get('mcpServers', {})
+    merged_mcp = {**src_mcp, **tgt_mcp}  # target wins on conflict
+    tgt['mcpServers'] = merged_mcp
+
     with open(sys.argv[2], 'w', encoding='utf-8') as f:
         json.dump(tgt, f, indent=2, ensure_ascii=False)
         f.write('\n')
@@ -498,7 +512,7 @@ except Exception as e:
 " "$source" "$target" || merge_exit=$?
 
     if [[ $merge_exit -eq 0 ]]; then
-        log_success "Merged hooks, env, and permissions into $target (python3)"
+        log_success "Merged hooks, env, permissions, and mcpServers into $target (python3)"
     else
         log_error "Python merge failed (exit $merge_exit) — settings not modified"
         return 1

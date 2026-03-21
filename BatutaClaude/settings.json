@@ -33,6 +33,15 @@
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-postgres"],
       "description": "RECOMMENDED — Read-only PostgreSQL schema inspection and queries. Batuta core stack. Requires DATABASE_URI env var. Auto-provisioned when postgres is detected."
+    },
+    "notion": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@notionhq/notion-mcp-server"],
+      "description": "GLOBAL — Batuta enterprise KB and CRM. Used at interaction 0 (client/project context), sdd-explore Step 2.8 (approach research), sdd-archive Step 5.5 (KB persistence), and Stop hook Step 2 (checkpoint persistence). DB IDs: Clientes=4930495b, Proyectos=7ad4e5bf, KB=58433974. Configure OPENAPI_MCP_HEADERS with your Notion integration token.",
+      "env": {
+        "OPENAPI_MCP_HEADERS": "{\"Authorization\": \"Bearer YOUR_NOTION_TOKEN_HERE\", \"Notion-Version\": \"2022-06-28\"}"
+      }
     }
   },
   "hooks": {

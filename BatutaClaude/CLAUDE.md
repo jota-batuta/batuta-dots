@@ -392,6 +392,16 @@ At conversation start (session.md is already injected by SessionStart hook):
 - Always verify phase by checking actual artifacts in `openspec/changes/` —
   session.md is a hint, not source of truth. The filesystem is the source of truth.
 
+**Notion context (interaction 0 — if Notion MCP is configured)**:
+Before classifying intent (Step 2), query Notion for orientation:
+1. If the user's message mentions a client or company name:
+   → Query Clientes DB (`4930495b`) by name to validate existence
+   → If found: hold client record for Step 3a (Step 1.75)
+   → If not found: hold "client not found" flag for Step 3a (Step 1.75)
+2. Query Proyectos DB (`7ad4e5bf`) for a project matching the current working directory name
+   → If found: inject project status and last-known phase as additional context
+If Notion MCP is unavailable or not configured: skip silently, continue with session.md only.
+
 ### Step 2: Classify Intent
 
 | Intent | Examples | Route |
@@ -421,6 +431,14 @@ Advance automatically, pausing at human checkpoints:
      Continúo desde {next phase needed}."
      This enables the CTO layer (claude.ai / Claude Desktop) to produce SDD artifacts
      that Claude Code executes without re-discovery.
+1.75. **Client Validation** (uses result from Step 1 Notion lookup — if applicable):
+     - If client was found in Notion Clientes DB: include client context (status, contact) in
+       the sdd-explore briefing. Log client name in the explore.md Stakeholders section.
+     - If client was NOT found in Notion: inform user before proceeding:
+       "No encontré '{nombre}' en la base de datos de Clientes en Notion.
+        ¿Lo creo ahora, o continúo sin registrar el cliente?"
+       Wait for explicit response — do NOT auto-advance.
+     - If Notion MCP was unavailable in Step 1: skip this step entirely.
 2. No change directory for this topic → run sdd-explore, summarize findings
 3. explore.md exists, no proposal.md → run sdd-propose, present to user
 4. **MANDATORY STOP — GATE: proposal**
@@ -551,6 +569,28 @@ Pipeline-agent sets detail_level before invoking any skill. Calculation: sdd-exp
 Session continuity is enforced by native hooks:
 - **SessionStart hook** automatically injects `.batuta/session.md` content as context
 - **Stop hook** prompts to update `.batuta/session.md` before ending if significant work was done
+
+### Notion as Primary Memory
+
+Notion is Batuta's **living memory** — consulted at interaction 0, read before exploring,
+and written to at every pipeline milestone and every session stop.
+
+Priority chain (what to consult first):
+```
+Interaction 0:   Notion MCP (client + project context) → session.md → CHECKPOINT.md
+During pipeline: Notion KB via sdd-explore Step 2.8 → web research
+At stop:         CHECKPOINT.md always → Notion KB if gotchas/decisions exist
+```
+
+Databases (from mcp-servers.template.json and settings.json):
+- `Clientes` (`4930495b`) — client/customer records. Validated before SDD pipeline starts.
+- `Proyectos` (`7ad4e5bf`) — project records. Updated after task plan approval + archive.
+- `KB` (`58433974`) — knowledge base. Written by Stop hook (automatic) + sdd-archive (with user approval).
+
+Graceful degradation: if Notion MCP is not configured or unavailable, skip Notion steps
+silently — never block the pipeline. Use session.md + CHECKPOINT.md as fallback.
+Setup: configure `OPENAPI_MCP_HEADERS` in `~/.claude/settings.json` with your Notion
+integration token. Run `./infra/setup.sh --all` to propagate to global settings.
 
 ### Session Budget (80 lines max)
 

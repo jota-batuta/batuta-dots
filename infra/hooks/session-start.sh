@@ -77,6 +77,17 @@ discover_skills() {
         # WHY: Provisioning deliberately selected relevant skills. Scanning global
         # would re-add the noise that provisioning removed.
         search_dirs+=("$CWD/.claude/skills")
+        # WORKAROUND: If sdd-init ran before setup.sh --sync, ~/.claude/skills/ was empty
+        # and .provisions.json was written with skills:[]. The local dir has 0 SKILL.md files.
+        # In that case, add global as fallback so the agent isn't permanently blind.
+        # WHY: setup.sh --project does not run sync_claude(). A user who ran --project first
+        # will have an empty global library, triggering this silent failure path.
+        local _lc
+        _lc=$(find "$CWD/.claude/skills" -name "SKILL.md" 2>/dev/null | wc -l)
+        if [[ "$_lc" -eq 0 ]] && [[ -d "$HOME/.claude/skills" ]]; then
+            search_dirs+=("$HOME/.claude/skills")
+        fi
+        unset _lc
     elif [[ -d "$CWD/.claude/skills" ]]; then
         # MANUAL: Project has .claude/skills/ but no provisions manifest.
         # Scan both local and global (backward compatible with pre-v11.3 behavior).

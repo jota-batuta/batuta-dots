@@ -231,6 +231,26 @@ Provision the project with ONLY the skills and MCPs it needs based on detected t
 
 Read the provisioning map from `assets/skill-provisions.yaml` (relative to this skill's location, or `~/.claude/skills/sdd-init/assets/skill-provisions.yaml`).
 
+#### Step 3.8.0 — Pre-check: Verify Global Library
+
+Before provisioning, verify the global skill library is populated:
+
+```bash
+ls ~/.claude/skills/ 2>/dev/null | head -1
+```
+
+**If `~/.claude/skills/` is empty or missing**:
+- DO NOT write `.provisions.json`. An empty manifest locks session-start.sh to an empty
+  local dir permanently (PATH 1 blocks the global fallback).
+- Inform the user:
+  "⚠ La biblioteca global de skills (`~/.claude/skills/`) está vacía o no existe.
+   Antes de continuar, ejecuta este comando desde la carpeta de batuta-dots:
+   ```bash
+   ./infra/setup.sh --all
+   ```
+   Esto sincroniza skills, agents y hooks al directorio global. Dime cuando termine."
+- **STOP** — do not advance to Phase 1 until the user confirms setup.sh --all completed.
+
 #### Phase 1 — Build Provision Set
 
 Using the tech stack detected in Step 1:
