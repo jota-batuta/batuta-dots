@@ -189,6 +189,17 @@ mcp_rules:
       type: stdio
       command: npx
       args: ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    # BUSINESS RULE: Notion is Batuta's enterprise KB and CRM — always available.
+    # Used at interaction 0 (client/project context), sdd-explore Step 2.8 (approach research),
+    # sdd-archive Step 5.5 (KB + Proyectos persistence), and Stop hook Step 2 (CHECKPOINT→KB).
+    # DB IDs: Clientes=4930495b, Proyectos=7ad4e5bf, KB=58433974.
+    # User must replace YOUR_NOTION_TOKEN_HERE with actual Notion integration token.
+    notion:
+      type: stdio
+      command: npx
+      args: ["-y", "@notionhq/notion-mcp-server"]
+      env:
+        OPENAPI_MCP_HEADERS: '{"Authorization": "Bearer YOUR_NOTION_TOKEN_HERE", "Notion-Version": "2022-06-28"}'
 
   # GitHub — if project is a git repository
   - detect:

@@ -235,6 +235,29 @@ MCP DISCOVERY EXIT GATE:
 └── [ ] If user wants to install MCPs: pause for configuration before continuing
 ```
 
+#### Step 2.6.5: MCP Utilization Check (gate — blocks advance to Step 3 if violated)
+
+This gate ensures that relevant, ALREADY-CONFIGURED MCPs are actually used during explore —
+not just inventoried. Discovering an MCP but not consulting it defeats the purpose of having it.
+
+```
+MCP UTILIZATION GATE:
+For each MCP listed as "configured" in the MCP Discovery Map:
+├── Is it relevant to the technologies in this change?
+│   ├── YES → Was it consulted during Steps 2.1-2.8?
+│   │   ├── YES → ✓ pass
+│   │   └── NO  → STOP: consult it now before advancing to Step 3.
+│   │             Document: what you searched and what you found (or "no results").
+│   └── NO  → ✓ pass (note: "not relevant to this change")
+│
+└── EXIT CONDITION: Every configured HIGH-relevance MCP must show evidence of use
+    (a search performed, a result retrieved, or an explicit "searched, no results" note).
+
+IMPORTANT: "I'll consult it during sdd-apply" is NOT acceptable here.
+MCPs provide current docs that shape the APPROACH — consulting them only during apply
+means you're designing blind and then discovering constraints late.
+```
+
 #### MCP Discovery Output Template
 
 Include this in explore.md under the Skill Gap Analysis:
@@ -291,16 +314,26 @@ Before proposing approaches, search for existing solutions. The goal is "¿quié
 
 **Source 1 — Notion KB** (enterprise knowledge base):
 
+MANDATORY ATTEMPT: Always try to query Notion KB. The goal is to consume past gotchas and
+decisions before re-discovering them. Making the absence visible prevents silent knowledge loss.
+See `BatutaClaude/openspec/notion-kb-schema.md` for the KB field schema and query conventions.
+
 ```
-NOTION KB SEARCH:
+NOTION KB SEARCH (mandatory attempt — document outcome either way):
 ├── If Notion MCP is configured:
-│   ├── Search by campo de acción relevant to the problem
-│   ├── Search by technology/pattern keywords
-│   ├── Extract: decisions, edge cases, patterns, lessons learned
-│   └── Note KB-IDs of relevant entries for traceability
-├── If Notion MCP is NOT configured:
-│   └── Skip with note: "Notion MCP no configurado — KB no consultada"
-└── Record all searches performed (even if no results)
+│   ├── Search by "Campo" matching the project's tech stack domains
+│   ├── Search by keywords in Title + Descripción (problem type, libraries, patterns)
+│   ├── Filter by Confianza = High first (most reliable entries)
+│   ├── Extract: Gotchas, Decisiones, Workarounds, Patrones relevant to this change
+│   └── Include findings in explore.md Approach Research section with KB titles
+│
+└── If Notion MCP is NOT configured or unavailable:
+    └── REQUIRED: Include this note in explore.md Approach Research section:
+        "**Notion KB**: Not consulted (MCP not configured or unavailable).
+         Past project gotchas and decisions not available for this session.
+         To enable: configure OPENAPI_MCP_HEADERS in ~/.claude/settings.json."
+        WHY: Silent skip hides the gap. Visible note tells the user they're missing
+        enterprise memory and may re-discover known gotchas.
 ```
 
 **Source 2 — Web** (how others solved this TYPE of problem):

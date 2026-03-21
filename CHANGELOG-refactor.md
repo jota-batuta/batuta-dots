@@ -33,10 +33,13 @@ automáticamente por SessionStart.
 
 #### BatutaClaude/settings.json — 1 expansión
 
-- **EXPANDED** Stop prompt hook (prompt): de condicional a mandatory.
+- **EXPANDED** Stop prompt hook (prompt): de condicional a mandatory, ahora con 3 pasos.
   Antes: "If significant work, update session.md"
-  Ahora: STEP 1 = SIEMPRE escribir CHECKPOINT.md (sin condición),
-          STEP 2 = actualizar session.md (si trabajo significativo)
+  Ahora: STEP 1 = SIEMPRE escribir CHECKPOINT.md (sin condición, plantilla completa),
+          STEP 2 = SIEMPRE evaluar si hay gotchas/decisiones no triviales → persistir en
+          Notion KB (data_source_id: 58433974) si MCP disponible. Sin aprobación del usuario.
+          Filtro: saltar contenido trivial (conteos de pasos, timestamps, rutas de archivos).
+          STEP 3 = actualizar session.md (si trabajo significativo)
 
 #### infra/hooks/session-start.sh — 2 inserciones
 
@@ -46,21 +49,30 @@ automáticamente por SessionStart.
 
 ### Principio de diseño
 
-- **Separación de concerns**: session.md = entre sesiones (WHERE/WHY/HOW para el CTO);
-  CHECKPOINT.md = entre compactions (estado operacional para el agente)
+- **Tres capas de persistencia, tres propósitos**:
+  - MEMORY.md = preferencias del usuario (global, entre proyectos)
+  - session.md = entre sesiones (WHERE/WHY/HOW para el CTO, 80 líneas máx)
+  - CHECKPOINT.md = entre compactions (estado operacional del agente, current-only)
 - **Obligatorio, no cognitivo**: un mecanismo que requiere que el agente "recuerde"
   fallaría exactamente cuando el contexto está saturado. El Stop hook es el punto
   natural de enforcement — siempre tiene contexto completo antes de la compaction
 - **Recovery automático**: SessionStart inyecta CHECKPOINT.md si existe,
   sin que el agente tenga que buscarlo manualmente
+- **Closed RAG loop**: Stop hook → escribe CHECKPOINT.md → persiste en Notion KB →
+  sdd-explore Step 2.8 consulta Notion KB en el siguiente proyecto → el agente aprende
+  de gotchas y decisiones de sesiones anteriores. Satisface el principio de Google LLM:
+  "la memoria externa debe ser escribible proactivamente, no solo a demanda"
+- **Notion como RAG barato**: las entradas del Stop hook en Notion KB (tipo: Gotcha, Decisión,
+  Workaround) forman un índice consultable de lecciones aprendidas a costo mínimo
 
 ### Rollback
 
 ```bash
 git revert <commit-hash>
 # Reverts: MUST rules en Core, Checkpoint section, Behavior bullet,
-# Stop hook expansion, session-start.sh CHECKPOINT_CONTENT blocks
+# Stop hook expansion (STEP 1+2+3), session-start.sh CHECKPOINT_CONTENT blocks
 # El CHECKPOINT.md en .batuta/ no se toca (archivo de proyecto, no hub)
+# Entradas ya persistidas en Notion KB quedan — no hay rollback de Notion
 ```
 
 ---

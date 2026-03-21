@@ -1,4 +1,4 @@
-# Entendiendo la Arquitectura de Batuta — Sin Palabras Tecnicas (v13.3)
+# Entendiendo la Arquitectura de Batuta — Sin Palabras Tecnicas (v14.1)
 
 > **Para quien es esto**: Para cualquier persona que quiera entender COMO funciona
 > el ecosistema Batuta sin necesitar saber programar. Si puedes entender como funciona
@@ -564,6 +564,149 @@ que mandar despues.
 
 ---
 
+## El Chef Consulta el Archivo Antes de Inventar (Research Gate) — v14.0
+
+Imagina que un cliente te pide "una tarta de queso al horno". Antes de inventarte una receta, un chef profesional primero consulta:
+
+1. **¿Ya tenemos esta receta en nuestro recetario interno?** (Notion KB)
+2. **¿Alguien la hizo antes en otra cocina reconocida?** (busqueda en internet)
+
+Si la receta ya existe — sea en tu recetario o en un libro de cocina de confianza — es mucho mas rapido adaptarla que inventarla desde cero. Y probablemente mejor.
+
+Esto es lo que hace el **Research Gate** (v14.0): antes de proponer como resolver algo, el chef revisa el archivo de la empresa y busca en internet si ya hay una solucion probada.
+
+**¿Por que importa?** Porque inventar algo desde cero cuando la solucion ya existe:
+- Cuesta tiempo extra (lo construyes en vez de adaptarlo)
+- Puede ser inferior (la solucion existente tiene mas pruebas)
+- Es trabajo que ya se hizo antes, quizas incluso tu mismo
+
+> **La regla**: "¿Alguien ya resolvio esto?" siempre va ANTES de "¿Como lo resuelvo yo?"
+
+---
+
+## El Director Pre-Cocina (CTO Artifact Detection) — v14.0
+
+Imagina que el director del restaurante tiene su propia cocina de pruebas en casa. A veces, antes de mandar las instrucciones al jefe de cocina, el director ya preparo algunos ingredientes: ya investigo el problema, ya hizo el boceto de la receta, ya definio los pasos.
+
+Antes, el jefe de cocina llegaba a la cocina y REPETIA todo ese trabajo desde cero porque no sabia que el director ya lo habia hecho.
+
+**La solucion (v14.0)**: El jefe de cocina ahora DETECTA si el director ya preparo algo. Si encuentra ingredientes pre-preparados en la despensa, los usa — no los repite. Solo empieza a trabajar desde el punto donde el director se detuvo.
+
+```
+Director prepara en su cocina de ideas:
+  ✓ Investigacion del problema (explore.md)
+  ✓ Boceto de receta (proposal.md)
+  ✗ Receta formal (spec.md) — no lo hizo aun
+  ✗ Plan de coccion (tasks.md) — no lo hizo aun
+
+Jefe de cocina detecta: "Tengo investigacion y boceto. Empiezo desde la receta formal."
+```
+
+**¿Cómo sabe el chef que es del director?** El director deja una nota especial (`batuta-config`) que dice "estos ingredientes los prepare yo". Sin esa nota, el chef no asume — verifica lo que hay en la despensa.
+
+---
+
+## Las Alarmas Automaticas (Native Hooks) — v14.1
+
+Imagina que el restaurante tiene un sistema de alarmas automaticas que funcionan sin que nadie las active:
+
+| Alarma | Cuando suena | Que hace |
+|--------|-------------|---------|
+| **Alarma de apertura** (SessionStart) | Cuando el chef empieza su turno | Lee el cuaderno del turno anterior y la ficha de estado actual |
+| **Alarma de cierre** (Stop) | Cuando el chef termina su turno | Ejecuta 3 pasos OBLIGATORIOS (ver abajo) |
+
+**El sistema de cierre de 3 pasos** (v14.1 — todos obligatorios, sin excepcion):
+
+```
+1. Escribe la FICHA DE ESTADO del turno actual
+   ↓
+2. Si hay lecciones importantes → las guarda en el libro de lecciones del restaurante
+   ↓
+3. Si se hizo trabajo importante → actualiza el cuaderno del turno para el proximo chef
+```
+
+**¿Por que esto importa?** Antes, el chef tenia que "acordarse" de hacer este proceso. Ahora las alarmas lo obligan — es imposible saltarselo. Es como tener un sistema contra incendios que funciona solo.
+
+---
+
+## La Ficha de Estado (Checkpoint Anti-Compaction) — v14.1
+
+Imagina que en un turno largo, el chef de repente tiene un "momento de confusion" — como si perdiera el hilo de lo que estaba haciendo. Esto pasa en la vida real cuando el contexto es muy complejo.
+
+Antes de Batuta v14.1: si el chef tenia ese momento de confusion, perdia todo el avance del turno. No sabia en que paso iba, que habia intentado, que habia descubierto.
+
+**La solucion**: La **Ficha de Estado** (`.batuta/CHECKPOINT.md`).
+
+Funciona como la hoja de control que los chefs profesionales tienen pegada en la estacion de trabajo:
+
+```
+FICHA DE ESTADO — Turno actual
+────────────────────────────────
+Que estoy haciendo: integrar el sistema de pagos
+Paso actual: 3 de 7 — configurando el webhook
+Lo que intente y salio mal:
+  - Usar el endpoint /pay directamente → error 401
+Lo que decidi y por que:
+  - Usar SDK en vez de llamada directa → mas estable
+Lo que me falta:
+  [ ] Configurar el retry
+  [ ] Probar con tarjeta de prueba
+Descubrimientos importantes:
+  - El proveedor requiere IP fija para webhooks en produccion
+```
+
+**¿Cuando se escribe?**
+1. **SIEMPRE** cuando el turno termina (la alarma de cierre la escribe sin excepciones)
+2. **Obligatoriamente** antes de hacer 3 o mas acciones seguidas sin parar (regla MUST)
+
+**¿Como se recupera?** La alarma de apertura del siguiente turno la inyecta automaticamente. El chef no tiene que buscarla — ya esta ahi cuando empieza.
+
+---
+
+## El Libro de Lecciones Aprendidas (Closed RAG Loop) — v14.1
+
+Imagina que cada vez que un chef descubre algo importante — una trampa en una receta, un truco que funciona, un error comun — lo escribe en un **libro de lecciones** que todos los chefs del restaurante pueden consultar.
+
+La diferencia con un cuaderno normal: este libro es **indexado y buscable**. Cuando un chef nuevo llega con un problema similar, puede buscar en el libro y encontrar la leccion del chef anterior.
+
+Antes, este libro no existia. Los chefs descubrian las mismas trampas una y otra vez.
+
+**Como funciona ahora (v14.1)**:
+
+```
+Chef termina su turno
+       ↓
+La alarma de cierre revisa la Ficha de Estado:
+"¿Hay algo no trivial aqui? ¿Un gotcha? ¿Una decision importante?"
+       ↓
+Si si → lo escribe en Notion (el libro de lecciones del restaurante)
+       ↓
+La proxima vez que otro chef investiga el mismo tipo de problema:
+"¿Tenemos lecciones sobre esto en el libro?" → Encuentra la nota → Evita el error
+```
+
+| Que se guarda | Que no se guarda |
+|---------------|-----------------|
+| "El proveedor X requiere IP fija para webhooks" | "Estaba en el paso 3 de 7" |
+| "pymssql no soporta async — usar aiomssql" | "Eran las 3pm cuando termine" |
+| "Si el token expira, la libreria devuelve 200 con error en el body" | "Habia 5 archivos en la carpeta" |
+
+**La analogia completa**:
+
+```
+Turno actual → Ficha de Estado (.batuta/CHECKPOINT.md)
+       ↓
+Si hay lecciones → Libro de lecciones (Notion KB)
+       ↓
+Proximo proyecto → Chef consulta el libro antes de proponer
+       ↓
+El conocimiento no se pierde entre turnos
+```
+
+Este ciclo es lo que se llama un **"RAG barato"**: en vez de pagar por un sistema de IA caro para recordar cosas, usamos Notion (que ya tenemos) como biblioteca consultable. El chef (Claude) escribe automaticamente, y el siguiente chef consulta automaticamente.
+
+---
+
 ## El Equipo Temporal (Agent Teams) — v7
 
 Hasta ahora, el chef principal trabaja con sus sub-chefs uno a la vez: le pide algo a uno, espera la respuesta, y luego le pide algo al siguiente. Funciona bien para el dia a dia.
@@ -618,16 +761,11 @@ Los jefes de area (pipeline, infra, calidad) ahora tienen un doble rol:
 
 ---
 
-## Las Alarmas Automaticas (Native Hooks) — v8
+## Las Alarmas Automaticas (Native Hooks) — v14.1
 
-Imagina que el restaurante tiene un sistema de alarmas automaticas que funcionan sin que nadie las active:
+> Ver la seccion completa en **"Las Alarmas Automaticas (Native Hooks) — v14.1"** mas arriba, que incluye el sistema de 3 pasos obligatorios del cierre.
 
-| Alarma | Cuando suena | Que hace |
-|--------|-------------|---------|
-| **Alarma de apertura** (SessionStart) | Cuando el chef empieza su turno | Lee el cuaderno del turno anterior y las instrucciones del restaurante |
-| **Alarma de cierre** (Stop) | Cuando el chef termina su turno | Guarda notas en el cuaderno para el siguiente turno |
-
-**Por que importa**: Antes, el chef tenia que "acordarse" de leer el cuaderno. Ahora las alarmas lo obligan — es imposible saltarselo. Es como tener un sistema contra incendios que funciona solo, sin depender de que alguien recuerde activarlo.
+En resumen: las alarmas obligan al chef a seguir el proceso sin que pueda saltarselo. La alarma de apertura inyecta el cuaderno del turno anterior y la ficha de estado. La alarma de cierre escribe la ficha de estado, guarda lecciones en Notion, y actualiza el cuaderno — todo obligatorio, sin excepciones.
 
 ---
 
@@ -769,7 +907,11 @@ Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
 | **Aprendiz que investiga** | ecosystem-creator | Cuando falta una receta, investiga y la crea |
 | **Equipo temporal** | Agent Teams (v7) | Cocineros extra para banquetes grandes — trabajan en paralelo, cada uno con su estacion |
 | **Coordinador de equipo** | team-orchestrator (v7) | Decide cuando armar equipo temporal y como repartir las tareas |
-| **Alarmas automaticas** | Native Hooks (SessionStart, Stop) | Alarmas que obligan al chef a seguir el proceso sin que pueda saltarselo |
+| **Alarmas automaticas** | Native Hooks (v14.1) | Alarmas que obligan al chef a seguir el proceso sin que pueda saltarselo. La de cierre tiene 3 pasos obligatorios: ficha de estado, libro de lecciones, cuaderno del turno |
+| **Ficha de estado** | CHECKPOINT.md (v14.1) | La hoja pegada en la estacion de trabajo: paso actual, lo que intento y fallo, lo que decidio y por que, lo que falta. Siempre escrita al cerrar, automaticamente inyectada al abrir |
+| **Libro de lecciones aprendidas** | Notion KB + RAG Loop (v14.1) | Cuando el chef descubre una trampa importante, la escribe automaticamente en Notion. Los chefs futuros la consultan antes de proponer soluciones |
+| **Chef consulta el archivo** | Research Gate (v14.0) | Antes de inventar, el chef busca: ¿Ya tenemos esta receta? ¿Alguien mas la resolvio? (Notion KB + internet) |
+| **Director pre-cocina** | CTO Artifact Detection (v14.0) | Si el director preparo ingredientes en su cocina de ideas, el chef los detecta y continua desde ahi — sin repetir el trabajo |
 | **Control de calidad por capas** | AI Validation Pyramid (v8) | 5 niveles de inspeccion — los primeros 3 automaticos, los ultimos 2 humanos |
 | **Comandas precisas** | Contract-First Protocol (v9) | Contratos escritos que definen que recibe y que produce cada cocinero |
 | **Menus especializados** | Team Templates (v9) | Configuraciones pre-armadas de equipo para diferentes tipos de proyecto |

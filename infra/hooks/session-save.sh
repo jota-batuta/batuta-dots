@@ -55,5 +55,60 @@ if [[ -z "$BATUTA_DIR" ]]; then
     exit 0
 fi
 
-# Allow stop — the prompt hook in settings.json handles the LLM evaluation
+# =============================================================================
+# CHECKPOINT Archive (runs before prompt hook writes new CHECKPOINT.md)
+# =============================================================================
+# WHY: The prompt hook overwrites CHECKPOINT.md on every Stop. Without an archive,
+# gotchas from a previous session are permanently lost if Notion MCP was unavailable.
+# Keeping the last 10 versions in checkpoint-archive/ provides a local safety net
+# even when the RAG loop (Notion KB) is not configured.
+# =============================================================================
+CHECKPOINT_FILE="$BATUTA_DIR/CHECKPOINT.md"
+if [[ -f "$CHECKPOINT_FILE" ]]; then
+    ARCHIVE_DIR="$BATUTA_DIR/checkpoint-archive"
+    mkdir -p "$ARCHIVE_DIR"
+    # Use UTC timestamp for unambiguous ordering across timezones
+    TIMESTAMP=$(date -u +%Y%m%dT%H%M%SZ 2>/dev/null || date +%Y%m%dT%H%M%SZ)
+    cp "$CHECKPOINT_FILE" "$ARCHIVE_DIR/${TIMESTAMP}-checkpoint.md" 2>/dev/null || true
+    # Retain only the 10 most recent archives to prevent unbounded growth
+    # WORKAROUND: ls -t | tail -n +11 is POSIX-compatible; find -mtime is not reliable on Windows/Git Bash
+    ls -t "$ARCHIVE_DIR"/*.md 2>/dev/null | tail -n +11 | xargs rm -f 2>/dev/null || true
+fi
+
+# =============================================================================
+# Fallback CHECKPOINT.md stub (safety net if prompt hook fails or times out)
+# =============================================================================
+# WHY: The prompt hook asks Claude to write CHECKPOINT.md as Step 1. If Claude
+# does not execute the prompt (timeout, compaction, error), no CHECKPOINT.md is
+# written. This stub ensures the file ALWAYS exists after a Stop, so SessionStart
+# can inject at least minimal context on the next resume.
+# This stub is minimal and will be overwritten by the prompt hook when it runs
+# correctly — it only persists if the prompt hook failed entirely.
+# =============================================================================
+CHECKPOINT_EXISTS_BEFORE_PROMPT=false
+[[ -f "$CHECKPOINT_FILE" ]] && CHECKPOINT_EXISTS_BEFORE_PROMPT=true
+
+# The prompt hook runs AFTER this command hook. We write the stub now.
+# If the prompt hook succeeds, it will overwrite this stub with real content.
+if [[ "$CHECKPOINT_EXISTS_BEFORE_PROMPT" == "false" ]]; then
+    TIMESTAMP_NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date +"%Y-%m-%dT%H:%M:%SZ")
+    cat > "$CHECKPOINT_FILE" << EOF
+# Checkpoint — ${TIMESTAMP_NOW}
+
+## Qué estoy haciendo
+[stub — session-save.sh wrote this because no prior CHECKPOINT.md existed]
+
+## Estado
+- Paso actual: N/A
+- Archivo/módulo en trabajo: N/A
+- Branch: N/A
+
+## Nota
+Este stub fue escrito por session-save.sh como seguridad.
+Si el prompt hook ejecutó correctamente, este archivo fue reemplazado.
+Si ves esto en la próxima sesión, el prompt hook no ejecutó en la sesión anterior.
+EOF
+fi
+
+# Allow stop — the prompt hook in settings.json handles the LLM evaluation (writes real CHECKPOINT.md)
 exit 0

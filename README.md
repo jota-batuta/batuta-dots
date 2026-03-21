@@ -277,16 +277,27 @@ Each phase is a dedicated sub-agent skill. The pipeline-agent orchestrates as a 
 
 ### Auto-Routing (Intent-Driven Pipeline)
 
-Users describe what they need in natural language. The agent classifies intent and routes automatically:
+**Batuta detects your intent automatically — you don't need to type slash commands.** Just describe your problem or task in natural language. Slash commands exist as manual overrides when you want explicit control over a specific pipeline phase.
 
-| Intent | Route |
-|--------|-------|
-| Build / Feature / Problem | SDD Pipeline (auto-advance with checkpoints) |
-| Quick fix / Bug | Direct fix (skip SDD, Execution Gate LIGHT) |
-| Continue / Resume | Detect phase from artifacts, resume |
-| Backtrack / Rethink | Classify target phase, update artifact, re-advance |
-| Question / Explain | Answer directly |
-| Explicit `/sdd-*` command | Manual override |
+| Intent | What you say | Route |
+|--------|-------------|-------|
+| Build / Feature / Problem | "necesito un dashboard", "build a notification system" | SDD Pipeline (auto-advance with checkpoints) |
+| Quick fix / Bug | "el botón no funciona", "fix the null check" | Direct fix (skip SDD, Execution Gate LIGHT) |
+| Continue / Resume | "donde quedamos?", "continua con inventario" | Detect phase from artifacts, resume |
+| Backtrack / Rethink | "esto no funciona como pensé", "cambio el requisito" | Classify target phase, update artifact |
+| Question / Explain | "qué es SDD?", "how does auth work?" | Answer directly |
+| Explicit `/sdd-*` command | `/sdd-explore`, `/sdd-apply` | Manual override (bypasses auto-routing) |
+
+### Quick Mode vs Full SDD Pipeline
+
+Batuta automatically selects the right depth for your task:
+
+| Scope | Route | Steps |
+|-------|-------|-------|
+| **Quick Mode** — bug fix, 1-2 file change, clear scope | Direct fix | Execution Gate LIGHT → implement |
+| **Full SDD** — new feature, 3+ files, architecture decision | SDD Pipeline | explore → propose → spec → design → tasks → apply → verify → archive |
+
+You don't choose — the agent classifies for you. If a quick fix grows in scope (3+ files, architectural implications), the agent switches to SDD and tells you why.
 
 ### Agents (Scope + Domain) — The MoE Experts
 
@@ -418,19 +429,21 @@ Output scales to task complexity via three tiers (MICRO/STANDARD/COMPLEX). Sessi
 
 ## Commands
 
-| Command | Description |
+All commands are **manual overrides**. For normal work, just describe your task — auto-routing handles the rest.
+
+| Command | When to use |
 |---------|-------------|
-| `/batuta-init [name]` | Import Batuta ecosystem into a project |
-| `/batuta-update` | Update ecosystem from latest batuta-dots |
-| `/sdd-init` | Initialize orchestration context |
-| `/sdd-explore <topic>` | Explore idea and constraints |
-| `/sdd-new <change-name>` | Start change proposal flow |
-| `/sdd-continue [change-name]` | Run next dependency-ready phase |
-| `/sdd-ff [change-name]` | Fast-forward: propose → spec → design → tasks |
-| `/sdd-apply [change-name]` | Implement tasks in batches |
-| `/sdd-verify [change-name]` | Validate implementation |
-| `/sdd-archive [change-name]` | Close and persist final state |
-| `/create <type> <name>` | Create a new skill, sub-agent, or workflow |
+| `/batuta-init [name]` | First time: import Batuta into a new project |
+| `/batuta-update` | Pull latest skills, agents, and CLAUDE.md from the hub |
+| `/sdd-init` | Initialize SDD context (`openspec/`) in a project |
+| `/sdd-explore <topic>` | Manually trigger exploration of a specific topic |
+| `/sdd-new <change-name>` | Start from scratch: explore + propose in one step |
+| `/sdd-continue [change-name]` | Resume an in-progress change from where it left off |
+| `/sdd-ff [change-name]` | **Fast-Forward**: after exploring, skip to propose → spec → design → tasks in one shot |
+| `/sdd-apply [change-name]` | Implement the approved task plan |
+| `/sdd-verify [change-name]` | Run the AI Validation Pyramid against the implementation |
+| `/sdd-archive [change-name]` | Close the change: persist specs, lessons learned, update Notion |
+| `/create <type> <name>` | Create a new skill, sub-agent, or workflow (type: `skill` \| `sub-agent` \| `workflow`) |
 
 ---
 
