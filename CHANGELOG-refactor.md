@@ -4,6 +4,67 @@
 
 ---
 
+## v14.1.0 — Checkpoint Anti-Compaction: Mandatory Recovery Mechanism (2026-03-20)
+
+### Contexto
+
+La compaction destruye estado operacional intra-sesión: qué step iba el agente,
+qué intentó, qué falló, qué decidió. session.md (80 líneas) no puede capturar
+ese nivel de detalle — es un briefing para el CTO, no un log operacional.
+Un mecanismo cognitivo ("el agente checkpointea cuando lo decide") falla
+precisamente cuando el contexto ya está saturado.
+
+Esta versión introduce CHECKPOINT.md: una capa de recuperación entre compactions,
+escrita obligatoriamente en el Stop hook (siempre, sin condición) e inyectada
+automáticamente por SessionStart.
+
+### Changes
+
+#### CLAUDE.md — 3 inserciones
+
+- **NEW** `### Core` — 2 reglas MUST (no advisory):
+  - MUST escribir `.batuta/CHECKPOINT.md` antes de secuencia de 3+ tool calls
+  - After compaction: leer CHECKPOINT.md ANTES de cualquier acción
+- **NEW** `### Checkpoint Anti-Compaction` (en Session Continuity): formato obligatorio,
+  ubicación, quién escribe, quién lee, recovery protocol, y nota sobre redundancia en Notion
+- **NEW** `## Behavior` — bullet sobre razonamiento visible en sub-agentes Task:
+  incluir en el prompt que el sub-agente documente (1) qué descubrió, (2) qué intentó
+  y falló, (3) decisiones con justificación
+
+#### BatutaClaude/settings.json — 1 expansión
+
+- **EXPANDED** Stop prompt hook (prompt): de condicional a mandatory.
+  Antes: "If significant work, update session.md"
+  Ahora: STEP 1 = SIEMPRE escribir CHECKPOINT.md (sin condición),
+          STEP 2 = actualizar session.md (si trabajo significativo)
+
+#### infra/hooks/session-start.sh — 2 inserciones
+
+- **NEW** Lectura de `.batuta/CHECKPOINT.md` después de session.md
+- **NEW** Inyección en additionalContext como "Operational Checkpoint" section
+- **NEW** Exit condition actualizado: también sale sin-inject si no hay checkpoint
+
+### Principio de diseño
+
+- **Separación de concerns**: session.md = entre sesiones (WHERE/WHY/HOW para el CTO);
+  CHECKPOINT.md = entre compactions (estado operacional para el agente)
+- **Obligatorio, no cognitivo**: un mecanismo que requiere que el agente "recuerde"
+  fallaría exactamente cuando el contexto está saturado. El Stop hook es el punto
+  natural de enforcement — siempre tiene contexto completo antes de la compaction
+- **Recovery automático**: SessionStart inyecta CHECKPOINT.md si existe,
+  sin que el agente tenga que buscarlo manualmente
+
+### Rollback
+
+```bash
+git revert <commit-hash>
+# Reverts: MUST rules en Core, Checkpoint section, Behavior bullet,
+# Stop hook expansion, session-start.sh CHECKPOINT_CONTENT blocks
+# El CHECKPOINT.md en .batuta/ no se toca (archivo de proyecto, no hub)
+```
+
+---
+
 ## v14.0.0 — Research Gate + CTO Artifact Detection + Notion KB (2026-03-14)
 
 ### Contexto

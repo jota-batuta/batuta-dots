@@ -13,6 +13,8 @@
 - Produce documentation that non-technical stakeholders can understand.
 - When creating documentation, include a "What This Means" summary section.
 - Every file generated or modified includes: (1) module docstring with business context, (2) docstrings on all public functions (what, args, returns), (3) WHY comments on non-obvious decisions using prefixes: `# SECURITY:`, `# BUSINESS RULE:`, `# WORKAROUND:`. Code without documentation is incomplete code. Full standard: see sdd-apply skill.
+- MUST write `.batuta/CHECKPOINT.md` before any sequence of 3+ consecutive tool calls within a task. Not advisory — protects against mid-task context compaction. The Stop hook also writes it on every session exit.
+- After any compaction or session resume with active work: read `.batuta/CHECKPOINT.md` BEFORE taking any action. SessionStart injects it automatically if it exists.
 
 ### Scope & File Creation
 - Before creating a file, run the Scope Rule decision tree. Ask "Who will use this?" to determine location. See scope-rule skill for full decision tree.
@@ -310,6 +312,7 @@ for every integration point — the discovery is not complete. Return to explore
 - When asking questions, STOP immediately — never answer your own questions
 - After completing each major task (SDD phase, feature, bug fix), update `.batuta/session.md` following the Session Budget. Replace, don't append. Prune completed work to 1-line summaries. Sessions can end abruptly — save state, not history. Significant work thresholds: completed SDD phase, 3+ files modified, resolved a bug, or 5+ exchanges.
 - Prefer direct action over delegation for simple tasks. Spawning a subagent for a single grep or file read wastes more tokens than doing it inline. Delegate when tasks can run in parallel, require isolated context, or involve independent workstreams.
+- When launching sub-agents via Task tool, include in the prompt: "Documenta tu razonamiento como texto antes de ejecutar. Al finalizar reporta: (1) qué descubriste, (2) qué intentaste y falló, (3) decisiones tomadas con justificación." Sub-agents have no visible thinking blocks — explicit reasoning is the only way to audit and debug their decisions.
 
 ---
 
@@ -592,6 +595,53 @@ If this section is missing → no active slice (legacy or non-CTO-layer work).
    The CTO needs this field to evaluate slice exit criteria for verify slices.
 
 PROJECT context only. Personal preferences → MEMORY.md.
+
+### Checkpoint Anti-Compaction
+
+CHECKPOINT.md captures **operational state** — what session.md cannot hold:
+attempts, failures, in-progress decisions, discovered gotchas.
+
+**Location**: `.batuta/CHECKPOINT.md` (overwritten on every Stop — only current state matters)
+**Written by**: Stop hook (mandatory, always) + agent mid-task (MUST rule in Core)
+**Read by**: SessionStart hook (auto-injected if exists) + agent after compaction
+
+**Format** (the Stop hook uses this template):
+
+```markdown
+# Checkpoint — {ISO timestamp}
+
+## Qué estoy haciendo
+{Current task in one sentence — "Sin tarea activa" if nothing}
+
+## Estado
+- Paso actual: {N de M}
+- Archivo/módulo en trabajo: {path}
+- Branch: {if applicable}
+
+## Intentos y resultados
+- {what I tried} → {what happened}
+
+## Decisiones tomadas (con evidencia)
+- {decision}: {why} (verificado: {how I know})
+
+## Qué falta
+- [ ] {pending step}
+
+## Gotchas descubiertos
+- {verified facts only — include the error or evidence that confirmed it}
+```
+
+**Notion redundancy** (optional — when Notion MCP is available and checkpoint is critical):
+If the checkpoint captures a decision or gotcha that would be lost if `.batuta/CHECKPOINT.md`
+is deleted or the project changes machine, persist it to Notion KB
+(`data_source_id: 58433974-5511-45b8-bd09-54551f6c0c23`). This is advisory — local file is sufficient
+for normal compaction recovery.
+
+**Recovery protocol** (after compaction or resume):
+1. `.batuta/CHECKPOINT.md` is already injected by SessionStart — no manual read needed
+2. Use it to restore operational state (what step, what's pending, what gotchas)
+3. session.md provides broader project context (phase, decisions, next steps)
+4. Continue from the last confirmed step in CHECKPOINT
 
 ---
 
