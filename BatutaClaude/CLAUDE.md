@@ -631,11 +631,14 @@ attempts, failures, in-progress decisions, discovered gotchas.
 - {verified facts only — include the error or evidence that confirmed it}
 ```
 
-**Notion redundancy** (optional — when Notion MCP is available and checkpoint is critical):
-If the checkpoint captures a decision or gotcha that would be lost if `.batuta/CHECKPOINT.md`
-is deleted or the project changes machine, persist it to Notion KB
-(`data_source_id: 58433974-5511-45b8-bd09-54551f6c0c23`). This is advisory — local file is sufficient
-for normal compaction recovery.
+**Notion redundancy** (automatic — Stop hook, no user approval needed):
+On every Stop, the hook evaluates the checkpoint for non-trivial knowledge (gotchas confirmed
+by evidence, decisions with justification) and persists them to Notion KB
+(`data_source_id: 58433974-5511-45b8-bd09-54551f6c0c23`) if Notion MCP is available.
+Closed RAG loop: Stop hook writes → Notion KB indexes → sdd-explore Step 2.8 retrieves
+→ future agents learn from past sessions. Filter: skip trivial/session-specific items
+(step counts, timestamps, paths). Only reusable knowledge that helps a future agent
+on a similar problem. If Notion MCP unavailable → skip silently (local file suffices).
 
 **Recovery protocol** (after compaction or resume):
 1. `.batuta/CHECKPOINT.md` is already injected by SessionStart — no manual read needed
