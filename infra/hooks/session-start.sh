@@ -168,8 +168,17 @@ if [[ -n "$BATUTA_DIR" && -f "$BATUTA_DIR/session.md" ]]; then
     SESSION_CONTENT=$(<"$BATUTA_DIR/session.md")
 fi
 
+# Read CHECKPOINT.md if it exists (operational state from last session stop)
+# WHY: CHECKPOINT.md captures intra-session state that compaction destroys.
+# Written by the Stop hook on every exit — injecting it here enables automatic
+# recovery without requiring the agent to remember to look for it.
+CHECKPOINT_CONTENT=""
+if [[ -n "$BATUTA_DIR" && -f "$BATUTA_DIR/CHECKPOINT.md" ]]; then
+    CHECKPOINT_CONTENT=$(<"$BATUTA_DIR/CHECKPOINT.md")
+fi
+
 # If nothing to inject, exit silently
-if [[ -z "$SKILL_INVENTORY" && -z "$SESSION_CONTENT" ]]; then
+if [[ -z "$SKILL_INVENTORY" && -z "$SESSION_CONTENT" && -z "$CHECKPOINT_CONTENT" ]]; then
     exit 0
 fi
 
@@ -264,6 +273,16 @@ if [[ -n "$SESSION_CONTENT" ]]; then
     CONTEXT="${CONTEXT}## Batuta Session Context (auto-injected)
 
 $SESSION_CONTENT$FRESHNESS_WARNING$ECOSYSTEM_WARNING"
+fi
+
+if [[ -n "$CHECKPOINT_CONTENT" ]]; then
+    [[ -n "$CONTEXT" ]] && CONTEXT="$CONTEXT
+
+"
+    CONTEXT="${CONTEXT}## Operational Checkpoint (auto-injected — last session state)
+Read this to restore operational context after compaction or resume.
+
+$CHECKPOINT_CONTENT"
 fi
 
 # Escape for JSON output
