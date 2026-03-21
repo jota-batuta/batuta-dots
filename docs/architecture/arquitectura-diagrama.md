@@ -1,4 +1,4 @@
-# Diagrama de Arquitectura — Ecosistema Batuta (v13.3)
+# Diagrama de Arquitectura — Ecosistema Batuta (v14.1)
 
 ## Vista General del Ecosistema
 
@@ -433,34 +433,54 @@ flowchart TD
 
 ---
 
-## Continuidad de Sesion (con Gate Status)
+## Continuidad de Sesion (con Gate Status y Checkpoint) — v14.1
 
 ```mermaid
 flowchart TD
-    START["Claude inicia conversacion"]
-    CHECK{"Existe<br/>.batuta/session.md?"}
+    START["Claude inicia conversacion<br/>(SessionStart hook)"]
+    CHECK_SESSION{"Existe<br/>.batuta/session.md?"}
+    CHECK_CP{"Existe<br/>.batuta/CHECKPOINT.md?"}
     READ_SESSION["Lee session.md:<br/>estado SDD, decisiones,<br/>convenciones del proyecto"]
+    READ_CP["Inyecta CHECKPOINT.md:<br/>estado operacional anterior<br/>(intentos, decisiones, gotchas)"]
     READ_GATE["Lee Gate Status:<br/>AWAITING_APPROVAL =<br/>proposal | task_plan | none"]
     NO_SESSION["Procede normalmente<br/>(proyecto nuevo)"]
     WORK["Trabaja en la tarea"]
-    SIGNIFICANT{"Trabajo<br/>significativo?"}
-    UPDATE["Actualiza .batuta/session.md<br/>con estado actual +<br/>Gate Status"]
-    END_SESSION["Fin de sesion"]
+    BEFORE3["Antes de secuencia<br/>de 3+ tool calls"]
+    WRITE_CP["MUST: escribe<br/>.batuta/CHECKPOINT.md"]
+    STOP_HOOK["Stop hook<br/>(fin de sesion o compaction)"]
+    CP_MANDATORY["STEP 1: Escribe CHECKPOINT.md<br/>(SIEMPRE, sin condicion)"]
+    NOTION_PERSIST["STEP 2: Persiste en Notion KB<br/>(si MCP disponible +<br/>contenido no trivial)"]
+    UPDATE_SESSION["STEP 3: Actualiza session.md<br/>(si trabajo significativo)"]
 
-    START --> CHECK
-    CHECK -->|"Si"| READ_SESSION --> READ_GATE --> WORK
-    CHECK -->|"No"| NO_SESSION --> WORK
-    WORK --> SIGNIFICANT
-    SIGNIFICANT -->|"Si (fase SDD,<br/>feature, bugfix)"| UPDATE --> END_SESSION
-    SIGNIFICANT -->|"No (pregunta<br/>rapida)"| END_SESSION
+    START --> CHECK_SESSION
+    CHECK_SESSION -->|"Si"| READ_SESSION --> CHECK_CP
+    CHECK_SESSION -->|"No"| NO_SESSION --> WORK
+    CHECK_CP -->|"Si"| READ_CP --> READ_GATE --> WORK
+    CHECK_CP -->|"No"| READ_GATE --> WORK
+    WORK --> BEFORE3 --> WRITE_CP
+    WORK --> STOP_HOOK
+    STOP_HOOK --> CP_MANDATORY --> NOTION_PERSIST --> UPDATE_SESSION
 
     style READ_SESSION fill:#8BB87A,color:#fff
+    style READ_CP fill:#9B7AB8,color:#fff
     style READ_GATE fill:#D47272,color:#fff
-    style UPDATE fill:#7AAFC4,color:#fff
+    style WRITE_CP fill:#9B7AB8,color:#fff
+    style CP_MANDATORY fill:#9B7AB8,color:#fff
+    style NOTION_PERSIST fill:#7AAFC4,color:#fff
+    style UPDATE_SESSION fill:#7AAFC4,color:#fff
     style NO_SESSION fill:#666,color:#fff
+    style STOP_HOOK fill:#D47272,color:#fff
+    style BEFORE3 fill:#E8B84D,color:#000
 ```
 
-> Cada conversacion empieza leyendo el contexto de la anterior. El campo `AWAITING_APPROVAL` en la seccion `## Gate Status` de session.md es critico: el auto-router lo lee en Step 0 ANTES de clasificar el intent del usuario. Si un gate esta pendiente, el router bloquea cualquier intent que no sea aprobacion o feedback. Los gates escriben este estado explicitamente al presentar una propuesta o plan de tareas. Al terminar trabajo significativo, se actualiza el archivo incluyendo el estado del gate.
+**Tres capas de persistencia**:
+| Archivo | Propósito | Escrito por | Leído por |
+|---------|-----------|-------------|-----------|
+| `MEMORY.md` | Preferencias de usuario (global, entre proyectos) | Usuario / agente | Todos los proyectos |
+| `.batuta/session.md` | Briefing entre sesiones (WHERE/WHY/HOW, 80 líneas) | Stop hook (si trabajo significativo) | SessionStart, CTO |
+| `.batuta/CHECKPOINT.md` | Estado operacional entre compactions (solo estado actual) | Stop hook (SIEMPRE) + MUST rule (pre-tool-calls) | SessionStart (auto-inyectado) |
+
+> CHECKPOINT.md captura lo que session.md no puede: qué step iba el agente, qué intentó y falló, qué decidió con qué evidencia. Obligation, no cognitivo — el Stop hook siempre escribe, SessionStart siempre inyecta si existe.
 
 ---
 
@@ -898,34 +918,41 @@ flowchart TD
 
 ---
 
-## Native Hooks: Deterministic Enforcement (v11.3)
+## Native Hooks: Deterministic Enforcement (v14.1)
 
 ```mermaid
 flowchart TD
     subgraph HOOKS["CLAUDE CODE NATIVE HOOKS"]
         direction TB
         SS["SessionStart<br/>(command)"]
-        STOP["Stop<br/>(prompt + command)"]
+        STOP["Stop<br/>(prompt)"]
     end
 
-    subgraph SS_ACTIONS["SessionStart"]
-        READ_SESSION["Lee .batuta/session.md<br/>(continuidad)"]
-        READ_CLAUDE["Lee CLAUDE.md<br/>(personalidad + routing)"]
+    subgraph SS_ACTIONS["SessionStart — lee + inyecta"]
+        READ_SKILLS["Lee inventario de skills"]
+        READ_SESSION["Lee .batuta/session.md<br/>(briefing CTO, 80 lineas)"]
+        READ_CP["Lee .batuta/CHECKPOINT.md<br/>(estado operacional anterior)"]
     end
 
-    subgraph STOP_ACTIONS["Stop"]
-        UPDATE_SESSION["Actualiza session.md<br/>(estado, decisiones)"]
+    subgraph STOP_ACTIONS["Stop — 3 pasos OBLIGATORIOS"]
+        STEP1["STEP 1: Escribe CHECKPOINT.md<br/>(SIEMPRE — sin condicion)"]
+        STEP2["STEP 2: Persiste en Notion KB<br/>(si MCP + contenido no trivial)"]
+        STEP3["STEP 3: Actualiza session.md<br/>(si trabajo significativo)"]
     end
 
     SS --> SS_ACTIONS
     STOP --> STOP_ACTIONS
+    STEP1 --> STEP2 --> STEP3
 
     style HOOKS fill:#2d2d2d,stroke:#E8B84D,color:#F5EDE4
     style SS fill:#8BB87A,color:#fff
-    style STOP fill:#7AAFC4,color:#fff
+    style STOP fill:#D47272,color:#fff
+    style READ_CP fill:#9B7AB8,color:#fff
+    style STEP1 fill:#9B7AB8,color:#fff
+    style STEP2 fill:#7AAFC4,color:#fff
 ```
 
-> Los hooks nativos de Claude Code ejecutan de forma **determinista** — no dependen de que Claude "recuerde" hacerlo. SessionStart carga contexto al iniciar, Stop guarda estado al cerrar.
+> Los hooks nativos de Claude Code ejecutan de forma **determinista** — no dependen de que Claude "recuerde" hacerlo. SessionStart carga contexto al iniciar (incluyendo CHECKPOINT.md si existe). Stop tiene 3 pasos OBLIGATORIOS: escribir CHECKPOINT.md (siempre), persistir en Notion KB (si MCP disponible y contenido no trivial), actualizar session.md (si trabajo significativo).
 
 ---
 
@@ -1281,6 +1308,130 @@ El modelo Opus 4.6 se beneficia de instrucciones **calmadas y directas**. El len
 | **Accion directa sobre delegacion** | Preferir accion directa para tareas simples. Delegar via subagent solo cuando las tareas pueden correr en paralelo, requieren contexto aislado, o involucran workstreams independientes |
 
 > El objetivo es un agente que actue con criterio, no uno que pida permiso para cada linea de codigo. Las reglas existen para prevenir errores recurrentes, no para crear burocracia. Cuando una regla no agrega valor, se revisa via self-heal — no se ignora ni se duplica.
+
+---
+
+## Research Gate + CTO Artifact Detection (v14.0)
+
+```mermaid
+flowchart TD
+    subgraph EXPLORE["sdd-explore (v14.0)"]
+        direction TB
+        E1["Step 2.1-2.7: discovery normal"]
+        E2["Step 2.8: Approach Research"]
+        E3["Busca en Notion KB<br/>(por campo de accion)"]
+        E4["Busca en web<br/>(por tipo de problema)"]
+        E5["Conclusion: build | adapt | reuse"]
+    end
+
+    subgraph APPLY["sdd-apply (v14.0)"]
+        direction TB
+        A1["Step 1.5: Existing Solutions Check"]
+        A2["Lee explore.md → Approach Research"]
+        A3["Verifica si librerias estan instaladas"]
+        A4["Evalua: install+adapt vs build custom"]
+    end
+
+    subgraph CTO_DETECT["CTO Artifact Detection (pipeline-agent Rule 10)"]
+        direction TB
+        CD1{"explore.md existe?"}
+        CD2{"proposal.md existe?"}
+        CD3{"design.md + tasks.md existen?"}
+        CD4["Salta a primera fase faltante"]
+        CD5["Informa: 'Detecte artefactos pre-existentes del CTO'"]
+    end
+
+    NOTION_KB[("Notion KB<br/>data_source_id: 58433974")]
+
+    E1 --> E2
+    E2 --> E3
+    E2 --> E4
+    E3 & E4 --> E5
+    E3 -.->|"consulta"| NOTION_KB
+
+    A1 --> A2 --> A3 --> A4
+
+    CD1 -->|"Si"| CD2
+    CD2 -->|"Si"| CD3
+    CD3 -->|"Si"| CD4
+    CD1 & CD2 & CD3 -->|"No"| CD5 --> CD4
+
+    style EXPLORE fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style APPLY fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
+    style CTO_DETECT fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
+    style E2 fill:#E8B84D,color:#000
+    style A1 fill:#E8B84D,color:#000
+    style CD4 fill:#8BB87A,color:#fff
+    style CD5 fill:#D4956A,color:#fff
+    style NOTION_KB fill:#7AAFC4,color:#fff
+```
+
+> **Research Gate (Step 2.8)**: Antes de proponer approaches, sdd-explore consulta Notion KB y web. Previene reinvención cuando la solución ya existe. **CTO Artifact Detection**: Si el CTO produjo artefactos SDD desde Claude.ai y los copió al repo, el pipeline los detecta y salta a la primera fase faltante — sin re-discovery. El campo `artifacts_from: cto` en BATUTA CONFIG señala este caso explícitamente.
+
+---
+
+## Checkpoint Anti-Compaction + Closed RAG Loop (v14.1)
+
+```mermaid
+flowchart TD
+    subgraph SESSION["SESION ACTUAL"]
+        WORK["Agente trabaja<br/>(sdd-apply, debugging, etc.)"]
+        MUST_RULE["MUST Rule: antes de 3+ tool calls<br/>→ escribe CHECKPOINT.md"]
+        COMPACTION["Compaction ocurre<br/>(contexto saturado)"]
+        RESTORE["SessionStart inyecta CHECKPOINT.md<br/>→ agente restaura estado operacional"]
+    end
+
+    subgraph CHECKPOINT_FILE[".batuta/CHECKPOINT.md"]
+        CP_CONTENT["Qué estoy haciendo<br/>Paso actual / archivo<br/>Intentos y resultados<br/>Decisiones con evidencia<br/>Qué falta<br/>Gotchas descubiertos"]
+    end
+
+    subgraph STOP_HOOK_FLOW["Stop Hook — Siempre, sin condicion"]
+        S1["STEP 1: Escribe CHECKPOINT.md<br/>(plantilla completa)"]
+        S2["STEP 2: Evalua contenido<br/>(gotchas no triviales?)"]
+        S3{"Notion MCP<br/>disponible?"}
+        S4["Persiste en Notion KB<br/>(data_source_id: 58433974)"]
+        S5["STEP 3: Actualiza session.md<br/>(si trabajo significativo)"]
+    end
+
+    subgraph NOTION_RAG["NOTION KB — RAG Loop"]
+        NB[("Notion KB<br/>Tipo: Gotcha | Decision | Workaround")]
+        RETRIEVE["sdd-explore Step 2.8<br/>busca en KB antes de proponer"]
+        LEARN["Agente futuro aprende<br/>de sesiones anteriores"]
+    end
+
+    WORK --> MUST_RULE --> CHECKPOINT_FILE
+    WORK --> COMPACTION --> RESTORE
+    CHECKPOINT_FILE --> RESTORE
+    WORK --> STOP_HOOK_FLOW
+    S1 --> S2 --> S3
+    S3 -->|"Si"| S4 --> S5
+    S3 -->|"No"| S5
+    S4 --> NB
+    NB --> RETRIEVE --> LEARN
+
+    style SESSION fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style CHECKPOINT_FILE fill:#2d2d2d,stroke:#9B7AB8,color:#F5EDE4
+    style STOP_HOOK_FLOW fill:#2d2d2d,stroke:#D47272,color:#F5EDE4
+    style NOTION_RAG fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style MUST_RULE fill:#D47272,color:#fff
+    style S1 fill:#9B7AB8,color:#fff
+    style S4 fill:#7AAFC4,color:#fff
+    style NB fill:#7AAFC4,color:#fff
+    style LEARN fill:#8BB87A,color:#fff
+    style COMPACTION fill:#D47272,color:#fff
+    style RESTORE fill:#8BB87A,color:#fff
+```
+
+**Por qué no cognitivo**: La compaction ocurre exactamente cuando el contexto está saturado — el momento en que el agente es MENOS capaz de "recordar" checkpointear. El Stop hook corre siempre con contexto completo, antes de cualquier compaction. No puede racionalizarse.
+
+**Closed RAG Loop**: `Stop hook → CHECKPOINT.md (local) → Notion KB (persistido) → sdd-explore Step 2.8 (futuras sesiones) → el agente aprende de lecciones pasadas`. Notion actúa como índice RAG barato y consultable — principio de Google LLM: la memoria externa debe escribirse proactivamente, no solo a demanda.
+
+| Capa | Archivo | Escrito por | Leído por | Propósito |
+|------|---------|-------------|-----------|-----------|
+| Global | `MEMORY.md` | Usuario/agente | Todos los proyectos | Preferencias, convenciones |
+| Entre sesiones | `.batuta/session.md` | Stop (si sig.) | SessionStart, CTO | Briefing 80 líneas |
+| Entre compactions | `.batuta/CHECKPOINT.md` | Stop (SIEMPRE) + MUST | SessionStart (auto) | Estado operacional |
+| Largo plazo | Notion KB | Stop (auto, si MCP) | sdd-explore Step 2.8 | Lecciones, gotchas, decisiones |
 
 ---
 

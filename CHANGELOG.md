@@ -3,6 +3,19 @@
 All notable changes to the Batuta ecosystem are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [14.1.0] - 2026-03-20
+
+### Added
+- **CHECKPOINT.md** (`.batuta/CHECKPOINT.md`): Operational state capture between compactions. Captures what session.md cannot: current step, failed attempts, in-progress decisions, discovered gotchas. Written by the Stop hook on every exit — no exceptions.
+- **Stop Hook — 3-step protocol**: (1) Always write CHECKPOINT.md with full template. (2) Auto-persist non-trivial gotchas and decisions to Notion KB — no user approval needed. (3) Update session.md if significant work done.
+- **SessionStart — CHECKPOINT.md injection**: If `.batuta/CHECKPOINT.md` exists, it is automatically injected as "Operational Checkpoint" context. No manual lookup needed after compaction or session resume.
+- **MUST rules in CLAUDE.md Core**: Two non-advisory rules — MUST write CHECKPOINT.md before any sequence of 3+ consecutive tool calls; after compaction, read CHECKPOINT.md BEFORE taking any action.
+- **Sub-agent visible reasoning** (Behavior): When launching sub-agents via Task tool, the prompt must include explicit reasoning documentation — what was discovered, what was tried and failed, decisions with justification. Sub-agents have no visible thinking blocks.
+- **Closed RAG Loop**: Stop hook → CHECKPOINT.md (local) → Notion KB (indexed, searchable) → sdd-explore Step 2.8 retrieves → future agents learn from past sessions' gotchas and decisions.
+
+### What This Means
+Two improvements to prevent context loss: (1) When Claude Code's context gets compressed ("compacted"), it used to forget everything it had tried and decided mid-task. Now a mandatory checkpoint is written on every stop, automatically restored on resume. (2) Non-trivial discoveries (gotchas, workarounds, architectural decisions) are automatically saved to the Notion knowledge base at session end — making them searchable in future projects. Notion acts as a cheap, queryable long-term memory (RAG).
+
 ## [14.0.0] - 2026-03-14
 
 ### Added
