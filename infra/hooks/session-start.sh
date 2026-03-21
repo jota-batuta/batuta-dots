@@ -67,7 +67,7 @@ CWD=$(json_val cwd ".")
 # =============================================================================
 discover_skills() {
     declare -A scope_skills scope_counts seen_skills
-    local total=0
+    local total=0 skipped=0
 
     # 3-way skill resolution: provisioned > manual > global-only
     local search_dirs=()
@@ -104,9 +104,14 @@ discover_skills() {
         for skill_file in "$skills_dir"/*/SKILL.md; do
             [[ -f "$skill_file" ]] || continue
 
-            # Extract name and scope from YAML frontmatter using awk
-            local parsed
-            parsed=$(awk '
+            # Extract name and ALL scopes from YAML frontmatter using awk.
+            # Emits one line per scope ("scope|name") so multi-scope skills
+            # (e.g. scope: [pipeline, infra]) appear in all relevant groups.
+            # FIX: Previous version used sub(/,.*/, "", scope) which truncated to
+            # only the first scope — skills like sdd-apply, security-audit were invisible
+            # to the infra scope even though they declared it.
+            local skill_lines
+            skill_lines=$(awk '
                 BEGIN { fm=0; name=""; scope="" }
                 /^---[[:space:]]*$/ { fm++; next }
                 fm==1 && /^name:/ {
@@ -116,33 +121,60 @@ discover_skills() {
                 }
                 fm==1 && /^[[:space:]]+scope:/ {
                     scope=$0; sub(/.*\[/, "", scope); sub(/\].*/, "", scope)
-                    sub(/,.*/, "", scope)
                     gsub(/[[:space:]]+/, "", scope)
                 }
                 fm>=2 { exit }
-                END { if (name!="") print (scope!="" ? scope : "other") "|" name }
+                END {
+                    if (name=="") exit
+                    if (scope=="") { print "other|" name; exit }
+                    n = split(scope, scopes, ",")
+                    for (i=1; i<=n; i++) {
+                        s = scopes[i]
+                        gsub(/[[:space:]]/, "", s)
+                        if (s != "") print s "|" name
+                    }
+                }
             ' "$skill_file" 2>/dev/null) || continue
 
-            [[ -z "$parsed" ]] && continue
+            [[ -z "$skill_lines" ]] && { skipped=$((skipped + 1)); continue; }
 
-            local scope="${parsed%%|*}"
-            local name="${parsed#*|}"
+            # Extract skill name from first line (all lines share the same name)
+            local name
+            name=$(printf '%s\n' "$skill_lines" | head -1 | cut -d'|' -f2)
+            [[ -z "$name" ]] && { skipped=$((skipped + 1)); continue; }
 
             # Deduplicate: project-local wins (processed first)
             [[ -n "${seen_skills[$name]:-}" ]] && continue
             seen_skills[$name]=1
-
-            if [[ -n "${scope_skills[$scope]:-}" ]]; then
-                scope_skills[$scope]="${scope_skills[$scope]}, $name"
-            else
-                scope_skills[$scope]="$name"
-            fi
-            scope_counts[$scope]=$(( ${scope_counts[$scope]:-0} + 1 ))
             total=$((total + 1))
+
+            # Register skill in each scope it declared
+            while IFS='|' read -r scope_entry _; do
+                [[ -z "$scope_entry" ]] && continue
+                if [[ -n "${scope_skills[$scope_entry]:-}" ]]; then
+                    scope_skills[$scope_entry]="${scope_skills[$scope_entry]}, $name"
+                else
+                    scope_skills[$scope_entry]="$name"
+                fi
+                scope_counts[$scope_entry]=$(( ${scope_counts[$scope_entry]:-0} + 1 ))
+            done <<< "$skill_lines"
         done
     done
 
-    [[ "$total" -eq 0 ]] && return
+    if [[ "$total" -eq 0 ]]; then
+        # Emit visible warning instead of silent exit — skills dirs exist but no valid SKILL.md found.
+        # WHY: Silent exit caused agents to start with no skills, thinking none were installed,
+        # when the real cause was malformed frontmatter. Visible warning enables diagnosis.
+        if [[ ${#search_dirs[@]} -gt 0 ]]; then
+            echo "## Batuta Skill Inventory (auto-discovered)"
+            echo ""
+            echo "Warning: No skills found in: ${search_dirs[*]}"
+            echo "Possible causes: (1) setup.sh --sync not run yet, (2) malformed SKILL.md frontmatter."
+            echo "Run: bash \$(batuta-dots-path)/infra/setup.sh --sync"
+            [[ "$skipped" -gt 0 ]] && echo "Skipped: $skipped SKILL.md files with malformed or missing frontmatter."
+        fi
+        return
+    fi
 
     local num_scopes=${#scope_skills[@]}
     echo "## Batuta Skill Inventory (auto-discovered)"
@@ -161,6 +193,9 @@ discover_skills() {
     for s in "${ordered_scopes[@]}"; do
         echo "- $s (${scope_counts[$s]}): ${scope_skills[$s]}"
     done
+
+    # Report skipped skills so malformed frontmatter is diagnosable
+    [[ "$skipped" -gt 0 ]] && echo "(Note: $skipped SKILL.md file(s) skipped — missing or malformed frontmatter)"
 }
 
 SKILL_INVENTORY=$(discover_skills)
@@ -196,14 +231,25 @@ fi
 # Check freshness (warn if >7 days since last session update)
 FRESHNESS_WARNING=""
 if [[ -n "$SESSION_CONTENT" ]]; then
-    # Extract ISO date from session.md (supports "date: YYYY-MM-DD" in frontmatter)
-    LAST_UPDATE=$(grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' "$BATUTA_DIR/session.md" 2>/dev/null | head -1 || true)
+    # Extract date from specific structured fields first (avoids false matches on historical dates
+    # embedded in session content). Falls back to generic ISO match if no structured field found.
+    # FIX: Generic "first ISO date" was fragile — a project description with "launched 2025-01-15"
+    # would be picked up instead of the actual session update date.
+    LAST_UPDATE=$(grep -oE '^(date|Updated): [0-9]{4}-[0-9]{2}-[0-9]{2}' "$BATUTA_DIR/session.md" 2>/dev/null \
+        | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1 || true)
+    if [[ -z "$LAST_UPDATE" ]]; then
+        # Fallback: any ISO date in the file (less reliable — structured fields preferred)
+        LAST_UPDATE=$(grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' "$BATUTA_DIR/session.md" 2>/dev/null | head -1 || true)
+    fi
     if [[ -n "$LAST_UPDATE" ]]; then
         if [[ "$OSTYPE" == "darwin"* ]]; then
             # macOS (BSD date)
             LAST_EPOCH=$(date -j -f "%Y-%m-%d" "$LAST_UPDATE" "+%s" 2>/dev/null || echo "0")
         else
-            # Linux (GNU date)
+            # Linux and Windows/Git Bash (GNU date — supports -d flag on all three).
+            # WORKAROUND: Windows OSTYPE is "msys" or "mingw32", not "linux". Both correctly
+            # fall here because Git Bash ships GNU coreutils with -d support. Do NOT add a
+            # separate Windows branch — it would duplicate this line and risk divergence.
             LAST_EPOCH=$(date -d "$LAST_UPDATE" +%s 2>/dev/null || echo "0")
         fi
         NOW_EPOCH=$(date +%s)

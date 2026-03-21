@@ -1,4 +1,5 @@
 # Session — {PROJECT_NAME}
+date: {YYYY-MM-DD}
 
 ## Project
 - **Name**: {PROJECT_NAME}
