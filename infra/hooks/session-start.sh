@@ -198,7 +198,87 @@ discover_skills() {
     [[ "$skipped" -gt 0 ]] && echo "(Note: $skipped SKILL.md file(s) skipped — missing or malformed frontmatter)"
 }
 
+# =============================================================================
+# Dynamic Agent Discovery
+# =============================================================================
+# Scans installed agent .md files, extracts name + first line of description
+# from YAML frontmatter. Project-local agents (.claude/agents/) take priority
+# over global (~/.claude/agents/). Same deduplication logic as discover_skills.
+# =============================================================================
+discover_agents() {
+    declare -A seen_agents
+    local -a agent_entries
+    local total=0
+
+    # Priority: project-local first, then global
+    local search_dirs=()
+    [[ -d "$CWD/.claude/agents" ]] && search_dirs+=("$CWD/.claude/agents")
+    [[ -d "$HOME/.claude/agents" ]] && search_dirs+=("$HOME/.claude/agents")
+
+    [[ ${#search_dirs[@]} -eq 0 ]] && return
+
+    for agents_dir in "${search_dirs[@]}"; do
+        for agent_file in "$agents_dir"/*.md; do
+            [[ -f "$agent_file" ]] || continue
+
+            # Extract name and first line of description from YAML frontmatter.
+            # Handles both inline description and block scalar (description: >).
+            local info
+            info=$(awk '
+                BEGIN { fm=0; name=""; desc=""; in_desc=0 }
+                /^---[[:space:]]*$/ { fm++; if(fm>=2) exit; next }
+                fm==1 && /^name:/ {
+                    name=$0; sub(/^name:[[:space:]]*/, "", name)
+                    gsub(/["'"'"']+/, "", name)
+                    gsub(/[[:space:]]+$/, "", name)
+                }
+                fm==1 && /^description:/ {
+                    in_desc=1
+                    tmp=$0; sub(/^description:[[:space:]]*>?[[:space:]]*/, "", tmp)
+                    gsub(/[[:space:]]+$/, "", tmp)
+                    if (tmp != "" && tmp != ">") { desc=tmp; in_desc=0 }
+                    next
+                }
+                fm==1 && in_desc==1 && /^[[:space:]]/ {
+                    tmp=$0; gsub(/^[[:space:]]+/, "", tmp)
+                    gsub(/[[:space:]]+$/, "", tmp)
+                    if (tmp != "") { desc=tmp; in_desc=0 }
+                    next
+                }
+                fm==1 && in_desc==1 && /^[^[:space:]]/ { in_desc=0 }
+                END { if (name != "") print name "|" desc }
+            ' "$agent_file" 2>/dev/null) || continue
+
+            [[ -z "$info" ]] && continue
+
+            local name
+            name=$(printf '%s\n' "$info" | cut -d'|' -f1)
+            [[ -z "$name" ]] && continue
+
+            # Deduplicate: project-local wins (processed first)
+            [[ -n "${seen_agents[$name]:-}" ]] && continue
+            seen_agents[$name]=1
+            total=$((total + 1))
+
+            local desc
+            desc=$(printf '%s\n' "$info" | cut -d'|' -f2-)
+
+            agent_entries+=("- ${name}: ${desc}")
+        done
+    done
+
+    [[ "$total" -eq 0 ]] && return
+
+    echo "## Batuta Agent Inventory (auto-discovered)"
+    echo ""
+    echo "Found $total agents. Spawn via Task tool (subagent_type: \"agent-name\"):"
+    for entry in "${agent_entries[@]}"; do
+        echo "$entry"
+    done
+}
+
 SKILL_INVENTORY=$(discover_skills)
+AGENT_INVENTORY=$(discover_agents)
 
 # Find project's .batuta/ directory
 BATUTA_DIR=""
@@ -224,7 +304,7 @@ if [[ -n "$BATUTA_DIR" && -f "$BATUTA_DIR/CHECKPOINT.md" ]]; then
 fi
 
 # If nothing to inject, exit silently
-if [[ -z "$SKILL_INVENTORY" && -z "$SESSION_CONTENT" && -z "$CHECKPOINT_CONTENT" ]]; then
+if [[ -z "$SKILL_INVENTORY" && -z "$AGENT_INVENTORY" && -z "$SESSION_CONTENT" && -z "$CHECKPOINT_CONTENT" ]]; then
     exit 0
 fi
 
@@ -321,6 +401,13 @@ CONTEXT=""
 
 if [[ -n "$SKILL_INVENTORY" ]]; then
     CONTEXT="$SKILL_INVENTORY"
+fi
+
+if [[ -n "$AGENT_INVENTORY" ]]; then
+    [[ -n "$CONTEXT" ]] && CONTEXT="$CONTEXT
+
+"
+    CONTEXT="${CONTEXT}${AGENT_INVENTORY}"
 fi
 
 if [[ -n "$SESSION_CONTENT" ]]; then

@@ -147,8 +147,8 @@ Domain agents run as subprocesses via Task tool, carrying embedded expertise.
 | ETL pipelines, data transformations, LLM classifiers, RAG | `data-agent` | Pipeline design, AI/ML implementation |
 | Test strategy, debugging, security review, E2E tests | `quality-agent` | Test plans, debugging, security audits |
 
-Delegate during `sdd-apply` via `Task(subagent_type="{agent-name}")`.
-Full delegation protocol (when to delegate, when NOT to, agent lifecycle): see pipeline-agent.
+**Dynamic dispatch**: `sdd-apply` Step 0.75 resolves `domain:` → agent automatically by reading `expertise_domains` in `skill-provisions.yaml` at runtime. Do NOT hardcode agent names in tasks.md — use abstract `domain:` labels. Tasks without a domain match fall back to the main agent.
+Full delegation protocol (when to delegate, when NOT to, agent lifecycle, discovery flow): see pipeline-agent and `sdd-apply` Step 0.75.
 
 ### Skill Gap Detection (gate — not a suggestion)
 During `sdd-explore`, identify ALL technologies without a matching skill in `~/.claude/skills/`. HIGH gaps BLOCK advance to `sdd-propose` until resolved: create skill, defer with justification, or continue with documented reason. Full protocol: see `infra-agent`.

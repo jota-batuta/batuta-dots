@@ -125,6 +125,24 @@ G0.25 is a sub-gate that runs AFTER sdd-explore completes but BEFORE G0.5 (Disco
 
 This gate exists because cognitive rules fail (GAP-02). The agent "knows" about skill gaps but forgets to enforce them across phases. This deterministic file-existence check cannot be rationalized away.
 
+### G0.25.5 — Agent Gaps Resolved (sub-gate, runs after G0.25)
+
+G0.25.5 runs after G0.25 (Skill Gaps) is cleared, before MCP Awareness. It validates that agents needed for HIGH-relevance domains are provisioned.
+
+**Deterministic check** — do NOT rely on agent memory:
+
+1. Read `openspec/changes/{change-name}/explore.md`
+2. Find the "Agent Gap Analysis" section
+3. For each agent listed as HIGH relevance:
+   - Check if `.claude/agents/{agent-name}.md` exists in the project
+   - If NOT exists AND user has NOT explicitly deferred → BLOCK
+   - Inform: "Falta {agent-name}. Opciones: (1) Copiar de ~/.claude/agents/, (2) Defer con justificación"
+4. If ALL HIGH agents are provisioned or explicitly deferred → gate passes → advance to MCP Awareness
+
+**WHY this gate exists**: Without it, `sdd-apply` reaches parallel dispatch (Step 0.75) and resolves domain → agent only to find the agent file is missing. Catching this at G0.25.5 costs nothing. Catching it at apply costs an entire session and potentially corrupted partial output.
+
+**Edge case**: If sdd-explore Step 2.5.5 (Agent Gap Detection) was not run (pre-v14.3 explore.md), skip this gate — the "Agent Gap Analysis" section will be missing. This gate is advisory for pre-v14.3 artifacts.
+
 ### MCP Awareness (informational — between G0.25 and G0.5)
 
 After skill gaps are resolved, check MCP Discovery results from the exploration:

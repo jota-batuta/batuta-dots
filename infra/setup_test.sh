@@ -507,7 +507,7 @@ test_all_skills_have_allowed_tools() {
 # ============================================================================
 
 test_agents_sync_correctly() {
-    log_test "setup.sh syncs scope agents to ~/.claude/agents/"
+    log_test "setup.sh --sync syncs all 6 agents (scope + domain) to ~/.claude/agents/ (v14.3)"
     local agents_src="$REPO_ROOT/BatutaClaude/agents"
     [[ ! -d "$agents_src" ]] && { log_fail "BatutaClaude/agents/ not found"; return; }
 
@@ -517,11 +517,30 @@ test_agents_sync_correctly() {
     local claude_agents="$tmp_home/.claude/agents"
     [[ -d "$claude_agents" ]] && log_pass "~/.claude/agents/ created" || { log_fail "~/.claude/agents/ NOT created"; rm -rf "$tmp_home"; return; }
 
+    # Scope agents
     [[ -f "$claude_agents/pipeline-agent.md" ]] && log_pass "pipeline-agent.md synced" || log_fail "pipeline-agent.md not synced"
     [[ -f "$claude_agents/infra-agent.md" ]] && log_pass "infra-agent.md synced" || log_fail "infra-agent.md not synced"
     [[ -f "$claude_agents/observability-agent.md" ]] && log_pass "observability-agent.md synced" || log_fail "observability-agent.md not synced"
 
+    # Domain agents (v14.3: --sync now includes agents, not just skills)
+    [[ -f "$claude_agents/backend-agent.md" ]] && log_pass "backend-agent.md synced" || log_fail "backend-agent.md not synced"
+    [[ -f "$claude_agents/quality-agent.md" ]] && log_pass "quality-agent.md synced" || log_fail "quality-agent.md not synced"
+    [[ -f "$claude_agents/data-agent.md" ]] && log_pass "data-agent.md synced" || log_fail "data-agent.md not synced"
+
+    # Count total: should be 6
+    local agent_count
+    agent_count=$(find "$claude_agents" -name "*.md" | wc -l)
+    [[ "$agent_count" -ge 6 ]] && log_pass "6 agents synced (count: $agent_count)" || log_fail "Expected 6 agents, got $agent_count"
+
     rm -rf "$tmp_home"
+}
+
+test_session_start_discovers_agents() {
+    log_test "session-start.sh has discover_agents() function (v14.3)"
+    local hook="$REPO_ROOT/infra/hooks/session-start.sh"
+    assert_file_contains "$hook" "discover_agents" "session-start.sh has discover_agents function"
+    assert_file_contains "$hook" "AGENT_INVENTORY" "session-start.sh assigns AGENT_INVENTORY"
+    assert_file_contains "$hook" "Batuta Agent Inventory" "session-start.sh outputs Agent Inventory header"
 }
 
 # ============================================================================
@@ -1408,6 +1427,7 @@ test_all_skills_have_scope
 test_all_skills_have_auto_invoke
 test_all_skills_have_allowed_tools
 test_agents_sync_correctly
+test_session_start_discovers_agents
 test_no_skill_sync_remnants
 test_no_auto_generated_delimiters
 

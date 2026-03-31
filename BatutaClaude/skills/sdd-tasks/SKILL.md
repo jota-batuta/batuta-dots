@@ -64,46 +64,121 @@ openspec/changes/{change-name}/
 
 #### Task File Format
 
+Each task includes three metadata fields that enable parallel execution (used by `sdd-apply` Step 0.75):
+- `depends_on`: list of task IDs that must complete before this task starts (empty = can start in Wave 1)
+- `domain`: expertise abstract — describes WHAT skill is needed, NOT which agent name. sdd-apply resolves domain → agent dynamically.
+- `parallelizable`: can this task run concurrently with other tasks in the same wave?
+
+**Domain inference rules** (classify based on task content, not agent names):
+| Task mentions | `domain:` to use |
+|---------------|-----------------|
+| API, endpoint, ORM, auth, DB schema, migrations | `backend-api` |
+| ETL, LLM, embeddings, RAG, pipeline, classification | `etl-pipeline` or `llm-classification` |
+| tests, debug, security review, E2E, code review | `testing` or `security-audit` |
+| infra config, file structure, scope decisions | `main` |
+| frontend, React, Next.js, UI components | `frontend` |
+| anything else | `main` (main agent handles directly) |
+
 ```markdown
 # Tasks: {Change Title}
 
 ## Phase 1: {Phase Name} (e.g., Infrastructure / Foundation)
 
 - [ ] 1.1 {Concrete action -- what file, what change}
+  - depends_on: []
+  - domain: main
+  - parallelizable: true
 - [ ] 1.2 {Concrete action}
-- [ ] 1.3 {Concrete action}
+  - depends_on: []
+  - domain: backend-api
+  - parallelizable: true
+- [ ] 1.3 {Concrete action -- depends on 1.1 and 1.2}
+  - depends_on: [1.1, 1.2]
+  - domain: backend-api
+  - parallelizable: false
 
 ## Phase 2: {Phase Name} (e.g., Core Implementation)
 
 - [ ] 2.1 {Concrete action}
+  - depends_on: [1.3]
+  - domain: backend-api
+  - parallelizable: true
 - [ ] 2.2 {Concrete action}
+  - depends_on: [1.3]
+  - domain: backend-api
+  - parallelizable: true
 - [ ] 2.3 {Concrete action}
-- [ ] 2.4 {Concrete action}
+  - depends_on: [1.3]
+  - domain: testing
+  - parallelizable: true
+- [ ] 2.4 {Concrete action -- depends on 2.1, 2.2, 2.3}
+  - depends_on: [2.1, 2.2, 2.3]
+  - domain: main
+  - parallelizable: false
 
 ## Phase 3: {Phase Name} (e.g., Integration / Wiring)
 
 - [ ] 3.1 {Wire components together}
+  - depends_on: [2.4]
+  - domain: main
+  - parallelizable: false
 - [ ] 3.2 {Connect routes, events, signals}
+  - depends_on: [2.4]
+  - domain: backend-api
+  - parallelizable: false
 
 ## Phase 4: {Phase Name} (e.g., Testing / Verification)
 
 - [ ] 4.1 {Write tests for ...}
+  - depends_on: [3.1, 3.2]
+  - domain: testing
+  - parallelizable: true
 - [ ] 4.2 {Write tests for ...}
+  - depends_on: [3.1, 3.2]
+  - domain: testing
+  - parallelizable: true
 - [ ] 4.3 {Verify integration between ...}
+  - depends_on: [4.1, 4.2]
+  - domain: testing
+  - parallelizable: false
 
 ## Phase 5: {Phase Name} (e.g., Cleanup)
 
 - [ ] 5.1 {Remove temporary code}
+  - depends_on: [4.3]
+  - domain: main
+  - parallelizable: true
 - [ ] 5.2 {Refactor for clarity}
+  - depends_on: [4.3]
+  - domain: main
+  - parallelizable: true
 
 ## Phase 6: Documentation (MANDATORY)
 
 - [ ] 6.1 {Update README.md with new feature/change description}
+  - depends_on: [5.1, 5.2]
+  - domain: main
+  - parallelizable: true
 - [ ] 6.2 {Update or create API documentation for new/changed endpoints}
+  - depends_on: [5.1, 5.2]
+  - domain: main
+  - parallelizable: true
 - [ ] 6.3 {Update architecture docs / diagrams if structure changed}
+  - depends_on: [5.1, 5.2]
+  - domain: main
+  - parallelizable: true
 - [ ] 6.4 {Write/update runbook or operational notes for deployment}
+  - depends_on: [5.1, 5.2]
+  - domain: main
+  - parallelizable: true
 - [ ] 6.5 {Add ADR (Architecture Decision Record) if a significant decision was made}
+  - depends_on: [5.1, 5.2]
+  - domain: main
+  - parallelizable: true
 - [ ] 6.6 {Update CHANGELOG or release notes}
+  - depends_on: [5.1, 5.2]
+  - domain: main
+  - parallelizable: true
 ```
 
 ### Task Writing Rules
