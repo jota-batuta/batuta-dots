@@ -16,7 +16,7 @@ Inspirado en [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman
 - **Personalidad CTO/Mentor** que educa y documenta para personas no tecnicas.
 - **Regla de Alcance (Scope Rule)** que organiza archivos por quien los usa, no por tipo.
 - **Auto-deteccion de gaps en skills** con investigacion automatica via Context7.
-- **Carga lazy de skills** — Claude lee ~220 lineas al iniciar, el resto se carga bajo demanda.
+- **Carga lazy de skills** — Claude lee ~300 lineas al iniciar, el resto se carga bajo demanda.
 - **Arquitectura MoE** — CLAUDE.md enruta, los agentes de dominio son expertos, los skills son parametros.
 - **6 agentes** — 3 agentes de scope (pipeline, infra, observability) + 3 agentes de dominio (backend, data, quality) con skills auto-descubiertos.
 - **Execution Gate** — pre-validacion obligatoria antes de cualquier cambio de codigo.
@@ -26,11 +26,11 @@ Inspirado en [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman
 - **Contract-First Protocol** — contratos pre-spawn definen input/output/file-ownership por teammate.
 - **Seguridad AI-First** — skill security-audit dedicado, integrado en fases de diseno y verificacion.
 - **Team Templates + Playbook** — composiciones pre-armadas por stack (Next.js, FastAPI, n8n, agente IA, data pipeline, refactoring).
-- **CTO Strategy Layer (v11.0)** — 3 gates + 6 skills especialistas en el pipeline SDD.
+- **PRD Generation** — despues de aprobar el task plan, pipeline-agent genera un PRD.md consolidado para reset de contexto limpio entre la sesion de planning y la de ejecucion.
 - **Batuta Bootstrap** — "La Regla" via hook SessionStart: si un skill aplica, DEBES usarlo.
 - **MCP Discovery** — busqueda activa de servidores MCP durante la fase explore.
 - **Review Superpowers** — loop de revision en 2 etapas (spec + calidad) para tareas complejas.
-- **Descripciones Trigger-Only** — las 38 descripciones de skills siguen la convencion "Use when..." para activacion confiable.
+- **Descripciones Trigger-Only** — las 39 descripciones de skills siguen la convencion "Use when..." para activacion confiable.
 - **Agentes de Dominio** — 3 expertos de dominio (backend, data, quality) con persona gruesa, auto-invocados como subprocesos autonomos segun senales de tecnologia.
 
 ---
@@ -75,7 +75,7 @@ git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-i
 
 | Plataforma | Destino | Contenido |
 |------------|---------|-----------|
-| **Claude Code** | `~/.claude/` | 38 skills, 6 agentes, 13 comandos, 2 hooks, settings.json, output-styles |
+| **Claude Code** | `~/.claude/` | 39 skills, 6 agentes, 13 comandos, 2 hooks, settings.json, output-styles |
 | **Claude Code** | Directorio actual | `CLAUDE.md` + `.batuta/` (session, ecosystem.json) |
 | **Antigravity** | `~/.gemini/antigravity/` | Skills compatibles, workflows, GEMINI.md |
 
@@ -188,13 +188,13 @@ batuta-dots/
 
 Batuta opera como un sistema **Mixture of Experts (MoE)**:
 
-1. **CLAUDE.md** es el **router** — punto de entrada unico (~220 lineas). Clasifica el intent del usuario, enforza reglas (Scope Rule, Execution Gate, gates SDD), y enruta al experto correcto. Los skills se auto-descubren por Claude Code via su campo `description`.
+1. **CLAUDE.md** es el **router** — punto de entrada unico (~300 lineas). Clasifica el intent del usuario, enforza reglas (Scope Rule, Execution Gate, gates SDD), y enruta al experto correcto. Los skills se auto-descubren por Claude Code via su campo `description`.
 2. **Agentes de dominio** son los **expertos** — subprocesos autonomos con "persona gruesa" (80-120 lineas de conocimiento de dominio embebido). Se ejecutan via Task tool, no como contexto inline, manteniendo al agente principal liviano.
 3. **Skills** son los **parametros** — cargados bajo demanda cuando un experto necesita patrones especificos (e.g., FastAPI CRUD, JWT auth, modelos SQLAlchemy).
 4. **setup.sh --all** sincroniza skills y agentes, instala hooks + permisos, y copia CLAUDE.md a la raiz.
 
 ```
-CLAUDE.md — EL ROUTER (clasificacion de intent + reglas — ~220 lineas)
+CLAUDE.md — EL ROUTER (clasificacion de intent + reglas — ~300 lineas)
     │
     ├──> Hooks (settings.json)
     │     ├── SessionStart → inyecta session.md como contexto
@@ -308,7 +308,7 @@ Los 6 agentes de Batuta forman la capa de "expertos" de la arquitectura MoE. **3
 | `quality-agent` | Siempre provisionado | AI Validation Pyramid, estrategia de testing, auditorias de seguridad, debugging |
 | `data-agent` | pandas, langchain, anthropic detectado | Pipelines ETL, integracion AI/ML, patrones RAG |
 
-Los agentes de dominio llevan personalidad + patrones + punteros a skills e incluyen un bloque `sdk:` para deployment programatico via Claude Agent SDK. Esto mantiene al agente principal liviano (~220 lineas) y a cada agente enfocado en su dominio.
+Los agentes de dominio llevan personalidad + patrones + punteros a skills e incluyen un bloque `sdk:` para deployment programatico via Claude Agent SDK. Esto mantiene al agente principal liviano (~300 lineas) y a cada agente enfocado en su dominio.
 
 **Ciclo de Vida de Agentes** — los agentes siguen el mismo modelo de sync que los skills:
 

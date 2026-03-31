@@ -16,7 +16,7 @@ Inspired by [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.
 - **CTO/Mentor personality** that educates and documents for non-technical stakeholders.
 - **Scope Rule** that organizes files by who uses them, not by type.
 - **Skill Gap Detection** with automatic research via Context7.
-- **Lazy skill loading** — Claude reads ~220 lines at startup, skills load on demand.
+- **Lazy skill loading** — Claude reads ~300 lines at startup, skills load on demand.
 - **MoE architecture** — CLAUDE.md routes, domain agents are experts, skills are parameters.
 - **6 agents** — 3 scope agents (pipeline, infra, observability) + 3 domain agents (backend, data, quality) with auto-discovered skills.
 - **Execution Gate** — mandatory pre-validation before any code change.
@@ -26,11 +26,10 @@ Inspired by [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.
 - **Contract-First Protocol** — pre-spawn contracts define input/output/file-ownership per teammate.
 - **AI-First Security** — dedicated security-audit skill integrated in design and verify phases.
 - **Team Templates + Playbook** — pre-built team compositions per stack (Next.js, FastAPI, n8n, AI agent, data pipeline, refactoring).
-- **CTO Strategy Layer** — 3 strategic gates (G0.5, G1, G2) + 6 specialist skills (process-analyst, compliance, data-pipeline, LLM-pipeline, worker-scaffold, recursion-designer) integrated into the SDD pipeline.
+- **PRD Generation** — after task plan approval, pipeline-agent generates a consolidated `PRD.md` for clean context reset between planning and execution sessions.
 - **Batuta Bootstrap** — "The Rule" enforcement via SessionStart hook: if a skill applies, you MUST use it.
 - **MCP Discovery** — active web search for beneficial MCP servers during explore phase.
-- **Superpowers-Style Review** — 2-stage review loop (spec + quality) for complex tasks.
-- **Trigger-Only Descriptions** — all 38 skill descriptions follow "Use when..." convention for reliable activation.
+- **Trigger-Only Descriptions** — all 39 skill descriptions follow "Use when..." convention for reliable activation.
 - **Domain Agents** — 3 domain experts (backend, data, quality) with thick persona, auto-invoked as autonomous subprocesses based on technology signals.
 
 ---

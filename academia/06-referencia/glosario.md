@@ -124,7 +124,7 @@ Terminos del ecosistema Batuta Dots explicados en lenguaje simple.
 
 **Security Audit**: Skill que revisa seguridad (OWASP 10 puntos, secrets, dependencies, threat model).
 
-**Skill**: Archivo SKILL.md que le ensena a Claude una especialidad. 38 skills en v13.
+**Skill**: Archivo SKILL.md que le ensena a Claude una especialidad. 39 skills en v14.3.
 
 **Skill Eval**: Framework para testing comportamental de skills usando sub-agentes y criterios de calidad. Ejecuta escenarios reales definidos en SKILL.eval.yaml y evalua si el skill responde correctamente. Comando: `/skill:eval nombre`.
 

@@ -1,4 +1,4 @@
-# Entendiendo la Arquitectura de Batuta — Sin Palabras Tecnicas (v14.1)
+# Entendiendo la Arquitectura de Batuta — Sin Palabras Tecnicas (v14.3)
 
 > **Para quien es esto**: Para cualquier persona que quiera entender COMO funciona
 > el ecosistema Batuta sin necesitar saber programar. Si puedes entender como funciona
@@ -68,7 +68,7 @@ En Batuta funciona igual:
 Porque es mas eficiente. Si el chef principal tuviera que recordar TODAS las recetas de
 TODOS los tipos de cocina, se le olvidarian cosas. En cambio:
 
-- El chef principal solo recuerda a QUIEN pasarle cada pedido (~220 lineas de instrucciones)
+- El chef principal solo recuerda a QUIEN pasarle cada pedido (~300 lineas de instrucciones)
 - Cada especialista recuerda TODO sobre SU area (~80-120 lineas de expertise)
 - Las recetas especificas se abren solo cuando hacen falta
 
@@ -924,6 +924,8 @@ Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
 | **Protocolo de degustacion** | skill-eval (v13) | Evalua recetas con criterios medibles, propone mejoras, audita el ecosistema |
 | **Instructivo de franquicia** | SDK Deployment (v13) | Ficha tecnica en cada agent para desplegar sucursales automaticamente via CI/CD |
 | **Filosofia justo lo necesario** | Anti-Overengineering (v13.1) | Solo 4 alarmas obligatorias, el resto son guias. El chef actua con criterio, no pide permiso para cada paso |
+| **Manual del turno** | PRD Generation (v14.3) | Al terminar la planificacion, el sous-chef genera un resumen de 1 pagina. El chef del turno siguiente arranca limpio, sin el ruido de los caminos descartados |
+| **Manual reducido** | Ecosystem Healing (v14.3) | El manual del chef principal bajo de 741 a ~300 instrucciones. Las instrucciones detalladas viven en los manuales de cada area — el chef del router sabe donde ir, no todo lo que hay que hacer |
 
 ---
 
@@ -1043,6 +1045,32 @@ Es como la diferencia entre un albanil que trabaja con lo que tiene en el bolsil
 ### Review en 2 etapas — Como una revision de planos
 
 Un arquitecto diseña los planos, pero antes de construir: un ingeniero estructural verifica que cumple con las normas (revision de spec), y un inspector de calidad verifica que los materiales son correctos (revision de calidad). Solo cuando ambos aprueban, se construye. En Batuta v11.0, las tareas complejas pasan por esta misma doble revision automatica.
+
+---
+
+## El Manual del Turno (PRD Generation y Context Reset) — v14.3
+
+Imagina que el sous-chef planea el menu del dia. Anota ideas, tacha opciones, debate ingredientes, consulta 3 recetas distintas. Al final del dia tiene 10 paginas de notas.
+
+El siguiente turno, el chef ejecutivo llega y tiene que leer las 10 paginas para entender que decidieron. Mitad de esas notas son caminos descartados — ruido.
+
+**La solucion (v14.3)**: Al terminar la planificacion, el sous-chef hace un RESUMEN EJECUTIVO de una pagina: que plato vamos a hacer, por que, las 3 decisiones no negociables, y la lista de pasos. Se llama **PRD.md** (Manual del Turno).
+
+El chef ejecutivo llega al siguiente turno y lee solo esa pagina. Arranca limpio, sin el ruido de todos los caminos descartados.
+
+```
+Sesion de planificacion          Sesion de ejecucion
+(sous-chef explora, debate) →  [PRD.md — 1 pagina] → (chef ejecuta con claridad)
+```
+
+Esto resuelve uno de los problemas mas comunes: el agente que planifica acumula contexto
+exploratorio (hipotesis falsas, propuestas rechazadas) que luego contamina la ejecucion.
+
+### El Manual Reducido (Ecosystem Healing) — v14.3
+
+El manual del chef principal (CLAUDE.md) habia crecido a 741 instrucciones. El chef lo leia al inicio de cada turno y para cuando llegaba a la instruccion 500, ya habia olvidado la instruccion 50.
+
+**La solucion**: El manual del chef ahora tiene ~300 instrucciones — solo lo esencial. Las instrucciones detalladas de cada especialidad viven en los manuales de cada area (pipeline-agent, skills). El chef del router sabe DONDE ir, no TODO lo que hay que hacer.
 
 ---
 

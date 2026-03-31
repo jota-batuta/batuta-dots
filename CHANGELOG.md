@@ -3,6 +3,38 @@
 All notable changes to the Batuta ecosystem are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [14.3.0] - 2026-03-30
+
+### Added
+- **prd-generator skill** (skill #39): After Task Plan Approval, pipeline-agent generates `openspec/changes/{name}/PRD.md` — a consolidated brief of spec + design + tasks. Enables context reset between planning and execution sessions.
+- **G1.5 Context Reset gate** (pipeline-agent): Informational gate between task plan approval and sdd-apply. Presents the generated PRD.md and recommends starting a fresh execution session. Does not block.
+- **Discovery Depth rules** (pipeline-agent): Formally documented anti-shallow-loop protocol — read code before assuming, restate flows with specifics, mandatory Technical Assumptions section in proposals.
+- **Output Tiers definitions** (pipeline-agent): detail_level definitions (`concise`/`standard`/`deep`) moved from CLAUDE.md into pipeline-agent where they're used.
+- **Core Rule #0 — Research first**: Explicit chain (MCP → WebFetch → WebSearch) as the first core rule. Training data may be outdated — always verify.
+
+### Changed
+- **CLAUDE.md refactored**: 741 → 297 lines. Removed CTO Strategy Layer section (absorbed into pipeline-agent), Output Tiers section, Behavior section (merged into Session & Output rule), full Slice Sequencing detail, and verbose auto-routing (192 → 22 lines). CLAUDE.md is now operational context, not a routing system.
+- **pipeline-agent.md expanded**: 246 → 295 lines. Absorbed Discovery Depth, Output Tiers, and G1.5 gate.
+- **Auto-routing simplified**: Compressed from 192 lines to an intent classification table + 4 routing rules.
+- **Version**: 14.0.0 → 14.3.0
+
+### What This Means
+CLAUDE.md was acting as a 741-line routing system, causing agents to lose track of rules mid-session. This version strips it to ~300 lines of operational context (personality, core rules, gates, commands) and moves the "how" details into pipeline-agent and skills where they belong. The PRD generation concept (inspired by PRD-first development patterns) creates a clean context reset between the planning and execution sessions — the planning session accumulates exploratory reasoning and rejected proposals; the execution session starts fresh with only the final approved decisions.
+
+## [14.2.0] - 2026-03-25
+
+### Added
+- **Notion as Primary Memory**: Explicit priority chain for context restoration: `Interaction 0: Notion MCP → session.md → CHECKPOINT.md`. Notion is now queried at the start of every session if MCP is configured.
+- **Notion KB auto-persistence**: Stop hook (STEP 2) evaluates CHECKPOINT.md content and automatically persists non-trivial gotchas/decisions to Notion KB (`data_source_id: 58433974`) without user approval. Filter: skip trivial items (step counts, timestamps, file paths).
+- **Closed RAG loop formalized**: `Stop hook → CHECKPOINT.md (local) → Notion KB (indexed) → sdd-explore Step 2.8 (retrieves) → future agents learn from past sessions`.
+
+### Changed
+- **Session Budget enforcement**: session.md rules tightened — AC Status section lifecycle documented, Next Steps limited to 3 items max.
+- **Skills loading fix**: 3-way detection logic in `session-start.sh` corrected — `.provisions.json` + local skills + global skills resolved in correct order.
+
+### What This Means
+Notion went from being a "nice to have" to the primary long-term memory. Each session end automatically indexes discovered gotchas into a searchable knowledge base. Future agents working on similar problems retrieve those learnings during exploration. The closed loop means Batuta gets smarter with every project without manual knowledge curation.
+
 ## [14.1.0] - 2026-03-20
 
 ### Added

@@ -1,4 +1,4 @@
-# Diagrama de Arquitectura — Ecosistema Batuta (v14.1)
+# Diagrama de Arquitectura — Ecosistema Batuta
 
 ## Vista General del Ecosistema
 
@@ -59,7 +59,7 @@ flowchart TB
 
 ---
 
-## Mixture of Experts (MoE): Modelo Conceptual (v13.1)
+## Mixture of Experts (MoE): Modelo Conceptual
 
 Batuta sigue una arquitectura **Mixture of Experts** adaptada a agentes de IA:
 
@@ -67,7 +67,7 @@ Batuta sigue una arquitectura **Mixture of Experts** adaptada a agentes de IA:
 flowchart TD
     INPUT["Prompt del usuario"]
 
-    subgraph ROUTER["ROUTER (CLAUDE.md — ~220 lineas)"]
+    subgraph ROUTER["ROUTER (CLAUDE.md — ~300 lineas)"]
         CLASSIFY["Clasifica intent:<br/>Build | Fix | Continue |<br/>Backtrack | Question"]
         ROUTE["Routing table:<br/>API/auth/ORM → backend-agent<br/>ETL/AI/RAG → data-agent<br/>tests/security → quality-agent"]
     end
@@ -122,13 +122,13 @@ Los domain agents corren como **subprocesos autonomos** (Task tool), no como iny
 
 ---
 
-## Scope + Domain Agents: Routing del Agente Principal (v13.2)
+## Scope + Domain Agents: Routing del Agente Principal
 
 ```mermaid
 flowchart TD
     USER["Usuario escribe prompt"]
     BOOTSTRAP["Batuta Bootstrap<br/>La Regla: skill aplica? USALO.<br/>MCP disponible? CONSULTALO."]
-    ROUTER["CLAUDE.md (Router)<br/>~220 lineas: personalidad,<br/>reglas, auto-routing"]
+    ROUTER["CLAUDE.md (Router)<br/>~300 lineas: personalidad,<br/>reglas, auto-routing"]
 
     STEP0{"Step 0: Gate Check<br/>session.md → AWAITING_APPROVAL?"}
     GATE_LOCK["Solo acepta:<br/>aprobacion o feedback<br/>(dale/proceed/si/no/ajusta...)"]
@@ -222,7 +222,7 @@ flowchart LR
 
 ---
 
-### Flujo de Provisioning de Skills y Agents (v13)
+### Flujo de Provisioning de Skills y Agents
 
 ```mermaid
 flowchart TD
@@ -267,7 +267,7 @@ session-start.sh usa logica 3-way:
 
 ---
 
-## Ciclo de Vida de un Agent (v13.1)
+## Ciclo de Vida de un Agent
 
 ```mermaid
 flowchart LR
@@ -303,7 +303,7 @@ Un domain agent nuevo solo se justifica cuando el dominio tiene: (1) convencione
 
 ---
 
-## Flujo de Trabajo SDD (Spec-Driven Development) — v11 State Machine
+## Flujo de Trabajo SDD (Spec-Driven Development)
 
 ```mermaid
 flowchart LR
@@ -320,7 +320,7 @@ flowchart LR
         direction LR
         INIT["sdd-init<br/>Tipo de<br/>proyecto"]
         EXPLORE["sdd-explore<br/>(+ MCP Discovery)<br/>Investigar opciones"]
-        G025{{"G0.25<br/>MCP Ready"}}
+        G025{{"G0.25<br/>Skill Gaps"}}
         PROPOSE["sdd-propose<br/>Propuesta<br/>formal"]
         SPEC["sdd-spec<br/>Especificaciones<br/>tecnicas"]
         DESIGN["sdd-design<br/>Arquitectura<br/>y diseno"]
@@ -379,7 +379,22 @@ graph LR
 
 > **spec** y **design** en paralelo. Lineas punteadas = backtracks (retrocesos cuando se descubren problemas). Gates G0.25 (MCP Ready), G0.5 (Discovery Complete), G1 (Solution Worth Building) y G2 (Production Ready) son checkpoints estrategicos. Cada backtrack se registra en `backtrack-log.md` para trazabilidad. 6 specialist skills se invocan condicionalmente: process-analyst, recursion-designer, llm-pipeline-design, data-pipeline-design, worker-scaffold, compliance-colombia.
 
-### Discovery Depth (anti-shallow-loop) — v13.2
+### PRD Generation (entre tasks y apply)
+
+Despues de la aprobacion del plan de tareas (Task Plan Approval), pipeline-agent invoca  para generar  — un brief consolidado de spec + design + tasks. El PRD resuelve el problema de contexto entre planning y ejecucion: la sesion de planning acumula razonamiento exploratorio, propuestas rechazadas y revisiones. La sesion de ejecucion deberia empezar limpia con solo las decisiones finales aprobadas.
+
+| Artefacto | Rol |
+|-----------|-----|
+|  | User stories + criterios de aceptacion |
+|  | Decisiones tecnicas no negociables |
+|  | Lista de tareas + definicion de done |
+|  | Brief consolidado para la sesion de apply |
+
+> **Context Reset**: Despues de generar PRD.md, pipeline-agent recomienda iniciar una sesion nueva con: "Lee PRD.md y tasks.md de {name}, implementa Task 1". El agente llega fresco — sin el overhead del historial de planning.
+
+---
+
+### Discovery Depth (anti-shallow-loop)
 
 La discovery superficial causa el modo de fallo mas caro del pipeline: asumir mal -> implementar -> usuario corrige -> re-implementar -> repetir. Para prevenir esto:
 
@@ -395,12 +410,12 @@ La discovery superficial causa el modo de fallo mas caro del pipeline: asumir ma
 
 ---
 
-## Carga Lazy de Skills (4 niveles — v13)
+## Carga Lazy de Skills (4 niveles)
 
 ```mermaid
 flowchart TD
     START["Claude inicia conversacion"]
-    READ["Nivel 1: Lee CLAUDE.md<br/>(~220 lineas: personalidad,<br/>reglas, scope routing table)"]
+    READ["Nivel 1: Lee CLAUDE.md<br/>(~300 lineas: personalidad,<br/>reglas, scope routing table)"]
     TASK["Usuario pide tarea"]
     GATE["Execution Gate<br/>clasifica scope"]
     LOAD_AGENT["Nivel 2: Carga agent<br/>(scope o domain, ~80-120 lineas:<br/>reglas del scope/dominio)"]
@@ -429,11 +444,11 @@ flowchart TD
     style CI_CD fill:#9B7AB8,color:#fff
 ```
 
-> **Mapeo MoE**: El Nivel 1 es el **router** (CLAUDE.md, ~220 lineas). El Nivel 2 carga al **expert** (domain agent, ~80-120 lineas de thick persona). El Nivel 3 carga los **parameters** (skill, ~200-500 lineas de patrones especificos). Solo se carga lo que se necesita — los domain agents corren como subprocesos autonomos (Task tool), no como contexto inyectado en el agente principal. El **Nivel 4** es un canal de deployment: el bloque `sdk:` en cada agent define model, max_tokens, allowed_tools y settings, permitiendo que CI/CD despliegue agentes como servicios independientes.
+> **Mapeo MoE**: El Nivel 1 es el **router** (CLAUDE.md, ~300 lineas). El Nivel 2 carga al **expert** (domain agent, ~80-120 lineas de thick persona). El Nivel 3 carga los **parameters** (skill, ~200-500 lineas de patrones especificos). Solo se carga lo que se necesita — los domain agents corren como subprocesos autonomos (Task tool), no como contexto inyectado en el agente principal. El **Nivel 4** es un canal de deployment: el bloque `sdk:` en cada agent define model, max_tokens, allowed_tools y settings, permitiendo que CI/CD despliegue agentes como servicios independientes.
 
 ---
 
-## Continuidad de Sesion (con Gate Status y Checkpoint) — v14.1
+## Continuidad de Sesion (con Gate Status y Checkpoint)
 
 ```mermaid
 flowchart TD
@@ -484,7 +499,7 @@ flowchart TD
 
 ---
 
-## Flujo CTO → Ejecucion: Two-Layer Pipeline (v13.3)
+## Flujo CTO → Ejecucion: Two-Layer Pipeline
 
 ```mermaid
 flowchart TD
@@ -654,7 +669,7 @@ flowchart TD
 
 ---
 
-## Modelo de Ejecucion de 3 Niveles (v13.1)
+## Modelo de Ejecucion de 3 Niveles
 
 ```mermaid
 flowchart TD
@@ -715,7 +730,7 @@ flowchart TD
 
 ---
 
-## Ciclo de Vida de un Agent Team (v11.3)
+## Ciclo de Vida de un Agent Team
 
 ```mermaid
 flowchart LR
@@ -743,7 +758,7 @@ flowchart LR
 
 ---
 
-## O.R.T.A. con Agent Teams (v11.3)
+## O.R.T.A. con Agent Teams
 
 ```mermaid
 flowchart TD
@@ -777,7 +792,7 @@ flowchart TD
 
 ---
 
-## SDD Pipeline como Task List Paralelo (v7)
+## SDD Pipeline como Task List Paralelo
 
 ```mermaid
 flowchart TD
@@ -835,7 +850,7 @@ flowchart TD
 
 ---
 
-## Scope Agents: Documentos + Spawn Prompts (v7)
+## Scope Agents: Documentos + Spawn Prompts
 
 ```mermaid
 flowchart TD
@@ -870,7 +885,7 @@ flowchart TD
 
 ---
 
-## Flujo Completo: Desde Carpeta Vacia hasta App en Internet (v11)
+## Flujo Completo: Desde Carpeta Vacia hasta App en Internet
 
 ```mermaid
 flowchart TD
@@ -918,7 +933,7 @@ flowchart TD
 
 ---
 
-## Native Hooks: Deterministic Enforcement (v14.1)
+## Native Hooks: Deterministic Enforcement
 
 ```mermaid
 flowchart TD
@@ -956,7 +971,7 @@ flowchart TD
 
 ---
 
-## AI Validation Pyramid (v8)
+## AI Validation Pyramid
 
 ```mermaid
 flowchart BT
@@ -989,7 +1004,7 @@ flowchart BT
 
 ---
 
-## Contract-First Protocol (v9)
+## Contract-First Protocol
 
 ```mermaid
 flowchart TD
@@ -1032,7 +1047,7 @@ flowchart TD
 
 ---
 
-## Team Templates + Playbook (v9)
+## Team Templates + Playbook
 
 ```mermaid
 flowchart TD
@@ -1068,7 +1083,7 @@ flowchart TD
 
 ---
 
-## Security-Audit Integration (v9)
+## Security-Audit Integration
 
 ```mermaid
 flowchart TD
@@ -1102,12 +1117,12 @@ flowchart TD
 
 ---
 
-## Hub & Spoke: Sync Multi-Plataforma (v13)
+## Hub & Spoke: Sync Multi-Plataforma
 
 ```mermaid
 flowchart TD
     subgraph HUB["batuta-dots (HUB)"]
-        BC["BatutaClaude/<br/>skills/ (38) + agents/ (6)"]
+        BC["BatutaClaude/<br/>skills/ (39) + agents/ (6)"]
         BA["BatutaAntigravity/<br/>skills/ (filtrados)"]
         SYNC["infra/sync.sh"]
     end
@@ -1146,7 +1161,7 @@ flowchart TD
 
 ---
 
-## Folder Structure (v13)
+## Folder Structure
 
 ```mermaid
 flowchart TD
@@ -1164,7 +1179,7 @@ flowchart TD
     subgraph CLAUDE_DETAIL["BatutaClaude/"]
         CLAUDE_MD["CLAUDE.md (router)"]
         AGENTS["agents/ (6 agents)<br/>Scope: pipeline, infra, observability<br/>Domain: backend, quality, data"]
-        SKILLS_38["skills/ (38 skills)<br/>pipeline (27: 9 SDD + 6 CTO + 12 tech),<br/>infra (9: +skill-eval),<br/>observability (2)"]
+        SKILLS_38["skills/ (39 skills)<br/>pipeline (28: 10 SDD + 6 specialist + 12 tech),<br/>infra (9),<br/>observability (2)"]
     end
 
     subgraph ANTIGRAVITY_DETAIL["BatutaAntigravity/ (Lite)"]
@@ -1192,7 +1207,7 @@ flowchart TD
 
 ---
 
-## Agent Types: Scope vs Domain — MoE Mapping (v13.1)
+## Agent Types: Scope vs Domain — MoE Mapping
 
 ```mermaid
 flowchart TD
@@ -1246,7 +1261,7 @@ flowchart TD
 
 ---
 
-## Eval Flow: Skill Evaluation Framework (v13)
+## Eval Flow: Skill Evaluation Framework
 
 ```mermaid
 flowchart TD
@@ -1294,7 +1309,7 @@ flowchart TD
 
 ---
 
-## Anti-Overengineering: Principios de Calibracion (v13.1)
+## Anti-Overengineering: Principios de Calibracion
 
 El modelo Opus 4.6 se beneficia de instrucciones **calmadas y directas**. El lenguaje agresivo (NEVER/MUST/ALWAYS en exceso) causa overtriggering — el agente interpreta instrucciones informativas como gates obligatorios.
 
@@ -1311,7 +1326,7 @@ El modelo Opus 4.6 se beneficia de instrucciones **calmadas y directas**. El len
 
 ---
 
-## Research Gate + CTO Artifact Detection (v14.0)
+## Research Gate + CTO Artifact Detection
 
 ```mermaid
 flowchart TD
@@ -1370,7 +1385,7 @@ flowchart TD
 
 ---
 
-## Checkpoint Anti-Compaction + Closed RAG Loop (v14.1)
+## Checkpoint Anti-Compaction + Closed RAG Loop
 
 ```mermaid
 flowchart TD

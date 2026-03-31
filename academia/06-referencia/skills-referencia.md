@@ -1,6 +1,6 @@
 # Skills — Referencia tecnica
 
-Ficha tecnica de cada uno de los 38 skills del ecosistema Batuta Dots v13.
+Ficha tecnica de cada uno de los 39 skills del ecosistema Batuta Dots v14.3.
 
 > **Nota sobre domain agents**: Los skills marcados como pertenecientes a un domain agent se cargan bajo demanda (`defer_loading: true`) cuando ese agente se auto-invoca. No necesitas activarlos manualmente — el router (CLAUDE.md) detecta la tecnologia y delega al agente correcto, que a su vez carga el skill necesario.
 

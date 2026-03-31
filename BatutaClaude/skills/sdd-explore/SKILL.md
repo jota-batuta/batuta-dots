@@ -471,10 +471,19 @@ Return EXACTLY this format to the orchestrator (and write the same content to `e
 - **Tenant/Client Impact**: {For multi-tenant changes: which tenants are affected}
 
 ### Approach Research
-**Notion KB**: {búsquedas realizadas} → {hallazgos o "sin resultados previos" o "Notion MCP no configurado"}
-**Web**: {búsquedas realizadas} → {approaches encontrados con fuentes}
-**Librerías/APIs**: {nombre → qué resuelve → aplicabilidad}
-**Conclusión**: construir custom / adaptar existente / reutilizar → {justificación}
+
+```
+RESEARCH GATE:
+KB: {búsquedas realizadas} → {hallazgos con títulos | "sin resultados previos" | "Notion MCP no configurado"}
+Web: {búsquedas realizadas} → {approaches encontrados con fuentes URL}
+Librerías/APIs: {nombre → qué resuelve → aplicabilidad}
+Decisión: construir custom | adaptar existente | reutilizar → {justificación en 1 oración}
+```
+
+WHY this block is mandatory: Without an auditable `RESEARCH GATE:` block, the user
+cannot verify that research occurred. The agent may have searched internally but
+left no trace — making the exploration unverifiable and the approach unjustifiable.
+This block is the evidence that closes the research loop.
 
 ### Approaches
 1. **{Approach name}** -- {brief description}

@@ -862,11 +862,11 @@ test_security_integration() {
 }
 
 # ============================================================================
-# 40. Total skill count is 15 (v9)
+# 40. Total skill count is 41 (v14.3)
 # ============================================================================
 
 test_skill_count_total() {
-    log_test "38 skills total in BatutaClaude/skills/ (v13)"
+    log_test "41 skills total in BatutaClaude/skills/ (v14.3)"
     local skills_dir="$REPO_ROOT/BatutaClaude/skills"
 
     local skill_count=0
@@ -874,10 +874,10 @@ test_skill_count_total() {
         [[ -d "$d" && -f "$d/SKILL.md" ]] && skill_count=$((skill_count + 1))
     done
 
-    if [[ $skill_count -eq 38 ]]; then
-        log_pass "$skill_count skills (expected 38)"
+    if [[ $skill_count -eq 41 ]]; then
+        log_pass "$skill_count skills (expected 41)"
     else
-        log_fail "Expected 38 skills, found $skill_count"
+        log_fail "Expected 41 skills, found $skill_count"
     fi
 }
 
