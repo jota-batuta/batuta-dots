@@ -182,6 +182,8 @@ Unlike skills (which inject knowledge into the main agent's context), domain age
 4. The main agent receives the result and continues with the next task
 5. For multi-domain tasks (e.g., API + tests): spawn sequentially — backend-agent implements, then quality-agent tests
 
+**Dynamic dispatch**: `sdd-apply` Step 0.75 resolves `domain:` → agent automatically by reading `expertise_domains` in `skill-provisions.yaml` at runtime. Do NOT hardcode agent names in tasks.md — use abstract `domain:` labels. Tasks without a domain match fall back to the main agent.
+
 **Integration with Agent Teams (Level 3)**:
 When the Execution Gate recommends Level 3 (4+ files, multi-scope), spawn domain agents as teammates instead of subagents. Each agent uses its Spawn Prompt and Team Context for coordination.
 
@@ -466,7 +468,7 @@ Advance automatically, pausing at human checkpoints:
    - Present the task plan.
    - Set `AWAITING_APPROVAL: task_plan` in session.md Gate Status.
    - STOP. Do not continue until the user explicitly approves.
-7. After approval → clear gate → run sdd-apply per task batch
+7. After approval → clear gate → invoke `prd-generator` + `user-execution-guide`, then run sdd-apply per task batch
 
 Between phases, respect gates (G0.5, G1, G2) from pipeline-agent.
 When a gate requires confirmation, STOP and present the checklist.

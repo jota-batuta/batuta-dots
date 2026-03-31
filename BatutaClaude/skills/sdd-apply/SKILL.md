@@ -175,6 +175,70 @@ COMPLEXITY EVALUATION:
 
 Include the complexity evaluation result in the Implementation Progress summary under a "### Complexity Evaluation" section.
 
+### Step 0.75: Dynamic Parallel Resolver
+
+After complexity evaluation, build an execution plan using the dependency metadata in tasks.md (`depends_on`, `domain`, `parallelizable`).
+
+**Step 0.75.1 — Build execution waves from dependency graph**:
+```
+PARSE tasks.md dependency graph:
+├── Wave 1: all tasks with depends_on: []
+├── Wave 2: tasks whose every dependency is in Wave 1
+├── Wave N+1: tasks whose every dependency is in waves 1..N
+└── Output: ordered wave list — each wave can run in parallel
+```
+
+**Step 0.75.2 — Resolve domain → agent (dynamic, NOT hardcoded)**:
+```
+FOR EACH WAVE:
+  FOR EACH TASK in wave WHERE domain != "main":
+    ├── Read skill-provisions.yaml → agent_rules section
+    ├── Find the rule where expertise_domains contains task.domain
+    ├── Check if .claude/agents/{agent-name}.md exists
+    ├── IF agent found AND provisioned → assign task to that agent
+    └── IF no match OR not provisioned → assign to main (safe fallback)
+  GROUP tasks by assigned agent within wave
+  Log: "Wave N: {agent} → [{task IDs}], main → [{task IDs}]"
+```
+
+**Step 0.75.3 — Spawn parallel Task calls**:
+```
+FOR EACH WAVE:
+  IF any tasks assigned to non-main agents AND parallelizable: true:
+    ├── Build ONE message with MULTIPLE Task tool calls (one per agent group)
+    ├── Each Task call includes:
+    │   ├── subagent_type: "{agent-name}"
+    │   ├── task_description: exact task text from tasks.md
+    │   ├── file_ownership: [files the agent may write — no overlap allowed]
+    │   ├── spec_ref: path to spec scenarios
+    │   └── design_ref: relevant design section
+    ├── ALL non-main tasks in wave spawn simultaneously in a SINGLE message
+    └── Main tasks in wave: execute inline (no extra spawn cost)
+  ELSE:
+    └── Execute all wave tasks inline (sequential, no spawning)
+  COLLECT results from all spawned agents
+  MARK tasks [x] in tasks.md
+  ADVANCE to next wave
+```
+
+**File ownership contract** (prevents parallel conflicts):
+- Each spawned agent receives an explicit `file_ownership` list
+- Agents MUST write ONLY their owned files
+- No two agents in the same wave may share a file
+- If a task's files overlap with another task's files → force sequential (same wave, different waves)
+
+**Log parallelization decisions** in Implementation Progress:
+```
+### Parallel Execution Plan
+Wave 1 (parallel): backend-agent → [1.1, 1.2] ‖ quality-agent → [1.3] ‖ main → [1.4]
+Wave 2 (sequential): main → [2.1] (depends on 1.1, 1.2, 1.3, 1.4)
+Wave 3 (parallel): backend-agent → [3.1] ‖ testing → [3.2, 3.3]
+```
+
+**If no dependency metadata** (pre-v14.3 tasks.md without `depends_on`/`domain` fields):
+- Fall back to sequential batch execution (Step 2 original behavior)
+- Log: "No dependency metadata found — running sequential. Upgrade tasks.md to v14.3 format for parallel execution."
+
 ### Step 1: Read Context
 
 Before writing ANY code:

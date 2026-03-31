@@ -1,6 +1,6 @@
 # Skills que tienes
 
-Batuta Dots tiene 38 skills — especialistas que se activan cuando los necesitas. El sistema los activa automaticamente, pero conocerlos te da poder para pedir exactamente lo que necesitas.
+Batuta Dots tiene 39 skills — especialistas que se activan cuando los necesitas. El sistema los activa automaticamente, pero conocerlos te da poder para pedir exactamente lo que necesitas.
 
 ---
 

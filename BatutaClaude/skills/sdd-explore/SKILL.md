@@ -164,6 +164,59 @@ IF high_gaps_detected:
 
 **Do NOT silently continue when HIGH gaps exist.** The gap detection must be actionable, not just documented. This is the entry point for Auto-Update SPO — skills created here can later propagate to batuta-dots.
 
+### Step 2.5.5: Agent Gap Detection
+
+Mirrors Step 2.5 for agents. For each `agent_rule` in `skill-provisions.yaml`:
+
+**Phase 1 — Evaluate detection signals** (same logic as Step 2.5):
+```
+FOR EACH agent_rule IN skill-provisions.yaml:
+├── Evaluate: content_pattern → grep dependency files (requirements.txt, package.json, etc.)
+├── Evaluate: project_type   → match against detected project type
+└── IF any signal matches → classify relevance:
+    ├── HIGH:   core domain for this change (tasks would directly benefit from this agent)
+    ├── MEDIUM: supporting domain (accelerates but not essential)
+    ├── LOW:    peripheral (nice-to-have)
+    └── N/A:    no signals match
+```
+
+**Phase 2 — Check provisioning status** for each HIGH or MEDIUM match:
+```
+FOR EACH HIGH/MEDIUM matched agent:
+├── Check if .claude/agents/{agent-name}.md exists in the project
+├── NOT provisioned options:
+│   ├── (1) Copiar ahora: cp ~/.claude/agents/{name}.md .claude/agents/{name}.md
+│   └── (2) Defer: document justification, continue without
+└── provisioned: no action needed
+```
+
+**Output** — add "Agent Gap Analysis" section to explore.md:
+
+```markdown
+### Agent Gap Analysis
+
+| Agent | Needed? | Relevance | Expertise Domains | Status |
+|-------|---------|-----------|-------------------|--------|
+| backend-agent | Yes | HIGH | backend-api, orm, auth-flows, db-schema | provisioned |
+| data-agent | No | N/A | — | not applicable |
+| quality-agent | Yes | MEDIUM | testing, e2e, code-review | not found — offer provision |
+
+AGENT GAP EXIT GATE:
+- [ ] agent_rules evaluated against detected stack
+- [ ] Agent Gap Analysis table completed in explore.md
+- [ ] For each HIGH agent: checked .claude/agents/, offered provision if missing
+- [ ] User decision documented for missing agents (provision/defer/skip)
+```
+
+**When HIGH agents are unprovisioned, ACTIVELY offer resolution:**
+
+1. Check `~/.claude/agents/{agent-name}.md` (global — synced by setup.sh --sync)
+2. If found globally: "Agent **{name}** existe globalmente. ¿Lo copio a .claude/agents/? (1) Sí, (2) Defer"
+3. If NOT found globally: "Agent **{name}** no está instalado. Run `bash infra/setup.sh --sync` first."
+4. Record decision in explore.md Agent Gap Analysis table
+
+**Why this gate matters**: Without this check, `sdd-apply` reaches parallel dispatch with no agents available to spawn. Catching this at explore costs nothing. Catching it at apply costs an entire session.
+
 ### Step 2.6: MCP Discovery (Active Search)
 
 After resolving skill gaps, discover MCP (Model Context Protocol) servers that can improve implementation quality. MCP servers provide live documentation, database access, deployment tools, and more — they are the difference between coding from stale training data and coding from current docs.
@@ -471,10 +524,19 @@ Return EXACTLY this format to the orchestrator (and write the same content to `e
 - **Tenant/Client Impact**: {For multi-tenant changes: which tenants are affected}
 
 ### Approach Research
-**Notion KB**: {búsquedas realizadas} → {hallazgos o "sin resultados previos" o "Notion MCP no configurado"}
-**Web**: {búsquedas realizadas} → {approaches encontrados con fuentes}
-**Librerías/APIs**: {nombre → qué resuelve → aplicabilidad}
-**Conclusión**: construir custom / adaptar existente / reutilizar → {justificación}
+
+```
+RESEARCH GATE:
+KB: {búsquedas realizadas} → {hallazgos con títulos | "sin resultados previos" | "Notion MCP no configurado"}
+Web: {búsquedas realizadas} → {approaches encontrados con fuentes URL}
+Librerías/APIs: {nombre → qué resuelve → aplicabilidad}
+Decisión: construir custom | adaptar existente | reutilizar → {justificación en 1 oración}
+```
+
+WHY this block is mandatory: Without an auditable `RESEARCH GATE:` block, the user
+cannot verify that research occurred. The agent may have searched internally but
+left no trace — making the exploration unverifiable and the approach unjustifiable.
+This block is the evidence that closes the research loop.
 
 ### Approaches
 1. **{Approach name}** -- {brief description}

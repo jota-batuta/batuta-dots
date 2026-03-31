@@ -289,9 +289,21 @@ agent_rules:
       content_pattern: "fastapi|django|express|nestjs|gin|fiber|flask|spring"
       project_type: webapp
     agents: [backend-agent]
+    # WHY: expertise_domains enables sdd-explore Step 2.5.5 to detect gaps and
+    # sdd-apply Step 0.75 to resolve "domain: backend-api" → backend-agent dynamically
+    # without hardcoding agent names in tasks.md.
+    expertise_domains: [backend-api, rest-endpoints, orm, auth-flows, db-schema, migrations]
 
   # Data / AI / ML — data processing or AI frameworks trigger data-agent
   - detect:
       content_pattern: "pandas|temporalio|langchain|langgraph|anthropic|openai|google-adk|polars|dagster"
       project_type: [ai-agent, data-pipeline]
     agents: [data-agent]
+    expertise_domains: [etl-pipeline, llm-classification, rag, embeddings, data-transformation, vector-db]
+
+  # Testing / Quality — any project benefits from quality-agent for test strategy
+  - detect:
+      content_pattern: "pytest|jest|playwright|vitest|unittest|cypress|mocha|jasmine"
+      project_type: any
+    agents: [quality-agent]
+    expertise_domains: [testing, debugging, security-audit, e2e, code-review, tdd]

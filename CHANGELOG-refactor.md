@@ -4,6 +4,162 @@
 
 ---
 
+## v14.3.0 — Ecosystem Healing: CLAUDE.md como Contexto Operacional + PRD-First (2026-03-30)
+
+### Contexto
+
+CLAUDE.md llegó a 741 líneas actuando como un sistema de routing complejo — un estado machine,
+gates duplicados, secciones de 192 líneas de auto-routing. El agente lo lee completo en cada
+sesión: contexto saturado → reglas olvidadas → comportamiento errático. El patrón correcto
+(habit-tracker / PRD-first) es: CLAUDE.md = contexto operacional corto (~300 líneas),
+routing = pipeline-agent, detalles técnicos = skills. Esta versión hace esa separación.
+
+También introduce PRD Generation: el planning session acumula razonamiento exploratorio y
+propuestas rechazadas. La execution session debe arrancar limpia. El PRD.md es el único
+documento que necesita para ejecutar — spec + design + tasks consolidados en ≤80 líneas.
+
+### Changes
+
+#### BatutaClaude/CLAUDE.md — Refactor principal (741 → 297 líneas)
+
+- **REMOVED** `## CTO Strategy Layer` (57 líneas): Discovery Depth → pipeline-agent.
+  Resto (Strategic Gates, Specialist Skills, Enriched SDD Phases) — borrado.
+  Estos conceptos ya vivían en pipeline-agent y skills; su duplicación en CLAUDE.md
+  era ruido cognitivo.
+- **REMOVED** `## Output Tiers` (19 líneas): detail_level → inline en pipeline-agent Rule 9.
+  CLAUDE.md hacía referencia a sí mismo — ahora está donde se usa.
+- **REMOVED** `## Behavior` sección detallada: condensado a bullets en auto-routing.
+  El "cómo comunicar" no necesita 12 líneas de instrucciones — el tono está en Personality.
+- **COMPRESSED** Auto-Routing (192 → 22 líneas): removidas las instrucciones step-by-step
+  (Steps 3a-3e con sub-steps) que duplicaban la state machine de pipeline-agent.
+  Quedó: tabla de intent + 4 reglas de enrutamiento.
+- **COMPRESSED** Session Continuity (128 → 35 líneas): eliminado el formato largo del
+  Session Budget table (mantener la regla de 80 líneas, no el tutorial). Checkpoint template
+  condensado a la estructura esencial.
+- **COMPRESSED** Two-Layer Configuration (32 → 3 líneas): solo la regla esencial
+  ".claude/CLAUDE.md overrides root CLAUDE.md". El "how updates work" está en setup.sh docs.
+- **COMPRESSED** Scope Routing domain delegation (35 líneas → tabla de 5 líneas):
+  protocolo de delegación detallado ya vive en CLAUDE.md en la sección Scope Routing.
+- **NEW** Core Rule #0 — "Research before implementing": cadena MCP → WebFetch → WebSearch
+  como primer regla explícita. Los datos de entrenamiento son stale — siempre verificar.
+- **NEW** PRD Generation note en Auto-Routing: después de task plan approval →
+  prd-generator → PRD.md → recomendar sesión nueva para execution.
+- **VERIFIED** 22 strings requeridos por setup_test.sh presentes post-refactor.
+
+#### BatutaClaude/agents/pipeline-agent.md — Expansión moderada (246 → 295 líneas)
+
+- **EXPANDED** Rule 9 (detail_level): removida referencia "ver CLAUDE.md Output Tiers section".
+  Definiciones inline: `concise` = MICRO (executive_summary, 3 bullets, skip MCP sections),
+  `standard` = STANDARD (all sections, 5 bullets), `deep` = COMPLEX (todo, sin límite).
+- **NEW** `### G1.5 — Context Reset` gate (informativo, no bloqueante): después de Task Plan
+  Approval → invoca prd-generator → genera PRD.md → presenta al usuario → recomienda
+  sesión nueva: "Planificación completa. Para mejor rendimiento, inicia sesión nueva."
+- **NEW** `### Discovery Depth (anti-shallow-loop)`: reglas para exploración profunda.
+  Problema: agente asume arquitectura → usuario corrige → re-implementar → usuario corrige.
+  Reglas: leer código ANTES de preguntar, verificar flujos reales de datos, reafirmar
+  con especificidad (endpoints, actores, datos), Assumptions section obligatoria en propuestas.
+  "La Regla": si la propuesta no puede responder "qué llama a qué, con qué datos, en qué orden"
+  para cada punto de integración → la exploración no está completa.
+
+#### BatutaClaude/skills/prd-generator/SKILL.md — Archivo nuevo (skill #39)
+
+- **NEW** Skill `prd-generator`: scope `pipeline`, 4 pasos:
+  1. Localizar artefactos (spec.md + design.md + tasks.md)
+  2. Extraer y consolidar: problema, user stories con AC, decisiones técnicas no negociables,
+     restricciones, definición de done, link a tasks.md
+  3. Escribir `openspec/changes/{name}/PRD.md` (máx 80 líneas)
+  4. Reportar STATUS/ARTIFACT/LINES/READY_MESSAGE
+- Trigger: "generate PRD", "PRD consolidado", "consolidar planning"
+- Activado por G1.5 en pipeline-agent (automático después de task plan approval)
+
+#### infra/setup_test.sh — 1 actualización
+
+- **MODIFIED** `test_skill_count_total()`: 38 → 39 (prd-generator agregado)
+- Log message actualizado: "(v14.3)"
+
+#### BatutaClaude/VERSION — Bump
+
+- `14.0.0` → `14.3.0`
+
+### Principio de diseño
+
+- **MoE correcto**: CLAUDE.md es el router (clasifica intent, enforza gates, ~300 líneas).
+  pipeline-agent tiene la state machine (orchestrator rules, backtrack logic, gates 1-5).
+  Skills tienen los detalles técnicos (step-by-step, templates, ejemplos). Cada capa hace
+  su trabajo — CLAUDE.md no duplica pipeline-agent, pipeline-agent no duplica skills.
+- **PRD como contexto reset**: el planning session es exploratorio y acumula ruido
+  (propuestas rechazadas, hipótesis falsas, contexto de exploración). La execution session
+  debe arrancar con solo las decisiones finales. PRD.md = extracto consolidado ≤80 líneas.
+  Principio: la sesión de planning es un proceso, no un documento. El PRD.md es el entregable.
+- **Reglas donde se usan**: detail_level en pipeline-agent (donde se calcula).
+  Discovery Depth en pipeline-agent (donde se enforza durante sdd-explore). Output Tiers en
+  pipeline-agent (donde se aplican). CLAUDE.md solo tiene la referencia, no el detalle.
+
+### Rollback
+
+```bash
+git revert <commit-hash>
+# Reverts: CLAUDE.md 741→297 refactor, pipeline-agent G1.5 + Discovery Depth + Output Tiers inline,
+# prd-generator skill, setup_test.sh skill count (39→38), VERSION (14.3.0→14.0.0)
+# La raíz CLAUDE.md también necesita revertir (es copia de BatutaClaude/CLAUDE.md via setup.sh --claude)
+```
+
+---
+
+## v14.2.0 — Notion como Memoria Primaria + Auto-Persistencia KB (2026-03-25)
+
+### Contexto
+
+Notion estaba configurado como MCP pero su uso era casual y manual. El cierre del loop
+(Stop hook → Notion KB → sdd-explore retrieves → agente aprende) existía conceptualmente
+en v14.0 pero no se enforaba. Esta versión lo hace obligatorio: el Stop hook siempre evalúa
+el CHECKPOINT.md y persiste gotchas/decisiones no triviales en Notion KB sin aprobación del usuario.
+
+### Changes
+
+#### BatutaClaude/settings.json — Stop hook expansion
+
+- **EXPANDED** Stop hook STEP 2: de "evaluar si hay gotchas" a "SIEMPRE evaluar y persistir".
+  Filtro: saltar items triviales (conteos de pasos, timestamps, rutas de archivos).
+  Solo conocimiento reutilizable que ayuda a un agente futuro en un problema similar.
+  Si Notion MCP no disponible → silencio (el archivo local CHECKPOINT.md es suficiente).
+
+#### BatutaClaude/CLAUDE.md — Session Continuity expansion
+
+- **NEW** `### Notion as Primary Memory` sub-sección: priority chain explícita:
+  `Interaction 0: Notion MCP → session.md → CHECKPOINT.md`
+  `During pipeline: Notion KB via sdd-explore Step 2.8 → web research`
+  `At stop: CHECKPOINT.md always → Notion KB if gotchas/decisions exist`
+- **NEW** Database IDs documentados: Clientes (4930495b), Proyectos (7ad4e5bf), KB (58433974).
+- **NEW** Graceful degradation rule: si Notion MCP no configurado → silencio,
+  nunca bloquear el pipeline.
+
+#### infra/hooks/session-start.sh — Skills loading fix
+
+- **FIXED** 3-way detection logic: `.provisions.json` + local skills + global skills
+  resueltos en orden correcto. Antes: cuando `.provisions.json` existía sin skills locales
+  correspondientes, la sesión iniciaba sin ningún skill inventario.
+
+### Principio de diseño
+
+- **Closed RAG loop** formalizado: Stop hook escribe CHECKPOINT.md → CHECKPOINT.md contiene
+  gotchas con evidencia → Stop hook persiste gotchas no triviales en Notion KB →
+  sdd-explore Step 2.8 consulta Notion KB → agente futuro aprende de sesiones anteriores.
+  "La memoria externa debe ser escribible proactivamente" (Google LLM principle).
+- **Gradación de persistencia**: CHECKPOINT.md (siempre, sin condición, ephemeral),
+  Notion KB (si no trivial, permanente, consultable). El primero es seguridad local,
+  el segundo es inteligencia colectiva.
+
+### Rollback
+
+```bash
+git revert <commit-hash>
+# Reverts: Stop hook STEP 2 expansion, Notion as Primary Memory section,
+# session-start.sh 3-way detection fix
+```
+
+---
+
 ## v14.1.0 — Checkpoint Anti-Compaction: Mandatory Recovery Mechanism (2026-03-20)
 
 ### Contexto
