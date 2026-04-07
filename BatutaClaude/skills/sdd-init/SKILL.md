@@ -209,8 +209,8 @@ Generate `.claude/settings.local.json` with deterministic hook enforcement using
       {
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "If significant work was done this session, update .batuta/session.md with current state before ending. Respond {\"decision\": \"update\"} or {\"decision\": \"skip\"}."
+            "type": "command",
+            "command": "bash ~/.claude/hooks/session-save.sh"
           }
         ]
       }

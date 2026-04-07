@@ -51,10 +51,6 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/session-start.sh"
-          },
-          {
-            "type": "prompt",
-            "prompt": "BATUTA BOOTSTRAP — THE RULE: If a skill applies to your current task, you MUST invoke it. No exceptions. If an MCP server is available and relevant, you MUST consult it before relying on training data.\n\nYour available skills were auto-discovered and listed in the Batuta Skill Inventory injected above. Review them before proceeding.\n\nRed-flag rationalizations — if you catch yourself thinking any of these, STOP and load the relevant skill:\n- \"This is just something simple\" — Simple tasks still need team conventions.\n- \"I already know how to do this\" — Skills encode the TEAM way, not just knowledge.\n- \"I need more context first\" — Skill loading PRECEDES context gathering.\n- \"The skill is overkill for this\" — The skill defines minimum quality. Follow it.\n\nRespond with {\"ok\": true}."
           }
         ]
       }
@@ -65,10 +61,6 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/session-save.sh"
-          },
-          {
-            "type": "prompt",
-            "prompt": "Execute ALL THREE steps before stopping. Steps are INDEPENDENT — a failure in Step 2 MUST NOT block Step 3.\n\nSTEP 1 — Write .batuta/CHECKPOINT.md [ALWAYS — no exceptions, even if no work was done]:\nWrite the file with exactly this structure:\n\n# Checkpoint — [current ISO timestamp]\n\n## Qué estoy haciendo\n[Current task in one sentence — or \"Sin tarea activa\" if nothing was being done]\n\n## Estado\n- Paso actual: [N de M steps, or \"N/A\"]\n- Archivo/módulo en trabajo: [path or \"N/A\"]\n- Branch: [current git branch or \"N/A\"]\n\n## Intentos y resultados\n[List what you tried and what happened. \"Sin intentos fallidos\" if none.]\n\n## Decisiones tomadas (con evidencia)\nFormat each decision as:\n- {decisión}: {por qué}\n  Evidencia tipo: error_message | test_output | docs | benchmark | user_feedback\n  Evidencia: {texto concreto que lo confirmó}\n\"Sin decisiones\" if none.\n\n## Alternativas descartadas\n- {opción}: {por qué no} (evidencia: {razón concreta})\n\"Ninguna\" if none.\n\n## Qué falta\n[Pending steps as checkboxes. \"Nada pendiente\" if done.]\n\n## Gotchas descubiertos\n[Verified facts with the evidence that confirmed them. \"Ninguno\" if none.]\n\nSTEP 2 — Persist to Notion KB [ATTEMPT — continue to Step 3 even if this fails]:\nEvaluate the CHECKPOINT.md you just wrote for non-trivial entries (gotchas, decisions, workarounds).\n\nPERSIST RULE (binary): Would this help a future agent on a DIFFERENT project using SIMILAR technology?\n  YES or MAYBE → persist (duplicates are better than loss)\n  NO → skip\n\nALWAYS persist:\n- Bugs + root cause + fix (even if project-specific — the pattern transfers)\n- Library/version constraints (\"X must happen before Y\")\n- Integration gotchas (library A + library B together)\n- Architecture decisions with trade-off evidence\n\nNEVER persist:\n- Step counters (\"estoy en 3/5\")\n- Project-specific file paths\n- Timestamps\n\nIf Notion MCP is available: create entries in Notion KB (data_source_id: 58433974-5511-45b8-bd09-54551f6c0c23):\n- Title: \"[Tipo] Brief description\" (e.g., \"[Gotcha] root CLAUDE.md is gitignored\")\n- Campo: technical domain (e.g., git, docker, n8n, python, claude-code)\n- Tipo: Gotcha | Decisión | Workaround | Edge Case | Patrón\n- Confianza: High (confirmed by error/output) | Medium (inferred) | Low (hypothesis)\n\nIf Notion MCP is NOT available: append to CHECKPOINT.md:\n## Nota de persistencia\nNotion no disponible en esta sesión. Gotchas locales únicamente. Configura OPENAPI_MCP_HEADERS para cerrar el RAG loop.\n\nSTEP 3 — Update .batuta/session.md [if significant work — EXECUTE REGARDLESS of Step 2 outcome]:\nIf you performed significant work (completed SDD phase, modified 3+ files, resolved a bug, or had 5+ exchanges), update .batuta/session.md following the Session Budget (80 lines max). If no significant work, skip.\n\nRespond with {\"ok\": true} after completing all steps."
           }
         ]
       }
