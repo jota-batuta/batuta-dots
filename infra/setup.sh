@@ -127,12 +127,14 @@ _local_skills_json() {
 # ============================================================================
 
 generate_claude() {
+    # BUSINESS RULE: BatutaClaude/CLAUDE.md is the tracked canonical source
+    # (see .gitignore — root CLAUDE.md is gitignored as a generated artifact).
+    # This function regenerates the root mirror from the canonical source so
+    # the hub developer can read the current content from the project root.
     local source_file="$REPO_ROOT/BatutaClaude/CLAUDE.md"
     local output_file="$REPO_ROOT/CLAUDE.md"
 
-    log_info "Copying BatutaClaude/CLAUDE.md to repo root (developer use)"
-    log_warning "This copies CLAUDE.md to the batuta-dots repo root."
-    log_warning "For end-user projects, use: --project <path> or /batuta-init in Claude Code."
+    log_info "Regenerating root CLAUDE.md from BatutaClaude/CLAUDE.md (developer mirror)"
 
     if [[ ! -f "$source_file" ]]; then
         log_error "BatutaClaude/CLAUDE.md not found at $source_file"
@@ -141,7 +143,7 @@ generate_claude() {
 
     cp -f "$source_file" "$output_file"
 
-    log_success "Created $output_file (direct copy from BatutaClaude/CLAUDE.md)"
+    log_success "Regenerated $output_file from canonical source"
 }
 
 # ============================================================================
@@ -173,6 +175,8 @@ setup_project() {
 
     log_header "Batuta.Dots — Project Setup: $target_dir"
 
+    # BUSINESS RULE: BatutaClaude/CLAUDE.md is the tracked canonical source
+    # (root CLAUDE.md is gitignored — see generate_claude).
     local source_file="$REPO_ROOT/BatutaClaude/CLAUDE.md"
 
     # 1. Copy CLAUDE.md to target project root
@@ -849,6 +853,7 @@ update_all() {
     # (always overwritable). .claude/CLAUDE.md is the project layer (NEVER touched).
     # If root CLAUDE.md has a "## Project Customizations" section, migrate it to
     # .claude/CLAUDE.md before overwriting.
+    # Source: BatutaClaude/CLAUDE.md (tracked canonical — see generate_claude).
     echo ""
     log_header "Updating project: $project_path"
 

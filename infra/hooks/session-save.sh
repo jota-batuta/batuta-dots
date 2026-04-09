@@ -2,14 +2,21 @@
 # =============================================================================
 # O.R.T.A. Hook: Stop
 # =============================================================================
-# Runs when Claude Code session is ending.
-# Provides context to Claude about saving session state via prompt hook.
-# This is a lightweight reminder — the actual session.md update is done by
-# Claude (the prompt hook type handles the LLM evaluation).
+# Runs at the end of EVERY Claude Code turn (not just session exit).
+# Responsibilities (all deterministic shell — no LLM calls):
 #
-# Note: This script serves as a command hook backup. The primary mechanism
-# is the "prompt" type hook in settings.json which asks Claude to evaluate
-# whether session.md needs updating before stopping.
+#   1. Archive CHECKPOINT.md to checkpoint-archive/ (keep last 10)
+#   2. Write a stub CHECKPOINT.md if none exists (safety net)
+#   3. Append turn summary to session-log.jsonl (keep last 50 entries).
+#      This is the audit trail that powers the Core MUST rule for session.md
+#      updates in CLAUDE.md — the agent diffs session-log.jsonl against
+#      session.md to know what needs refreshing at every turn close.
+#
+# Historical note: earlier versions of this hook deferred session.md updates
+# to a "prompt hook" that was removed in commit da7d5fe (fix/hooks-command-only).
+# The prompt hook's responsibility was never migrated, which made session.md
+# updates effectively orphaned. Fix/hub-self-dogfood restored the mechanism via
+# the deterministic session-log.jsonl audit trail.
 #
 # Input: JSON via stdin from Claude Code hooks system
 #   { "session_id": "...", "cwd": "...", "last_assistant_message": "...", ... }
@@ -110,5 +117,50 @@ Si ves esto en la próxima sesión, el prompt hook no ejecutó en la sesión ant
 EOF
 fi
 
-# Allow stop — the prompt hook in settings.json handles the LLM evaluation (writes real CHECKPOINT.md)
+# =============================================================================
+# Session Log Append (deterministic audit trail for session.md MUST rule)
+# =============================================================================
+# WHY: CLAUDE.md Core rule requires session.md update at every response close,
+# but a shell script cannot summarize intelligently. The compromise: this hook
+# appends a mechanical turn record to session-log.jsonl, giving the agent a
+# reliable data source to diff against session.md. The agent remains responsible
+# for the human-readable summary; the hook guarantees the data exists.
+#
+# Format: one JSON object per line — {"ts": "2026-04-08T12:34:56Z", "summary": "..."}
+# Retention: last 50 entries (older entries truncated via tail -n 50).
+# =============================================================================
+LAST_MSG=$(json_val last_assistant_message "")
+if [[ -n "$LAST_MSG" ]]; then
+    LOG_FILE="$BATUTA_DIR/session-log.jsonl"
+    TS_NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date +"%Y-%m-%dT%H:%M:%SZ")
+
+    # Truncate message to 300 chars and escape for JSON
+    # WHY 300: long enough to capture the gist, short enough to keep the log
+    # under ~30KB even after 50 entries (deterministic size budget).
+    case "$_JSON_CMD" in
+        jq)
+            echo "$LAST_MSG" | jq -Rs --arg ts "$TS_NOW" \
+                '{ts: $ts, summary: (.[:300])}' -c >> "$LOG_FILE" 2>/dev/null || true
+            ;;
+        python3|python)
+            PY_CMD="$_JSON_CMD"
+            echo "$LAST_MSG" | "$PY_CMD" -c "
+import sys, json
+msg = sys.stdin.read()[:300]
+print(json.dumps({'ts': '$TS_NOW', 'summary': msg}))
+" >> "$LOG_FILE" 2>/dev/null || true
+            ;;
+        *)
+            # Fallback: naive sed escape. Good enough when jq/python unavailable.
+            ESCAPED=$(echo "$LAST_MSG" | head -c 300 | tr '\n' ' ' | sed 's/\\/\\\\/g; s/"/\\"/g')
+            echo "{\"ts\":\"$TS_NOW\",\"summary\":\"$ESCAPED\"}" >> "$LOG_FILE"
+            ;;
+    esac
+
+    # Retention: keep last 50 turns
+    if [[ -f "$LOG_FILE" ]] && [[ $(wc -l < "$LOG_FILE" 2>/dev/null || echo 0) -gt 50 ]]; then
+        tail -n 50 "$LOG_FILE" > "$LOG_FILE.tmp" && mv "$LOG_FILE.tmp" "$LOG_FILE"
+    fi
+fi
+
 exit 0
