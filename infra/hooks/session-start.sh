@@ -303,8 +303,40 @@ if [[ -n "$BATUTA_DIR" && -f "$BATUTA_DIR/CHECKPOINT.md" ]]; then
     CHECKPOINT_CONTENT=$(<"$BATUTA_DIR/CHECKPOINT.md")
 fi
 
+# Read tail of team-history.md if it exists (sub-agent reports)
+# WHY: The SubagentStop hook appends each sub-agent's final report here.
+# Injecting the last few entries at session start gives the main agent
+# visibility into what sub-agents discovered in prior turns — prevents
+# re-spawning them on already-answered questions. Tail only: full history
+# can grow to ~50 entries which is too large for context injection.
+TEAM_HISTORY_CONTENT=""
+if [[ -n "$BATUTA_DIR" && -f "$BATUTA_DIR/team-history.md" ]]; then
+    # Inject last 3 entries (delimited by "---"). Each entry is typically
+    # ~30 lines, so 3 entries ≈ 90 lines — a reasonable context budget.
+    TEAM_HISTORY_CONTENT=$(awk '
+        BEGIN { count = 0 }
+        /^---[[:space:]]*$/ { count++ }
+        { lines[NR] = $0 }
+        END {
+            # Find the line number of the 4th-from-last "---" (or start of file)
+            target = count - 3
+            if (target < 1) target = 0
+            found = 0
+            for (i = 1; i <= NR; i++) {
+                if (lines[i] ~ /^---[[:space:]]*$/) {
+                    found++
+                    if (found > target) {
+                        for (j = i; j <= NR; j++) print lines[j]
+                        exit
+                    }
+                }
+            }
+        }
+    ' "$BATUTA_DIR/team-history.md" 2>/dev/null || true)
+fi
+
 # If nothing to inject, exit silently
-if [[ -z "$SKILL_INVENTORY" && -z "$AGENT_INVENTORY" && -z "$SESSION_CONTENT" && -z "$CHECKPOINT_CONTENT" ]]; then
+if [[ -z "$SKILL_INVENTORY" && -z "$AGENT_INVENTORY" && -z "$SESSION_CONTENT" && -z "$CHECKPOINT_CONTENT" && -z "$TEAM_HISTORY_CONTENT" ]]; then
     exit 0
 fi
 
@@ -427,6 +459,16 @@ if [[ -n "$CHECKPOINT_CONTENT" ]]; then
 Read this to restore operational context after compaction or resume.
 
 $CHECKPOINT_CONTENT"
+fi
+
+if [[ -n "$TEAM_HISTORY_CONTENT" ]]; then
+    [[ -n "$CONTEXT" ]] && CONTEXT="$CONTEXT
+
+"
+    CONTEXT="${CONTEXT}## Team History Tail (auto-injected — last 3 sub-agent reports)
+Consult this before spawning a new sub-agent on a topic that may already be covered.
+
+$TEAM_HISTORY_CONTENT"
 fi
 
 # Escape for JSON output

@@ -127,6 +127,8 @@ log_header() {
 # system-level instructions. Without this, the agent has no Batuta personality.
 
 copy_gemini_md_global() {
+    # BUSINESS RULE: BatutaAntigravity/GEMINI.md is the tracked canonical source
+    # (root GEMINI.md is gitignored — symmetric with Claude side's BatutaClaude/CLAUDE.md).
     local source_file="$REPO_ROOT/BatutaAntigravity/GEMINI.md"
     local global_dir="$HOME_DIR/.gemini"
     local output_file="$global_dir/GEMINI.md"
@@ -150,6 +152,7 @@ copy_gemini_md_global() {
 # project-specific instructions. Both are useful.
 
 copy_gemini_md_project() {
+    # BUSINESS RULE: BatutaAntigravity/GEMINI.md is the tracked canonical source.
     local source_file="$REPO_ROOT/BatutaAntigravity/GEMINI.md"
     local output_file="$PROJECT_DIR/GEMINI.md"
     local override_file="$PROJECT_DIR/.gemini/GEMINI.md"
