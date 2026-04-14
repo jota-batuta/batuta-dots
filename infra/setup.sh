@@ -199,29 +199,29 @@ setup_project() {
     if [[ ! -f "$batuta_dir/session.md" ]]; then
         local project_name
         project_name=$(basename "$target_dir")
-        cat > "$batuta_dir/session.md" << SESSIONEOF
+        local template_file="$REPO_ROOT/infra/templates/session-template.md"
+        if [[ -f "$template_file" ]]; then
+            sed "s/{PROJECT_NAME}/$project_name/g; s/{YYYY-MM-DD}/$(date +%Y-%m-%d)/g" \
+                "$template_file" > "$batuta_dir/session.md"
+        else
+            # WORKAROUND: fallback if template not found (e.g., partial install)
+            cat > "$batuta_dir/session.md" << SESSIONEOF
 # Session — $project_name
+date: $(date +%Y-%m-%d)
 
-## Project
-- **Name**: $project_name
+## WHERE (project + state)
+- **Project**: $project_name
 - **Type**: (pending detection)
-- **Description**: (pending)
-- **Status**: New project
+- **SDD Mode**: SPRINT
+- **Active change**: none
 
-## Current State
-- SDD Phase: not started
-- No active changes
+## WHY (what we're doing and why)
+New project. Run /sdd-init or /batuta-init to bootstrap.
 
-## Decisions
-- (none yet)
-
-## Conventions
-- Scope Rule enforced (features/{name}/{type}/)
-- SDD pipeline mandatory for all new features
-
-## Next Steps
-- Run /sdd-init to detect project type and bootstrap SDD
+## HOW (current state + next steps)
+1. Run /batuta-init to detect tech stack and provision skills
 SESSIONEOF
+        fi
         log_success "Created $batuta_dir/session.md"
     else
         log_info "session.md already exists, skipping"
@@ -724,32 +724,14 @@ sync_output_styles() {
 }
 
 # ============================================================================
-# Run Skill-Sync (regenerate routing tables)
+# Run Skill-Sync (v15: removed — routing tables no longer needed)
 # ============================================================================
+# WORKAROUND: Function kept as no-op for backward compatibility.
+# v14 had a skill-sync/assets/sync.sh that regenerated routing tables.
+# v15 uses lazy-loading + per-project provisioning — no routing tables needed.
 
 run_skill_sync() {
-    local sync_script="$REPO_ROOT/BatutaClaude/skills/skill-sync/assets/sync.sh"
-
-    # WHY skip in temp installs: the agent files already have committed routing
-    # tables. Regenerating them in a temp clone is pointless since the clone
-    # will be deleted. Only run when inside a persistent checkout.
-    if [[ "$REPO_ROOT" == *"/tmp/"* || "$REPO_ROOT" == *"batuta-dots-install-"* ]]; then
-        log_info "Skipping skill-sync (running from temporary install directory)"
-        return 0
-    fi
-
-    log_info "Running skill-sync to regenerate routing tables..."
-
-    if [[ -f "$sync_script" ]]; then
-        if bash "$sync_script"; then
-            log_success "Routing tables regenerated"
-        else
-            log_error "skill-sync failed — aborting. Fix skill frontmatters and retry."
-            return 1
-        fi
-    else
-        log_warning "skill-sync script not found at $sync_script"
-    fi
+    return 0
 }
 
 # ============================================================================
