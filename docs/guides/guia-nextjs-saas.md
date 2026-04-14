@@ -40,8 +40,8 @@ Antes de empezar, aqui tienes un mini-diccionario. No necesitas memorizarlo, vue
 | **Skill** | Un documento que le dice a Claude COMO hacer algo especifico. Como una receta de cocina. |
 | **SDD** | Spec-Driven Development. Un proceso paso a paso para construir software: primero planeas, luego construyes. Como un arquitecto que primero dibuja el plano y luego construye la casa. |
 | **Repositorio (repo)** | Una carpeta especial que guarda todo tu codigo y recuerda cada cambio que haces. |
-| **Scope Agent** | Un "jefe de area" especializado. Claude tiene 3: uno para el proceso de desarrollo, uno para organizacion de archivos, y uno para calidad. |
-| **Execution Gate** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden. |
+| **Agente Contratado** | Un "jefe de area" especializado. Claude tiene 3: uno para el proceso de desarrollo, uno para organizacion de archivos, y uno para calidad. |
+| **Research-First** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden. |
 
 ---
 
@@ -201,7 +201,7 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 > instalados y ya no necesitas copiar el prompt largo nunca mas.
 
 **Que esperar**: Claude va a descargar el ecosistema y configurar todo. Puede tomar 1-2 minutos. Cuando termine, te dira que archivos creo, incluyendo:
-- `CLAUDE.md` — Las instrucciones del chef (router principal + scope agents + execution gate)
+- `CLAUDE.md` — Las instrucciones del chef (router principal + agentes contratados + execution checkpoint)
 - `.batuta/session.md` — El cuaderno donde Claude anota en que quedo (para continuar despues)
 
 **Tip**: Si Claude te pide permiso para ejecutar comandos, di "yes" o "si".
@@ -315,7 +315,7 @@ Aprobado, continua con el siguiente paso
 
 Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd-ff mi-saas-app` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-continue mi-saas-app` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude va a ejecutar las siguientes fases una por una:
 
@@ -365,7 +365,7 @@ Incluye:
 - Configurar las variables de entorno con valores de desarrollo
 ```
 
-**Que esperar**: Antes de empezar a escribir codigo, Claude va a ejecutar el **Execution Gate** — un checklist automatico que verifica:
+**Que esperar**: Antes de empezar a escribir codigo, Claude va a ejecutar el **Research-First** — un checklist automatico que verifica:
 - Que archivos va a crear/modificar
 - Donde van a ir (siguiendo la Scope Rule)
 - Que impacto tienen los cambios
@@ -438,7 +438,7 @@ Para el envio de emails de verificacion y reseteo, usa una configuracion
 basica que funcione en desarrollo (puede ser console.log del link por ahora).
 ```
 
-**Que esperar**: Claude ejecutara el Execution Gate y luego implementara:
+**Que esperar**: Claude ejecutara el Research-First y luego implementara:
 - Las paginas de login, registro, y recuperacion de contrasena
 - La logica del servidor para verificar credenciales
 - El middleware de proteccion de rutas
@@ -1090,9 +1090,9 @@ Quiero agregar [descripcion de lo que quieres cambiar o agregar].
 Por ejemplo: integracion con Stripe para cobrar suscripciones reales.
 ```
 
-Y sigue el mismo flujo: explore → propose → specs → design → tasks → apply → verify.
+Y sigue el mismo flujo: explore → design → apply → verify (SPRINT o COMPLETO).
 
-> **Importante**: Cada cambio pasa por el Execution Gate automaticamente.
+> **Importante**: Cada cambio pasa por el Research-First automaticamente.
 > Claude valida que el cambio siga las reglas del proyecto antes de escribir codigo.
 
 ---
@@ -1107,7 +1107,7 @@ Como ha ido la comunicacion en este proyecto? Que tipo de errores has cometido y
 
 Claude revisa el contexto del proyecto y te dice:
 - Que tipo de errores comete mas seguido
-- Tasa de compliance del Execution Gate
+- Tasa de compliance del Research-First
 - **Recomendaciones concretas** para que tus proximos pedidos sean mas claros
 
 ---
@@ -1256,10 +1256,10 @@ R: Depende de cuantos usuarios tengas. Para empezar: Vercel (gratis), base de da
 **P: Y si quiero cobrar a mis clientes?**
 R: La integracion con Stripe se puede agregar despues siguiendo el mismo proceso SDD. Le dices a Claude que quieres agregar pagos y el te guia.
 
-**P: Que es el Execution Gate?**
+**P: Que es el Research-First?**
 R: Es un checklist automatico que Claude ejecuta antes de escribir codigo. Verifica donde van los archivos, que impacto tienen los cambios, y que todo siga las reglas del proyecto. No lo ves directamente, pero trabaja en segundo plano protegiendote de errores.
 
-**P: Que son los Scope Agents?**
+**P: Que son los Agentes Contratados?**
 R: Son "jefes de area" especializados. Claude tiene 3: pipeline (proceso de desarrollo), infra (organizacion de archivos y recetas), y observability (calidad). El chef principal solo les pasa los pedidos al jefe correcto.
 
 **P: Que pasa si mi base de datos se llena?**
@@ -1285,7 +1285,7 @@ Tu (carpeta vacia)
  |     Tu: "Continua" (3 veces)
  |
  +-- Paso 7:    /sdd-apply (Batch 1) ........ "Base de datos + Prisma"
- |     [Execution Gate valida antes de cada cambio]
+ |     [Research-First valida antes de cada cambio]
  |
  +-- Paso 8:    Batch 2 ..................... "Autenticacion (login/registro)"
  |

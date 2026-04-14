@@ -243,7 +243,7 @@ Aprobado, continua con el siguiente paso
 
 Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd-ff batuta-ai-agent` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-continue batuta-ai-agent` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que hace Claude**: Ejecuta tres fases seguidas:
 
@@ -302,7 +302,7 @@ Esto puede pasar varias veces para Google ADK, Tavily, el LLM que elijas, etc. *
 /sdd-apply batuta-ai-agent
 ```
 
-**Que hace Claude**: Antes de escribir codigo, ejecuta el Execution Gate (un checklist que verifica donde van los archivos y que impacto tienen los cambios). Te muestra algo como:
+**Que hace Claude**: Antes de escribir codigo, ejecuta el Research-First (un checklist que verifica donde van los archivos y que impacto tienen los cambios). Te muestra algo como:
 
 ```
 Este cambio involucra scope pipeline + infra:
@@ -732,7 +732,7 @@ Quiero agregar una herramienta de traduccion al agente:
 - Detecta automaticamente el idioma de origen
 ```
 
-Y sigue el mismo flujo: explore, propose, specs, design, tasks, apply, verify.
+Y sigue el mismo flujo: explore, design, apply, verify (SPRINT o COMPLETO).
 
 ## Mejorar la calidad de respuestas
 
@@ -917,7 +917,7 @@ Tu (carpeta vacia)
  |   [Claude detecta skills faltantes, Paso 6: "Opcion 1"]
  |
  +-- Paso 7:  /sdd-apply .............. "Construir el nucleo del agente"
- |     [Execution Gate valida antes de cada cambio]
+ |     [Research-First valida antes de cada cambio]
  |
  +-- Paso 8:  Implementar tools ....... Busqueda, notas, calculadora, documentos
  |

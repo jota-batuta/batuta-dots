@@ -42,9 +42,9 @@ El agente genera la especificacion funcional con los endpoints, modelos de datos
 sdd-ff
 ```
 
-Se congela la especificacion. El agente verifica que todos los endpoints esten definidos y que las reglas de negocio sean coherentes.
+Se congela la especificacion. El agente contrata un especialista que verifica que todos los endpoints esten definidos y que las reglas de negocio sean coherentes.
 
-> **Gate G1** — El agente evalua:
+> **Design Approval** — El agente evalua:
 > "El proyecto tiene un alcance claro y bien definido. Los endpoints cubren las operaciones basicas de inventario. No hay riesgo de over-engineering."
 
 ### Paso 3: Aplicar la implementacion
@@ -85,7 +85,7 @@ El agente aplica cada skill en orden:
 sdd-verify
 ```
 
-> **Gate G2** — Verificacion:
+> **Verificacion Final** — Resultado:
 
 ```
 Layer 1 - Lint:           PASS (ruff sin errores)
@@ -105,19 +105,14 @@ Resultado: LISTO PARA REVIEW HUMANO
 | **sqlalchemy-models** | Crea los modelos de base de datos con relaciones (Product -> Category, StockMovement -> Product) |
 | **scope-rule** | Organiza el codigo en features/inventory y features/auth siguiendo la convencion |
 
-## Gates que pasas
+## Checkpoints que pasas
 
-### Gate G0.5 — Variantes de negocio
-- **Que evalua:** Los tipos de movimiento de stock y sus reglas
-- **Ejemplo concreto:** "Hay 4 tipos de movimiento: entrada (suma), salida (resta), ajuste (correccion), transferencia (resta de origen + suma en destino). Cada uno tiene validaciones diferentes."
-- **Si no pasa:** Se clarifican las reglas antes de implementar
+### Design Approval — Variantes de negocio + viabilidad
+- **Que evalua:** Los tipos de movimiento de stock y sus reglas, y si el alcance es razonable
+- **Ejemplo concreto:** "Hay 4 tipos de movimiento: entrada (suma), salida (resta), ajuste (correccion), transferencia (resta de origen + suma en destino). API REST con 4 entidades principales y autenticacion. Alcance claro, sin funcionalidades innecesarias. Adelante."
+- **Si no pasa:** Se clarifican las reglas o el agente sugiere simplificar
 
-### Gate G1 — Vale la pena construirlo?
-- **Que evalua:** Si el alcance es razonable y no hay over-engineering
-- **Ejemplo concreto:** "API REST con 4 entidades principales y autenticacion. Alcance claro, sin funcionalidades innecesarias. Adelante."
-- **Si no pasa:** El agente sugiere simplificar (por ejemplo, quitar transferencias entre bodegas si no es critico)
-
-### Gate G2 — Calidad de la implementacion
+### Verificacion Final — Calidad de la implementacion
 - **Que evalua:** Que los tests pasen, que el servidor arranque, que la documentacion este completa
 - **Ejemplo concreto:** "28 tests pasando, Swagger generado automaticamente en /docs, todos los endpoints documentados."
 - **Si no pasa:** Se corrigen los tests o la documentacion antes del review

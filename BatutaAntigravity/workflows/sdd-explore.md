@@ -1,6 +1,6 @@
 # /sdd-explore
 
-> Explore and investigate an idea before committing to a change. Analyzes the codebase, detects skill gaps, and produces an exploration report.
+> Explore and investigate an idea before committing to a change. Analyzes the codebase, detects skill gaps, and produces an exploration report. Uses subagents in parallel for research.
 
 ## Instructions
 
@@ -9,6 +9,7 @@ The argument `{{args}}` is the topic to explore. Pass it to the skill as the exp
 1. Locate and read the `sdd-explore` skill file at `.agent/skills/sdd-explore/SKILL.md` or `~/.gemini/antigravity/skills/sdd-explore/SKILL.md`.
 2. Follow the skill instructions exactly, using `{{args}}` as the exploration topic.
 3. The skill will analyze the codebase, detect relevant patterns and skill gaps, and produce an exploration report.
+4. Research uses subagents in parallel — multiple dimensions explored simultaneously.
 
 If the skill file does not exist, tell the user:
 

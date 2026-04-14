@@ -62,22 +62,20 @@ Las 5 preguntas:
 /sdd-ff
 ```
 
-### Paso 6-8: Implementar, verificar, archivar
+### Paso 6-7: Implementar, verificar
 ```
 /sdd-apply control-calidad
 /sdd-verify control-calidad
-/sdd-archive control-calidad
 ```
 
 ---
 
-## Gates que pasas
+## Checkpoints que pasas
 
-| Gate | Que verifica en este caso |
-|------|--------------------------|
-| **G0.5** | Mapeaste los 4 tipos de inspeccion? Documentaste el flujo de no conformidades? Listaste las normas aplicables? |
-| **G1** | El scope es QC e inspecciones (no incluye gestion completa de calidad ni acciones preventivas)? |
-| **G2** | La trazabilidad funciona de punta a punta? Los reportes cumplen con los formatos requeridos? |
+| Checkpoint | Que verifica en este caso |
+|------------|--------------------------|
+| **Design Approval** | Mapeaste los 4 tipos de inspeccion? Documentaste el flujo de no conformidades? El scope es QC e inspecciones (no gestion completa de calidad)? |
+| **Verificacion Final** | La trazabilidad funciona de punta a punta? Los reportes cumplen con los formatos requeridos? |
 
 ---
 

@@ -6,7 +6,7 @@
 > **Formato**: Sigue los pasos en orden, como cuando aprendes a manejar.
 > Cada paso depende del anterior. No saltes pasos.
 >
-> **Que tiene de especial esta guia**: Demuestra el flujo CTO completo (v11.0)
+> **Que tiene de especial esta guia**: Demuestra el flujo CTO completo (v15)
 > con LLM pipeline — usa inteligencia artificial para evaluar y clasificar
 > hojas de vida automaticamente, con garantias de calidad y compliance.
 
@@ -281,9 +281,9 @@ Perfecto. Ahora continua con la propuesta.
 
 ---
 
-## Paso 7 — Gate G0.5 + Propuesta con Cost-Benefit
+## Paso 7 — Checkpoint: Discovery + Propuesta con Cost-Benefit
 
-Claude pasa el Gate G0.5 (Discovery Complete) y genera la propuesta.
+Claude pasa el Checkpoint: Discovery (Discovery Complete) y genera la propuesta.
 
 ### Client Communication
 
@@ -320,7 +320,7 @@ Aprobado, continua
 
 ---
 
-## Paso 8 — Gate G1 + Specs + Design + Tasks
+## Paso 8 — Checkpoint: Worth Building + Specs + Design + Tasks
 
 ```
 /sdd-continue screening-automatico
@@ -328,7 +328,7 @@ Aprobado, continua
 
 Repite hasta completar specs, design y tasks.
 
-### Lo especial del design (v11.0)
+### Lo especial del design (v15)
 
 **LLM Pipeline Design** (se activa porque usamos IA):
 
@@ -415,7 +415,7 @@ HVs sobrecalificadas. Tambien genera 3 perfiles de cargo con competencias.
 /sdd-verify screening-automatico
 ```
 
-### Testing diferenciado (v11.0 — Type B: Automation + LLM)
+### Testing diferenciado (v15 — Type B: Automation + LLM)
 
 Claude aplica la **estrategia Type B** porque este proyecto usa LLM:
 
@@ -440,9 +440,9 @@ Si, corrige todos los problemas
 
 ---
 
-## Paso 11 — Gate G2 + Probar con datos reales
+## Paso 11 — Checkpoint: Production Ready + Probar con datos reales
 
-Claude pasa el Gate G2 (Production Ready).
+Claude pasa el Checkpoint: Production Ready (Production Ready).
 
 ```
 Ejecuta el pipeline completo con las 50 HVs de prueba.
@@ -602,7 +602,7 @@ screening-hojas-de-vida/
 
 ---
 
-## Flujo visual completo (CTO v11.0 con LLM)
+## Flujo visual completo (CTO v15 con LLM)
 
 ```
 Cliente: "Necesito automatizar screening de hojas de vida"
@@ -619,14 +619,14 @@ Cliente: "Necesito automatizar screening de hojas de vida"
  |
  +-- Paso 6:  /recursion-designer ........ "Competencias como diccionario versionado"
  |
- +-- Paso 7:  === GATE G0.5 === .......... "Discovery Complete? 5/5 Si"
+ +-- Paso 7:  === CHECKPOINT: Discovery === .......... "Discovery Complete? 5/5 Si"
  |             Propuesta + Cost-Benefit + Client Communication
- |     === GATE G1 === ................... "Worth Building? ROI claro"
+ |     === CHECKPOINT: Worth Building === ................... "Worth Building? ROI claro"
  |
  +-- Paso 8:  /sdd-continue .............. "Specs → Design:"
- |             - LLM Pipeline (6 fases)     ← NUEVO v11.0
- |             - Compliance SIC 002/2024    ← NUEVO v11.0
- |             - Architecture Checklist     ← NUEVO v11.0
+ |             - LLM Pipeline (6 fases)     ← NUEVO v15
+ |             - Compliance SIC 002/2024    ← NUEVO v15
+ |             - Architecture Checklist     ← NUEVO v15
  |             "→ Tasks"
  |
  +-- Paso 9:  /sdd-apply (8 batches) ..... "Parsing → Extraccion → PII → LLM
@@ -639,7 +639,7 @@ Cliente: "Necesito automatizar screening de hojas de vida"
  |             - Costo <$0.05/HV
  |             - Prompt regression
  |
- +-- Paso 11: === GATE G2 === ............ "Production Ready?"
+ +-- Paso 11: === CHECKPOINT: Production Ready === ............ "Production Ready?"
  |             Probar con datos reales
  |
  +-- Paso 12: /sdd-archive ............... "Learning Loop: 6 preguntas mejora"

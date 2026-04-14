@@ -78,17 +78,15 @@ Los skills que se activen dependen de tu tesis:
 ```
 /sdd-ff
 ```
-Esto genera:
-- **Propuesta** → Tu capitulo de "Solucion Propuesta"
-- **Especificaciones** → Tu capitulo de "Requisitos"
+Esto genera un PRD consolidado que incluye:
+- **Propuesta + Specs** → Tus capitulos de "Solucion Propuesta" y "Requisitos"
 - **Diseno** → Tu capitulo de "Arquitectura del Sistema"
 - **Tareas** → Tu plan de trabajo
 
-### Paso 6-8: Implementar, verificar, archivar
+### Paso 6-7: Implementar, verificar
 ```
 /sdd-apply mi-tesis-nombre
 /sdd-verify mi-tesis-nombre
-/sdd-archive mi-tesis-nombre
 ```
 
 ---
@@ -98,22 +96,18 @@ Esto genera:
 | Artefacto SDD | Capitulo de tesis |
 |---------------|-------------------|
 | Reporte de exploracion | Estado del arte / Marco teorico aplicado |
-| Propuesta | Solucion propuesta / Metodologia |
-| Especificaciones | Requisitos funcionales y no funcionales |
-| Diseno | Arquitectura del sistema |
+| PRD (propuesta + specs + diseno + tareas) | Solucion propuesta / Requisitos / Arquitectura del sistema |
 | Codigo | Implementacion |
 | Reporte de verificacion | Pruebas y resultados |
-| Archivo | Conclusiones y trabajo futuro |
 
 ---
 
-## Gates que pasas
+## Checkpoints que pasas
 
-| Gate | Que verifica (y que tu director preguntaria) |
-|------|----------------------------------------------|
-| **G0.5** | Entiendes bien el problema? Revisaste alternativas? Definiste el alcance? |
-| **G1** | La solucion es viable en el tiempo que tienes? No estas sobredimensionando? |
-| **G2** | Funciona? Las pruebas lo demuestran? Puedes defenderlo en la sustentacion? |
+| Checkpoint | Que verifica (y que tu director preguntaria) |
+|------------|----------------------------------------------|
+| **Design Approval** | Entiendes bien el problema? Revisaste alternativas? La solucion es viable en el tiempo que tienes? No estas sobredimensionando? |
+| **Verificacion Final** | Funciona? Las pruebas lo demuestran? Puedes defenderlo en la sustentacion? |
 
 ---
 

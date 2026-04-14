@@ -52,7 +52,7 @@ El skill define:
 sdd-ff
 ```
 
-La secuencia `sdd-propose` → `sdd-spec` → `sdd-design` → `sdd-tasks` define la arquitectura de integracion. Se pasa por G0.5 y G1. El diseno prioriza la confiabilidad del dato sobre la velocidad de actualizacion.
+El `sdd-ff` genera el PRD consolidado con la arquitectura de integracion. Se pasa por Design Approval. El diseno prioriza la confiabilidad del dato sobre la velocidad de actualizacion.
 
 ### Fase 4 — Implementacion
 
@@ -65,7 +65,7 @@ Se genera el codigo del sistema: modulo de integracion de fuentes, logica de est
 ### Fase 5 — Verificacion
 
 ```
-sdd-verify → G2
+sdd-verify
 ```
 
 Se valida que los datos de todas las fuentes se consoliden correctamente, que las notificaciones se envien en el momento correcto, y que el portal de cliente muestre informacion confiable.
@@ -76,21 +76,21 @@ Se valida que los datos de todas las fuentes se consoliden correctamente, que la
 |-------|---------|
 | `data-pipeline-design` | Integra 3 fuentes de datos heterogeneas (GPS, transportadora, bodega) en una vista unificada |
 
-## Gates que pasas
+## Checkpoints que pasas
 
-### G0.5 — Discovery Complete
+### Design Approval — Discovery Complete
 - Las fuentes de datos estan identificadas con sus formatos, frecuencias y limitaciones
 - El flujo de un envio esta mapeado de punta a punta con los puntos de perdida de visibilidad
 - Los estados del envio estan definidos con las condiciones de transicion entre ellos
 - Los canales de notificacion al cliente estan identificados (email, SMS, WhatsApp, portal)
 
-### G1 — Solution Worth Building
+### Design Approval — Solution Worth Building
 - La arquitectura de integracion soporta las 3 fuentes sin depender de una sola
 - El manejo de datos inconsistentes o ausentes esta definido (que se muestra cuando GPS no responde)
 - La estimacion de hora de llegada es viable con los datos disponibles
 - La escalabilidad soporta el volumen de envios proyectado
 
-### G2 — Ready for Production
+### Verificacion Final — Ready for Production
 - Los datos de las 3 fuentes se consolidan correctamente en la linea de tiempo
 - Las notificaciones se envian en el momento correcto sin duplicados
 - El portal del cliente muestra informacion coherente y actualizada

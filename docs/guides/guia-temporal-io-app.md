@@ -39,8 +39,8 @@ Vamos a construir un workflow de **onboarding de clientes** que:
 | **Retry Policy** | Las reglas de reintento: cuantas veces reintentar, cuanto esperar entre intentos. |
 | **Docker** | Una herramienta que empaqueta aplicaciones para que funcionen en cualquier computadora igual. |
 | **Docker Compose** | Un archivo que le dice a Docker "levanta estos 3 servicios juntos". |
-| **Scope Agent** | Un "jefe de area" especializado. Claude tiene 3: uno para desarrollo (SDD pipeline), uno para infraestructura y seguridad, y uno para observabilidad y continuidad de sesion. |
-| **Execution Gate** | Un checklist automatico que Claude ejecuta ANTES de hacer cualquier cambio de codigo. |
+| **Agente Contratado** | Un "jefe de area" especializado. Claude tiene 3: uno para desarrollo (SDD pipeline), uno para infraestructura y seguridad, y uno para observabilidad y continuidad de sesion. |
+| **Research-First** | Un checklist automatico que Claude ejecuta ANTES de hacer cualquier cambio de codigo. |
 
 ---
 
@@ -95,7 +95,7 @@ Escribe:
 /batuta-init batuta-workers
 ```
 
-Esto instala las instrucciones del chef (CLAUDE.md), los jefes de area (scope agents), el sistema de calidad (.batuta/), todas las recetas (skills) y las alarmas automaticas (hooks). Si cierras la terminal y vuelves despues, Claude recuerda donde quedo gracias a `.batuta/session.md`.
+Esto instala las instrucciones del chef (CLAUDE.md), los jefes de area (agentes contratados), el sistema de calidad (.batuta/), todas las recetas (skills) y las alarmas automaticas (hooks). Si cierras la terminal y vuelves despues, Claude recuerda donde quedo gracias a `.batuta/session.md`.
 
 Si no tienes el comando instalado, usa el prompt largo de la guia principal (`docs/guides/guia-batuta-app.md`, Paso 3 Opcion B).
 
@@ -162,7 +162,7 @@ Aprobado, continua con el siguiente paso
 
 Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd-ff batuta-workers-onboarding` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-continue batuta-workers-onboarding` ejecuta todas las fases pendientes de corrido sin pausas.
 
 Repite "Se ve bien, continua" para cada fase. Claude ejecuta estas 3 fases en orden:
 
@@ -178,7 +178,7 @@ Repite "Se ve bien, continua" para cada fase. Claude ejecuta estas 3 fases en or
 /sdd-apply batuta-workers-onboarding
 ```
 
-Antes de escribir codigo, Claude ejecuta el **Execution Gate** — valida donde van los archivos, que impacto tienen y que todo siga las reglas del proyecto.
+Antes de escribir codigo, Claude ejecuta el **Research-First** — valida donde van los archivos, que impacto tienen y que todo siga las reglas del proyecto.
 
 Claude va a crear:
 - Estructura de carpetas (siguiendo la Scope Rule)
@@ -339,7 +339,7 @@ Quiero agregar un workflow de procesamiento de pagos con estos pasos:
 Si el paso de cobro falla, reintentar 3 veces con backoff exponencial.
 ```
 
-Y sigue el mismo flujo: explore → propose → specs → design → tasks → apply → verify.
+Y sigue el mismo flujo: explore → design → apply → verify (SPRINT o COMPLETO).
 
 ---
 

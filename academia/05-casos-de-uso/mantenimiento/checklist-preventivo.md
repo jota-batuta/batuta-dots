@@ -72,20 +72,14 @@ Las 5 preguntas clave:
 /sdd-verify checklist-preventivo
 ```
 
-### Paso 8: Archivar
-```
-/sdd-archive checklist-preventivo
-```
-
 ---
 
-## Gates que pasas
+## Checkpoints que pasas
 
-| Gate | Que verifica en este caso |
-|------|--------------------------|
-| **G0.5** | Mapeaste todas las frecuencias? Documentaste que pasa con hallazgos criticos? |
-| **G1** | La app se limita a checklists (no incluye gestion de repuestos ni compras)? |
-| **G2** | Los checklists funcionan offline? Las fotos se adjuntan correctamente? Las alertas se disparan? |
+| Checkpoint | Que verifica en este caso |
+|------------|--------------------------|
+| **Design Approval** | Mapeaste todas las frecuencias? Documentaste que pasa con hallazgos criticos? La app se limita a checklists (no incluye gestion de repuestos ni compras)? |
+| **Verificacion Final** | Los checklists funcionan offline? Las fotos se adjuntan correctamente? Las alertas se disparan? |
 
 ---
 

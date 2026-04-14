@@ -65,22 +65,20 @@ Las 5 preguntas:
 /sdd-ff
 ```
 
-### Paso 6-8: Implementar, verificar, archivar
+### Paso 6-7: Implementar, verificar
 ```
 /sdd-apply screening-hojas-vida
 /sdd-verify screening-hojas-vida
-/sdd-archive screening-hojas-vida
 ```
 
 ---
 
-## Gates que pasas
+## Checkpoints que pasas
 
-| Gate | Que verifica en este caso |
-|------|--------------------------|
-| **G0.5** | Mapeaste todos los formatos de HV? Documentaste el flujo de datos personales? Listaste las competencias por perfil? |
-| **G1** | El scope es screening (no incluye gestion de nomina ni contratacion completa)? El tratamiento de datos cumple Ley 1581? |
-| **G2** | La extraccion funciona con PDF/Word/imagen? El ranking es consistente? El consentimiento de datos se registra? Los datos se pueden eliminar (derecho de supresion)? |
+| Checkpoint | Que verifica en este caso |
+|------------|--------------------------|
+| **Design Approval** | Mapeaste todos los formatos de HV? Documentaste el flujo de datos personales? El scope es screening (no incluye contratacion completa)? El tratamiento de datos cumple Ley 1581? |
+| **Verificacion Final** | La extraccion funciona con PDF/Word/imagen? El ranking es consistente? El consentimiento de datos se registra? Los datos se pueden eliminar (derecho de supresion)? |
 
 ---
 

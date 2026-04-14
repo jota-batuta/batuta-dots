@@ -1,50 +1,53 @@
 ---
 name: sdd-continue
 description: >
-  Continue the SDD pipeline from where it left off. Detects the current phase
-  and runs the next needed phase automatically.
+  Continue the SDD pipeline from where it left off. Detects SPRINT vs
+  COMPLETO mode and resumes from session.md state.
 argument-hint: "[change-name]"
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash
 ---
 
 ## SDD Continue
 
-Continue the SDD pipeline for a change. Detect which phase to run next.
+Continue the SDD pipeline for a change. Detect mode and resume.
 
-### Step 1: Find the active change
+### Step 1: Read session.md
+
+Read `session.md` (or `.claude/session.md`) to determine:
+- Current mode: SPRINT or COMPLETO
+- Current phase
+- Active change name
+
+If session.md does not exist or has no SDD state, fall back to artifact detection (Step 3).
+
+### Step 2: Find the active change
 
 If $ARGUMENTS is provided, use it as the change name.
-If not, look in `openspec/changes/` for the most recently modified change directory.
+If session.md names a change, use that.
+If neither, look in `openspec/changes/` for the most recently modified change directory.
 If multiple changes exist and none specified, ask the user which one to continue.
 
-### Step 2: Detect current phase
+### Step 3: Detect next phase by mode
 
-Check which artifacts exist in `openspec/changes/{change-name}/`:
+**SPRINT mode** (default -- no gates):
 
-**Backtrack detection** (takes priority):
+| State | Next action |
+|-------|-------------|
+| No implementation yet | Run sdd-apply |
+| Implementation exists but no verify | Run sdd-verify |
+| Verify done | Done -- report to user |
 
-If `backtrack-log.md` exists, read the last entry:
-- If the last backtrack's "Downstream re-run" lists phases not yet re-executed,
-  run the next pending downstream phase.
-- Example: backtrack to SPEC completed, but DESIGN not yet re-run → run sdd-design.
+**COMPLETO mode** (PRD-driven):
 
-Backtrack state takes priority over forward detection.
-
-**Forward detection** (next phase needed):
-
-| File exists? | Next phase to run |
-|-------------|-------------------|
+| Artifact exists? | Next action |
+|------------------|-------------|
 | No explore.md | Run sdd-explore |
-| explore.md but unresolved skill gaps | Resolve skill gaps first — check explore.md for HIGH gaps, verify matching skills exist in `~/.claude/skills/`. Do NOT advance to propose until G0.25 passes (see pipeline-agent). |
-| explore.md but no proposal.md | Run sdd-propose |
-| proposal.md but no spec.md | Run sdd-spec |
-| spec.md but no design.md | Run sdd-design |
-| design.md but no tasks.md | Run sdd-tasks |
-| tasks.md but no implementation | Run sdd-apply |
-| Implementation exists but no verify-report.md | Run sdd-verify |
-| verify-report.md exists | Run sdd-archive |
+| explore.md but no design.md | Run sdd-design, then STOP for approval |
+| design.md but no implementation | Run sdd-apply |
+| Implementation but no verify | Run sdd-verify |
+| Verify done | Done -- report to user |
 
-### Step 3: Execute the next phase
+### Step 4: Execute the next phase
 
 Read the corresponding skill from `~/.claude/skills/sdd-{phase}/SKILL.md` and follow it.
 

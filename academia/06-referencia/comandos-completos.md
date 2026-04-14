@@ -1,17 +1,16 @@
 # Comandos completos
 
-Referencia rapida de todos los comandos disponibles en Batuta Dots v13.2.
+Referencia rapida de todos los comandos disponibles en Batuta Dots v15.
 
 > **Auto-routing**: Normalmente no necesitas escribir estos comandos. Batuta detecta
 > automaticamente lo que necesitas y ejecuta la fase correcta. Describe tu problema
 > en lenguaje natural y Batuta actua. Estos comandos existen como **override manual**
 > para cuando quieras controlar un paso especifico directamente.
-> Ver: [Auto-routing](../01-nivel-cero/el-pipeline-sdd.md#auto-routing-conversacion-natural)
 >
-> **Gate Status (v13.2)**: Si hay un gate pendiente (propuesta o plan de tareas esperando
-> aprobacion), el auto-router solo acepta aprobacion ("dale", "proceed") o feedback
-> ("ajusta X"). Cualquier otro input se interpreta como feedback al gate pendiente,
-> no como un nuevo comando. Esto aplica tanto al auto-routing como a los comandos manuales.
+> **Dos modos SDD (v15)**: El pipeline opera en dos modos:
+> - **SPRINT** (default): Research → Apply → Verify. Sin gates formales, flujo rapido.
+> - **COMPLETO** (cuando el CTO lo pide via PRD): Research → Explore → Design (USER STOP) → Apply → Verify.
+> El modo se detecta automaticamente por la presencia de un PRD en Notion.
 
 ---
 
@@ -50,11 +49,10 @@ Stack: Next.js, PostgreSQL, Redis
 ---
 
 ### /sdd-new
-**Que hace**: Inicia un cambio nuevo. Ejecuta explore + propose automaticamente. La exploracion aplica Discovery Depth; la propuesta incluye Technical Assumptions.
-**Cuando**: Decidiste construir algo.
-**Resultado**: Exploracion + propuesta en `openspec/changes/{nombre}/`.
-**Gates**: G0.5 (Discovery) + G1 (Worth Building).
-**Gate Status**: Al presentar la propuesta, el sistema escribe `AWAITING_APPROVAL: proposal` en session.md. Hasta que apruebes o des feedback, no acepta nuevos intents.
+**Que hace**: Inicia un cambio nuevo. Ejecuta explore + design automaticamente.
+**Cuando**: Decidiste construir algo y quieres planificacion completa.
+**Resultado**: Exploracion + diseno en `openspec/changes/{nombre}/`.
+**Aprobacion**: Despues de generar el design, se detiene para aprobacion del usuario.
 
 ```
 /sdd-new conciliacion-bancaria
@@ -64,9 +62,11 @@ Stack: Next.js, PostgreSQL, Redis
 ---
 
 ### /sdd-continue
-**Que hace**: Detecta la fase actual de un cambio y ejecuta la siguiente.
+**Que hace**: Detecta el modo (SPRINT o COMPLETO) y la fase actual de un cambio, luego ejecuta la siguiente.
 **Cuando**: Retomas un cambio despues de una pausa.
-**Resultado**: La siguiente fase del pipeline.
+**Resultado**: La siguiente fase del pipeline segun el modo detectado.
+**SPRINT**: sin implementacion → apply → sin verify → verify → done.
+**COMPLETO**: sin explore → explore → sin design → design (STOP) → apply → verify → done.
 
 ```
 /sdd-continue
@@ -76,9 +76,10 @@ Stack: Next.js, PostgreSQL, Redis
 ---
 
 ### /sdd-ff
-**Que hace**: Fast-forward — ejecuta propose + spec + design + tasks en secuencia.
-**Cuando**: Quieres avanzar rapido por las fases de planificacion.
-**Resultado**: 4 artefactos en `openspec/changes/{nombre}/`.
+**Que hace**: Fast-forward — ejecuta explore + design en secuencia (2 pasos).
+**Cuando**: Quieres ir de idea a diseno accionable rapidamente.
+**Resultado**: 2 artefactos en `openspec/changes/{nombre}/`: `explore.md` y `design.md`.
+**Aprobacion**: Se detiene despues de generar el design para aprobacion del usuario.
 
 ```
 /sdd-ff
@@ -88,10 +89,9 @@ Stack: Next.js, PostgreSQL, Redis
 ---
 
 ### /sdd-apply
-**Que hace**: Implementa codigo siguiendo las tareas del cambio activo. Durante la implementacion, los domain agents (backend, quality, data) se auto-invocan segun las tecnologias de cada tarea — no necesitas activarlos manualmente.
-**Cuando**: Las fases de planificacion estan completas y el plan de tareas fue aprobado.
+**Que hace**: Implementa codigo siguiendo el PRD o design del cambio activo. Los agentes especializados se contratan segun las tecnologias de cada tarea — el main agent delega, no ejecuta.
+**Cuando**: El design fue aprobado (modo COMPLETO) o directamente despues de research (modo SPRINT).
 **Resultado**: Codigo implementado, documentado, con Scope Rule aplicada.
-**Gate Status**: El plan de tareas previo escribe `AWAITING_APPROVAL: task_plan`. Solo se procede con apply despues de aprobacion explicita.
 
 ```
 /sdd-apply
@@ -103,23 +103,11 @@ Stack: Next.js, PostgreSQL, Redis
 ### /sdd-verify
 **Que hace**: Ejecuta la Piramide de Validacion AI (5 capas).
 **Cuando**: Despues de implementar.
-**Resultado**: Reporte de verificacion. Gate G2 al final.
+**Resultado**: Reporte de verificacion.
 
 ```
 /sdd-verify
 /sdd-verify conciliacion-bancaria
-```
-
----
-
-### /sdd-archive
-**Que hace**: Archiva el cambio completado. Sincroniza specs, documenta lecciones.
-**Cuando**: Despues de que G2 pasa.
-**Resultado**: Cambio archivado en `openspec/changes/archive/`.
-
-```
-/sdd-archive
-/sdd-archive conciliacion-bancaria
 ```
 
 ---
@@ -190,6 +178,16 @@ Stack: Next.js, PostgreSQL, Redis
 
 **Importante**: El `git pull` es bloqueante por seguridad. Si falla (dirty tree, wrong branch, sin red), se detiene y te dice que hacer. NUNCA continua con archivos desactualizados.
 
+### /batuta-sync
+**Que hace**: Sincroniza skills entre el proyecto actual y el hub batuta-dots. Detecta skills locales que no estan en el hub y skills del hub que no estan en el proyecto.
+**Cuando**: Creaste skills nuevos en un proyecto y quieres propagarlos al hub, o quieres traer skills del hub a tu proyecto.
+**Opciones**: (1) Sincronizar todo, (2) Solo propagar al hub, (3) Solo traer del hub, (4) Seleccionar individualmente.
+**Cross-sync**: Si el skill tiene `platforms: [claude, antigravity]`, se sincroniza automaticamente a Antigravity.
+
+```
+/batuta-sync
+```
+
 ---
 
 ## Comandos de desarrollador (terminal)
@@ -220,14 +218,12 @@ bash ~/batuta-dots/infra/setup.sh --update /path/to/mi-proyecto
 |-----------|------------------------------|-----------------|
 | Construir algo nuevo | "Necesito un dashboard de ventas" | `/sdd-new nombre` |
 | Investigar idea | "Como funciona el auth actual?" | `/sdd-explore "tema"` |
-| Aprobar propuesta pendiente | "Dale", "proceed", "si" | (Gate Status lo detecta automaticamente) |
-| Dar feedback a propuesta | "Cambia X", "falta el caso Y" | (Gate Status lo detecta como feedback) |
 | Continuar donde quede | "Donde quedamos?" | `/sdd-continue` |
 | Avanzar rapido por planificacion | "Dale, avanza con todo" | `/sdd-ff` |
 | Implementar | "Arranca con el codigo" | `/sdd-apply` |
 | Verificar | "Verifica que funcione" | `/sdd-verify` |
-| Cerrar cambio | "Archiva el cambio" | `/sdd-archive` |
 | Empezar proyecto | — | `/sdd-init` |
 | Crear skill | — | `/create-skill nombre` |
 | Evaluar skill | — | `/skill:eval nombre` |
 | Benchmark skills | — | `/skill:benchmark` |
+| Sincronizar skills con hub | — | `/batuta-sync` |

@@ -48,7 +48,7 @@ Fuentes identificadas:
 4. Google Sheets → KPIs manuales que aun no estan en ningun sistema
 ```
 
-> **Gate G0.5** — El agente te pregunta:
+> **Design Approval (variantes)** — El agente te pregunta:
 > "Detecte 4 fuentes de datos. Los datos de produccion y finanzas vienen del mismo ERP (SAP). Los KPIs manuales en Sheets son temporales o permanentes?"
 > --> Temporales, eventualmente todo estara en SAP. Pero por ahora necesitamos incluirlos.
 
@@ -83,7 +83,7 @@ sdd-ff
 
 Se congela con los 5 paneles, las 4 fuentes y los umbrales de semaforo definidos.
 
-> **Gate G1** — El agente evalua:
+> **Design Approval (viabilidad)** — El agente evalua:
 > "Un dashboard consolidado con 5 paneles y 4 fuentes de datos es un proyecto justificado. La alternativa (herramientas BI como Metabase o Grafana) podria cubrir parte, pero la integracion de fuentes heterogeneas y los semaforos personalizados requieren desarrollo custom."
 
 ### Paso 4: Aplicar la implementacion
@@ -118,7 +118,7 @@ features/
 sdd-verify
 ```
 
-> **Gate G2** — Verificacion:
+> **Verificacion Final** — Resultado:
 
 ```
 Layer 1 - Lint:           PASS
@@ -138,19 +138,14 @@ Resultado: LISTO PARA REVIEW HUMANO
 | **scope-rule** | Separa data-layer, dashboard y config en la estructura de features |
 | **process-analyst** | Identifica que cada panel tiene requerimientos diferentes de datos y frecuencia |
 
-## Gates que pasas
+## Checkpoints que pasas
 
-### Gate G0.5 — Variantes de negocio
-- **Que evalua:** Las diferencias entre paneles y sus fuentes de datos
-- **Ejemplo concreto:** "Produccion necesita datos cada 5 minutos pero Finanzas puede actualizarse cada hora. Los umbrales de semaforo son diferentes por KPI."
-- **Si no pasa:** Se clarifican que KPIs son criticos y cuales pueden esperar
+### Design Approval — Variantes + viabilidad
+- **Que evalua:** Las diferencias entre paneles y si un dashboard custom se justifica
+- **Ejemplo concreto:** "Produccion necesita datos cada 5 minutos pero Finanzas puede actualizarse cada hora. Las 4 fuentes heterogeneas y los semaforos personalizados requieren integracion custom."
+- **Si no pasa:** Se clarifican que KPIs son criticos o el agente sugiere empezar con Metabase/Grafana
 
-### Gate G1 — Vale la pena construirlo?
-- **Que evalua:** Si un dashboard custom se justifica vs herramientas existentes
-- **Ejemplo concreto:** "Las 4 fuentes heterogeneas y los semaforos personalizados requieren integracion custom. Metabase cubre graficos pero no los semaforos ni las alertas contextuales."
-- **Si no pasa:** El agente sugiere empezar con Metabase/Grafana y customizar solo lo necesario
-
-### Gate G2 — Calidad de la implementacion
+### Verificacion Final — Calidad de la implementacion
 - **Que evalua:** Que todos los paneles carguen datos correctos en tiempo real
 - **Ejemplo concreto:** "Los 5 paneles cargan en menos de 2 segundos, los semaforos cambian correctamente segun umbrales, el WebSocket actualiza sin recargar la pagina."
 - **Si no pasa:** Se revisan los conectores lentos o los calculos incorrectos

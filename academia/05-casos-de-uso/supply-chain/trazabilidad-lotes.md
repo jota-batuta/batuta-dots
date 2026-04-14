@@ -68,7 +68,7 @@ El skill `data-pipeline-design` define como fluyen los datos:
 sdd-ff
 ```
 
-Ejecuta la secuencia completa de propuesta, especificacion, diseno y tareas. Los gates G0.5 y G1 validan que la solucion cubra los requisitos regulatorios y operativos.
+Genera el PRD consolidado con propuesta, especificacion, diseno y tareas. El Design Approval valida que la solucion cubra los requisitos regulatorios y operativos.
 
 ### Fase 6 — Implementacion
 
@@ -81,10 +81,10 @@ Se genera el codigo con enfasis en la integridad de la cadena de trazabilidad. C
 ### Fase 7 — Verificacion
 
 ```
-sdd-verify → G2
+sdd-verify
 ```
 
-Pruebas especificas de trazabilidad: busqueda directa, busqueda inversa, generacion de reportes. El gate G2 valida que un recall simulado se pueda resolver en minutos.
+Pruebas especificas de trazabilidad: busqueda directa, busqueda inversa, generacion de reportes. La Verificacion Final valida que un recall simulado se pueda resolver en minutos.
 
 ## Skills que se activan
 
@@ -94,21 +94,21 @@ Pruebas especificas de trazabilidad: busqueda directa, busqueda inversa, generac
 | `recursion-designer` | Maneja los cambios en codigos regulatorios INVIMA sin reescribir el sistema |
 | `data-pipeline-design` | Estructura el flujo de datos desde recepcion hasta despacho con vinculacion de lotes |
 
-## Gates que pasas
+## Checkpoints que pasas
 
-### G0.5 — Discovery Complete
+### Design Approval — Discovery Complete
 - Los tipos de trazabilidad (alimento, farmaceutico, quimico) estan documentados con sus campos obligatorios
 - El proceso productivo actual esta mapeado con sus puntos de creacion de lotes
 - Los requisitos regulatorios vigentes del INVIMA estan identificados
 - Los puntos de falla en la trazabilidad actual estan documentados
 
-### G1 — Solution Worth Building
+### Design Approval — Solution Worth Building
 - La propuesta soporta busqueda directa e inversa de lotes
 - El modelo de datos es flexible ante cambios regulatorios
 - La vinculacion materia prima → producto terminado es solida
 - El tiempo de respuesta ante un recall simulado es aceptable (minutos, no dias)
 
-### G2 — Ready for Production
+### Verificacion Final — Ready for Production
 - Un recall simulado se resuelve en menos de 5 minutos
 - Los reportes en formato INVIMA se generan correctamente
 - La cadena de custodia es inmutable (no se pueden borrar o alterar registros)

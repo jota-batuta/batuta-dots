@@ -1,6 +1,6 @@
 # Hooks y automatizacion
 
-Batuta Dots tiene 2 **hook types** (SessionStart, Stop) + 1 **bootstrap prompt** — automatismos que se ejecutan sin que tu hagas nada. Son como alarmas inteligentes: se activan en el momento correcto para proteger tu trabajo.
+Batuta Dots tiene hooks — automatismos que se ejecutan sin que tu hagas nada. En v15, los hooks se simplificaron significativamente.
 
 ---
 
@@ -10,44 +10,63 @@ Un hook es codigo que se ejecuta automaticamente cuando algo pasa. No tienes que
 
 ---
 
-## Los 2 hook types (SessionStart, Stop)
+## Hooks en v15: simplificados
 
-### 1. SessionStart — Al iniciar sesion
+### SessionStart — Al iniciar sesion
 
 **Cuando**: Cada vez que abres Claude Code en un proyecto.
-**Que hace**: Lee `.batuta/session.md` y restaura el contexto de tu ultima sesion.
+**Que hace**: Inyecta dos archivos como contexto:
 
-**Ejemplo**: Ayer estabas en la fase "design" del cambio "conciliacion-bancaria". Hoy abres Claude y automaticamente sabe donde quedaste.
+1. **session.md** — La unica fuente de verdad del estado del proyecto
+2. **CHECKPOINT.md** — Seguro anti-compaction del estado operacional
+
+**Ejemplo**: Ayer estabas implementando autenticacion JWT. Hoy abres Claude y automaticamente sabe donde quedaste porque session.md tiene el estado exacto.
 
 **Sin este hook**: Tendrias que explicarle a Claude todo de nuevo cada vez.
 
-### 1b. Batuta Bootstrap — La Regla (v11.1)
+#### Que se elimino en v15
 
-**Cuando**: Inmediatamente despues del SessionStart, en la misma carga inicial.
-**Que hace**: Establece "La Regla" — si un skill aplica a tu tarea, DEBES usarlo. Sin excepciones.
+El hook de SessionStart en v14 hacia mucho mas:
+- Generaba inventarios de skills/agentes (ahora eso lo maneja `.provisions.json` al provisionar)
+- Inyectaba team-history.md (ahora disponible bajo demanda, no al inicio)
+- Verificaba freshness del ecosistema (ahora lo hace `/batuta-update`)
+- Checkeaba drift de versiones (movido a `/batuta-update`)
 
-**Que contiene**:
-- Lista completa de los 33 skills organizados por categoria
-- 4 "racionalizaciones bandera roja" que Claude debe detectar y rechazar:
-  1. "Esto es algo simple" — Las tareas simples necesitan convenciones de equipo
-  2. "Ya se como hacer esto" — Los skills codifican la forma del EQUIPO, no solo conocimiento
-  3. "Necesito contexto primero" — La carga del skill PRECEDE la recopilacion de contexto
-  4. "El skill es overkill" — El skill define calidad minima
+**Resultado**: El inicio de sesion es mas rapido porque solo inyecta session.md + CHECKPOINT.md.
 
-**Sin este bootstrap**: Claude "se olvida" de usar skills (~30% de las veces segun GAP-02/08/09). Con el bootstrap: enforcement deterministico.
-
-### 2. Stop — Al terminar sesion
+### Stop — Al terminar sesion
 
 **Cuando**: Cuando cierras Claude Code o terminas la conversacion.
 **Que hace**: Dos cosas:
-1. Guarda el estado de la sesion (archivos creados, fase actual)
-2. Actualiza `.batuta/session.md` si hubo trabajo significativo
+1. Archiva `CHECKPOINT.md` (ultimas 10 versiones)
+2. Registra la sesion en `session-log.jsonl`
 
-**Session Budget (80 lineas max)**: El archivo `session.md` es un documento de briefing para un nuevo agente que retoma el trabajo. Responde tres preguntas: DONDE estamos (proyecto, stack, fase), POR QUE llegamos ahi (decisiones con razonamiento), y COMO continuar (siguiente paso). Nunca incluye inventarios de archivos, conteos de tests, ni detalles de implementacion — esos viven en el codigo y en `openspec/`. Si crece mas de 80 lineas, se podan las entradas mas antiguas.
+### session.md: actualizado en CADA interaccion
 
-**Ejemplo**: Completaste 3 tareas y creaste 5 archivos. El hook guarda todo para manana.
+La diferencia mas grande de v15: `session.md` ya no se actualiza "al final de la sesion". Se actualiza en **cada interaccion**. Es un documento vivo de maximo 80 lineas que responde tres preguntas:
 
-**Sin este hook**: Perderia el contexto entre sesiones.
+| Pregunta | Que contiene |
+|----------|-------------|
+| **DONDE** | Proyecto, stack, fase SDD actual, modo (SPRINT/COMPLETO) |
+| **POR QUE** | Decisiones clave con razonamiento |
+| **COMO** | Siguiente paso concreto |
+
+**Lo que NO incluye**: Inventarios de archivos, conteos de tests, detalles de implementacion. Esos viven en el codigo y en `openspec/`. Si crece mas de 80 lineas, se podan las entradas mas antiguas.
+
+### CHECKPOINT.md: seguro anti-compaction
+
+CHECKPOINT.md se escribe antes de 3 o mas llamadas consecutivas a herramientas y al cerrar la sesion. Captura:
+
+```markdown
+# Checkpoint — 2026-04-13T14:30:00
+## Que estoy haciendo
+## Estado (paso N de M, archivo, branch)
+## Intentos y resultados
+## Que falta
+## Gotchas descubiertos (con evidencia)
+```
+
+Si Claude pierde contexto por compaction (cuando la conversacion es muy larga), CHECKPOINT.md tiene todo lo necesario para retomar.
 
 ---
 
@@ -60,43 +79,51 @@ Los hooks viven en `~/.claude/settings.json`:
   "hooks": {
     "SessionStart": [{
       "hooks": [
-        { "type": "command", "command": "bash ~/.claude/hooks/session-start.sh" },
-        { "type": "prompt", "prompt": "BATUTA BOOTSTRAP — THE RULE: If a skill applies..." }
+        { "type": "command", "command": "bash ~/.claude/hooks/session-start.sh" }
       ]
     }],
     "Stop": [{
       "hooks": [
-        { "type": "command", "command": "bash ~/.claude/hooks/session-save.sh" },
-        { "type": "prompt", "prompt": "Before stopping, check if .batuta/session.md exists..." }
+        { "type": "command", "command": "bash ~/.claude/hooks/session-save.sh" }
       ]
     }]
   }
 }
 ```
 
-> **Nota v12.1**: El bootstrap ("La Regla") esta embebido como prompt hook inline dentro del SessionStart array, no como archivo separado. El hook `command` ejecuta el script de descubrimiento de skills y el hook `prompt` inyecta La Regla directamente. Ambos se ejecutan en secuencia al iniciar sesion.
-
 ### Tipos de hook
 
 | Tipo | Como funciona |
 |------|--------------|
 | **command** | Ejecuta un script de bash |
-| **prompt** | Claude evalua una condicion y decide si continuar |
+| **prompt** | Claude evalua una condicion y decide si actuar |
+
+---
+
+## Notion como memoria persistente (v15)
+
+En v15, la memoria a largo plazo vive en **Notion via MCP**, no en archivos locales. Los hooks manejan la sesion local (session.md, CHECKPOINT.md), pero los discoveries, decisiones, y gotchas que trascienden la sesion se escriben **constantemente** a Notion:
+
+| Que | Donde |
+|-----|-------|
+| Estado de sesion (efimero) | session.md (local, 80 lineas max) |
+| Estado operacional (anti-crash) | CHECKPOINT.md (local, archivado) |
+| Discoveries y decisiones (permanente) | Notion KB via MCP |
+| PRD y directivas (planificacion) | Notion, paginas hijas del proyecto |
 
 ---
 
 ## Hooks a nivel de proyecto
 
-Ademas de los hooks globales, cada proyecto puede tener sus propios hooks en `.claude/settings.local.json`. Estos se generan con `/sdd-init`.
-
-**Ejemplo**: Un proyecto puede tener un hook adicional que verifica que todos los archivos Python tengan type hints.
+Ademas de los hooks globales, cada proyecto puede tener sus propios hooks en `.claude/settings.local.json`. Estos se generan con `/sdd-init` o `/batuta-init`.
 
 ---
 
 ## Lo que no necesitas hacer
 
 Los hooks funcionan automaticamente. Tu unica interaccion es:
-- **Responder al Execution Gate** cuando te pregunta "Procedo?"
+- **Aprobar contrataciones** cuando el agente principal propone un agente nuevo
+- **Aprobar disenos** en modo COMPLETO (el unico gate formal)
 - **Esperar** cuando al inicio de sesion se restaura el contexto
 
 Todo lo demas pasa en segundo plano.

@@ -32,7 +32,7 @@
 
 | Teammate | Recibe | De quien |
 |----------|--------|----------|
-| Todos | SDD spec + design artifacts | Lead |
+| Todos | PRD o brief del cambio | Lead |
 | `api-dev` | Definicion de endpoints (paths, metodos, schemas de request/response) | Lead |
 | `test-dev` | OpenAPI spec generada por `api-dev` + criterios de aceptacion del SDD | Lead + `api-dev` |
 | `infra-dev` | Requisitos de despliegue + dependencias de sistema + lista de env vars | Lead |
@@ -86,7 +86,7 @@ infra-dev:
 | `infra-dev` | `api-dev` | Variables de entorno usadas correctamente, no hay secrets hardcodeados |
 | `infra-dev` | `test-dev` | Tests pueden correr en CI (no dependen de recursos locales) |
 
-El Lead revisa todos los outputs contra la SDD spec original.
+El Lead revisa todos los outputs contra el PRD o brief original.
 
 ---
 
@@ -138,7 +138,7 @@ Esto significa que `test-dev` puede arrancar con fixtures y estructura, pero los
 
 Antes de crear el equipo, verifica que estos prerequisitos estan listos:
 
-- [ ] SDD spec y design completados
+- [ ] PRD completado o SPRINT mode con research hecho
 - [ ] Lista de endpoints definida (paths, metodos HTTP, schemas)
 - [ ] Modelo de datos decidido (entidades principales, relaciones)
 - [ ] Base de datos seleccionada (PostgreSQL, SQLite para dev)
@@ -147,6 +147,6 @@ Antes de crear el equipo, verifica que estos prerequisitos estan listos:
 
 ---
 
-**Nota v13**: Los domain agents (backend-agent, quality-agent, data-agent) aportan expertise embebida de dominio. backend-agent trae conocimiento de FastAPI, autenticacion, y patrones de base de datos. quality-agent trae TDD, debugging sistematico, y seguridad. quality-agent esta disponible en todo proyecto.
+**v15**: 5 agentes contratables (pipeline, infra, backend, data, quality). backend-agent recomendado para `api-dev` (FastAPI, auth, DB patterns). quality-agent recomendado para `test-dev` (TDD, debugging, seguridad). El main agent contrata agentes de `.claude/agents/` — nunca implementa directamente.
 
 *Template basado en Pattern D (Cross-Layer) del team-orchestrator. Ajusta la composicion si tu servicio no necesita infra dedicada (por ejemplo, un servicio interno puede prescindir de `infra-dev`).*

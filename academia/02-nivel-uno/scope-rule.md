@@ -106,16 +106,16 @@ El Scope Rule es dinamico — los archivos se mueven cuando sus consumidores cam
 
 ---
 
-## Batuta lo hace automatico
+## Quien aplica la Scope Rule en v15
 
-No tienes que recordar esta regla. El **Execution Gate** la aplica:
+En v15, el Scope Rule es un **skill** asignado al **infra-agent**. Cuando el agente principal contrata a un agente para crear archivos, el infra-agent (o cualquier agente con el skill `scope-rule`) valida la ubicacion:
 
 1. Tu pides crear un archivo
-2. El gate pregunta "Quien lo usa?"
+2. El agente contratado consulta scope-rule
 3. Sugiere la ubicacion correcta
 4. Tu confirmas
 
-Si intentas crear `utils/formatDate.ts` en la raiz, el gate lo detiene y sugiere la ubicacion correcta.
+Si intentas crear `utils/formatDate.ts` en la raiz, el agente lo detiene y sugiere la ubicacion correcta. Ya no hay un "Execution Gate" con 8 pasos — la validacion ocurre dentro del agente contratado como parte natural de su trabajo.
 
 ---
 

@@ -45,7 +45,7 @@ Este equipo es intencionalmente pequeno. Dos teammates bien coordinados son mas 
 
 | Teammate | Recibe | De quien |
 |----------|--------|----------|
-| Ambos | SDD spec + design artifacts | Lead |
+| Ambos | PRD o brief del cambio | Lead |
 | `workflow-dev` | Contratos de webhook (payload de entrada, formato de salida esperado) + credenciales/API keys necesarias (como referencia, no valores reales) | Lead |
 | `integration-tester` | Schemas de datos por paso del workflow + lista de escenarios criticos | Lead + `workflow-dev` |
 
@@ -162,7 +162,7 @@ Paso 3 (Transformacion):
 
 Antes de crear el equipo, verifica que estos prerequisitos estan listos:
 
-- [ ] SDD spec y design completados
+- [ ] PRD completado o SPRINT mode con research hecho
 - [ ] Contratos de webhook definidos (payloads de entrada y salida)
 - [ ] APIs externas identificadas (documentacion disponible, credenciales de test listas)
 - [ ] Schemas de transformacion documentados (que datos entran y salen en cada paso)
@@ -171,6 +171,6 @@ Antes de crear el equipo, verifica que estos prerequisitos estan listos:
 
 ---
 
-**Nota v13**: Los domain agents (backend-agent, quality-agent, data-agent) aportan expertise embebida de dominio. quality-agent puede asignarse a `integration-tester` para aprovechar expertise en TDD, debugging sistematico, y testing. quality-agent esta disponible en todo proyecto.
+**v15**: 5 agentes contratables (pipeline, infra, backend, data, quality). quality-agent recomendado para `integration-tester` (TDD, debugging, testing). El main agent contrata agentes de `.claude/agents/` — nunca implementa directamente.
 
-*Template basado en Pattern A (SDD Pipeline, simplificado) del team-orchestrator. Para automatizaciones mas complejas con infraestructura dedicada (e.g., n8n auto-hosted con monitoreo), considera agregar un tercer teammate `infra-dev` y escalar a Pattern D.*
+*Template basado en Pattern A (Pipeline, simplificado) del team-orchestrator. Para automatizaciones mas complejas con infraestructura dedicada (e.g., n8n auto-hosted con monitoreo), considera agregar un tercer teammate `infra-dev` y escalar a Pattern D.*

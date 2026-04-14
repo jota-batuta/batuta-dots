@@ -28,7 +28,7 @@ Crea tu primer proyecto de principio a fin. Sin teoria, solo practica.
 → [Ir a Nivel Cero](01-nivel-cero/)
 
 ### Modulo 2 — Nivel Uno: Conoce tus herramientas
-Descubre los 39 skills, los 6 agentes (3 scope + 3 domain), y las capacidades del ecosistema.
+Descubre los 43 skills, los 5 agentes (pipeline, infra, backend, data, quality), y la Delegacion por Contrato.
 → [Ir a Nivel Uno](02-nivel-uno/)
 
 ### Modulo 3 — Nivel Dos: Depuracion y validacion
@@ -73,4 +73,4 @@ Quizzes y checklists para confirmar que dominas cada nivel.
 
 ---
 
-*Batuta Dots v13 — Academia*
+*Batuta Dots v15 — Academia*

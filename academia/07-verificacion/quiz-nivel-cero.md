@@ -16,12 +16,14 @@ Verifica que entendiste los conceptos basicos. Responde mentalmente cada pregunt
 ---
 
 ## Pregunta 2
-**Cuantas fases tiene el pipeline SDD?**
+**Cuantos modos tiene el pipeline SDD y cuales son?**
 
 <details>
 <summary>Ver respuesta</summary>
 
-9 fases: init, explore, propose, spec, design, tasks, apply, verify, archive.
+2 modos:
+- **SPRINT** (default): Research → Apply → Verify. Sin gates formales, flujo rapido.
+- **COMPLETO** (CTO lo pide via PRD): Research → Explore → Design (USER STOP) → Apply → Verify.
 </details>
 
 ---
@@ -32,7 +34,7 @@ Verifica que entendiste los conceptos basicos. Responde mentalmente cada pregunt
 <details>
 <summary>Ver respuesta</summary>
 
-Ejecuta explore + propose automaticamente. Es el punto de inicio para construir algo nuevo.
+Ejecuta explore + design automaticamente. Es el punto de inicio para construir algo nuevo con planificacion completa. Se detiene para aprobacion despues del design.
 </details>
 
 ---
@@ -49,12 +51,12 @@ Un hook que se ejecuta antes de escribir cualquier archivo. Verifica que el camb
 ---
 
 ## Pregunta 5
-**Que pasa si Gate G0.5 tiene items sin marcar?**
+**Que regla aplica en AMBOS modos (SPRINT y COMPLETO)?**
 
 <details>
 <summary>Ver respuesta</summary>
 
-No avanzas a propose. Vuelves a explore para completar lo que falta. G0.5 verifica que entendemos el problema completamente.
+Research-First. SIEMPRE investigar antes de implementar, sin importar el modo. Cadena: (1) Notion KB, (2) skill relevante, (3) WebFetch docs oficiales, (4) WebSearch. No existe tarea tan trivial que justifique saltar research.
 </details>
 
 ---
@@ -65,7 +67,7 @@ No avanzas a propose. Vuelves a explore para completar lo que falta. G0.5 verifi
 <details>
 <summary>Ver respuesta</summary>
 
-`/sdd-ff` — Fast-forward ejecuta propose + spec + design + tasks en secuencia.
+`/sdd-ff` — Fast-forward ejecuta explore + design en secuencia (2 pasos). Se detiene para aprobacion despues del design.
 </details>
 
 ---

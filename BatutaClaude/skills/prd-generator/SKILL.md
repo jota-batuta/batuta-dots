@@ -1,100 +1,131 @@
 ---
 name: prd-generator
 description: >
-  Use when consolidating SDD planning artifacts into a clean execution brief.
-  Trigger: "generate PRD", "PRD consolidado", "consolidar planning", "listo para implementar".
-  Invoked automatically by pipeline-agent after Task Plan Approval (G1.5).
+  Use when creating or reading a PRD — the single planning artifact for any change.
+  CTO Desktop writes PRDs to Notion. Claude Code reads them via MCP and executes.
+  Trigger: "PRD", "generate PRD", "write PRD", "crear PRD", "directiva".
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "2.0"
   created: "2026-03-30"
+  updated: "2026-04-13"
   scope: [pipeline]
-  auto_invoke: "Generating PRD after task plan approval"
   platforms: [claude, antigravity]
 allowed-tools: Read Write Glob
 ---
 
 ## Purpose
 
-You are a sub-agent responsible for generating a **PRD (Product Requirements Document)** —
-a consolidated, concise execution brief derived from the SDD planning artifacts.
+The PRD is the **single planning artifact** in batuta-dots v15. It replaces the 5-artifact
+chain (explore + propose + spec + design + tasks) with ONE document that contains everything
+an implementation agent needs.
 
-The PRD solves the context-reset problem: the planning session accumulates exploratory
-reasoning, rejected proposals, and revisions. The execution session should start clean
-with only the final, approved decisions. The PRD is that clean input.
-
-**When invoked**: After Task Plan Approval, before sdd-apply begins.
-**Output**: `openspec/changes/{change-name}/PRD.md`
-
----
-
-## Step 1 — Locate artifacts
-
-Read from `openspec/changes/{change-name}/`:
-- `spec.md` — requirements and acceptance criteria
-- `design.md` — technical decisions and architecture
-- `tasks.md` — implementation breakdown and exit criteria
-
-If any of these files is missing, report: "PRD generation blocked — missing: {file}. Complete {phase} first."
+| Mode | Who | Where | When |
+|------|-----|-------|------|
+| **Write** | CTO (Desktop) | Notion — child page of project | Before implementation |
+| **Read** | Claude Code | Notion MCP or local openspec/ | At implementation start |
 
 ---
 
-## Step 2 — Extract and consolidate
-
-From the three artifacts, extract only the final approved content:
-
-| Source | Extract |
-|--------|---------|
-| `spec.md` | Problem statement, user stories with acceptance criteria, non-functional requirements |
-| `design.md` | Non-negotiable technical decisions, key constraints, architecture summary |
-| `tasks.md` | Task list (names only, not implementation detail), definition of done |
-
-**Do NOT include**: rejected alternatives, exploratory notes, rationale paragraphs,
-intermediate decisions, or content marked as "considered but not chosen."
-
----
-
-## Step 3 — Write PRD.md
-
-Write to `openspec/changes/{change-name}/PRD.md`:
+## PRD Template
 
 ```markdown
-# PRD — {change-name}
-*Generated from spec.md + design.md + tasks.md on {ISO date}*
-*Read this file + tasks.md to start the execution session.*
+# PRD — {nombre del cambio}
 
-## What We're Building
-{1 paragraph: problem + solution. No more.}
+## Problema
+{1 parrafo: que esta roto, para quien, por que importa}
 
-## User Stories with Acceptance Criteria
-- As {role}, I want {action} so that {benefit}.
-  ✓ Criteria: {list of testable conditions}
+## Solucion
+{1-2 parrafos: que se va a construir, como funciona a alto nivel.
+ Decisiones de tecnologia y arquitectura SI. Codigo NO.}
 
-## Non-Negotiable Technical Decisions
-- {technology/approach}: {decision} — {one-line reason}
+## Criterio de exito
+- {condicion verificable 1}
+- {condicion verificable 2}
+- {condicion verificable 3}
+
+## Datos disponibles
+- {fuente 1}: {que es, donde esta, que contiene}
+- {fuente 2}: {que es, donde esta, que contiene}
 
 ## Constraints
-- {hard limit or requirement that cannot be changed}
+- {restriccion critica 1}
+- {restriccion critica 2}
 
-## Definition of Done
-{Copy the exit criteria section from tasks.md verbatim}
-
-## Implementation Plan
-See: `openspec/changes/{change-name}/tasks.md`
+## Fuera de alcance
+- {que NO se hace en este cambio}
+- {que se difiere para despues}
 ```
 
-Keep the PRD under 80 lines. If it grows beyond 80 lines, you are including too much detail — trim.
+**Reglas:**
+- Maximo 1-2 paginas. Si crece mas, dividir en cambios separados
+- NO incluir: queries SQL, firmas de funciones, pseudocodigo, rutas de archivos
+- SI incluir: decisiones de tecnologia, conocimiento de dominio, reglas de negocio
+- Criterio de exito debe ser verificable por un agente (no subjetivo)
 
 ---
 
-## Step 4 — Report
+## SPRINT mode (tarea clara, <3 archivos)
 
-Return to pipeline-agent with:
+No necesita PRD formal. Directiva corta en Notion o mensaje directo:
+
+```markdown
+DIRECTIVA: {nombre}
+PROBLEMA: {2-3 oraciones}
+QUE NECESITO: {resultado en terminos de capacidad}
+CRITERIO DE SALIDA: {condicion verificable}
+```
+
+---
+
+## For Claude Code: executing from a PRD
+
+### Step 1 — Locate PRD
+
+1. Notion MCP: search project child pages for "PRD" or "directiva"
+2. Local fallback: `openspec/changes/{change-name}/PRD.md`
+3. If neither: ask user
+
+### Step 2 — Validate
+
+- [ ] Has problem statement
+- [ ] Has verifiable success criteria
+- [ ] Has "fuera de alcance"
+- [ ] Does NOT contain code or SQL
+
+If PRD contains implementation detail → flag: "PRD contiene implementacion.
+El CTO decide QUE, el agente decide COMO."
+
+### Step 3 — Execute
+
+Implement using subagents with relevant skills.
+Update session.md each interaction. Write discoveries to Notion KB constantly.
+
+### Step 4 — Verify against PRD
+
+Check each "Criterio de exito":
+- All met → report success
+- Any not met → report what's missing with evidence
+
+---
+
+## What the CTO decides vs what the agent decides
+
+| CTO (in the PRD) | Agent (during implementation) |
+|-------------------|------------------------------|
+| What technology (embeddings, LLM, OCR) | What functions to create |
+| What architectural approach | How to implement it |
+| What data exists and what it means | What queries to write |
+| What business rules apply | How to code the rules |
+| What pattern (CQRS, event sourcing) | How to structure files |
+
+---
+
+## PRD Lifecycle
 
 ```
-STATUS: success
-ARTIFACT: openspec/changes/{change-name}/PRD.md
-LINES: {line count}
-READY_MESSAGE: "Lee PRD.md y tasks.md de {change-name}, implementa Task 1"
+CTO writes PRD in Notion → Code reads via MCP → Implements
+    ↕ (discoveries go back to Notion KB constantly)
+If pivot: archive PRD as SUPERSEDED → CTO writes new PRD
 ```

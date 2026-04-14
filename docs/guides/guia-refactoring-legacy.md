@@ -33,8 +33,8 @@ Antes de empezar, aqui tienes un mini-diccionario. No necesitas memorizarlo, vue
 | **SDD** | Spec-Driven Development. Un proceso paso a paso para construir software: primero planeas, luego construyes. Como un arquitecto que primero dibuja el plano y luego construye la casa. |
 | **Repositorio (repo)** | Una carpeta especial que guarda todo tu codigo y recuerda cada cambio que haces. |
 | **Scope Rule** | La regla que decide DONDE va cada archivo en el proyecto. "El uso determina la ubicacion" — si solo una parte del proyecto usa algo, va en esa parte. |
-| **Scope Agent** | Un "jefe de area" especializado. Claude tiene 3: uno para el proceso de desarrollo, uno para organizacion de archivos, y uno para observabilidad y continuidad de sesion. |
-| **Execution Gate** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden. |
+| **Agente Contratado** | Un "jefe de area" especializado. Claude tiene 3: uno para el proceso de desarrollo, uno para organizacion de archivos, y uno para observabilidad y continuidad de sesion. |
+| **Research-First** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden. |
 | **Docker** | Una herramienta que empaqueta aplicaciones para que funcionen en cualquier computadora igual. |
 | **CI/CD** | Integracion Continua / Despliegue Continuo. Un sistema automatico que revisa y publica los cambios cada vez que guardas codigo. Como un servicio de mensajeria que automaticamente despacha cada paquete que dejas en el mostrador. |
 | **Deuda tecnica** | Los "atajos" que se tomaron en el pasado y ahora causan problemas. Como reparar algo con cinta adhesiva en vez de arreglarlo bien — funciona por un tiempo, pero eventualmente se cae. |
@@ -290,7 +290,7 @@ Aprobado, continua con el siguiente paso
 
 Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd-ff refactoring-modernizacion` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-continue refactoring-modernizacion` ejecuta todas las fases pendientes de corrido sin pausas.
 
 Claude va a crear las especificaciones. Cuando te las muestre, verifica que incluya:
 
@@ -395,7 +395,7 @@ Se ve bien, continua
 /sdd-apply refactoring-modernizacion
 ```
 
-**Que esperar**: Claude ejecuta el **Execution Gate** y te muestra el plan:
+**Que esperar**: Claude ejecuta el **Research-First** y te muestra el plan:
 
 ```
 Este cambio involucra scope infra + pipeline:

@@ -28,17 +28,17 @@ Hay muchas herramientas de IA para desarrollo. Cada una tiene un enfoque diferen
 | Copilot | Si | No | No | No |
 | Cursor | Si | No | No | No |
 | Claude Code | Si | No (por defecto) | No | No |
-| **Batuta Dots** | Si | Si (9 fases SDD) | Si (automatico) | Si (5 capas) |
+| **Batuta Dots** | Si | Si (SDD: 2 modos) | Si (automatico) | Si (5 capas) |
 
-La mayoria de herramientas generan codigo. Batuta te obliga a pensar ANTES de generar.
+La mayoria de herramientas generan codigo. Batuta te obliga a investigar ANTES de generar (Research-First).
 
 ### 2. Especializacion, no generalismo
 
-Claude Code es generalista — sabe de todo pero no tiene opiniones fuertes. Batuta lo convierte en un CTO con:
-- 33 skills especializados
-- 3 agentes coordinadores
-- 6 expertos de dominio
-- Reglas claras (Scope Rule, Execution Gate, Documentation Standard)
+Claude Code es generalista — sabe de todo pero no tiene opiniones fuertes. Batuta lo convierte en un gestor que contrata especialistas:
+- 43 skills especializados
+- 5 agentes (pipeline, infra, backend, data, quality)
+- Protocolo de contratacion de agentes (agent-hiring)
+- Reglas claras (Research-First, Scope Rule, Execution Gate, Delegacion por Contrato)
 
 ### 3. Calidad verificable
 
@@ -85,7 +85,7 @@ Batuta Dots no reemplaza otras herramientas — las complementa:
 ## Limitaciones honestas de Batuta
 
 - **Curva de aprendizaje**: Mas empinada que "instalar Copilot y empezar"
-- **Overhead para tareas simples**: Un bug de 1 linea no necesita 9 fases SDD
+- **Overhead para tareas simples**: Un bug de 1 linea no necesita el modo COMPLETO (pero SPRINT es rapido)
 - **Dependencia de Claude**: Requiere conexion a internet y cuenta de Anthropic
 - **Tokens**: Agent Teams (Nivel 3) consumen 3-5x mas tokens
 - **Windows**: Agent Teams solo soportan modo in-process (sin split panes)

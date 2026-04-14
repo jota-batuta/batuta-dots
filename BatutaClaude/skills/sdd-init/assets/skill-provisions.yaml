@@ -17,16 +17,14 @@ always:
   - ecosystem-lifecycle
 
 # --- Skills: SDD pipeline (always in Batuta projects) ---
+# v15: SDD simplified to 4 phases (explore, design, apply, verify)
+# propose/spec/tasks/archive are no longer separate phases
 sdd:
-  - sdd-init
   - sdd-explore
-  - sdd-propose
-  - sdd-spec
   - sdd-design
-  - sdd-tasks
   - sdd-apply
   - sdd-verify
-  - sdd-archive
+  - prd-generator
   - tdd-workflow
   - debugging-systematic
 

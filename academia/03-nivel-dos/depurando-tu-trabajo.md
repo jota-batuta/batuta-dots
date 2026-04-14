@@ -1,6 +1,6 @@
 # Depurando tu trabajo
 
-Construir software es la mitad del trabajo. La otra mitad es verificar que funciona correctamente. Batuta tiene 3 herramientas para esto: **sdd-verify**, la **Piramide de Validacion**, y el framework **O.R.T.A.**
+Construir software es la mitad del trabajo. La otra mitad es verificar que funciona correctamente. Batuta tiene herramientas para esto: **sdd-verify** y la **Piramide de Validacion AI**.
 
 ---
 
@@ -31,21 +31,21 @@ Si la Capa 1 falla (el codigo no compila, el linter tiene errores), no tiene sen
 
 | Capa | Que | Quien | Que busca |
 |------|-----|-------|-----------|
-| L1 | Linting + tipos + build + docs | IA | Errores de sintaxis, tipos incorrectos, que el proyecto compile, que haya documentacion |
-| L2 | Tests unitarios | IA | Que cada funcion individual funcione correctamente |
-| L3 | Tests integracion/E2E | IA | Que las partes funcionen juntas |
+| L1 | Linting + tipos + build + docs | IA (quality-agent) | Errores de sintaxis, tipos incorrectos, que el proyecto compile |
+| L2 | Tests unitarios | IA (quality-agent) | Que cada funcion individual funcione correctamente |
+| L3 | Tests integracion/E2E | IA (quality-agent) | Que las partes funcionen juntas |
 | L4 | Revision de codigo | Tu | Logica de negocio, patrones, mantenibilidad |
 | L5 | Pruebas manuales | Tu | Que la experiencia de usuario sea correcta |
 
 ---
 
-## Usando sdd-verify
+## Usando sdd-verify en v15
 
 ```
 /sdd-verify
 ```
 
-El skill ejecuta las capas 1-3 automaticamente y produce un reporte:
+En v15, `/sdd-verify` contrata al **quality-agent** (con skills tdd-workflow, debugging-systematic, security-audit, e2e-testing). El quality-agent ejecuta las capas 1-3 automaticamente y produce un reporte:
 
 ```
 Verificacion: todo-basico
@@ -68,19 +68,14 @@ Items para tu revision:
 - Probar flujo completo en navegador
 ```
 
----
+### Sin gates formales
 
-## O.R.T.A. — Tu sistema de calidad continuo
+En v15, ya no hay 8 gates (G0-G7). El flujo simplificado:
 
-O.R.T.A. no es una herramienta que ejecutas una vez — es un framework que funciona siempre:
+- **Modo SPRINT** (0 gates): Research → Apply → Verify. Si verify falla, se arregla y se re-verifica.
+- **Modo COMPLETO** (1 gate): Research → Explore → Design [USER STOP] → Apply → Verify. El unico gate es la aprobacion del diseno.
 
-**Observabilidad**: Cada accion significativa queda registrada automaticamente. No tienes que hacer nada; el sistema lo hace por ti.
-
-**Repetibilidad**: El mismo input produce el mismo resultado. Si ejecutas `/sdd-verify` dos veces con el mismo codigo, el resultado es identico.
-
-**Trazabilidad**: Cada decision se puede rastrear. "Por que se hizo asi?" → Mira la propuesta, el diseno, y los comentarios en el codigo.
-
-**Auto-supervision**: El sistema detecta problemas antes de que escalen. Si no has actualizado el ecosistema en 7 dias, te avisa. Si un spec esta desactualizado respecto al diseno, te advierte.
+`/sdd-verify` corre siempre al final, sin importar el modo.
 
 ---
 
@@ -88,10 +83,34 @@ O.R.T.A. no es una herramienta que ejecutas una vez — es un framework que func
 
 1. Terminas de implementar con `/sdd-apply`
 2. Ejecutas `/sdd-verify`
-3. Si hay FAILs en L1-L3 → Batuta te dice que arreglar
+3. Si hay FAILs en L1-L3 → el quality-agent te dice que arreglar
 4. Arreglas y ejecutas `/sdd-verify` de nuevo
 5. Cuando L1-L3 pasan → revisas L4 (codigo) y L5 (usuario)
-6. Gate G2 confirma que todo esta listo
+6. Listo para deploy
+
+---
+
+## Research-first tambien aplica a debugging
+
+En v15, research-first es obligatorio en TODOS los modos, incluyendo debugging. Antes de que un agente intente arreglar algo:
+
+1. Lee el codigo relevante (nunca asume por el nombre)
+2. Verifica flujos de datos reales
+3. Busca en Notion KB si ya se resolvio algo similar
+4. Busca en web si el problema es de un framework externo
+
+Esto previene el modo de fallo mas caro: asumir mal → implementar → usuario corrige → reimplementar.
+
+---
+
+## session.md: estado actualizado siempre
+
+En v15, `session.md` se actualiza en CADA interaccion. Responde tres preguntas:
+- **DONDE estamos**: proyecto, stack, fase actual
+- **POR QUE llegamos ahi**: decisiones con razonamiento
+- **COMO continuar**: siguiente paso concreto
+
+Nunca incluye inventarios de archivos ni detalles de implementacion — esos viven en el codigo. Maximo 80 lineas. Si crece mas, se podan las entradas mas antiguas.
 
 ---
 

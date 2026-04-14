@@ -40,7 +40,7 @@
 
 | Teammate | Recibe | Formato | De quien |
 |----------|--------|---------|----------|
-| `analyst` | Codebase actual + areas objetivo del refactoring | Acceso lectura al repo + brief del Lead (Markdown) | Lead |
+| `analyst` | Codebase actual + areas objetivo del refactoring | Acceso lectura al repo + PRD o brief del Lead | Lead |
 | `implementor-1` | Reporte de analisis + lista explicita de archivos a refactorizar (batch 1) | `analysis/report.md` + file list del Lead | Lead (despues de que `analyst` termine) |
 | `implementor-2` | Reporte de analisis + lista explicita de archivos a refactorizar (batch 2) | `analysis/report.md` + file list del Lead | Lead (despues de que `analyst` termine) |
 | `reviewer` | Codigo antes y despues del refactoring + suite de tests | Acceso lectura a archivos modificados + `tests/` | Lead (despues de que implementors terminen) |
@@ -168,4 +168,4 @@ Antes de crear el equipo, el Lead verifica:
 
 ---
 
-**Nota v13**: Los domain agents (backend-agent, quality-agent, data-agent) aportan expertise embebida de dominio. quality-agent es el agente recomendado para `reviewer` porque trae expertise en TDD, debugging sistematico, y seguridad. quality-agent esta disponible en todo proyecto.
+**v15**: 5 agentes contratables (pipeline, infra, backend, data, quality). quality-agent es recomendado para `reviewer` (TDD, debugging, seguridad). El main agent contrata agentes de `.claude/agents/` — nunca implementa directamente.

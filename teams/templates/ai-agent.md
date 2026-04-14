@@ -39,7 +39,7 @@
 
 | Teammate | Recibe | Formato | De quien |
 |----------|--------|---------|----------|
-| `agent-dev` | Requisitos funcionales + definiciones de tools + comportamiento deseado | Markdown (spec SDD o brief) | Lead |
+| `agent-dev` | Requisitos funcionales + definiciones de tools + comportamiento deseado | Markdown (PRD o brief) | Lead |
 | `prompt-engineer` | Especificacion de comportamiento del agente + conversaciones de ejemplo | Markdown + JSONL (ejemplos) | Lead |
 | `security-reviewer` | Todo el codigo + todos los prompts para revision | Acceso lectura a `features/**` + `features/agent/prompts/**` | Lead (post-implementacion) |
 
@@ -129,4 +129,4 @@ Antes de crear el equipo, el Lead verifica:
 
 ---
 
-**Nota v13**: Los domain agents (backend-agent, quality-agent, data-agent) aportan expertise embebida de dominio. data-agent es el agente recomendado para `agent-dev` y `prompt-engineer` porque trae expertise en LLM pipelines, RAG, embeddings, y prompt engineering. quality-agent esta disponible en todo proyecto.
+**v15**: 5 agentes contratables (pipeline, infra, backend, data, quality). data-agent es recomendado para `agent-dev` y `prompt-engineer` (expertise en LLM pipelines, RAG, embeddings, prompt engineering). quality-agent disponible en todo proyecto. El main agent contrata agentes de `.claude/agents/` — nunca implementa directamente.

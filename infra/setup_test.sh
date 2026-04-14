@@ -18,14 +18,14 @@
 #   - replicate-platform.sh exists for future use
 #   v4:
 #   - session template exists in infra/templates/
-#   - CLAUDE.md contains v4+ sections (Session Continuity, Execution Gate)
+#   - CLAUDE.md contains core sections (Session Continuity, Rules)
 #   - (v11.1: prompt-tracker and analyze-prompts removed)
-#   v5 (MoE + Execution Gate + Frontmatter + Skill-Sync):
-#   - Execution Gate with LIGHT/FULL modes
-#   - Scope Routing Table with 3 scope agents
+#   v5-v15 (Contract-Based Delegation + SDD Modes):
+#   - SDD Pipeline with SPRINT/COMPLETO modes (v15)
+#   - Delegation por Contrato rule (v15)
 #   - Follow Questions removed
 #   - "just do it → PROCEED" removed
-#   - 3 scope agent files exist with sync delimiters
+#   - 5 contract-based agents (v15: observability-agent removed)
 #   - (v11.1: prompt-tracker removed)
 #   - All skills have scope, auto_invoke, allowed-tools
 #   - Agents sync via setup.sh
@@ -37,14 +37,14 @@
 #   - docs/qa/ directory exists with quality reports
 #   - BatutaClaude/VERSION file exists
 #   - teams/ directory exists with templates and playbook
-#   v9.3 (Post-Smoke-Test Corrections):
-#   - All 33 skills have ## Purpose section
-#   - New skills (fastapi-crud, jwt-auth, sqlalchemy-models) have valid frontmatter
+#   v9.3-v15 (Post-Smoke-Test Corrections):
+#   - All skills have ## Purpose section
+#   - Key skills (sqlalchemy-models, prd-generator) have valid frontmatter
 #   - 7 team templates (including temporal-io-app)
 #   - settings.json hooks point to infra/ (not skills/)
 #   - No guides reference old skills/setup.sh path
 #   - sdd-apply has Code Documentation Standard section
-#   - CLAUDE.md has code documentation enforcement rule
+#   - v15: fastapi-crud, jwt-auth removed (merged into backend-agent)
 #
 # Platform: Windows (Git Bash / MSYS2 / MINGW) and native Unix
 # ============================================================================
@@ -205,14 +205,14 @@ test_copy_claude_creates_file() {
 }
 
 test_claude_md_contains_expected_content() {
-    log_test "CLAUDE.md contains expected content"
+    log_test "CLAUDE.md contains expected content (v15)"
     [[ ! -f "$REPO_ROOT/CLAUDE.md" ]] && bash "$SETUP_SCRIPT" --claude >/dev/null 2>&1
 
-    assert_file_contains "$REPO_ROOT/CLAUDE.md" "Personality" "personality section"
     assert_file_contains "$REPO_ROOT/CLAUDE.md" "Scope Rule" "scope rule section"
-    assert_file_contains "$REPO_ROOT/CLAUDE.md" "Skill Gap Detection" "gap detection"
-    assert_file_contains "$REPO_ROOT/CLAUDE.md" "Scope Routing" "scope routing section (v5)"
-    assert_file_contains "$REPO_ROOT/CLAUDE.md" "SDD Commands" "SDD commands table"
+    assert_file_contains "$REPO_ROOT/CLAUDE.md" "Research-First" "research-first rule (v15)"
+    assert_file_contains "$REPO_ROOT/CLAUDE.md" "SDD Pipeline" "SDD pipeline section"
+    assert_file_contains "$REPO_ROOT/CLAUDE.md" "Session Continuity" "session continuity section"
+    assert_file_contains "$REPO_ROOT/CLAUDE.md" "Commands" "commands section"
 }
 
 test_claude_md_is_direct_copy() {
@@ -393,39 +393,37 @@ test_session_template_exists() {
 # ============================================================================
 
 test_claude_md_has_v4_sections() {
-    log_test "CLAUDE.md contains v4+ sections"
+    log_test "CLAUDE.md contains core sections (v15)"
     local claude_src="$REPO_ROOT/BatutaClaude/CLAUDE.md"
 
     assert_file_contains "$claude_src" "Session Continuity" "session continuity section"
-    assert_file_contains "$claude_src" "Execution Gate" "execution gate (v5, replaces Follow Questions)"
+    assert_file_contains "$claude_src" "Rules" "rules section (v15)"
 }
 
 # ============================================================================
-# 12. CLAUDE.md v5 — Execution Gate (replaces Follow Questions)
+# 12. CLAUDE.md v15 — SDD Modes (SPRINT/COMPLETO)
 # ============================================================================
 
-test_claude_md_has_execution_gate() {
-    log_test "CLAUDE.md has Execution Gate with LIGHT/FULL modes (v5)"
+test_claude_md_has_sdd_modes() {
+    log_test "CLAUDE.md has SDD Pipeline with SPRINT/COMPLETO modes (v15)"
     local claude_src="$REPO_ROOT/BatutaClaude/CLAUDE.md"
 
-    assert_file_contains "$claude_src" "Execution Gate" "Execution Gate section"
-    assert_file_contains "$claude_src" "LIGHT" "LIGHT gate mode"
-    assert_file_contains "$claude_src" "FULL" "FULL gate mode"
-    assert_file_contains "$claude_src" "Cannot be skipped" "gate is mandatory"
+    assert_file_contains "$claude_src" "SDD Pipeline" "SDD Pipeline section"
+    assert_file_contains "$claude_src" "SPRINT" "SPRINT mode"
+    assert_file_contains "$claude_src" "COMPLETO" "COMPLETO mode"
 }
 
 # ============================================================================
-# 13. CLAUDE.md v5 — Scope Routing Table
+# 13. CLAUDE.md v15 — Delegation por Contrato
 # ============================================================================
 
-test_claude_md_has_scope_routing() {
-    log_test "CLAUDE.md has Scope Routing (v11.1)"
+test_claude_md_has_delegation_rule() {
+    log_test "CLAUDE.md has Delegation por Contrato rule (v15)"
     local claude_src="$REPO_ROOT/BatutaClaude/CLAUDE.md"
 
-    assert_file_contains "$claude_src" "Scope Routing" "scope routing section"
-    assert_file_contains "$claude_src" "pipeline" "pipeline scope reference"
-    assert_file_contains "$claude_src" "infra" "infra scope reference"
-    assert_file_contains "$claude_src" "observability" "observability scope reference"
+    assert_file_contains "$claude_src" "Delegation" "delegation rule section"
+    assert_file_contains "$claude_src" "pipeline" "pipeline agent reference"
+    assert_file_contains "$claude_src" "infra" "infra agent reference"
 }
 
 # ============================================================================
@@ -451,43 +449,43 @@ test_claude_md_no_just_do_it_proceed() {
 }
 
 # ============================================================================
-# 16. Scope Agents exist (v5)
+# 16. Contract-based agents exist (v15)
 # ============================================================================
 
 test_scope_agents_exist() {
-    log_test "3 scope agents + 3 domain agents exist in BatutaClaude/agents/ (v13)"
+    log_test "5 contract-based agents exist in BatutaClaude/agents/ (v15)"
     local agents_dir="$REPO_ROOT/BatutaClaude/agents"
 
     assert_dir_exists "$agents_dir"
 
-    # Scope agents (hub machinery)
+    # All 5 agents (v15: observability-agent removed)
     assert_file_exists "$agents_dir/pipeline-agent.md"
     assert_file_exists "$agents_dir/infra-agent.md"
-    assert_file_exists "$agents_dir/observability-agent.md"
-
-    # Domain agents (provisioned to projects — v13)
     assert_file_exists "$agents_dir/backend-agent.md"
     assert_file_exists "$agents_dir/quality-agent.md"
     assert_file_exists "$agents_dir/data-agent.md"
 
-    # Verify scope agents have skill listings (auto-discovered, no more AUTO-GENERATED delimiters)
-    assert_file_contains "$agents_dir/pipeline-agent.md" "auto-discovered" "pipeline-agent notes auto-discovery"
-    assert_file_contains "$agents_dir/infra-agent.md" "auto-discovered" "infra-agent notes auto-discovery"
+    # Verify observability-agent is removed (v15)
+    if [[ -f "$agents_dir/observability-agent.md" ]]; then
+        log_fail "observability-agent.md should have been removed in v15"
+    else
+        log_pass "observability-agent.md correctly removed (v15)"
+    fi
 
-    # Verify domain agents have sdk: block (v13 mandatory)
+    # Verify agents have sdk: block (mandatory)
     assert_file_contains "$agents_dir/backend-agent.md" "sdk:" "backend-agent has sdk block"
     assert_file_contains "$agents_dir/quality-agent.md" "sdk:" "quality-agent has sdk block"
     assert_file_contains "$agents_dir/data-agent.md" "sdk:" "data-agent has sdk block"
 }
 
 # ============================================================================
-# 17. (v11.1: prompt-tracker removed — test replaced)
+# 17. Research-First is non-negotiable (v15)
 # ============================================================================
 
-test_execution_gate_is_cognitive_rule() {
-    log_test "Execution Gate is a cognitive rule in CLAUDE.md (v11.1)"
+test_research_first_is_non_negotiable() {
+    log_test "Research-First is non-negotiable in CLAUDE.md (v15)"
     local claude_src="$REPO_ROOT/BatutaClaude/CLAUDE.md"
-    assert_file_contains "$claude_src" "cognitive rule" "execution gate defined as cognitive rule"
+    assert_file_contains "$claude_src" "NO NEGOCIABLE\|non-negotiable\|no negociable" "research-first defined as non-negotiable"
 }
 
 # ============================================================================
@@ -563,11 +561,11 @@ test_all_skills_have_allowed_tools() {
 }
 
 # ============================================================================
-# 21. Agents sync correctly via setup.sh (v5)
+# 21. Agents sync correctly via setup.sh (v15)
 # ============================================================================
 
 test_agents_sync_correctly() {
-    log_test "setup.sh --sync syncs all 6 agents (scope + domain) to ~/.claude/agents/ (v14.3)"
+    log_test "setup.sh --sync syncs all 5 agents to ~/.claude/agents/ (v15)"
     local agents_src="$REPO_ROOT/BatutaClaude/agents"
     [[ ! -d "$agents_src" ]] && { log_fail "BatutaClaude/agents/ not found"; return; }
 
@@ -577,20 +575,17 @@ test_agents_sync_correctly() {
     local claude_agents="$tmp_home/.claude/agents"
     [[ -d "$claude_agents" ]] && log_pass "~/.claude/agents/ created" || { log_fail "~/.claude/agents/ NOT created"; rm -rf "$tmp_home"; return; }
 
-    # Scope agents
+    # All 5 agents (v15: observability-agent removed)
     [[ -f "$claude_agents/pipeline-agent.md" ]] && log_pass "pipeline-agent.md synced" || log_fail "pipeline-agent.md not synced"
     [[ -f "$claude_agents/infra-agent.md" ]] && log_pass "infra-agent.md synced" || log_fail "infra-agent.md not synced"
-    [[ -f "$claude_agents/observability-agent.md" ]] && log_pass "observability-agent.md synced" || log_fail "observability-agent.md not synced"
-
-    # Domain agents (v14.3: --sync now includes agents, not just skills)
     [[ -f "$claude_agents/backend-agent.md" ]] && log_pass "backend-agent.md synced" || log_fail "backend-agent.md not synced"
     [[ -f "$claude_agents/quality-agent.md" ]] && log_pass "quality-agent.md synced" || log_fail "quality-agent.md not synced"
     [[ -f "$claude_agents/data-agent.md" ]] && log_pass "data-agent.md synced" || log_fail "data-agent.md not synced"
 
-    # Count total: should be 6
+    # Count total: should be 5
     local agent_count
     agent_count=$(find "$claude_agents" -name "*.md" | wc -l)
-    [[ "$agent_count" -ge 6 ]] && log_pass "6 agents synced (count: $agent_count)" || log_fail "Expected 6 agents, got $agent_count"
+    [[ "$agent_count" -ge 5 ]] && log_pass "5 agents synced (count: $agent_count)" || log_fail "Expected 5 agents, got $agent_count"
 
     rm -rf "$tmp_home"
 }
@@ -633,7 +628,7 @@ test_no_auto_generated_delimiters() {
     fi
 
     # Agent files should NOT have old delimiters
-    for agent in pipeline-agent infra-agent observability-agent; do
+    for agent in pipeline-agent infra-agent; do
         local agent_file="$agents_dir/${agent}.md"
         if [[ -f "$agent_file" ]]; then
             if grep -q "AUTO-GENERATED by skill-sync" "$agent_file" 2>/dev/null; then
@@ -784,28 +779,27 @@ test_settings_has_agent_teams() {
 }
 
 # ============================================================================
-# 31. CLAUDE.md has Team Routing section (v7)
+# 31. CLAUDE.md has Delegation por Contrato (v15)
 # ============================================================================
 
-test_claude_md_has_team_routing() {
-    log_test "CLAUDE.md has Team Routing section (v7)"
+test_claude_md_has_delegation_contract() {
+    log_test "CLAUDE.md has Delegation por Contrato section (v15)"
     local claude_src="$REPO_ROOT/BatutaClaude/CLAUDE.md"
 
-    assert_file_contains "$claude_src" "Team Routing" "Team Routing section"
-    assert_file_contains "$claude_src" "Agent Team" "Agent Team reference"
+    assert_file_contains "$claude_src" "Delegation" "Delegation section"
+    assert_file_contains "$claude_src" "SubagentStop" "SubagentStop hook reference"
 }
 
 # ============================================================================
-# 32. Scope agents have Spawn Prompt sections (v7)
+# 32. Agents have Spawn Prompt sections (v15)
 # ============================================================================
 
 test_scope_agents_have_spawn_prompts() {
-    log_test "All agents (scope + domain) have Spawn Prompt and Team Context (v13)"
+    log_test "All 5 agents have Spawn Prompt and Team Context (v15)"
     local agents_dir="$REPO_ROOT/BatutaClaude/agents"
 
-    # WORKAROUND: Check both scope agents and domain agents in a single loop.
-    # Domain agents added in v13 follow the same structural pattern.
-    for agent in pipeline-agent infra-agent observability-agent backend-agent quality-agent data-agent; do
+    # v15: 5 contract-based agents (observability-agent removed)
+    for agent in pipeline-agent infra-agent backend-agent quality-agent data-agent; do
         local agent_file="$agents_dir/${agent}.md"
         if [[ -f "$agent_file" ]]; then
             if grep -q "Spawn Prompt" "$agent_file" 2>/dev/null; then
@@ -941,15 +935,15 @@ test_security_integration() {
 }
 
 # ============================================================================
-# 40. Total skill count is 41 (v14.3)
+# 40. Total skill count floor (v15)
 # ============================================================================
 
 test_skill_count_total() {
-    # FLOOR CHECK: v14.3 shipped with 41 skills. New skills are added regularly,
+    # FLOOR CHECK: v15 shipped with 43 skills. New skills are added regularly,
     # so this test enforces a minimum (no accidental mass deletion) rather than
     # an exact count. Bumping the floor requires an intentional edit here.
-    local min_skills=41
-    log_test "At least $min_skills skills in BatutaClaude/skills/ (floor from v14.3)"
+    local min_skills=43
+    log_test "At least $min_skills skills in BatutaClaude/skills/ (floor from v15)"
     local skills_dir="$REPO_ROOT/BatutaClaude/skills"
 
     local skill_count=0
@@ -1008,18 +1002,19 @@ test_artifact_store_documented() {
 }
 
 test_stack_awareness_cross_referenced() {
-    log_test "Stack Awareness tables have source reference comments"
+    log_test "Stack Awareness tables have source reference comments (v15)"
     local count=0
-    for skill in sdd-propose sdd-design sdd-apply sdd-init scope-rule; do
+    # v15: sdd-propose removed; check remaining skills that should have Stack Awareness
+    for skill in sdd-design sdd-apply sdd-init scope-rule; do
         local skill_file="$REPO_ROOT/BatutaClaude/skills/$skill/SKILL.md"
         if [[ -f "$skill_file" ]] && grep -q "Stack Awareness" "$skill_file" 2>/dev/null; then
             count=$((count + 1))
         fi
     done
-    if [[ $count -ge 4 ]]; then
-        log_pass "Stack Awareness present in $count/5 skills"
+    if [[ $count -ge 3 ]]; then
+        log_pass "Stack Awareness present in $count/4 skills"
     else
-        log_fail "Stack Awareness only found in $count/5 skills"
+        log_fail "Stack Awareness only found in $count/4 skills"
     fi
 }
 
@@ -1054,10 +1049,11 @@ test_all_skills_have_purpose_section() {
 }
 
 test_new_skills_have_valid_frontmatter() {
-    log_test "New skills (fastapi-crud, jwt-auth, sqlalchemy-models) have valid frontmatter (v9.3)"
+    log_test "Key skills (sqlalchemy-models, prd-generator) have valid frontmatter (v15)"
     local skills_dir="$REPO_ROOT/BatutaClaude/skills"
 
-    for skill in fastapi-crud jwt-auth sqlalchemy-models; do
+    # v15: fastapi-crud and jwt-auth removed (merged into backend-agent expertise)
+    for skill in sqlalchemy-models prd-generator; do
         local skill_file="$skills_dir/$skill/SKILL.md"
         assert_file_exists "$skill_file"
         assert_file_contains "$skill_file" "^name:" "frontmatter name field in $skill"
@@ -1127,24 +1123,21 @@ test_sdd_apply_has_documentation_standard() {
 }
 
 test_claude_md_has_doc_standard_rule() {
-    log_test "CLAUDE.md has code documentation enforcement rule (v9.3)"
+    log_test "CLAUDE.md references sdd-apply skill (v15)"
     local claude_md="$REPO_ROOT/BatutaClaude/CLAUDE.md"
 
-    assert_file_contains "$claude_md" "module docstring" \
-        "CLAUDE.md mentions module docstring requirement"
-    assert_file_contains "$claude_md" "SECURITY:" \
-        "CLAUDE.md mentions SECURITY: prefix"
     assert_file_contains "$claude_md" "sdd-apply" \
-        "CLAUDE.md references sdd-apply for full standard"
+        "CLAUDE.md references sdd-apply"
 }
 
 # ============================================================================
 # v9.4 Tests: SDD Command Wrappers + Colon-to-Hyphen Migration
 # ============================================================================
 
-test_thirteen_commands_synced() {
-    log_test "13 commands exist in BatutaClaude/commands/ (v13)"
+test_twelve_commands_synced() {
+    log_test "12 commands exist in BatutaClaude/commands/ (v15)"
     local cmd_dir="$REPO_ROOT/BatutaClaude/commands"
+    # v15: sdd-archive removed
     local expected_commands=(
         "batuta-init.md"
         "batuta-update.md"
@@ -1157,7 +1150,6 @@ test_thirteen_commands_synced() {
         "sdd-ff.md"
         "sdd-apply.md"
         "sdd-verify.md"
-        "sdd-archive.md"
         "skill-eval.md"
     )
 
@@ -1171,7 +1163,7 @@ test_thirteen_commands_synced() {
     done
 
     if [[ $found -eq ${#expected_commands[@]} ]]; then
-        log_pass "All 13 command files exist in BatutaClaude/commands/"
+        log_pass "All 12 command files exist in BatutaClaude/commands/"
     fi
 }
 
@@ -1356,7 +1348,7 @@ test_session_start_has_provisions_detection() {
 }
 
 # ============================================================================
-# v13 tests: Domain Agents + Agent Provisioning
+# v13-v15 tests: Contract-Based Agents + Agent Provisioning
 # ============================================================================
 
 test_agent_provisioning_rules_exist() {
@@ -1483,13 +1475,13 @@ test_multiple_runs_are_idempotent
 test_session_template_exists
 test_claude_md_has_v4_sections
 
-# --- v5 tests: MoE + Execution Gate + Frontmatter + Skill-Sync ---
-test_claude_md_has_execution_gate
-test_claude_md_has_scope_routing
+# --- v5-v15 tests: SDD Modes + Delegation + Frontmatter ---
+test_claude_md_has_sdd_modes
+test_claude_md_has_delegation_rule
 test_claude_md_no_follow_questions
 test_claude_md_no_just_do_it_proceed
 test_scope_agents_exist
-test_execution_gate_is_cognitive_rule
+test_research_first_is_non_negotiable
 test_all_skills_have_scope
 test_all_skills_have_auto_invoke
 test_all_skills_have_allowed_tools
@@ -1508,7 +1500,7 @@ test_version_file_exists
 test_team_orchestrator_skill_exists
 test_orta_hooks_exist
 test_settings_has_agent_teams
-test_claude_md_has_team_routing
+test_claude_md_has_delegation_contract
 test_scope_agents_have_spawn_prompts
 test_no_prompt_tracker_remnants
 
@@ -1541,7 +1533,7 @@ test_sdd_apply_has_documentation_standard
 test_claude_md_has_doc_standard_rule
 
 # --- v9.4 tests: SDD Command Wrappers + Colon-to-Hyphen Migration ---
-test_thirteen_commands_synced
+test_twelve_commands_synced
 test_sdd_commands_use_hyphens_not_colons
 test_claude_md_commands_use_hyphens
 

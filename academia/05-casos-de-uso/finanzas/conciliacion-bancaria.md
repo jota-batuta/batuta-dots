@@ -110,21 +110,21 @@ Crea el worker que ejecuta la conciliacion automatica cada noche. Incluye reinte
 | worker-scaffold | Crea el worker de procesamiento nocturno con reintentos y logging |
 | security-audit | Protege las credenciales del ERP y los datos financieros |
 
-## Gates que pasas
+## Checkpoints que pasas
 
-### G0.5 — Discovery Complete
+### Design Approval — Discovery Complete
 - Tienes las 4 variantes de movimiento documentadas con sus reglas de coincidencia
 - Tienes las 7+ excepciones catalogadas con frecuencia estimada
 - Tienes el diccionario de conceptos bancarios por entidad
 - El process-analyst y el recursion-designer completaron su analisis
 
-### G1 — Solution Worth Building
+### Design Approval — Solution Worth Building
 - La especificacion demuestra que el 70%+ de las conciliaciones se pueden automatizar
 - El analisis costo-beneficio justifica el desarrollo (2-3 dias/mes de tesorero vs costo del sistema)
 - Los requisitos de compliance estan integrados en el diseno, no como parche posterior
 - Los riesgos estan identificados (cambio de formato de extracto, nuevos bancos, etc.)
 
-### G2 — Ready for Production
+### Verificacion Final — Ready for Production
 - Los parsers procesan extractos reales de cada banco sin errores
 - El motor de conciliacion maneja correctamente los 4 tipos de movimiento
 - Las excepciones se clasifican y sugieren resolucion automatica

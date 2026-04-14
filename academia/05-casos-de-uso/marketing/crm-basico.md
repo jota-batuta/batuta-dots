@@ -63,7 +63,7 @@ El skill define los requisitos tecnicos que el sistema debe cumplir para estar e
 sdd-ff
 ```
 
-La secuencia `sdd-propose` → `sdd-spec` → `sdd-design` → `sdd-tasks` define la arquitectura del CRM. Se pasa por G0.5 y G1.
+El `sdd-ff` genera el PRD consolidado con la arquitectura del CRM. Se pasa por Design Approval.
 
 ### Fase 5 — Implementacion
 
@@ -89,10 +89,10 @@ El skill `security-audit` ejecuta su checklist de 10 puntos sobre el sistema gen
 ### Fase 7 — Verificacion
 
 ```
-sdd-verify → G2
+sdd-verify
 ```
 
-Se valida funcionalidad, seguridad, y cumplimiento normativo. El gate G2 confirma que el CRM esta listo para produccion.
+Se valida funcionalidad, seguridad, y cumplimiento normativo. La Verificacion Final confirma que el CRM esta listo para produccion.
 
 ## Skills que se activan
 
@@ -102,21 +102,21 @@ Se valida funcionalidad, seguridad, y cumplimiento normativo. El gate G2 confirm
 | `compliance-colombia` | Asegura cumplimiento de Ley 1581 en manejo de datos personales de contactos |
 | `security-audit` | Valida control de acceso, encriptacion, y registro de auditorias sobre datos sensibles |
 
-## Gates que pasas
+## Checkpoints que pasas
 
-### G0.5 — Discovery Complete
+### Design Approval — Discovery Complete
 - Las etapas del pipeline estan definidas con criterios claros de transicion
 - Los canales de captacion de leads estan identificados
 - Los requisitos de la Ley 1581 aplicables estan documentados
 - Los roles de usuario estan definidos (vendedor, gerente, administrador)
 
-### G1 — Solution Worth Building
+### Design Approval — Solution Worth Building
 - El pipeline cubre el ciclo completo desde lead hasta cliente o perdido
 - El modelo de datos soporta el historial completo de interacciones
 - Los requisitos de compliance estan integrados en el diseno (no son un parche posterior)
 - Los reportes propuestos responden a las preguntas reales del gerente comercial
 
-### G2 — Ready for Production
+### Verificacion Final — Ready for Production
 - El pipeline funciona correctamente con todas las transiciones y validaciones
 - El control de acceso respeta los permisos definidos por rol
 - Los mecanismos de compliance (autorizacion, consulta, eliminacion) funcionan

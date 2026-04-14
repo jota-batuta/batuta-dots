@@ -6,7 +6,7 @@
 
 ## Que es Antigravity Lite
 
-Antigravity Lite es el companion de exploracion rapida del ecosistema Batuta. Mientras Claude Code es para produccion seria (pipeline SDD completo, arquitectura, features complejas), Antigravity Lite es para **brainstorming, prototipado rapido, scripts, documentacion y tareas mecanicas**. Conserva el 100% del cerebro CTO (filosofia, gates estrategicos, 33 skills, reglas de comportamiento). Lo que cambia es el **rol**: exploracion y velocidad en lugar de precision y rigurosidad.
+Antigravity Lite es el companion de exploracion rapida del ecosistema Batuta. Mientras Claude Code es para produccion seria (pipeline SDD completo, arquitectura, features complejas), Antigravity Lite es para **brainstorming, prototipado rapido, scripts, documentacion y tareas mecanicas**. Conserva el 100% del cerebro CTO (filosofia, checkpoints estrategicos, 43+ skills, reglas de comportamiento). Lo que cambia es el **rol**: exploracion y velocidad en lugar de precision y rigurosidad.
 
 **Antigravity** es el IDE agent-first de Google, un fork de VS Code/Windsurf. Durante el preview es **gratuito** con Gemini 3 Pro. Soporta Rules (GEMINI.md), Workflows (prompts guardados con /trigger), Skills (.agent/skills/), y Manager View para multi-agente.
 
@@ -40,7 +40,7 @@ cd /path/to/your/project
 bash /path/to/batuta-dots/BatutaAntigravity/setup-antigravity.sh --workspace
 ```
 
-Esto copia los 33 skills compatibles a `.agent/skills/` dentro del proyecto.
+Esto copia los skills compatibles con Antigravity a `.agent/skills/` dentro del proyecto.
 
 ### Opcion 2: Global (todos los proyectos)
 
@@ -80,12 +80,10 @@ Los workflows son prompts guardados que se ejecutan con `/trigger` en Antigravit
 |----------|---------|-------------|
 | `sdd-init.md` | `/sdd-init` | Inicializar contexto del proyecto |
 | `sdd-explore.md` | `/sdd-explore` | Discovery y restricciones |
-| `sdd-new.md` | `/sdd-new` | Propuesta de cambio |
+| `sdd-new.md` | `/sdd-new` | Explore + Design |
 | `sdd-continue.md` | `/sdd-continue` | Siguiente fase pendiente |
-| `sdd-ff.md` | `/sdd-ff` | Fast-forward (propose → spec → design → tasks) |
 | `sdd-apply.md` | `/sdd-apply` | Implementacion |
 | `sdd-verify.md` | `/sdd-verify` | Validacion |
-| `sdd-archive.md` | `/sdd-archive` | Cierre y aprendizaje |
 
 ### Gestion
 
@@ -133,7 +131,7 @@ Claude Code tiene 2 hooks nativos (SessionStart, Stop). Antigravity no tiene hoo
 
 **Solucion**: GEMINI.md incluye reglas de comportamiento que replican los hooks criticos:
 - "Al inicio de cada sesion, lee `.batuta/session.md`" (reemplaza SessionStart)
-- "Antes de escribir o editar, muestra los cambios y espera aprobacion" (Execution Gate via regla)
+- "Antes de escribir o editar, investiga y verifica" (Research-First via regla)
 - El workflow `/save-session` reemplaza el hook Stop
 
 ### 2. No hay Agent Teams

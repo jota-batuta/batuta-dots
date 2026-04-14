@@ -70,11 +70,10 @@ La propuesta generada incluye:
 
 Esto es material listo para un pitch deck.
 
-### Paso 6-8: Implementar, verificar, archivar
+### Paso 6-7: Implementar, verificar
 ```
 /sdd-apply mi-mvp-nombre
 /sdd-verify mi-mvp-nombre
-/sdd-archive mi-mvp-nombre
 ```
 
 ---
@@ -84,22 +83,18 @@ Esto es material listo para un pitch deck.
 | Artefacto SDD | Material de startup |
 |---------------|---------------------|
 | Reporte de exploracion | Research de mercado / Analisis de competencia |
-| Propuesta | Executive summary tecnico |
-| Especificaciones | Product requirements document (PRD) |
-| Diseno | Technical architecture (para CTO o co-fundador tecnico) |
+| PRD (propuesta + specs + diseno + tareas) | Executive summary tecnico + Product requirements document |
 | Codigo | El producto mismo |
 | Reporte de verificacion | QA report (demuestra que funciona) |
-| Archivo | Lecciones para la siguiente iteracion |
 
 ---
 
-## Gates que pasas
+## Checkpoints que pasas
 
-| Gate | Que verifica (y que un mentor te preguntaria) |
-|------|-----------------------------------------------|
-| **G0.5** | Entiendes a tu usuario? Investigaste la competencia? Definiste que es MVP y que es "nice to have"? |
-| **G1** | Este MVP valida tu hipotesis? No estas construyendo de mas? Puedes terminarlo en el tiempo que tienes? |
-| **G2** | Funciona lo suficiente para que un early adopter lo use? Puedes mostrarlo sin verguenza? |
+| Checkpoint | Que verifica (y que un mentor te preguntaria) |
+|------------|-----------------------------------------------|
+| **Design Approval** | Entiendes a tu usuario? Investigaste la competencia? Definiste que es MVP y que es "nice to have"? Este MVP valida tu hipotesis? No estas construyendo de mas? |
+| **Verificacion Final** | Funciona lo suficiente para que un early adopter lo use? Puedes mostrarlo sin verguenza? |
 
 ---
 
@@ -107,10 +102,10 @@ Esto es material listo para un pitch deck.
 
 La tentacion mas grande de un emprendedor es agregar features. SDD te protege:
 
-1. **G0.5 te obliga a definir alcance** — "esto SI, esto NO"
-2. **La propuesta tiene costo-beneficio** — cada feature extra tiene un costo visible
-3. **Las specs son verificables** — si no esta en la spec, no se construye
-4. **G1 pregunta "vale la pena?"** — perfecto para priorizar
+1. **Design Approval te obliga a definir alcance** — "esto SI, esto NO"
+2. **El PRD tiene costo-beneficio** — cada feature extra tiene un costo visible
+3. **Las specs son verificables** — si no esta en el PRD, no se construye
+4. **El agente contrata un especialista que pregunta "vale la pena?"** — perfecto para priorizar
 
 ---
 

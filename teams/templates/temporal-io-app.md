@@ -33,7 +33,7 @@
 
 | Teammate | Recibe | De quien |
 |----------|--------|----------|
-| Todos | SDD spec + design artifacts | Lead |
+| Todos | PRD o brief del cambio | Lead |
 | `workflow-dev` | Definicion de flujos (steps, retry policies, compensacion, timeouts) | Lead |
 | `activity-dev` | Interfaces de activities (input/output types, side effects, idempotencia) | Lead + `workflow-dev` |
 | `api-dev` | Workflow IDs, metodos de inicio, formatos de consulta de estado | Lead + `workflow-dev` |
@@ -90,7 +90,7 @@ infra-dev:
 | `api-dev` | `workflow-dev` | Workflow IDs son deterministas (para idempotencia), status es consultable |
 | `infra-dev` | Todos | No hay secrets hardcodeados, task queues coinciden entre worker y workflow |
 
-El Lead revisa todos los outputs contra la SDD spec original.
+El Lead revisa todos los outputs contra el PRD o brief original.
 
 ---
 
@@ -162,7 +162,7 @@ DEFAULT_RETRY_POLICY = RetryPolicy(
 
 Antes de crear el equipo, verifica que estos prerequisitos estan listos:
 
-- [ ] SDD spec y design completados
+- [ ] PRD completado o SPRINT mode con research hecho
 - [ ] Flujos de workflow definidos (steps, orden, compensacion)
 - [ ] Activities identificadas (una por side effect externo)
 - [ ] Task queues nombradas
@@ -172,6 +172,6 @@ Antes de crear el equipo, verifica que estos prerequisitos estan listos:
 
 ---
 
-**Nota v13**: Los domain agents (backend-agent, quality-agent, data-agent) aportan expertise embebida de dominio. backend-agent es recomendado para `activity-dev` y `api-dev` porque trae expertise en FastAPI, auth, y patrones de base de datos. quality-agent esta disponible en todo proyecto.
+**v15**: 5 agentes contratables (pipeline, infra, backend, data, quality). backend-agent recomendado para `activity-dev` y `api-dev` (FastAPI, auth, DB patterns). quality-agent disponible en todo proyecto. El main agent contrata agentes de `.claude/agents/` — nunca implementa directamente.
 
 *Template basado en Pattern D (Cross-Layer) del team-orchestrator. La composicion incluye `infra-dev` porque Temporal requiere infraestructura dedicada (server + workers). Para aplicaciones que usan Temporal Cloud en vez de self-hosted, `infra-dev` puede simplificarse.*

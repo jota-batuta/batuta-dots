@@ -41,8 +41,8 @@ Todo esto sin que tu hagas nada.
 | **API de Gmail** | La forma oficial de conectarse a Gmail desde un programa. Google te da una "llave" (credenciales) para acceder. |
 | **OAuth** | El sistema de permisos de Google. Es como cuando una app te dice "Quieres dar acceso a tu Gmail?" y tu dices que si. |
 | **Tool (herramienta)** | Una accion que el agente puede ejecutar. Ejemplo: "leer correo", "crear label", "aplicar etiqueta" son tools. |
-| **Scope Agent** | Un "jefe de area" especializado de Claude. Coordina un grupo de tareas relacionadas. |
-| **Execution Gate** | Un checklist automatico que Claude ejecuta ANTES de hacer cualquier cambio de codigo. |
+| **Agente Contratado** | Un "jefe de area" especializado de Claude. Coordina un grupo de tareas relacionadas. |
+| **Research-First** | Un checklist automatico que Claude ejecuta ANTES de hacer cualquier cambio de codigo. |
 
 ---
 
@@ -121,7 +121,7 @@ claude
 /batuta-init batuta-email-agent
 ```
 
-Esto instala las instrucciones del chef (CLAUDE.md), los jefes de area (scope agents), el sistema de calidad (.batuta/), todas las recetas (skills) y las alarmas automaticas (hooks). Si cierras la terminal y vuelves despues, Claude recuerda donde quedo gracias a `.batuta/session.md`.
+Esto instala las instrucciones del chef (CLAUDE.md), los jefes de area (agentes contratados), el sistema de calidad (.batuta/), todas las recetas (skills) y las alarmas automaticas (hooks). Si cierras la terminal y vuelves despues, Claude recuerda donde quedo gracias a `.batuta/session.md`.
 
 ---
 
@@ -177,7 +177,7 @@ Aprobado, continua con el siguiente paso
 
 Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd-ff batuta-email-classifier` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-continue batuta-email-classifier` ejecuta todas las fases pendientes de corrido sin pausas.
 
 Repite "Se ve bien, continua" para cada fase (specs, design, tasks).
 
@@ -189,7 +189,7 @@ Repite "Se ve bien, continua" para cada fase (specs, design, tasks).
 /sdd-apply batuta-email-classifier
 ```
 
-Antes de escribir codigo, Claude ejecuta el **Execution Gate** — valida donde van los archivos, que impacto tienen y que todo siga las reglas del proyecto.
+Antes de escribir codigo, Claude ejecuta el **Research-First** — valida donde van los archivos, que impacto tienen y que todo siga las reglas del proyecto.
 
 Di "Si, continua" por cada batch.
 

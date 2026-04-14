@@ -52,7 +52,11 @@ resolve_home() {
             drive_letter=$(echo "${BASH_REMATCH[1]}" | tr '[:upper:]' '[:lower:]')
             win_home="/${drive_letter}${win_home:2}"
         fi
-        echo "$win_home"
+        if [[ -d "$win_home" ]]; then
+            echo "$win_home"
+        else
+            echo "$HOME"
+        fi
     else
         echo "$HOME"
     fi
@@ -588,13 +592,23 @@ sync_claude() {
         fi
     done
 
-    local count=0
-    for skill_dir in "$skills_src"/*/; do
-        [[ ! -d "$skill_dir" ]] && continue
-        local skill_name
-        skill_name=$(basename "$skill_dir")
+    # WORKAROUND: v15 change — only sync GLOBAL skills (always + sdd) to ~/.claude/skills/.
+    # Project-specific skills are provisioned by /batuta-init and /batuta-sync.
+    # Reason: Claude Code has a ~450-token budget for skill metadata. Loading 48+ skills
+    # globally makes 33% of them INVISIBLE. Only universal skills go to global.
+    # The hub (BatutaClaude/skills/) keeps ALL skills as the source library.
+    local global_skills=(
+        # always (from skill-provisions.yaml)
+        scope-rule ecosystem-creator security-audit team-orchestrator ecosystem-lifecycle
+        # sdd (core pipeline)
+        sdd-explore sdd-design sdd-apply sdd-verify prd-generator
+        tdd-workflow debugging-systematic sdd-init
+    )
 
-        if [[ -f "$skill_dir/SKILL.md" ]]; then
+    local count=0
+    for skill_name in "${global_skills[@]}"; do
+        local skill_dir="$skills_src/$skill_name"
+        if [[ -d "$skill_dir" && -f "$skill_dir/SKILL.md" ]]; then
             mkdir -p "$claude_dir/$skill_name"
 
             local dest_file="$claude_dir/$skill_name/SKILL.md"
@@ -610,13 +624,15 @@ sync_claude() {
 
             log_info "  -> Copied $skill_name"
             count=$((count + 1))
+        else
+            log_warning "  Global skill not found: $skill_name"
         fi
     done
 
     if [[ $count -eq 0 ]]; then
-        log_warning "No skills found in $skills_src"
+        log_warning "No global skills found in $skills_src"
     else
-        log_success "Synced $count skills to ~/.claude/skills/"
+        log_success "Synced $count global skills to ~/.claude/skills/ (project-specific skills provisioned by /batuta-init)"
     fi
 
     # Sync commands (slash commands)

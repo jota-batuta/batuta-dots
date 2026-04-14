@@ -8,29 +8,27 @@
 
 ## What is Batuta?
 
-Batuta is an AI agent ecosystem built as a **Mixture of Experts (MoE)** for software development. `CLAUDE.md` acts as the **router** (intent classification + routing), **domain agents** are the **experts** (backend, data, quality — each carrying 80-120 lines of embedded expertise), and **skills** are the **parameters** (loaded on demand based on context). You write your conventions once, and the right expert activates automatically. When you are ready to extend to other platforms, a replication script generates the equivalent for Gemini, Copilot, Codex, or OpenCode.
+Batuta is an AI agent ecosystem built on **contract-based delegation** for software development. The main agent acts as an **orchestrator** — it never writes code itself but contracts specialized agents via the Task tool. Each agent carries embedded domain expertise and loads skills on demand. The PRD is the single planning artifact. You describe your problem, and the right agent activates automatically. When you are ready to extend to other platforms, a replication script generates the equivalent for Gemini, Copilot, Codex, or OpenCode.
 
 Inspired by [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.Dots), adapted for:
 
 - **Multi-project software factory**.
-- **CTO/Mentor personality** that educates and documents for non-technical stakeholders.
 - **Scope Rule** that organizes files by who uses them, not by type.
+- **2 modes (SPRINT/COMPLETO)** — fast-track for clear tasks, full pipeline for complex features.
+- **5 contract-based agents** — pipeline, infra, backend, data, quality — each with embedded expertise, invoked as autonomous subprocesses via Task tool.
+- **Main agent as orchestrator** — the main agent NEVER executes, only contracts agents.
+- **PRD as single planning artifact** — one document consolidates all planning context.
+- **43 skills (13 global, rest per-project)** — lazy-loaded on demand, provisioned per technology.
+- **0-1 gates** — no mandatory gates in SPRINT mode, 1 approval gate in COMPLETO mode.
+- **Research-First principle** — non-negotiable in both modes: understand before build.
 - **Skill Gap Detection** with automatic research via Context7.
-- **Lazy skill loading** — Claude reads ~300 lines at startup, skills load on demand.
-- **MoE architecture** — CLAUDE.md routes, domain agents are experts, skills are parameters.
-- **6 agents** — 3 scope agents (pipeline, infra, observability) + 3 domain agents (backend, data, quality) with auto-discovered skills.
-- **Execution Gate** — mandatory pre-validation before any code change.
-- **Native hooks** — SessionStart, Stop.
-- **O.R.T.A. framework** (Observability, Repeatability, Traceability, Auto-supervision).
+- **Native hooks** — SessionStart, Stop, SubagentStop.
 - **Agent Teams** — orchestrate multiple Claude sessions in parallel for complex tasks.
 - **Contract-First Protocol** — pre-spawn contracts define input/output/file-ownership per teammate.
 - **AI-First Security** — dedicated security-audit skill integrated in design and verify phases.
 - **Team Templates + Playbook** — pre-built team compositions per stack (Next.js, FastAPI, n8n, AI agent, data pipeline, refactoring).
-- **PRD Generation** — after task plan approval, pipeline-agent generates a consolidated `PRD.md` for clean context reset between planning and execution sessions.
-- **Batuta Bootstrap** — "The Rule" enforcement via SessionStart hook: if a skill applies, you MUST use it.
-- **MCP Discovery** — active web search for beneficial MCP servers during explore phase.
-- **Trigger-Only Descriptions** — all 39 skill descriptions follow "Use when..." convention for reliable activation.
-- **Domain Agents** — 3 domain experts (backend, data, quality) with thick persona, auto-invoked as autonomous subprocesses based on technology signals.
+- **Trigger-Only Descriptions** — all skill descriptions follow "Use when..." convention for reliable activation.
+- **Checkpoint-based continuity** — structured checkpoints (WHERE/WHY/HOW) instead of verbose session files.
 
 ---
 
@@ -74,7 +72,7 @@ git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-i
 
 | Platform | Destination | Contents |
 |----------|-------------|----------|
-| **Claude Code** | `~/.claude/` | 38 skills, 6 agents, 13 commands, 2 hooks, settings.json, output-styles |
+| **Claude Code** | `~/.claude/` | 43 skills, 5 agents, 13 commands, 3 hooks, settings.json, output-styles |
 | **Claude Code** | Current directory | `CLAUDE.md` + `.batuta/` (session, ecosystem.json) |
 | **Antigravity** | `~/.gemini/antigravity/` | Antigravity-compatible skills, workflows, GEMINI.md |
 
@@ -96,43 +94,38 @@ cd batuta-dots
 ```
 batuta-dots/
 ├── BatutaClaude/                      # Claude Code configuration
-│   ├── CLAUDE.md                      # Single entry point (router + rules + scope routing)
-│   ├── VERSION                        # Ecosystem version (semver)
+│   ├── CLAUDE.md                      # Orchestrator rules + delegation contracts
+│   ├── VERSION                        # Ecosystem version (semver): 15.0.0
 │   ├── settings.json                  # Permissions, output style
 │   ├── mcp-servers.template.json      # MCP server template
 │   ├── output-styles/batuta.md        # Custom output format
-│   ├── commands/                      # Global slash commands
+│   ├── commands/                      # Global slash commands (13)
 │   │   ├── batuta-init.md             # /batuta-init — import ecosystem
 │   │   ├── batuta-update.md           # /batuta-update — pull latest
-│   ├── agents/                        # Scope + Domain agents
-│   │   ├── pipeline-agent.md          # Scope: SDD Pipeline specialist (9 skills)
-│   │   ├── infra-agent.md             # Scope: Infrastructure specialist (5 skills)
-│   │   ├── observability-agent.md     # Scope: O.R.T.A. engine (no active skills)
-│   │   ├── backend-agent.md           # Domain: provisioned when backend frameworks detected
-│   │   ├── quality-agent.md           # Domain: always provisioned (AI Validation Pyramid)
-│   │   └── data-agent.md              # Domain: provisioned when data/AI frameworks detected
-│   └── skills/                        # Skill definitions (lazy-loaded)
+│   ├── agents/                        # 5 contract-based agents
+│   │   ├── pipeline-agent.md          # SDD Pipeline specialist (SPRINT/COMPLETO modes)
+│   │   ├── infra-agent.md             # Infrastructure, ecosystem, security
+│   │   ├── backend-agent.md           # Provisioned when backend frameworks detected
+│   │   ├── quality-agent.md           # Always provisioned (AI Validation Pyramid)
+│   │   └── data-agent.md              # Provisioned when data/AI frameworks detected
+│   └── skills/                        # 43 skills (lazy-loaded, provisioned per-project)
 │       ├── ecosystem-creator/         # Bootstrap skill
 │       │   ├── SKILL.md
 │       │   └── assets/                # Templates for skills, agents, workflows
 │       ├── scope-rule/SKILL.md        # File organization rules
-│       ├── sdd-init/SKILL.md          # SDD pipeline (9 phases)
-│       ├── sdd-explore/SKILL.md
-│       ├── sdd-propose/SKILL.md
-│       ├── sdd-spec/SKILL.md
-│       ├── sdd-design/SKILL.md
-│       ├── sdd-tasks/SKILL.md
-│       ├── sdd-apply/SKILL.md
-│       ├── sdd-verify/SKILL.md
-│       ├── sdd-archive/SKILL.md
+│       ├── sdd-init/SKILL.md          # SDD bootstrap
+│       ├── sdd-explore/SKILL.md       # Research and investigation
+│       ├── sdd-design/SKILL.md        # Architecture decisions
+│       ├── sdd-apply/SKILL.md         # Implementation
+│       ├── sdd-verify/SKILL.md        # AI Validation Pyramid
 │       ├── team-orchestrator/SKILL.md # Agent Teams orchestration (when to escalate)
-│       └── security-audit/SKILL.md   # AI-first security practices (OWASP + threats)
+│       └── security-audit/SKILL.md    # AI-first security practices (OWASP + threats)
 ├── BatutaAntigravity/                 # Antigravity Lite (brainstorming & prototyping)
 │   ├── GEMINI.md                      # Full CTO brain adapted for Antigravity
 │   ├── setup-antigravity.sh           # Setup script (--global / --workspace / --all / --update)
 │   ├── settings-template.json         # Recommended Antigravity config
 │   └── workflows/                     # Saved prompts (SDD + session + sync)
-│       ├── sdd-init.md ... sdd-archive.md  # SDD pipeline (8 workflows)
+│       ├── sdd-init.md ... sdd-verify.md   # SDD pipeline workflows
 │       ├── save-session.md            # Save state (replaces Stop hook)
 │       ├── push-skill.md             # Propagate local skill to hub
 │       └── batuta-update.md          # Update from hub
@@ -169,52 +162,51 @@ batuta-dots/
 │   │   ├── temporal-io-app.md         # Temporal.io workflow team template
 │   │   └── refactoring.md            # Legacy refactoring team template
 │   └── playbook.md                    # Team patterns and best practices
-├── CHANGELOG-refactor.md              # Refactoring trace document (v1-v13.1)
+├── CHANGELOG-refactor.md              # Refactoring trace document (v1-v15)
 ├── academia/                          # Training course (8 modules, 53 lessons)
 └── infra/                             # Infrastructure & setup scripts
     ├── setup.sh                       # Claude Code setup (primary)
     ├── sync.sh                        # Bidirectional skill sync (hub ↔ projects, --push for zero-friction)
     ├── replicate-platform.sh          # Multi-platform replication
-    ├── setup_test.sh                  # Verification tests (51 tests)
-    └── hooks/                         # O.R.T.A. hooks (native Claude Code hooks)
-        ├── session-start.sh           # SessionStart — inject session.md as context
-        └── session-save.sh            # Stop — log session end event
+    ├── setup_test.sh                  # Verification tests
+    └── hooks/                         # Native Claude Code hooks
+        ├── session-start.sh           # SessionStart — inject session.md + skill inventory
+        ├── session-save.sh            # Stop — write checkpoint + update session.md
+        └── subagent-save.sh           # SubagentStop — append sub-agent reports
 ```
 
 ---
 
 ## How It Works
 
-Batuta operates as a **Mixture of Experts (MoE)** system:
+Batuta operates as a **contract-based delegation** system:
 
-1. **CLAUDE.md** is the **router** — the single entry point (~220 lines). It classifies user intent, enforces rules (Scope Rule, Execution Gate, SDD gates), and routes to the right expert. Skills are auto-discovered by Claude Code based on their `description` field.
-2. **Domain agents** are the **experts** — autonomous subprocesses carrying "thick persona" (80-120 lines of embedded domain knowledge). They run via the Task tool, not as inline context, keeping the main agent lightweight.
-3. **Skills** are the **parameters** — loaded on demand when an expert needs specific patterns (e.g., FastAPI CRUD, JWT auth, SQLAlchemy models).
-4. **setup.sh --all** syncs skills and agents, installs hooks + permissions to `~/.claude/settings.json`, then copies the updated CLAUDE.md to root.
+1. **CLAUDE.md** is the **orchestrator** — the single entry point. It classifies user intent, enforces rules (Scope Rule, Research-First), and delegates to the right agent via Task tool. The main agent NEVER writes code itself.
+2. **Agents** are **contracted specialists** — 5 agents (pipeline, infra, backend, data, quality), each carrying embedded domain expertise. They run as autonomous subprocesses via the Task tool.
+3. **Skills** are loaded on demand when an agent needs specific patterns (e.g., SQLAlchemy models, React/Next.js conventions).
+4. **PRD** is the single planning artifact — one document consolidates all context for execution.
+5. **setup.sh --all** syncs skills and agents, installs hooks + permissions to `~/.claude/settings.json`, then copies the updated CLAUDE.md to root.
 
 ```
-CLAUDE.md — THE ROUTER (intent classification + rules — ~220 lines)
+CLAUDE.md — THE ORCHESTRATOR (rules + delegation contracts)
     │
     ├──> Hooks (settings.json)
-    │     ├── SessionStart → inject session.md as context
-    │     └── Stop → update session.md + log session end
+    │     ├── SessionStart → inject session.md + skill inventory
+    │     ├── Stop → write checkpoint + update session.md
+    │     └── SubagentStop → append sub-agent reports
     │
-    ├──> PARAMETERS — Skills (auto-discovered by Claude Code via description)
-    │     ├── pipeline: sdd-init...sdd-archive (9 skills)
-    │     ├── infra: scope-rule, ecosystem-creator, ecosystem-lifecycle, team-orchestrator, security-audit
-    │     └── observability: (no active skills)
+    ├──> Skills (43 total — auto-discovered by Claude Code via description)
+    │     ├── 13 global skills (always provisioned)
+    │     └── 30 per-project skills (provisioned by sdd-init based on tech detection)
     │
-    ├──> Scope Agents (always loaded, skills auto-discovered by description)
-    │     ├── pipeline-agent (dependency graph, orchestrator rules)
-    │     ├── infra-agent (Skill Gap Detection, Ecosystem Auto-Update)
-    │     └── observability-agent (session lifecycle)
-    │
-    ├──> EXPERTS — Domain Agents (autonomous subprocesses, provisioned by tech detection)
-    │     ├── backend-agent (fastapi|django|express|nestjs) — API, auth, DB expertise
+    ├──> Contract-Based Agents (invoked via Task tool, never inline)
+    │     ├── pipeline-agent — SDD pipeline (SPRINT/COMPLETO modes)
+    │     ├── infra-agent — Skill Gap Detection, Ecosystem, Security
+    │     ├── backend-agent (fastapi|django|express|nestjs) — API, auth, DB
     │     ├── quality-agent (always provisioned) — testing, security, debugging
-    │     └── data-agent (pandas|langchain|anthropic) — ETL, AI/ML, RAG expertise
+    │     └── data-agent (pandas|langchain|anthropic) — ETL, AI/ML, RAG
     │
-    └──> Agent Team (Level 3) ──> spawn teammates from scope + domain agents
+    └──> Agent Team (Level 3) ──> spawn teammates from agents
 ```
 
 ### Multi-Platform: Claude Code + Antigravity Lite
@@ -265,14 +257,14 @@ NEVER create root `utils/`, `helpers/`, `lib/`, or `components/` folders. Full d
 
 ### Spec-Driven Development (SDD)
 
-A 9-phase state machine that enforces "understand before build":
+Two modes that enforce "understand before build":
 
-```
-init -> explore -> propose -> spec -> design -> tasks -> apply -> verify -> archive
-                                                          ↑ backtracks ↑
-```
+| Mode | When | Flow |
+|------|------|------|
+| **SPRINT** | Clear scope, <5 files, no architecture decisions | explore -> design -> apply -> verify |
+| **COMPLETO** | Complex feature, 5+ files, architecture decisions | explore -> design -> (PRD approval) -> apply -> verify |
 
-Each phase is a dedicated sub-agent skill. The pipeline-agent orchestrates as a **state machine** — phases can move forward (happy path) or backward (backtracks) when implementation reveals issues. The user interacts through **natural conversation** (auto-routing classifies intent), not slash commands. Commands remain as manual overrides.
+The pipeline-agent orchestrates both modes. The user interacts through **natural conversation** (auto-routing classifies intent), not slash commands. Commands remain as manual overrides. The PRD is the single planning artifact that consolidates all context.
 
 ### Auto-Routing (Intent-Driven Pipeline)
 
@@ -280,45 +272,37 @@ Each phase is a dedicated sub-agent skill. The pipeline-agent orchestrates as a 
 
 | Intent | What you say | Route |
 |--------|-------------|-------|
-| Build / Feature / Problem | "necesito un dashboard", "build a notification system" | SDD Pipeline (auto-advance with checkpoints) |
-| Quick fix / Bug | "el botón no funciona", "fix the null check" | Direct fix (skip SDD, Execution Gate LIGHT) |
+| Build / Feature / Problem | "necesito un dashboard", "build a notification system" | SDD Pipeline (SPRINT or COMPLETO, auto-classified) |
+| Quick fix / Bug | "el botón no funciona", "fix the null check" | SPRINT mode (fast-track) |
 | Continue / Resume | "donde quedamos?", "continua con inventario" | Detect phase from artifacts, resume |
 | Backtrack / Rethink | "esto no funciona como pensé", "cambio el requisito" | Classify target phase, update artifact |
 | Question / Explain | "qué es SDD?", "how does auth work?" | Answer directly |
 | Explicit `/sdd-*` command | `/sdd-explore`, `/sdd-apply` | Manual override (bypasses auto-routing) |
 
-### Quick Mode vs Full SDD Pipeline
+### SPRINT vs COMPLETO
 
-Batuta automatically selects the right depth for your task:
+Batuta automatically selects the right mode for your task:
 
-| Scope | Route | Steps |
-|-------|-------|-------|
-| **Quick Mode** — bug fix, 1-2 file change, clear scope | Direct fix | Execution Gate LIGHT → implement |
-| **Full SDD** — new feature, 3+ files, architecture decision | SDD Pipeline | explore → propose → spec → design → tasks → apply → verify → archive |
+| Scope | Mode | Steps | Gates |
+|-------|------|-------|-------|
+| **SPRINT** — clear scope, <5 files, no architecture decisions | SPRINT | explore -> design -> apply -> verify | 0 gates |
+| **COMPLETO** — complex feature, 5+ files, architecture decisions | COMPLETO | explore -> design -> PRD -> apply -> verify | 1 gate (PRD approval) |
 
-You don't choose — the agent classifies for you. If a quick fix grows in scope (3+ files, architectural implications), the agent switches to SDD and tells you why.
+You don't choose — the agent classifies for you. If a SPRINT grows in scope (5+ files, architectural implications), the agent switches to COMPLETO and tells you why.
 
-### Agents (Scope + Domain) — The MoE Experts
+### Agents (5 Contract-Based Specialists)
 
-Batuta's 6 agents form the "experts" layer of the MoE architecture. **3 Scope Agents** (always loaded) organize the SDD pipeline machinery, and **3 Domain Agents** (provisioned by tech detection) carry "thick persona" — 80-120 lines of embedded domain expertise that run as autonomous subprocesses, not inline context.
+Batuta's 5 agents are contracted specialists invoked by the main agent via the Task tool. The main agent NEVER executes code — it only contracts agents. Each agent carries embedded domain expertise and loads skills on demand.
 
-**Scope Agents** — always loaded, skills auto-discovered by `description` field:
-
-| Scope Agent | Domain | Skills |
-|-------------|--------|--------|
-| `pipeline-agent` | Development lifecycle | 9 SDD skills (init through archive) |
-| `infra-agent` | File organization, ecosystem, security | scope-rule, ecosystem-creator, ecosystem-lifecycle, team-orchestrator, security-audit |
-| `observability-agent` | Session lifecycle | (no active skills) |
-
-**Domain Agents** — auto-invoked based on technology signals, run as subprocesses via Task tool:
-
-| Domain Agent | Provisioned When | Expertise |
-|--------------|-----------------|-----------|
+| Agent | Provisioned When | Expertise |
+|-------|-----------------|-----------|
+| `pipeline-agent` | Always | SDD pipeline (SPRINT/COMPLETO), orchestration |
+| `infra-agent` | Always | File organization, ecosystem, security, Skill Gap Detection |
 | `backend-agent` | fastapi, django, express, nestjs detected | API design, auth flows, DB schema, middleware |
-| `quality-agent` | Always provisioned | AI Validation Pyramid, testing strategy, security audits, debugging |
+| `quality-agent` | Always | AI Validation Pyramid, testing strategy, security audits, debugging |
 | `data-agent` | pandas, langchain, anthropic detected | ETL pipelines, AI/ML integration, RAG patterns |
 
-Domain agents carry personality + patterns + skill pointers and include an `sdk:` block for programmatic deployment via Claude Agent SDK. This keeps the principal agent lightweight (~220 lines) and each agent focused on its domain.
+Agents carry embedded expertise + skill pointers and include an `sdk:` block for programmatic deployment via Claude Agent SDK. This keeps the orchestrator lightweight and each agent focused on its domain.
 
 **Agent Lifecycle** — agents follow the same sync model as skills:
 
@@ -327,26 +311,21 @@ Domain agents carry personality + patterns + skill pointers and include an `sdk:
 3. **Sync to global**: `setup.sh --sync` copies hub agents to `~/.claude/agents/`
 4. **Provision to projects**: `sdd-init` copies relevant agents from global to `.claude/agents/` based on detected technologies
 
-### Execution Gate
+### Research-First Principle
 
-Before any code change, a mandatory pre-validation runs. Cannot be skipped.
-
-| Mode | When | What it shows |
-|------|------|---------------|
-| LIGHT | Single-file edit, simple fix | "Modifying {file} at {location}. Proceed?" |
-| FULL | New files, 2+ file changes, architecture | Location plan + impact + SDD/skill compliance |
+Before any code change, the agent MUST understand the problem first. This applies in BOTH SPRINT and COMPLETO modes — it is non-negotiable. The main agent contracts agents to research and design before contracting for implementation.
 
 ### Skill Gap Detection
 
 Before writing code with any technology, Claude checks if an active skill exists. If not, it stops and offers to research via Context7 and create the skill before proceeding.
 
-### Lazy Loading (3 levels — MoE in action)
+### Lazy Loading (3 levels)
 
-| Level | MoE Role | What loads | Lines |
-|-------|----------|-----------|-------|
-| 1 | Router | CLAUDE.md (intent classification + rules) | ~220 |
-| 2 | Expert | Scope or domain agent | ~80-120 |
-| 3 | Parameters | Individual skill | ~200-500 |
+| Level | Role | What loads |
+|-------|------|-----------|
+| 1 | Orchestrator | CLAUDE.md (rules + delegation contracts) |
+| 2 | Agent | Contracted agent (pipeline, infra, backend, data, quality) |
+| 3 | Skill | Individual skill loaded by the agent on demand |
 
 Only the needed level loads. A simple question never reaches level 3.
 
@@ -370,26 +349,29 @@ Agent Teams spawn real Claude Code sessions that work in parallel with a shared 
 
 When new skills are created in a project, Claude proposes propagating them back to batuta-dots so other projects benefit.
 
-### Project Skill Provisioning (v11.3) & Agent Provisioning (v13.0)
+### Project Skill Provisioning & Agent Provisioning
 
-During `/sdd-init`, only relevant skills are copied from the global library to your project. The agent sees only what it needs, keeping context clean as the ecosystem grows to 100+ skills.
+During `/sdd-init`, only relevant skills and agents are copied from the global library to your project. The agent sees only what it needs, keeping context clean as the ecosystem grows.
 
-Agent provisioning follows the same principle. The `skill-provisions.yaml` manifest defines:
+The `skill-provisions.yaml` manifest defines:
 
+- **`always`**: skills provisioned to every project (13 global skills)
 - **`always_agents`**: agents provisioned to every project (currently: `quality-agent`)
 - **`agent_rules`**: conditional provisioning based on detected dependencies (e.g., `backend-agent` when fastapi/django/express detected, `data-agent` when pandas/langchain/anthropic detected)
 
-### Deterministic Rules & Mandatory Gates
+### Rules & Gates
 
-All mandatory behaviors (scope enforcement, skill invocation, pipeline gates, ecosystem lifecycle) are defined as hard Rules with MUST/NEVER/ALWAYS keywords — deterministic and compaction-resistant. Seven mandatory gates (Execution Gate, G0.25, G0.5, G1, Proposal Approval, Task Plan Approval, G2) are consolidated as explicit STOP points.
+All mandatory behaviors (scope enforcement, skill invocation, research-first, delegation) are defined as hard Rules with MUST/NEVER/ALWAYS keywords. In SPRINT mode there are 0 mandatory gates. In COMPLETO mode there is 1 gate: PRD approval before implementation begins.
 
-### Proportional Output & Session Budget
+### Session Budget
 
-Output scales to task complexity via three tiers (MICRO/STANDARD/COMPLEX). Session.md is capped at 80 lines as a briefing document answering WHERE/WHY/HOW — not a project README.
+Session.md is capped at 80 lines as a briefing document answering WHERE/WHY/HOW — not a project README. Checkpoints follow a structured template (what I'm doing, state, attempts, what's left, gotchas).
 
 ---
 
-## Available Skills (38 skills + 6 agents)
+## Available Skills (43 skills + 5 agents)
+
+43 skills organized by scope. 13 global skills are always provisioned; the rest are provisioned per-project by `sdd-init` based on detected technologies.
 
 | Skill | Scope | Description |
 |-------|-------|-------------|
@@ -400,18 +382,21 @@ Output scales to task complexity via three tiers (MICRO/STANDARD/COMPLEX). Sessi
 | `skill-eval` | infra | Evaluate skill quality: Eval (behavioral test), Improve (propose edits), Benchmark (health report) |
 | `claude-agent-sdk` | infra | Claude Agent SDK patterns: setting_sources, defer_loading, hooks mapping, CI/CD deployment |
 | `security-audit` | infra, pipeline | AI-first security: OWASP + prompt injection + secrets scanning + dependency audit |
-| `sdd-init` through `sdd-archive` | pipeline | 9-phase SDD pipeline |
+| `sdd-init` | pipeline | Bootstrap SDD in a project |
+| `sdd-explore` | pipeline | Research and investigation |
+| `sdd-design` | pipeline | Architecture decisions and technical design |
+| `sdd-apply` | pipeline | Implementation following specs and design |
+| `sdd-verify` | pipeline | AI Validation Pyramid verification |
+| `prd-generator` | pipeline | Consolidate planning into PRD artifact |
 | `process-analyst` | pipeline | Complex process analysis with 3+ case variants |
 | `recursion-designer` | pipeline | External taxonomies, categories that change, learning systems |
 | `compliance-colombia` | pipeline | Colombian data protection, tax retention, AI compliance |
 | `data-pipeline-design` | pipeline | ETL, ERP integrations, data quality patterns |
 | `llm-pipeline-design` | pipeline | LLM classifiers, prompt engineering, drift detection |
 | `worker-scaffold` | pipeline | Temporal workers, Docker, Coolify deploy, monitoring |
-| `accessibility-audit` | pipeline | Accessibility audit: WCAG compliance, screen reader testing, keyboard navigation |
+| `accessibility-audit` | pipeline | Accessibility audit: WCAG compliance, screen reader testing |
 | `performance-testing` | pipeline | Performance testing: load testing, profiling, bottleneck analysis |
 | `technical-writer` | pipeline | Technical writing: API docs, user guides, architecture decision records |
-| `fastapi-crud` | infra | FastAPI CRUD patterns and best practices |
-| `jwt-auth` | infra | JWT authentication implementation patterns |
 | `sqlalchemy-models` | infra | SQLAlchemy ORM model patterns |
 | `react-nextjs` | pipeline | React/Next.js App Router patterns and conventions |
 | `typescript-node` | pipeline | TypeScript/Node.js backend patterns |
@@ -422,7 +407,7 @@ Output scales to task complexity via three tiers (MICRO/STANDARD/COMPLEX). Sessi
 | `vector-db-rag` | pipeline | Vector databases and RAG pipeline patterns |
 | `message-queues` | pipeline | Message queue patterns (RabbitMQ, Redis, SQS) |
 | `ci-cd-pipeline` | infra | CI/CD pipeline design and automation |
-| `observability` | observability | Monitoring, logging, tracing, alerting patterns |
+| `observability` | pipeline | Monitoring, logging, tracing, alerting patterns |
 
 ---
 
@@ -436,12 +421,11 @@ All commands are **manual overrides**. For normal work, just describe your task 
 | `/batuta-update` | Pull latest skills, agents, and CLAUDE.md from the hub |
 | `/sdd-init` | Initialize SDD context (`openspec/`) in a project |
 | `/sdd-explore <topic>` | Manually trigger exploration of a specific topic |
-| `/sdd-new <change-name>` | Start from scratch: explore + propose in one step |
+| `/sdd-new <change-name>` | Start from scratch: explore + design in one step |
 | `/sdd-continue [change-name]` | Resume an in-progress change from where it left off |
-| `/sdd-ff [change-name]` | **Fast-Forward**: after exploring, skip to propose → spec → design → tasks in one shot |
-| `/sdd-apply [change-name]` | Implement the approved task plan |
+| `/sdd-ff [change-name]` | **Fast-Forward**: after exploring, run design in one shot |
+| `/sdd-apply [change-name]` | Implement the approved design/PRD |
 | `/sdd-verify [change-name]` | Run the AI Validation Pyramid against the implementation |
-| `/sdd-archive [change-name]` | Close the change: persist specs, lessons learned, update Notion |
 | `/create <type> <name>` | Create a new skill, sub-agent, or workflow (type: `skill` \| `sub-agent` \| `workflow`) |
 
 ---
@@ -457,7 +441,7 @@ All commands are **manual overrides**. For normal work, just describe your task 
 | `--antigravity` | Sync Antigravity-compatible skills to BatutaAntigravity/skills/ |
 | `--project <path>` | Setup a target project (CLAUDE.md + .batuta/ + git + hooks) |
 | `--update <path>` | Update an existing project (re-sync global + refresh project CLAUDE.md + ecosystem.json) |
-| `--verify` | Verify setup (51 checks) |
+| `--verify` | Verify setup |
 
 The `--all` flag: syncs skills and agents → installs hooks + permissions → copies updated CLAUDE.md to root.
 
@@ -539,7 +523,7 @@ Complete training course for Batuta Dots — from zero to autonomous usage. 53 l
 
 ## Credits
 
-Inspired by [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.Dots) by [Gentleman Programming](https://github.com/Gentleman-Programming). Batuta adapts the dotfiles concept for multi-project software factories with a CTO/Mentor personality, Spec-Driven Development, the Scope Rule, scope agents with auto-discovered skills, skill gap auto-detection, and the O.R.T.A. framework.
+Inspired by [Gentleman.Dots](https://github.com/Gentleman-Programming/Gentleman.Dots) by [Gentleman Programming](https://github.com/Gentleman-Programming). Batuta adapts the dotfiles concept for multi-project software factories with contract-based agent delegation, Spec-Driven Development (SPRINT/COMPLETO modes), the Scope Rule, and skill gap auto-detection.
 
 ---
 

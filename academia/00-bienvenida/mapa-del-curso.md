@@ -60,15 +60,15 @@ Extendiendo el ecosistema → Templates de equipo → Referencia completa
 |---------|------------|--------|
 | [Tu primer proyecto](../01-nivel-cero/tu-primer-proyecto.md) | Paso a paso: de idea a codigo funcionando | 45 min |
 | [Anatomia de un comando](../01-nivel-cero/anatomia-de-un-comando.md) | Que pasa cuando escribes /sdd-explore | 20 min |
-| [El pipeline SDD](../01-nivel-cero/el-pipeline-sdd.md) | Las 9 fases explicadas con analogia | 30 min |
-| [Los gates](../01-nivel-cero/los-gates.md) | G0.5, G1, G2 — tus checkpoints de calidad | 20 min |
+| [El pipeline SDD](../01-nivel-cero/el-pipeline-sdd.md) | 2 modos (SPRINT y COMPLETO) explicados con analogia | 30 min |
+| [Los gates](../01-nivel-cero/los-gates.md) | Design Approval — tu unico checkpoint de calidad | 20 min |
 
 ### Modulo 2 — Nivel Uno
 | Leccion | Descripcion | Tiempo |
 |---------|------------|--------|
-| [Skills que tienes](../02-nivel-uno/skills-que-tienes.md) | Catalogo completo de 33 skills | 30 min |
-| [Agentes y equipos](../02-nivel-uno/agentes-y-equipos.md) | Los 3 agentes + cuando se activan equipos | 25 min |
-| [La capa CTO](../02-nivel-uno/la-capa-cto.md) | Los 6 expertos estrategicos que se activan solos | 20 min |
+| [Skills que tienes](../02-nivel-uno/skills-que-tienes.md) | Catalogo de 43 skills (13 globales + por proyecto) | 30 min |
+| [Agentes y equipos](../02-nivel-uno/agentes-y-equipos.md) | Los 5 agentes contratables + delegacion | 25 min |
+| [La capa CTO](../02-nivel-uno/la-capa-cto.md) | El main agent como gestor que contrata agentes | 20 min |
 | [Scope Rule](../02-nivel-uno/scope-rule.md) | Donde va cada archivo y por que | 20 min |
 | [Seguridad desde cero](../02-nivel-uno/seguridad-desde-cero.md) | Security audit explicado simple | 15 min |
 

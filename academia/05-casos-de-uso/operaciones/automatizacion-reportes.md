@@ -50,7 +50,7 @@ process-analyst detecta 4 variantes:
 - Finanzas: costos, margenes, desviaciones presupuestarias
 ```
 
-> **Gate G0.5** — El agente te pregunta:
+> **Design Approval (variantes)** — El agente te pregunta:
 > "Encontre 4 variantes de reporte con estructuras muy diferentes. Queres que comparta campos base entre todos o que cada reporte sea completamente independiente?"
 > --> Comparten la misma fuente de datos pero cada uno tiene su propia plantilla y calculos
 
@@ -111,7 +111,7 @@ n8n/
 sdd-verify
 ```
 
-> **Gate G2** — Verificacion:
+> **Verificacion Final** — Resultado:
 
 ```
 Layer 1 - Lint:           PASS
@@ -132,19 +132,14 @@ Resultado: LISTO PARA REVIEW HUMANO
 | **scope-rule** | Organiza el codigo en features/ separando conectores, transformaciones, reportes y dashboard |
 | **n8n automation** | Orquesta la ejecucion programada del pipeline completo |
 
-## Gates que pasas
+## Checkpoints que pasas
 
-### Gate G0.5 — Variantes de negocio
-- **Que evalua:** Las diferencias entre los 4 reportes
-- **Ejemplo concreto:** "Gerencia necesita semaforos de KPI, Ventas necesita pipeline y conversion, Produccion necesita OEE, Finanzas necesita margenes. Comparten fuentes pero no calculos."
-- **Si no pasa:** Se clarifican las necesidades de cada area antes de seguir
+### Design Approval — Variantes + viabilidad
+- **Que evalua:** Las diferencias entre los 4 reportes y si automatizar justifica la inversion
+- **Ejemplo concreto:** "Gerencia necesita semaforos de KPI, Ventas necesita pipeline y conversion. El equipo dedica 4 horas semanales a generar reportes manualmente. La automatizacion se amortiza en 3 semanas."
+- **Si no pasa:** Se clarifican las necesidades o el agente sugiere automatizar solo los reportes mas criticos primero
 
-### Gate G1 — Vale la pena construirlo?
-- **Que evalua:** Si automatizar justifica la inversion vs seguir haciendolo manual
-- **Ejemplo concreto:** "El equipo dedica 4 horas semanales a generar reportes manualmente. Con errores frecuentes. La automatizacion se amortiza en 3 semanas."
-- **Si no pasa:** El agente sugiere automatizar solo los reportes mas criticos primero
-
-### Gate G2 — Calidad de la implementacion
+### Verificacion Final — Calidad de la implementacion
 - **Que evalua:** Que el pipeline funcione de punta a punta con datos reales
 - **Ejemplo concreto:** "Pipeline ejecutado con datos de la ultima semana. Los 4 PDFs se generaron correctamente. Los numeros coinciden con el reporte manual anterior."
 - **Si no pasa:** Se revisan los conectores o las transformaciones que fallen

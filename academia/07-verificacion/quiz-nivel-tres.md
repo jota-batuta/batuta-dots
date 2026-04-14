@@ -1,6 +1,6 @@
 # Quiz Nivel Tres — Extension del Ecosistema
 
-Autoevaluacion para confirmar que dominas la extension y personalizacion de Batuta Dots.
+Autoevaluacion para confirmar que dominas la extension y personalizacion de Batuta Dots v15.
 
 ---
 
@@ -78,15 +78,15 @@ Creaste un skill `django-crud` en un proyecto local que resulto muy util. Como l
 <details>
 <summary>Ver respuesta</summary>
 
-Al final del proyecto, el `infra-agent` ejecuta el **Ecosystem Auto-Update**:
+Usa el comando `/batuta-sync`:
 
-1. **Evaluar**: El skill es reutilizable? (no tiene dependencias especificas del proyecto?)
-2. **Generalizar**: Remover referencias hardcodeadas, parametrizar valores especificos
-3. **Propagar**: Copiar a `~/.claude/skills/django-crud/SKILL.md`
-Si ademas quieres que este disponible para otros usuarios de Batuta Dots:
-5. Copiar al repo `batuta-dots/BatutaClaude/skills/django-crud/`
-6. Actualizar CLAUDE.md con el nuevo skill en la tabla de ruteo
-7. Commit y push
+1. **Ejecutar**: `/batuta-sync` — detecta automaticamente skills locales que no estan en el hub
+2. **Seleccionar**: Opcion 2 "Solo propagar mis skills al hub" o seleccionar individualmente
+3. **Clasificacion**: ecosystem-lifecycle clasifica como generico vs proyecto-especifico
+4. **Cross-sync**: Si el skill tiene `platforms: [claude, antigravity]`, se sincroniza a Antigravity automaticamente
+5. **Commit**: Con aprobacion explicita, hace commit y push al hub
+
+El flujo alternativo manual es copiar a `batuta-dots/BatutaClaude/skills/django-crud/` y hacer commit.
 
 </details>
 

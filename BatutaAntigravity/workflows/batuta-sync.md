@@ -18,7 +18,7 @@ Run `git pull` in batuta-dots. If it fails, **STOP** and explain (same as /batut
 
 ### Step 3: Scan for sync candidates
 
-Scan `.agent/skills/` and `.claude/skills/` in the current project for skills not in the hub (`BatutaClaude/skills/`).
+Scan `.agent/skills/` and `.claude/skills/` in the current project for skills not in the hub (`BatutaClaude/skills/`, 43+ skills).
 
 Also scan the hub for skills not provisioned in this project.
 

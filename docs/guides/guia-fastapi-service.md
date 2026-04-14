@@ -37,8 +37,8 @@ Antes de empezar, aqui tienes un mini-diccionario. No necesitas memorizarlo, vue
 | **Coolify** | Una plataforma para poner aplicaciones en internet. Como un hosting inteligente. |
 | **SDD** | Spec-Driven Development. Un proceso paso a paso: primero planeas, luego construyes. Como un arquitecto que primero dibuja el plano. |
 | **Skill** | Un documento que le dice a Claude COMO hacer algo especifico. Como una receta de cocina. |
-| **Scope Agent** | Un "jefe de area" especializado. Claude tiene 3: uno para desarrollo (SDD pipeline), uno para infraestructura y seguridad, y uno para observabilidad y continuidad de sesion. |
-| **Execution Gate** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden. |
+| **Agente Contratado** | Un "jefe de area" especializado. Claude tiene 3: uno para desarrollo (SDD pipeline), uno para infraestructura y seguridad, y uno para observabilidad y continuidad de sesion. |
+| **Research-First** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden. |
 | **pytest** | Una herramienta para ejecutar pruebas automaticas en Python. Como un inspector de calidad que revisa cada pieza antes de empaquetarla. |
 | **OWASP** | Una organizacion que publica las mejores practicas de seguridad para aplicaciones web. Como un manual de seguridad industrial — te dice que peligros existen y como prevenirlos. |
 | **SQL Injection** | Un ataque donde alguien intenta hackear tu base de datos escribiendo codigo malicioso en los campos de texto (como el campo de login). Es como si alguien escribiera una "orden de liberacion falsa" en el espacio de "nombre" de un formulario. Nuestro sistema esta protegido contra esto. |
@@ -156,7 +156,7 @@ Ese `>` es donde le escribes tus instrucciones.
 
 ## Paso 2 — Instalar el ecosistema Batuta
 
-**Que vamos a hacer**: Darle a Claude las "recetas" (skills) que necesita para trabajar al estilo Batuta. Esto incluye la configuracion del chef principal, los jefes de area (scope agents), y el sistema de calidad.
+**Que vamos a hacer**: Darle a Claude las "recetas" (skills) que necesita para trabajar al estilo Batuta. Esto incluye la configuracion del chef principal, los jefes de area (agentes contratados), y el sistema de calidad.
 
 > **IMPORTANTE**: Asegurate de estar dentro de la carpeta de tu proyecto antes de ejecutar este comando. Todo lo que Claude cree se guardara en la carpeta actual.
 
@@ -190,7 +190,7 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 > instalados y ya no necesitas copiar el prompt largo nunca mas.
 
 **Que esperar**: Claude va a descargar el ecosistema y configurar todo. Puede tomar 1-2 minutos. Cuando termine, te dira que archivos creo, incluyendo:
-- `CLAUDE.md` — Las instrucciones del chef (router principal + scope agents + execution gate)
+- `CLAUDE.md` — Las instrucciones del chef (router principal + agentes contratados + execution checkpoint)
 - `.batuta/session.md` — El cuaderno donde Claude anota en que quedo (para continuar despues)
 
 **Tip**: Si Claude te pide permiso para ejecutar comandos, di "yes" o "si".
@@ -306,7 +306,7 @@ Aprobado, continua con el siguiente paso
 
 Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd-ff <nombre>` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-continue <nombre>` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude va a ejecutar las siguientes fases una por una:
 
@@ -365,7 +365,7 @@ Usa estos datos de conexion para desarrollo:
 - Base de datos: batuta_tasks
 ```
 
-**Que esperar**: Antes de escribir codigo, Claude va a ejecutar el **Execution Gate** — un checklist automatico que verifica:
+**Que esperar**: Antes de escribir codigo, Claude va a ejecutar el **Research-First** — un checklist automatico que verifica:
 - Que archivos va a crear o modificar
 - Donde van a ir (siguiendo la Scope Rule)
 - Que impacto tienen los cambios
@@ -432,7 +432,7 @@ Usa bcrypt para hashear contrasenas y python-jose para los tokens JWT.
 El secreto del JWT debe estar en una variable de entorno, no en el codigo.
 ```
 
-**Que esperar**: Claude ejecutara el Execution Gate y luego implementara todo el sistema de autenticacion. Te mostrara los archivos que va a crear y pedira confirmacion.
+**Que esperar**: Claude ejecutara el Research-First y luego implementara todo el sistema de autenticacion. Te mostrara los archivos que va a crear y pedira confirmacion.
 
 **Tu respuesta**: "Si, continua".
 
@@ -849,9 +849,9 @@ Por ejemplo: un campo de "etiquetas" a las tareas para poder
 organizarlas por temas (trabajo, personal, etc.)
 ```
 
-Y sigue el mismo flujo: propose, specs, design, tasks, apply, verify (el explore se ejecuta automaticamente dentro de `/sdd-new`).
+Y sigue el mismo flujo: design, apply, verify (el explore se ejecuta automaticamente dentro de `/sdd-new`).
 
-> **Importante**: Cada cambio pasa por el Execution Gate automaticamente.
+> **Importante**: Cada cambio pasa por el Research-First automaticamente.
 > Claude valida que el cambio siga las reglas del proyecto antes de escribir codigo.
 
 ---
@@ -1017,7 +1017,7 @@ Tu (carpeta vacia)
  |     Tu: "Continua" (3 veces)
  |
  +-- Paso 7:  /sdd-apply ............. "Modelos de base de datos"
- |     [Execution Gate valida antes de cada cambio]
+ |     [Research-First valida antes de cada cambio]
  |
  +-- Paso 8:  Autenticacion .......... "Register, login, JWT"
  |

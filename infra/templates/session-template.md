@@ -1,52 +1,47 @@
 # Session — {PROJECT_NAME}
 date: {YYYY-MM-DD}
 
-## Project
-- **Name**: {PROJECT_NAME}
+## WHERE (project + state)
+- **Project**: {PROJECT_NAME}
 - **Type**: automation | agent | saas | service | pipeline | other
 - **Stack**: {technologies}
-- **Description**: {one-line description}
-- **Status**: {current status}
+- **Branch**: {current branch}
+- **SDD Mode**: SPRINT | COMPLETO
+- **Active change**: `{change-name}` | none
 
-## Current State
-- **SDD Phase**: explore | propose | spec | design | tasks | apply | verify | archive
-- **Active change**: `{change-name}`
-
-## Gate Status
-AWAITING_APPROVAL: none | proposal | task_plan
-Change:
-
-## Slice Status
-active_slice: {N} / total: {M}
-exit_criteria: {criterio copiado de BATUTA CONFIG}
-exit_criteria_met: pending | yes | no | partial
-notes:
-
-## AC Status
+## WHY (what we're doing and why)
 <!--
-Poblar cuando hay verify pendiente.
-Copiar los IDs de los acceptance criteria del spec.md.
--->
-<!-- AC-01: pending | pass | fail | blocked -->
-<!-- AC-02: pending | pass | fail | blocked -->
-
-## Decisions
-<!--
-Decisiones arquitectónicas con su razón.
-Formato: [decisión] — [por qué]
-Ejemplo: ODBC 17 (no 18) — SQL Server 2017 legacy, evita TLS handshake issues
+One paragraph max. What problem are we solving and what approach are we taking.
 -->
 
-## Conventions
+## HOW (current state + next steps)
+- **Current step**: {describe what phase/task we're in}
+- **PRD approved**: yes | no | N/A (SPRINT)
+
+### Decisions
 <!--
-Reglas de negocio que el agente debe respetar.
-Formato: RN-XX: [regla]
+Decisions with their reasoning.
+Format: [decision] — [why]
+Example: ODBC 17 (no 18) — SQL Server 2017 legacy, avoids TLS handshake issues
 -->
 
-## Next Steps
+### Conventions
 <!--
-Máximo 3 ítems accionables. Si hay más, el proyecto necesita re-planificación.
+Business rules the agent must respect.
+Format: RN-XX: [rule]
+-->
+
+### Next Steps
+<!--
+Max 3 actionable items. If there are more, the project needs re-planning.
 -->
 1.
 2.
 3.
+
+<!--
+RULES:
+- This file MUST stay under 80 lines. It's a briefing, not a README.
+- Update every interaction — stale session.md = lost context.
+- Use the Checkpoint template (in CLAUDE.md) for mid-session saves.
+-->

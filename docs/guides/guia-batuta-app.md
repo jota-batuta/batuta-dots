@@ -27,8 +27,8 @@ Antes de empezar, aqui tienes un mini-diccionario. No necesitas memorizarlo, vue
 | **Repositorio (repo)** | Una carpeta especial que guarda todo tu codigo y recuerda cada cambio que haces. |
 | **n8n** | Una herramienta de automatizacion. Ejecuta tareas automaticas (como enviar emails, procesar datos). |
 | **Coolify** | Una plataforma para poner aplicaciones en internet. Como un hosting inteligente. |
-| **Scope Agent** | Un "jefe de area" especializado. Claude tiene 3: uno para el proceso de desarrollo, uno para organizacion de archivos, y uno para calidad. |
-| **Execution Gate** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden. |
+| **Agente Contratado** | Un "jefe de area" especializado. Claude tiene 3: uno para el proceso de desarrollo, uno para organizacion de archivos, y uno para calidad. |
+| **Research-First** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden. |
 
 ---
 
@@ -119,7 +119,7 @@ Ese `>` es donde le escribes tus instrucciones.
 
 ## Paso 3 — Instalar el ecosistema Batuta
 
-**Que vamos a hacer**: Darle a Claude las "recetas" (skills) que necesita para trabajar al estilo Batuta. Esto incluye la configuracion del chef principal, los jefes de area (scope agents), y el sistema de calidad.
+**Que vamos a hacer**: Darle a Claude las "recetas" (skills) que necesita para trabajar al estilo Batuta. Esto incluye la configuracion del chef principal, los jefes de area (agentes contratados), y el sistema de calidad.
 
 **Opcion A — Si ya tienes los commands de Batuta instalados** (recomendado):
 
@@ -153,7 +153,7 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 > instalados y ya no necesitas copiar el prompt largo nunca mas.
 
 **Que esperar**: Claude va a descargar el ecosistema y configurar todo. Puede tomar 1-2 minutos. Cuando termine, te dira que archivos creo, incluyendo:
-- `CLAUDE.md` — Las instrucciones del chef (router principal + scope agents + execution gate)
+- `CLAUDE.md` — Las instrucciones del chef (router principal + agentes contratados + execution checkpoint)
 - `.batuta/session.md` — El cuaderno donde Claude anota en que quedo (para continuar despues)
 
 **Tip**: Si Claude te pide permiso para ejecutar comandos, di "yes" o "si".
@@ -184,7 +184,7 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 > **Detalle tecnico (opcional)**: Cuando ejecutas `/sdd-init`, Claude activa su pipeline-agent
 > (el "jefe de cocina") que coordina todo el proceso de desarrollo.
 
-> Durante `sdd-init`, Claude detecta las tecnologias del proyecto y copia solo los skills relevantes a `.claude/skills/`. Esto mantiene el contexto limpio (v11.3).
+> Durante `sdd-init`, Claude detecta las tecnologias del proyecto y copia solo los skills relevantes a `.claude/skills/`. Esto mantiene el contexto limpio (v15).
 
 ---
 
@@ -271,7 +271,7 @@ Aprobado, continua con el siguiente paso
 
 Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd-ff batuta-app-dashboard` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-continue batuta-app-dashboard` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude va a ejecutar las siguientes fases una por una:
 
@@ -312,7 +312,7 @@ Claude esta configurado para explicarte las cosas de forma que cualquier persona
 /sdd-apply batuta-app-dashboard
 ```
 
-**Que esperar**: Antes de empezar a escribir codigo, Claude va a ejecutar el **Execution Gate** — un checklist automatico que verifica:
+**Que esperar**: Antes de empezar a escribir codigo, Claude va a ejecutar el **Research-First** — un checklist automatico que verifica:
 - Que archivos va a crear/modificar
 - Donde van a ir (siguiendo la Scope Rule)
 - Que impacto tienen los cambios
@@ -326,7 +326,7 @@ Este cambio involucra scope pipeline + infra:
 - Procedo?
 ```
 
-Despues del gate, Claude implementa en "lotes" (batches). Cada lote es un grupo de tareas relacionadas.
+Despues del checkpoint, Claude implementa en "lotes" (batches). Cada lote es un grupo de tareas relacionadas.
 
 Ejemplo de lo que vas a ver:
 ```
@@ -574,9 +574,9 @@ Quiero agregar [descripcion de lo que quieres cambiar o agregar].
 Por ejemplo: una nueva grafica que muestre los workflows mas usados de n8n.
 ```
 
-Y sigue el mismo flujo: explore → propose → specs → design → tasks → apply → verify.
+Y sigue el mismo flujo: explore → design → apply → verify (SPRINT) o explore → design (USER STOP) → apply → verify (COMPLETO).
 
-> **Importante**: Cada cambio pasa por el Execution Gate automaticamente.
+> **Importante**: Cada cambio pasa por el Research-First automaticamente.
 > Claude valida que el cambio siga las reglas del proyecto antes de escribir codigo.
 
 ---
@@ -646,11 +646,11 @@ R: Si, Claude Code necesita internet para funcionar. Tambien necesitas internet 
 **P: Puedo usar esto para otros proyectos, no solo este?**
 R: Si. El ecosistema Batuta funciona para cualquier tipo de proyecto. Solo cambia la descripcion en el paso de `/sdd-init` y `/sdd-new`.
 
-**P: Que es el Execution Gate?**
-R: Es un checklist automatico que Claude ejecuta antes de escribir codigo. Verifica donde van los archivos, que impacto tienen los cambios, y que todo siga las reglas del proyecto. No lo ves directamente, pero trabaja en segundo plano protegiendote de errores.
+**P: Que es Research-First?**
+R: Es una regla obligatoria de Claude: SIEMPRE investiga antes de implementar. Antes de escribir codigo, verifica skills, documentacion oficial, y patrones existentes. No lo ves directamente, pero trabaja en segundo plano asegurando calidad.
 
-**P: Que son los Scope Agents?**
-R: Son "jefes de area" especializados. Claude tiene 3: pipeline (proceso de desarrollo), infra (organizacion de archivos y recetas), y observability (calidad). El chef principal solo les pasa los pedidos al jefe correcto.
+**P: Que son los Agentes Contratados?**
+R: Son especialistas que Claude contrata para cada tarea. Hay 5 disponibles: pipeline (proceso de desarrollo), infra (organizacion y deploy), backend (APIs y bases de datos), data (pipelines de datos e IA), y quality (tests y seguridad). Claude nunca implementa directamente — siempre contrata al agente correcto.
 
 ---
 
@@ -672,7 +672,7 @@ Tu (carpeta vacia)
  |     Tu: "Continua" (3 veces)
  |
  +-- Paso 8:  /sdd-apply ............. "Construir la app"
- |     [Execution Gate valida antes de cada cambio]
+ |     [Research-First valida antes de cada cambio]
  |     Tu: "Si, continua" (por cada batch)
  |
  +-- Paso 9:  /sdd-verify ........... "Revisar que todo funcione"

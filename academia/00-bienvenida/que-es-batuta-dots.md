@@ -2,7 +2,7 @@
 
 ## La version corta
 
-Batuta Dots es un ecosistema que convierte a Claude Code (un asistente de IA) en tu equipo completo de desarrollo de software. En vez de un asistente generico que responde preguntas, tienes un **CTO virtual** con 39 especialidades, un proceso de trabajo profesional, y la capacidad de construir software real desde una idea hasta un producto funcionando.
+Batuta Dots es un ecosistema que convierte a Claude Code (un asistente de IA) en tu equipo completo de desarrollo de software. En vez de un asistente generico que responde preguntas, tienes un **gestor virtual** con 43 especialidades distribuidas en 5 agentes contratables, un proceso de trabajo profesional con 2 modos (rapido y completo), y la capacidad de construir software real desde una idea hasta un producto funcionando.
 
 ---
 
@@ -11,22 +11,23 @@ Batuta Dots es un ecosistema que convierte a Claude Code (un asistente de IA) en
 Imagina que vas a abrir un restaurante. Podrias hacerlo tu solo — cocinar, servir, lavar, cobrar, todo al mismo tiempo. Funcionaria, pero el resultado seria caotico.
 
 Ahora imagina que tienes:
-- Un **chef ejecutivo** que disena el menu (el CTO, que es Batuta)
-- **Cocineros especializados** — uno para entradas, otro para platos fuertes, otro para postres (los 39 skills)
-- Un **maitre** que coordina el servicio (el pipeline SDD)
-- **Inspectores de calidad** que revisan cada plato antes de servir (los gates y la validacion)
-- Un **manual de operaciones** que documenta cada receta (las especificaciones)
+- Un **gerente de restaurante** que no cocina sino que contrata cocineros (el main agent — gestor puro)
+- **5 jefes de cocina** que se contratan segun lo que necesites (los 5 agentes: pipeline, backend, data, quality, infra)
+- **Cocineros especializados** que cada jefe trae consigo (los 43 skills)
+- Un **maitre** que coordina el servicio en 2 modalidades: rapida o completa (el pipeline SDD con modos SPRINT y COMPLETO)
+- Un **unico inspector** que revisa el diseno antes de cocinar (el Design Approval — unico gate en modo COMPLETO)
+- Un **manual de operaciones** que documenta cada receta (el PRD — un solo documento en vez de 5)
 
 Batuta Dots funciona igual, pero para software:
 
 | Restaurante | Batuta Dots | Que hace |
 |------------|------------|---------|
-| Chef ejecutivo | CLAUDE.md (personalidad CTO) | Define las reglas, el tono, y la filosofia |
-| Cocineros | 39 skills especializados | Cada uno sabe hacer algo especifico muy bien |
-| Maitre | Pipeline SDD (9 fases) | Coordina el orden: primero pensar, luego disenar, luego construir |
-| Inspectores | Gates (G0.5, G1, G2) | Verifican calidad antes de avanzar |
-| Recetas | Especificaciones (openspec/) | Documentan exactamente que se va a construir |
-| Personal de apoyo | 6 agentes (3 scope + 3 domain) | Coordinan areas del trabajo y aportan expertise especializado |
+| Gerente | Main agent (CLAUDE.md, 105 lineas) | Gestiona sin cocinar — solo contrata agentes |
+| Jefes de cocina | 5 agentes contratables | pipeline, backend, data, quality, infra — se contratan via agent-hiring |
+| Cocineros | 43 skills (13 globales + por proyecto) | Cada uno sabe hacer algo especifico muy bien |
+| Maitre | Pipeline SDD (2 modos) | SPRINT (rapido, sin gates) o COMPLETO (con Design Approval) |
+| Inspector | Design Approval (unico gate) | Verifica el diseno antes de construir (solo en modo COMPLETO) |
+| Receta | PRD (un solo documento) | Documenta todo lo necesario para construir — reemplaza 5 artefactos separados |
 
 ---
 
@@ -66,42 +67,42 @@ Empiezan con `/`. Son tu forma de comunicarte con el sistema:
 - `/sdd-new mi-feature` — Empieza algo nuevo
 - `/sdd-verify` — Verifica que todo esta bien
 
-### Los skills (lo que el sistema sabe hacer)
-Son 38 especialidades. Algunos se activan solos cuando el sistema detecta que los necesita:
+### Los skills (lo que los agentes saben hacer)
+Son 43 especialidades en el hub. 13 se instalan globalmente (aplican a todo proyecto), y el resto se provisiona por proyecto segun tu tech stack (via `/batuta-init` y `/batuta-sync`):
 - **sdd-explore** — Investigar y entender problemas
 - **security-audit** — Revisar seguridad
 - **process-analyst** — Mapear procesos complejos
-- **skill-eval** — Verificar que los skills funcionan correctamente
-- Y 33 mas...
+- **agent-hiring** — Contratar agentes especializados
+- Y muchos mas...
 
-### Los agentes (quien coordina)
-Son 3 coordinadores + 3 especialistas. Los coordinadores (scope agents) manejan la cocina — siempre estan presentes:
-- **Pipeline** — El flujo de trabajo (explorar → disenar → construir → verificar)
-- **Infra** — La organizacion de archivos y creacion de herramientas
-- **Observability** — El seguimiento y la calidad
-
-Los especialistas (domain agents) se envian a cada proyecto segun lo que cocina:
-- **Backend** — Expertise en APIs, bases de datos, y servicios
-- **Quality** — Testing, validacion, y buenas practicas (siempre presente)
+### Los agentes (quien ejecuta)
+Son 5 agentes contratables. El main agent (el gestor) NUNCA ejecuta directamente — contrata al agente adecuado via el skill `agent-hiring`:
+- **Pipeline** — Coordina el flujo SDD (research → apply → verify)
+- **Backend** — APIs, bases de datos, y servicios
 - **Data** — Pipelines de datos, ETL, y procesamiento
+- **Quality** — Testing, validacion, y buenas practicas
+- **Infra** — Infraestructura, deployment, y organizacion de archivos
+
+Los agentes no son personal fijo — se contratan cuando se necesitan, y cada uno trae consigo los skills relevantes.
 
 ### El pipeline SDD (como se trabaja)
-9 fases que van desde "tengo una idea" hasta "esta en produccion":
-1. **init** — Preparar el proyecto
-2. **explore** — Investigar el problema
-3. **propose** — Proponer una solucion
-4. **spec** — Escribir los requisitos exactos
-5. **design** — Disenar la arquitectura
-6. **tasks** — Dividir el trabajo en tareas
-7. **apply** — Construir (escribir codigo)
-8. **verify** — Verificar que funciona
-9. **archive** — Archivar y documentar
+2 modos segun la complejidad del trabajo:
 
-### Los gates (checkpoints de calidad)
-3 puntos donde el sistema se detiene y pregunta "estamos listos para continuar?":
-- **G0.5** — Antes de proponer: entendemos bien el problema?
-- **G1** — Antes de disenar: la solucion vale la pena?
-- **G2** — Antes de archivar: esta listo para produccion?
+**SPRINT** (el modo por defecto — 0 gates):
+1. **Research** — Investigar SIEMPRE antes de tocar codigo
+2. **Apply** — Subagentes implementan con skills verificados
+3. **Verify** — Verificar que funciona
+
+**COMPLETO** (cuando el CTO lo pide via PRD — 1 gate):
+1. **Research** — Investigar en paralelo con subagentes
+2. **Explore** — Subagentes exploran en profundidad
+3. **Design** — Disenar la arquitectura (**USER STOP** — unico gate: Design Approval)
+4. **Apply** — Construir siguiendo el PRD
+5. **Verify** — Verificar que funciona
+
+### El gate (checkpoint de calidad)
+Un unico punto de control en modo COMPLETO:
+- **Design Approval** — Antes de construir: el diseno esta aprobado? El usuario DEBE dar su consentimiento explicito.
 
 ---
 
@@ -109,19 +110,19 @@ Los especialistas (domain agents) se envian a cada proyecto segun lo que cocina:
 
 Imagina que un cliente te dice: "Necesito automatizar la conciliacion bancaria de mi empresa."
 
-Con Batuta Dots, el flujo seria:
+Con Batuta Dots en modo **COMPLETO** (tarea compleja), el flujo seria:
 
 1. **Tu escribes**: `/sdd-new conciliacion-bancaria`
-2. **Batuta explora**: Investiga que es la conciliacion, que variantes existen, que sistemas usa el cliente
-3. **Gate G0.5**: "Identificamos 4 tipos de conciliacion, 3 fuentes de datos, y 7 excepciones. Continuamos?"
-4. **Batuta propone**: Presenta la solucion con costos, beneficios, y lenguaje que el cliente entiende
-5. **Gate G1**: "El scope es manejable, los riesgos son bajos. Continuamos?"
-6. **Batuta diseña**: Arquitectura, modelo de datos, integraciones
-7. **Batuta construye**: Codigo real, documentado, probado
-8. **Gate G2**: "Tests pasan, documentacion completa, rollback plan listo. Listo para produccion?"
-9. **Batuta archiva**: Todo queda documentado para el futuro
+2. **Batuta investiga**: Contrata subagentes en paralelo. Investigan que es la conciliacion, que variantes existen, que sistemas usa el cliente. Buscan en Notion KB, skills relevantes, y documentacion oficial.
+3. **Batuta explora**: Los subagentes mapean 4 tipos de conciliacion, 3 fuentes de datos, y 7 excepciones.
+4. **Batuta diseña**: Arquitectura, modelo de datos, integraciones — todo consolidado en un PRD.
+5. **Design Approval** (unico gate): "Este es el diseno. Lo apruebas?" → Tu apruebas.
+6. **Batuta construye**: Agentes contratados implementan el codigo, documentado y probado.
+7. **Batuta verifica**: Piramide de Validacion — linting, tests, revision.
 
-**Tiempo**: Lo que antes tomaba semanas, ahora toma horas — con documentacion que antes no existia.
+En modo **SPRINT** (tarea mas simple), seria aun mas rapido: Research → Apply → Verify, sin gates.
+
+**Tiempo**: Lo que antes tomaba semanas, ahora toma horas — con un PRD que documenta todas las decisiones.
 
 ---
 

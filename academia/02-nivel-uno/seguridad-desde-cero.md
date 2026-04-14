@@ -1,6 +1,6 @@
 # Seguridad desde cero
 
-Batuta Dots incluye un skill dedicado a seguridad: **security-audit**. No necesitas ser experto en seguridad — el sistema revisa tu codigo y te dice que corregir.
+Batuta Dots incluye un skill dedicado a seguridad: **security-audit**. No necesitas ser experto en seguridad — el agente contratado revisa tu codigo y te dice que corregir.
 
 ---
 
@@ -40,17 +40,21 @@ Si tu proyecto usa IA (LLM, clasificadores), security-audit agrega:
 
 ---
 
-## Cuando se activa
+## Cuando se activa en v15
 
-1. **En sdd-design**: Como seccion de "Threat Model" (modelo de amenazas)
-2. **En sdd-verify**: Como validacion cruzada de seguridad
-3. **Manual**: Puedes pedir una auditoria en cualquier momento
+En v15, security-audit es un skill asignado al **quality-agent**. Se activa en tres escenarios:
+
+1. **Durante research**: Cuando el agente contratado investiga antes de implementar (research-first), revisa riesgos de seguridad existentes.
+2. **Durante verificacion** (`/sdd-verify`): Como capa transversal de la Piramide de Validacion.
+3. **Manual**: Puedes pedir una auditoria en cualquier momento.
+
+Ya no hay gates formales de 8 niveles. En modo SPRINT (0 gates), el quality-agent ejecuta security-audit como parte de `/sdd-verify`. En modo COMPLETO (1 gate en Design), la seguridad se valida en el artifact de diseno antes de la aprobacion.
 
 ---
 
 ## Ejemplo practico
 
-Construiste una API con login. Security-audit revisa:
+Construiste una API con login. El quality-agent ejecuta security-audit y produce:
 
 ```
 Auditoria de Seguridad: mi-api
@@ -73,7 +77,7 @@ Recomendaciones:
 
 | Severidad | Accion |
 |-----------|--------|
-| **FAIL** | Arreglar antes de deploy. Batuta no pasa G2 sin resolver FAILs |
+| **FAIL** | Arreglar antes de deploy. `/sdd-verify` no pasa sin resolver FAILs |
 | **WARN** | Evaluar riesgo. Documentar si aceptas el riesgo |
 | **PASS** | Todo bien, seguir adelante |
 
@@ -89,7 +93,7 @@ Aunque no seas experto en seguridad, estas reglas te cubren el 80%:
 4. **Siempre** verifica que el usuario tiene permiso antes de mostrar datos.
 5. **Siempre** usa HTTPS en produccion.
 
-Batuta te recuerda estas reglas automaticamente a traves del security-audit.
+Batuta te recuerda estas reglas automaticamente cuando el quality-agent ejecuta security-audit.
 
 ---
 

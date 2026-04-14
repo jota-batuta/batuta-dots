@@ -32,8 +32,8 @@ Antes de empezar, aqui tienes un mini-diccionario. No necesitas memorizarlo, vue
 | **Skill** | Un documento que le dice a Claude COMO hacer algo especifico. Como una receta de cocina. |
 | **SDD** | Spec-Driven Development. Un proceso paso a paso para construir software: primero planeas, luego construyes. Como un arquitecto que primero dibuja el plano y luego construye la casa. |
 | **Repositorio (repo)** | Una carpeta especial que guarda todo tu codigo y recuerda cada cambio que haces. |
-| **Scope Agent** | Un "jefe de area" especializado. Claude tiene 3: uno para el proceso de desarrollo, uno para organizacion de archivos, y uno para observabilidad y continuidad de sesion. |
-| **Execution Gate** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden. |
+| **Agente Contratado** | Un "jefe de area" especializado. Claude tiene 3: uno para el proceso de desarrollo, uno para organizacion de archivos, y uno para observabilidad y continuidad de sesion. |
+| **Research-First** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden. |
 | **Docker** | Una herramienta que empaqueta aplicaciones para que funcionen en cualquier computadora igual. Como meter todo en una caja con instrucciones: "abre esto en cualquier PC y funciona". |
 | **Scope Rule** | La regla que decide DONDE va cada archivo en el proyecto. "El uso determina la ubicacion" — si solo una parte del proyecto usa algo, va en esa parte. |
 
@@ -206,7 +206,7 @@ Haz lo siguiente:
 Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en tu proyecto.
 
 **Que esperar**: Claude va a descargar el ecosistema y configurar todo. Puede tomar 1-2 minutos. Cuando termine, veras estos archivos nuevos:
-- `CLAUDE.md` — Las instrucciones del chef (router principal + scope agents + execution gate)
+- `CLAUDE.md` — Las instrucciones del chef (router principal + agentes contratados + execution checkpoint)
 - `.batuta/session.md` — El cuaderno donde Claude anota en que quedo (para continuar despues)
 
 **Tip**: Si Claude te pide permiso para ejecutar comandos, di "yes" o "si".
@@ -303,7 +303,7 @@ Aprobado, continua con el siguiente paso
 
 Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd-ff batuta-data-pipeline` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-continue batuta-data-pipeline` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude va a ejecutar estas fases en orden:
 
@@ -344,7 +344,7 @@ Claude esta configurado para explicarte las cosas de forma que cualquier persona
 /sdd-apply batuta-data-pipeline
 ```
 
-**Que esperar**: Antes de escribir codigo, Claude ejecuta el **Execution Gate** — un checklist automatico que verifica:
+**Que esperar**: Antes de escribir codigo, Claude ejecuta el **Research-First** — un checklist automatico que verifica:
 - Que archivos va a crear/modificar
 - Donde van a ir (siguiendo la Scope Rule)
 - Que impacto tienen los cambios
@@ -645,9 +645,9 @@ Quiero agregar una validacion para el campo "NIT" que verifique que
 tenga el formato correcto de NIT colombiano (numeros + digito de verificacion).
 ```
 
-Y sigue el mismo flujo: explore → propose → specs → design → tasks → apply → verify.
+Y sigue el mismo flujo: explore → design → apply → verify (SPRINT o COMPLETO).
 
-> **Importante**: Cada cambio pasa por el Execution Gate automaticamente.
+> **Importante**: Cada cambio pasa por el Research-First automaticamente.
 > Claude valida que el cambio siga las reglas del proyecto antes de escribir codigo.
 
 ---
@@ -1057,7 +1057,7 @@ Tu (archivos CSV/Excel crudos)
  |     Tu: "Continua" (3 veces)
  |
  +-- Paso 7:  /sdd-apply (Batch 1) ........ "Estacion 1: Ingestion"
- |     [Execution Gate valida antes de cada cambio]
+ |     [Research-First valida antes de cada cambio]
  |
  +-- Paso 8:  /sdd-apply (Batch 2) ........ "Estacion 2: Transformacion"
  |
