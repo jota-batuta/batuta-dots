@@ -1718,4 +1718,12 @@ Patron **lazy-loading**: `CLAUDE.md` es el unico archivo que Claude lee, contien
 
 ---
 
+## v15.0.0 (2026-04-13): Simplification Refactor
+
+**Changes**: CLAUDE.md 331→77 lines, SDD 9→2 modes, gates 8→1, agents 11→5, PRD as single artifact
+**Rollback**: git revert to v14.3.0 tag. Restore CLAUDE.md, pipeline-agent.md, deleted agents from git history.
+**Risk**: High — breaking change to all projects using batuta-update. Projects must re-run /batuta-init.
+
+---
+
 > **Nota**: Este archivo es para humanos, no para Claude. Claude lee CLAUDE.md.

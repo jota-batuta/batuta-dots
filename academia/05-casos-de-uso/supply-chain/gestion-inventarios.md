@@ -69,7 +69,7 @@ El skill `recursion-designer` aborda un problema real: los codigos de producto d
 sdd-ff
 ```
 
-El fast-forward ejecuta `sdd-propose` → `sdd-spec` → `sdd-design` → `sdd-tasks` en secuencia. Aqui se pasa por los gates G0.5 y G1. La propuesta incluye arquitectura, modelo de datos, y plan de implementacion.
+El `sdd-ff` genera el PRD consolidado en secuencia. Aqui se pasa por Design Approval. El PRD incluye arquitectura, modelo de datos, y plan de implementacion.
 
 ### Fase 6 — Implementacion
 
@@ -82,10 +82,10 @@ Se genera el codigo siguiendo las tareas definidas. El pipeline aplica las valid
 ### Fase 7 — Verificacion
 
 ```
-sdd-verify → G2
+sdd-verify
 ```
 
-Se ejecuta la piramide de validacion completa. El gate G2 confirma que el sistema esta listo para produccion.
+Se ejecuta la piramide de validacion completa. La Verificacion Final confirma que el sistema esta listo para produccion.
 
 ## Skills que se activan
 
@@ -96,21 +96,21 @@ Se ejecuta la piramide de validacion completa. El gate G2 confirma que el sistem
 | `recursion-designer` | Resuelve el problema de codigos de producto que cambian entre proveedores |
 | `compliance-colombia` | Se activa si se almacenan datos de proveedores (personas naturales) — Ley 1581 |
 
-## Gates que pasas
+## Checkpoints que pasas
 
-### G0.5 — Discovery Complete
+### Design Approval — Discovery Complete
 - Se confirma que las variantes de producto estan mapeadas (materia prima, terminado, insumos, herramientas)
 - Las fuentes de datos existentes estan identificadas con sus formatos
 - El problema de codigos variables del proveedor esta documentado
 - Los usuarios clave de cada bodega estan identificados
 
-### G1 — Solution Worth Building
+### Design Approval — Solution Worth Building
 - La propuesta cubre todas las variantes sin forzar un flujo unico
 - El modelo de datos soporta multiples codigos por producto
 - La estrategia de sincronizacion con el ERP es viable
 - El alcance es realista para el equipo y el tiempo disponible
 
-### G2 — Ready for Production
+### Verificacion Final — Ready for Production
 - Los movimientos entre bodegas se registran correctamente
 - Las alertas de stock funcionan por bodega y categoria
 - La sincronizacion con fuentes externas esta probada

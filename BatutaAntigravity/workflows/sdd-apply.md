@@ -1,6 +1,6 @@
 # /sdd-apply
 
-> Implement code for a change following its specs, design, and task breakdown. Enforces documentation standard and complexity evaluation.
+> Implement code for a change. Receives a PRD, design, or task description and implements it.
 
 ## Instructions
 
@@ -11,18 +11,18 @@ If not, look in `openspec/changes/` for the most recently modified change direct
 
 ### Step 2: Verify prerequisites
 
-Check that these artifacts exist in `openspec/changes/{change-name}/`:
-- `spec.md` (required)
-- `design.md` (required)
-- `tasks.md` (required)
+Check for implementation context. At least one of these should exist:
+- A PRD in Notion (search via MCP by project name)
+- A design or task description in `openspec/changes/{change-name}/`
+- Direct user instructions describing what to implement
 
-If any is missing, tell the user which phase to run first.
+If no context is found, tell the user to describe what to implement or run `/sdd-explore` first.
 
 ### Step 3: Execute
 
 Locate and read the `sdd-apply` skill at `.agent/skills/sdd-apply/SKILL.md` or `~/.gemini/antigravity/skills/sdd-apply/SKILL.md` and follow it exactly.
 
-Before writing code, enforce the Execution Gate as defined in GEMINI.md. For multi-file changes, use FULL mode and show the location plan, scope, and impact before proceeding.
+Research is mandatory before implementation (Research-First rule). Verify skills and framework docs are current before writing code.
 
 If the skill file does not exist, tell the user:
 

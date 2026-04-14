@@ -1,36 +1,50 @@
 # /sdd-continue
 
-> Continue the SDD pipeline from where it left off. Detects the current phase and runs the next needed phase automatically.
+> Continue the SDD pipeline from where it left off. Detects SPRINT vs COMPLETO mode and resumes from session.md state.
 
 ## Instructions
 
-### Step 1: Find the active change
+### Step 1: Read session.md
+
+Read `session.md` (or `.batuta/session.md`) to determine:
+- Current mode: SPRINT or COMPLETO
+- Current phase
+- Active change name
+
+If session.md does not exist or has no SDD state, fall back to artifact detection (Step 3).
+
+### Step 2: Find the active change
 
 If `{{args}}` is provided, use it as the change name.
-If not, look in `openspec/changes/` for the most recently modified change directory.
+If session.md names a change, use that.
+If neither, look in `openspec/changes/` for the most recently modified change directory.
 If multiple changes exist and none specified, ask the user which one to continue.
 
-### Step 2: Detect current phase
+### Step 3: Detect next phase by mode
 
-Check which artifacts exist in `openspec/changes/{change-name}/`:
+**SPRINT mode** (default -- no gates):
 
-| File exists? | Next phase to run |
-|-------------|-------------------|
+| State | Next action |
+|-------|-------------|
+| No implementation yet | Run sdd-apply |
+| Implementation exists but no verify | Run sdd-verify |
+| Verify done | Done -- report to user |
+
+**COMPLETO mode** (PRD-driven):
+
+| Artifact exists? | Next action |
+|------------------|-------------|
 | No explore.md | Run sdd-explore |
-| explore.md but no proposal.md | Run sdd-propose |
-| proposal.md but no spec.md | Run sdd-spec |
-| spec.md but no design.md | Run sdd-design |
-| design.md but no tasks.md | Run sdd-tasks |
-| tasks.md but no implementation | Run sdd-apply |
-| Implementation exists but no verify.md | Run sdd-verify |
-| verify.md exists | Run sdd-archive |
+| explore.md but no design.md | Run sdd-design, then STOP for approval |
+| design.md but no implementation | Run sdd-apply |
+| Implementation but no verify | Run sdd-verify |
+| Verify done | Done -- report to user |
 
-### Step 3: Execute the next phase
+### Step 4: Execute the next phase
 
-Read the corresponding skill from `.agent/skills/sdd-{phase}/SKILL.md` or `~/.gemini/antigravity/skills/sdd-{phase}/SKILL.md` and follow it exactly.
+Read the corresponding skill from `.agent/skills/sdd-{phase}/SKILL.md` or `~/.gemini/antigravity/skills/sdd-{phase}/SKILL.md` and follow it.
 
 If any skill file does not exist, tell the user:
-
 ```
 Los skills SDD no estan instalados. Ejecuta /batuta-update primero para sincronizar el ecosistema.
 ```

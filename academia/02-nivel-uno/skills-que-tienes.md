@@ -1,34 +1,60 @@
 # Skills que tienes
 
-Batuta Dots tiene 39 skills — especialistas que se activan cuando los necesitas. El sistema los activa automaticamente, pero conocerlos te da poder para pedir exactamente lo que necesitas.
+Batuta Dots tiene 43 skills en el hub — especialistas que los agentes contratados cargan cuando los necesitan. En v15, los skills **pertenecen a los agentes**, no al agente principal.
 
 ---
 
 ## Que es un skill
 
-Un archivo (`SKILL.md`) que le dice a Claude: que sabe hacer, cuando activarse, como hacerlo, y que herramientas usa. Como un manual de procedimientos para un empleado muy competente.
+Un archivo (`SKILL.md`) que le dice a un agente: que sabe hacer, cuando activarse, como hacerlo, y que herramientas usa. Como un manual de procedimientos para un empleado muy competente.
 
-### Convencion de activacion (v11.0)
+### Donde viven los skills
 
-Cada skill tiene un campo `description` en su archivo que empieza con "Use when..." — esto le dice a Claude **cuando** activar el skill, no **que** hace. Es como un cartel en la puerta: "Entrar cuando llueva" vs "Este es el departamento de paraguas". Las tablas de abajo describen que hace cada skill en lenguaje simple.
+En v15, los skills existen en tres niveles:
+
+| Nivel | Ubicacion | Cuantos | Cuando se cargan |
+|-------|-----------|---------|-----------------|
+| **Hub** | `batuta-dots/BatutaClaude/skills/` | 43 | Biblioteca completa. No se clonan directo. |
+| **Global** | `~/.claude/skills/` | 13 | Universales que aplican a TODO proyecto. Se instalan con `setup.sh --sync`. |
+| **Proyecto** | `.claude/skills/` | Variable | Solo los que ESTE proyecto necesita. Se provisionan con `/batuta-init`. |
+
+### Los 13 skills globales
+
+Estos se instalan en tu maquina y estan disponibles en todo proyecto:
+
+| Skill | Que hace |
+|-------|---------|
+| **scope-rule** | Decide donde va cada archivo |
+| **ecosystem-creator** | Crea skills, agentes, workflows |
+| **security-audit** | OWASP, secrets, amenazas |
+| **team-orchestrator** | Solo, subagente, o equipo |
+| **ecosystem-lifecycle** | Clasifica, auto-repara, provisiona skills |
+| **sdd-explore** | Investiga problemas y opciones |
+| **sdd-design** | Arquitectura y decisiones tecnicas |
+| **sdd-apply** | Implementa codigo |
+| **sdd-verify** | Piramide de Validacion |
+| **prd-generator** | Genera PRD consolidado |
+| **tdd-workflow** | Metodologia Test-Driven Development |
+| **debugging-systematic** | Depuracion sistematica de bugs |
+| **sdd-init** | Inicializa SDD en un proyecto |
+
+### Convencion de activacion
+
+Cada skill tiene un campo `description` en su archivo que empieza con "Use when..." — esto le dice al agente **cuando** activar el skill. Las tablas de abajo describen que hace cada skill en lenguaje simple.
 
 ---
 
 ## Skills por categoria
 
-### Pipeline SDD (9 skills)
+### Pipeline SDD (5 skills)
 
 | Skill | Que hace | Comando |
 |-------|---------|---------|
-| **sdd-init** | Prepara un proyecto para SDD | `/sdd-init` |
 | **sdd-explore** | Investiga problemas y opciones | `/sdd-explore` |
-| **sdd-propose** | Propuestas con costos y beneficios | Via `/sdd-new` |
-| **sdd-spec** | Requisitos exactos (Given/When/Then) | Via `/sdd-ff` |
-| **sdd-design** | Arquitectura y decisiones tecnicas | Via `/sdd-ff` |
-| **sdd-tasks** | Divide trabajo en tareas | Via `/sdd-ff` |
+| **sdd-design** | Arquitectura y decisiones tecnicas | Via `/sdd-new` o `/sdd-ff` |
 | **sdd-apply** | Implementa codigo | `/sdd-apply` |
 | **sdd-verify** | Piramide de Validacion | `/sdd-verify` |
-| **sdd-archive** | Archiva y documenta | `/sdd-archive` |
+| **prd-generator** | Genera PRD consolidado | Automatico tras aprobacion de plan |
 
 ### Capa CTO — 6 especialistas
 
@@ -43,15 +69,15 @@ Cada skill tiene un campo `description` en su archivo que empieza con "Use when.
 
 ### Infraestructura (7 skills)
 
-| Skill | Que hace | Comando |
-|-------|---------|---------|
-| **ecosystem-creator** | Crea skills, agentes, workflows | `/create-skill` |
-| **ecosystem-lifecycle** | Clasifica, auto-repara y provisiona skills | Automatico |
-| **scope-rule** | Decide donde va cada archivo | Automatico |
-| **team-orchestrator** | Solo, subagente, o equipo | Automatico |
-| **security-audit** | OWASP, secrets, amenazas | En design/verify |
-| **skill-eval** | Tests comportamentales para skills (SKILL.eval.yaml) | `/skill:eval nombre` |
-| **claude-agent-sdk** | Patrones de deployment via Claude Agent SDK | Automatico |
+| Skill | Que hace |
+|-------|---------|
+| **ecosystem-creator** | Crea skills, agentes, workflows |
+| **ecosystem-lifecycle** | Clasifica, auto-repara y provisiona skills |
+| **scope-rule** | Decide donde va cada archivo |
+| **team-orchestrator** | Solo, subagente, o equipo |
+| **security-audit** | OWASP, secrets, amenazas |
+| **skill-eval** | Tests comportamentales para skills |
+| **claude-agent-sdk** | Patrones de deployment via Agent SDK |
 
 ### Patrones reutilizables (3 skills)
 
@@ -61,7 +87,7 @@ Cada skill tiene un campo `description` en su archivo que empieza con "Use when.
 | **jwt-auth** | Autenticacion JWT con bcrypt |
 | **sqlalchemy-models** | Modelos BD con relaciones |
 
-### Tecnologias y Metodologias (13 skills)
+### Tecnologias y Metodologias (17 skills)
 
 | Skill | Que hace |
 |-------|---------|
@@ -76,37 +102,69 @@ Cada skill tiene un campo `description` en su archivo que empieza con "Use when.
 | **ci-cd-pipeline** | Pipelines CI/CD (GitHub Actions, GitLab) |
 | **observability** | Monitoreo, logging, tracing, alertas |
 | **accessibility-audit** | Cumplimiento WCAG y accesibilidad web |
-| **performance-testing** | Load testing, benchmarks, y metricas de rendimiento |
-| **technical-writer** | Generacion de documentacion tecnica profesional |
+| **performance-testing** | Load testing, benchmarks, y metricas |
+| **technical-writer** | Documentacion tecnica profesional |
+| **sdd-init** | Inicializa SDD en un proyecto |
+| **coolify-deploy** | Deploy en Coolify |
+| **ai-first** | Decidir IA vs codigo determinista |
+| **agent-hiring** | Protocolo de contratacion de agentes |
+
+### Skills de dominio especifico (5 skills)
+
+| Skill | Que hace |
+|-------|---------|
+| **evolution-api** | Integracion WhatsApp via Evolution API |
+| **google-adk** | Agentes con Google ADK |
+| **icg-erp** | Schema y gotchas para ICG ERP |
+| **pydantic-ai** | Agentes con Pydantic AI |
+| **supabase-python** | Supabase con Python |
+| **prefect-flows** | Flujos Prefect 3 |
+| **user-execution-guide** | Guia de ejecucion para el operador |
 
 ---
 
-## Como se activan
+## Como se cargan en v15: skills pertenecen a agentes
 
-Los skills se activan de tres formas:
+Este es el cambio fundamental. En v14, el agente principal cargaba skills. En v15:
 
-**Automatica**: Escribes `/sdd-explore` → pipeline-agent activa sdd-explore.
-**Por deteccion**: sdd-explore detecta 3+ variantes → sugiere process-analyst.
-**Manual**: "Necesito analizar variantes con process-analyst".
+1. **El agente principal NO carga skills** — solo sabe a quien contratar
+2. **Cada agente tiene skills asignados** en su contrato (archivo `.md`)
+3. **Al contratarse, el agente carga SOLO sus skills** — no los demas
 
-### Skills dentro de domain agents (carga bajo demanda)
+| Agente | Skills asignados | Cuando se cargan |
+|--------|-----------------|-----------------|
+| **pipeline-agent** | sdd-explore, sdd-design, sdd-apply, sdd-verify, prd-generator | Al contratar para fases SDD |
+| **backend-agent** | fastapi-crud, jwt-auth, sqlalchemy-models, api-design, message-queues, typescript-node | Al contratar para trabajo de API/backend |
+| **data-agent** | data-pipeline-design, llm-pipeline-design, vector-db-rag, prefect-flows | Al contratar para trabajo de datos/IA |
+| **quality-agent** | tdd-workflow, debugging-systematic, security-audit, e2e-testing, accessibility-audit, performance-testing | Al contratar para testing/calidad |
+| **infra-agent** | scope-rule, ecosystem-creator, ecosystem-lifecycle, ci-cd-pipeline, coolify-deploy, worker-scaffold | Al contratar para infra/deployment |
 
-Los domain agents (backend, quality, data) tienen un mecanismo especial: sus skills se cargan **bajo demanda** (`defer_loading: true`). Esto significa que el agente no carga todos sus skills al arrancar — los busca y activa cuando los necesita.
+**Por que importa**: Un backend-agent no carga skills de testing. Un quality-agent no carga skills de FastAPI. Cada agente ve solo lo que necesita, manteniendo el contexto limpio y el rendimiento alto.
 
-Por ejemplo, cuando backend-agent recibe una tarea sobre autenticacion, busca y activa jwt-auth en ese momento. Si la tarea fuera sobre modelos de base de datos, activaria sqlalchemy-models en su lugar. Esto ahorra tokens y mantiene al agente enfocado.
+### Descripcion de 1 linea: el budget de metadata
 
-| Domain Agent | Skills disponibles | Cuando se cargan |
-|-------------|-------------------|-----------------|
-| backend-agent | fastapi-crud, jwt-auth, sqlalchemy-models, api-design, message-queues, typescript-node | Al detectar la tecnologia en la tarea |
-| quality-agent | tdd-workflow, debugging-systematic, security-audit, e2e-testing, accessibility-audit, performance-testing | Siempre disponibles (no usa defer_loading) |
-| data-agent | data-pipeline-design, llm-pipeline-design, vector-db-rag | Al detectar la tecnologia en la tarea |
+Claude Code carga SOLO las descripciones de 1 linea de los skills al inicio (~450 tokens total). El contenido completo se carga SOLO cuando el agente decide usar uno. Esto es por que las descripciones deben ser cortas (maximo 130 caracteres).
 
-Nota que quality-agent es la excepcion: sus skills estan disponibles inmediatamente porque las verificaciones de calidad deben poder ejecutarse en cualquier momento, sin espera.
+### Skills globales vs proyecto
+
+- **13 skills globales** (`~/.claude/skills/`): universales, aplican a todo proyecto. Se instalan con `setup.sh --sync`.
+- **Skills de proyecto** (`.claude/skills/`): solo los que este proyecto necesita. Se provisionan con `/batuta-init` (deteccion automatica del tech stack) o se traen del hub con `/batuta-sync`.
+
+El hub conserva los 43 skills como biblioteca. No se clona completo — se extraen los que cada proyecto necesita.
+
+---
 
 ## Si falta un skill
 
-El sistema detecta el gap, ofrece crearlo (local o global), o continuar sin el. El ecosistema crece contigo.
+En v15, cuando un agente necesita expertise que no tiene:
+
+1. El agente detecta el gap durante research-first
+2. Busca en el hub global (`~/.claude/skills/`)
+3. Si existe → propone traerlo al proyecto con `/batuta-sync`
+4. Si no existe → declara el gap, busca en web, y puede crear uno nuevo via `ecosystem-creator`
+
+El ecosistema crece contigo. Los skills nuevos pueden propagarse al hub para beneficiar otros proyectos.
 
 ---
 
-→ [Agentes y equipos](agentes-y-equipos.md) — Los coordinadores
+-> [Agentes y equipos](agentes-y-equipos.md) — Los coordinadores

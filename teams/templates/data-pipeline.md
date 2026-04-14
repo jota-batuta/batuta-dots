@@ -39,9 +39,9 @@
 
 | Teammate | Recibe | Formato | De quien |
 |----------|--------|---------|----------|
-| `pipeline-dev` | Esquemas de fuentes de datos + reglas de transformacion + destino esperado | JSON Schema en `schemas/` + Markdown (spec) | Lead |
+| `pipeline-dev` | Esquemas de fuentes de datos + reglas de transformacion + destino esperado | JSON Schema en `schemas/` + Markdown (PRD o brief) | Lead |
 | `data-validator` | Esquemas de entrada/salida + reglas de negocio para validacion | JSON Schema en `schemas/` + reglas en Markdown | Lead |
-| `infra-dev` | Requisitos de orquestacion + dependencias + volumenes de datos esperados | Markdown (spec) + lista de servicios | Lead |
+| `infra-dev` | Requisitos de orquestacion + dependencias + volumenes de datos esperados | Markdown (PRD o brief) + lista de servicios | Lead |
 
 ### Output Contracts
 
@@ -151,4 +151,4 @@ Antes de crear el equipo, el Lead verifica:
 
 ---
 
-**Nota v13**: Los domain agents (backend-agent, quality-agent, data-agent) aportan expertise embebida de dominio. data-agent es el agente recomendado para `pipeline-dev` porque trae expertise en ETL, pandas/polars, data quality, y pipelines de datos. quality-agent esta disponible en todo proyecto.
+**v15**: 5 agentes contratables (pipeline, infra, backend, data, quality). data-agent es recomendado para `pipeline-dev` (expertise en ETL, pandas/polars, data quality). quality-agent disponible en todo proyecto. El main agent contrata agentes de `.claude/agents/` — nunca implementa directamente.

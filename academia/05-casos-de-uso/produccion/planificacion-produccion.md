@@ -64,22 +64,20 @@ Las 5 preguntas:
 /sdd-ff
 ```
 
-### Paso 6-8: Implementar, verificar, archivar
+### Paso 6-7: Implementar, verificar
 ```
 /sdd-apply planificacion-produccion
 /sdd-verify planificacion-produccion
-/sdd-archive planificacion-produccion
 ```
 
 ---
 
-## Gates que pasas
+## Checkpoints que pasas
 
-| Gate | Que verifica en este caso |
-|------|--------------------------|
-| **G0.5** | Documentaste los 3 tipos de produccion? Mapeaste la estructura BOM? Listaste las excepciones (urgentes, descontinuados)? |
-| **G1** | El scope es MRP simplificado (no incluye costos de produccion ni nomina)? |
-| **G2** | La explosion de materiales calcula correctamente? Los faltantes se generan bien? El calendario respeta capacidad? |
+| Checkpoint | Que verifica en este caso |
+|------------|--------------------------|
+| **Design Approval** | Documentaste los 3 tipos de produccion? Mapeaste la estructura BOM? El scope es MRP simplificado (no incluye costos de produccion ni nomina)? |
+| **Verificacion Final** | La explosion de materiales calcula correctamente? Los faltantes se generan bien? El calendario respeta capacidad? |
 
 ---
 

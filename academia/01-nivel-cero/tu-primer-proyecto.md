@@ -31,51 +31,29 @@ El usuario puede crear, completar y eliminar tareas.
 ```
 
 Batuta detecta que es un proyecto nuevo y necesita SDD. Automaticamente:
-1. Inicializa el proyecto (crea `openspec/`)
-2. Te pregunta el tipo de proyecto (responde **webapp**) y el stack (responde **Next.js**)
-3. Explora el problema y te presenta una propuesta
+1. Inicializa el proyecto (crea `openspec/`, provisiona skills segun tu stack)
+2. Detecta el tipo de proyecto (**webapp**) y el stack (**Next.js**)
+3. Investiga (research-first, obligatorio) y te presenta lo que encontro
 
 ```
 mi-todo-app/
+  .claude/
+    skills/          ← Skills provisionados para Next.js
   openspec/
     config.yaml     ← Configuracion detectada
     specs/           ← Para especificaciones
     changes/         ← Para cambios
 ```
 
-**Gate G0.5**: "Entendemos bien el problema?" → Responde **si**.
-Batuta presenta su propuesta.
-**Gate G1**: "La solucion vale la pena?" → Responde **si**.
+Batuta investiga automaticamente y procede a implementar (modo SPRINT — sin gates).
 
-## Paso 4: Aprueba la propuesta
+## Paso 4: Batuta implementa
 
-Batuta te muestra un resumen de lo que propone construir. Revisalo y responde:
+Como esta es una tarea simple, Batuta usa el modo **SPRINT** (el default). No necesita tu aprobacion de diseno — investigo, y ahora implementa directamente. El main agent contrata agentes especializados que escriben el codigo.
 
-```
-Dale, me parece bien.
-```
+> En un proyecto complejo, Batuta usaria modo **COMPLETO**: te presentaria un PRD (documento de diseno) y esperaria tu aprobacion antes de construir. Pero para una todo app, SPRINT es suficiente.
 
-Batuta automaticamente avanza por las fases de planificacion: spec → design → tasks. Resultado en `openspec/changes/todo-basico/`:
-
-```
-explore.md     ← Investigacion
-proposal.md    ← Propuesta aprobada
-spec.md        ← Requisitos exactos
-design.md      ← Arquitectura
-tasks.md       ← Tareas a implementar
-```
-
-## Paso 5: Aprueba el plan de tareas
-
-Batuta te presenta las tareas organizadas en fases. Revisalas y responde:
-
-```
-Arranca.
-```
-
-Batuta escribe codigo siguiendo las tareas. Antes de cada archivo, pregunta "Procedo?" — responde **si**.
-
-## Paso 6: Revisa la verificacion
+## Paso 5: Revisa la verificacion
 
 Batuta verifica automaticamente con la Piramide de Validacion:
 
@@ -87,23 +65,21 @@ Batuta verifica automaticamente con la Piramide de Validacion:
 | 4 | Revision codigo | Tu (manual) |
 | 5 | Pruebas manuales | Tu (manual) |
 
-**Gate G2**: Todo pasa? Listo para produccion.
-
-## Paso 7: Archiva
-
-Batuta cierra el cambio y documenta lecciones aprendidas.
+Todo pasa? Listo. session.md queda actualizado con el estado final del proyecto.
 
 ---
 
 ## Lo que acabas de hacer
 
 ```
-"Quiero una todo app" → Propuesta → Aprobacion → Plan → Implementacion → Verificacion → Archivado
+"Quiero una todo app" → Research → Implementacion → Verificacion
 ```
 
-El proceso profesional completo. Tus unicas acciones fueron: describir lo que querias, aprobar la propuesta, y aprobar el plan de tareas. Batuta hizo el resto.
+El proceso profesional en modo SPRINT. Tu unica accion fue describir lo que querias. Batuta investigo, implemento, y verifico automaticamente.
 
-> **Nota**: Si prefieres controlar cada paso manualmente, puedes usar los slash commands directamente: `/sdd-init`, `/sdd-new`, `/sdd-ff`, `/sdd-apply`, `/sdd-verify`, `/sdd-archive`.
+Para proyectos mas complejos (modo COMPLETO), el flujo agrega una pausa para que apruebes el diseno antes de construir. Pero el principio es el mismo: research-first, siempre.
+
+> **Nota**: Si prefieres controlar cada paso manualmente, puedes usar los slash commands directamente: `/sdd-explore`, `/sdd-new`, `/sdd-apply`, `/sdd-verify`, `/sdd-continue`.
 
 ---
 

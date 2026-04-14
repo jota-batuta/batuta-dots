@@ -33,37 +33,32 @@ Ambas formas activan la misma cadena interna:
 ## Que pasa internamente
 
 ```
-Batuta decide ejecutar sdd-explore
+Main agent decide ejecutar sdd-explore
          |
          v
-[1] CLAUDE.md identifica el scope
-    → Determina: scope = pipeline
+[1] CLAUDE.md (105 lineas) identifica que necesita
+    → Determina: necesito investigar → contratar agente pipeline
          |
          v
-[2] pipeline-agent se activa
-    → Lee el contexto del proyecto (openspec/config.yaml)
-    → Prepara el sub-agente sdd-explore
+[2] Main agent CONTRATA pipeline-agent (via agent-hiring)
+    → pipeline-agent lee session.md (estado actual del proyecto)
+    → pipeline-agent carga el skill sdd-explore
          |
          v
 [3] sdd-explore ejecuta su SKILL.md
     → Paso 1: Entiende la solicitud
-    → Paso 2: Investiga el codebase (lee archivos, busca patrones)
-    → Paso 2.5: Detecta gaps de skills
-    → Paso 2.7: Consulta domain experts (si existen)
+    → Paso 2: Investiga (Notion KB → skills → WebFetch → WebSearch)
     → Paso 3: Analiza opciones
-    → Paso 4: Guarda exploracion (si hay change name)
-    → Paso 4.5: Discovery Completeness (5 preguntas)
-    → Paso 4.6: Detecta complejidad del proceso
+    → Paso 4: Guarda exploracion
     → Paso 5: Retorna analisis estructurado
          |
          v
-[4] pipeline-agent recibe resultado
+[4] pipeline-agent reporta al main agent
+    → FINDINGS / FAILURES / DECISIONS / GOTCHAS
     → Muestra resumen al usuario
-    → Prepara Gate G0.5 si aplica
          |
          v
-[5] O.R.T.A. registra el evento
-    → Tipo "prompt", scope "pipeline"
+[5] session.md se actualiza (en CADA interaccion)
 ```
 
 ---
@@ -72,24 +67,25 @@ Batuta decide ejecutar sdd-explore
 
 | Actor | Rol | Archivo |
 |-------|-----|---------|
-| **CLAUDE.md** | Router principal | `~/.claude/CLAUDE.md` |
-| **pipeline-agent** | Coordinador del flujo SDD | `~/.claude/agents/pipeline-agent.md` |
-| **sdd-explore** | Especialista en investigacion | `~/.claude/skills/sdd-explore/SKILL.md` |
-| **Execution Gate** | Validador de cambios | Hook en `settings.json` |
+| **CLAUDE.md** | Gestor (nunca ejecuta, solo contrata) | `CLAUDE.md` (105 lineas) |
+| **pipeline-agent** | Agente contratado para flujo SDD | `.claude/agents/pipeline-agent.md` |
+| **sdd-explore** | Skill del agente pipeline | `.claude/skills/sdd-explore/SKILL.md` |
+| **session.md** | Fuente de verdad del estado | `.claude/session.md` |
+| **CHECKPOINT.md** | Seguro anti-compaction | `.claude/CHECKPOINT.md` |
 
 ---
 
 ## La cadena de delegacion
 
-Batuta funciona con un patron de **delegacion en cascada**:
+Batuta funciona con un patron de **delegacion por contrato**:
 
 1. **Tu** le das una instruccion al sistema
-2. **CLAUDE.md** (el router) decide que agente maneja esto
-3. **El agente** decide que skill ejecutar
-4. **El skill** ejecuta su logica especializada
-5. **El resultado** vuelve por la cadena hasta ti
+2. **Main agent** (CLAUDE.md — gestor puro) decide que agente contratar
+3. **El agente contratado** ejecuta con sus skills especializados
+4. **El agente reporta** con FINDINGS / FAILURES / DECISIONS / GOTCHAS
+5. **session.md** se actualiza con el resultado
 
-Es como una empresa: tu hablas con el CEO (CLAUDE.md), el CEO le pasa al director de area (agente), y el director le pasa al especialista (skill).
+Es como una empresa: tu hablas con el gerente general (main agent), el gerente NUNCA ejecuta directamente — contrata al especialista adecuado (agente), y el especialista trae su propio equipo (skills). El main agent no tiene skills cargados — solo sabe a quien contratar.
 
 ---
 
@@ -100,21 +96,21 @@ No todos los comandos funcionan igual:
 ### Comandos simples (1 fase)
 ```
 /sdd-init     → Ejecuta sdd-init directamente
+/sdd-apply    → Ejecuta sdd-apply directamente
 /sdd-verify   → Ejecuta sdd-verify directamente
-/sdd-archive  → Ejecuta sdd-archive directamente
 ```
 
 ### Comandos compuestos (multiples fases)
 ```
-/sdd-new      → explore + propose (2 fases)
-/sdd-ff       → propose + spec + design + tasks (4 fases)
-/sdd-continue → Detecta donde quedaste y ejecuta la siguiente fase
+/sdd-new      → explore + design (2 fases)
+/sdd-continue → Lee session.md y avanza desde donde quedaste
 ```
 
 ### Comandos de ecosistema (no SDD)
 ```
-/create-skill     → infra-agent → ecosystem-creator
-/create-sub-agent → infra-agent → ecosystem-creator
+/create <type> <name> → infra-agent → ecosystem-creator
+/batuta-sync          → Sync skills: subir al hub, traer del hub, o ambos
+/batuta-init          → Setup Batuta en un proyecto nuevo
 ```
 
 ---
@@ -169,4 +165,4 @@ Permite escribir    Bloquea y pide
 
 ---
 
-→ [El pipeline SDD](el-pipeline-sdd.md) — Las 9 fases explicadas con analogia
+→ [El pipeline SDD](el-pipeline-sdd.md) — Los 2 modos (SPRINT y COMPLETO) explicados con analogia

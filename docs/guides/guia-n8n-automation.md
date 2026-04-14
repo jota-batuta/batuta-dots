@@ -29,8 +29,8 @@ Antes de empezar, aqui tienes un mini-diccionario. No necesitas memorizarlo, vue
 | **Coolify** | Una plataforma para poner aplicaciones en internet. Como un hosting inteligente que se encarga de que todo siga corriendo. |
 | **SDD** | Spec-Driven Development. Un proceso paso a paso para construir software: primero planeas, luego construyes. Como un arquitecto que primero dibuja el plano y luego construye la casa. |
 | **Skill** | Un documento que le dice a Claude COMO hacer algo especifico. Como una receta de cocina. |
-| **Scope Agent** | Un "jefe de area" especializado. Claude tiene 3: uno para desarrollo (SDD pipeline), uno para infraestructura y seguridad, y uno para observabilidad y continuidad de sesion. |
-| **Execution Gate** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden antes de tocar algo. |
+| **Agente Contratado** | Un "jefe de area" especializado. Claude tiene 3: uno para desarrollo (SDD pipeline), uno para infraestructura y seguridad, y uno para observabilidad y continuidad de sesion. |
+| **Research-First** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden antes de tocar algo. |
 | **Rate Limiting** | Un limite de velocidad. Controla cuantas peticiones puede recibir tu sistema por minuto. Como un portero de discoteca que solo deja entrar a 10 personas por minuto para que no se llene de golpe. |
 | **JSON** | Un formato para organizar datos. Piensa en el como una ficha con campos: nombre, edad, direccion. Las computadoras lo leen facilmente. |
 | **Variable de entorno** | Un dato secreto que la aplicacion necesita pero que no se guarda en el codigo. Como la combinacion de una caja fuerte — la sabes de memoria, no la escribes en un papel pegado a la caja. |
@@ -149,7 +149,7 @@ Ese `>` es donde le escribes tus instrucciones.
 
 ## Paso 2 — Instalar el ecosistema Batuta
 
-**Que vamos a hacer**: Darle a Claude las "recetas" (skills) que necesita para trabajar al estilo Batuta. Esto incluye la configuracion del chef principal, los jefes de area (scope agents), y el sistema de calidad.
+**Que vamos a hacer**: Darle a Claude las "recetas" (skills) que necesita para trabajar al estilo Batuta. Esto incluye la configuracion del chef principal, los jefes de area (agentes contratados), y el sistema de calidad.
 
 > **IMPORTANTE**: Asegurate de estar dentro de la carpeta de tu proyecto antes de ejecutar este comando. Todo lo que Claude cree se guardara en la carpeta actual.
 
@@ -177,7 +177,7 @@ Esto crea CLAUDE.md, la carpeta .batuta/, sincroniza skills, e instala hooks en 
 > instalados y ya no necesitas copiar el prompt largo nunca mas.
 
 **Que esperar**: Claude va a descargar el ecosistema y configurar todo. Puede tomar 1-2 minutos. Cuando termine, te dira que archivos creo, incluyendo:
-- `CLAUDE.md` — Las instrucciones del chef (router principal + scope agents + execution gate)
+- `CLAUDE.md` — Las instrucciones del chef (router principal + agentes contratados + execution checkpoint)
 - `.batuta/session.md` — El cuaderno donde Claude anota en que quedo (para continuar despues)
 
 **Tip**: Si Claude te pide permiso para ejecutar comandos, di "yes" o "si".
@@ -295,7 +295,7 @@ Aprobado, continua con el siguiente paso
 
 Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd-ff batuta-email-automator` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-continue batuta-email-automator` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude va a ejecutar las siguientes fases una por una:
 
@@ -340,7 +340,7 @@ Implementa primero este componente porque el workflow de n8n
 va a depender de el.
 ```
 
-**Que esperar**: Antes de empezar a escribir codigo, Claude va a ejecutar el **Execution Gate** — un checklist automatico que verifica:
+**Que esperar**: Antes de empezar a escribir codigo, Claude va a ejecutar el **Research-First** — un checklist automatico que verifica:
 - Que archivos va a crear o modificar
 - Donde van a ir (siguiendo la Scope Rule — la regla de organizacion de archivos)
 - Que impacto tienen los cambios
@@ -408,7 +408,7 @@ Continua con la implementacion. Ahora construye el webhook receiver:
 Asegurate de que el webhook y el clasificador esten conectados correctamente.
 ```
 
-**Que esperar**: Claude ejecutara el Execution Gate de nuevo (ya es automatico) y luego implementara el webhook. Te mostrara los archivos que va a crear y pedira confirmacion.
+**Que esperar**: Claude ejecutara el Research-First de nuevo (ya es automatico) y luego implementara el webhook. Te mostrara los archivos que va a crear y pedira confirmacion.
 
 **Tu respuesta**: "Si, continua".
 
@@ -774,9 +774,9 @@ Por ejemplo: una nueva categoria de clasificacion llamada "factura"
 que detecte emails con facturas adjuntas.
 ```
 
-Y sigue el mismo flujo: explore, propose, specs, design, tasks, apply, verify.
+Y sigue el mismo flujo: explore, design, apply, verify (SPRINT o COMPLETO).
 
-> **Importante**: Cada cambio pasa por el Execution Gate automaticamente.
+> **Importante**: Cada cambio pasa por el Research-First automaticamente.
 > Claude valida que el cambio siga las reglas del proyecto antes de escribir codigo.
 
 ---
@@ -809,7 +809,7 @@ Como ha ido la comunicacion en este proyecto? Que tipo de errores has cometido y
 
 Claude revisa el contexto del proyecto y te da:
 - Que tipo de errores comete mas seguido
-- Tasa de compliance del Execution Gate
+- Tasa de compliance del Research-First
 - **Recomendaciones concretas** para que tus proximos pedidos sean mas claros
 
 ---
@@ -934,7 +934,7 @@ Tu (carpeta vacia)
  |     Tu: "Continua" (3 veces)
  |
  +-- Paso 7:  /sdd-apply ............. "Construir el clasificador"
- |     [Execution Gate valida antes de cada cambio]
+ |     [Research-First valida antes de cada cambio]
  |
  +-- Paso 8:  Construir webhook ...... "La puerta de entrada"
  |

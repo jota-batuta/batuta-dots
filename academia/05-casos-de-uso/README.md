@@ -14,7 +14,7 @@ Todos los casos siguen la misma estructura para que siempre sepas donde estas:
 | **2. Lo que vas a construir** | Descripcion concreta + lista de funcionalidades principales |
 | **3. Flujo SDD completo** | Paso a paso con los comandos exactos que vas a ejecutar |
 | **4. Skills que se activan** | Tabla con cada skill y por que se necesita en este caso |
-| **5. Gates que pasas** | G0.5, G1 y G2 con ejemplos especificos del caso |
+| **5. Checkpoints que pasas** | Design Approval y verificacion final con ejemplos especificos del caso |
 | **6. Resultado final** | Que tenes funcionando cuando terminas |
 | **7. Siguientes pasos** | Como extender lo que construiste |
 
@@ -112,5 +112,5 @@ Esta estructura te garantiza que no importa si es tu primer caso o el vigesimo: 
 - Los comandos se muestran tal cual los escribis en la terminal
 - `>` indica lo que el agente te va a preguntar
 - `-->` indica lo que vos respondes
-- Los Gates se marcan con su numero: **G0.5**, **G1**, **G2**
+- Los checkpoints de aprobacion se marcan como **Design Approval** y **Verificacion Final**
 - Las notas importantes van en bloques `> Nota:`

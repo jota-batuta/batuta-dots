@@ -1,182 +1,171 @@
 # Agentes y equipos
 
-Los skills son los especialistas. Los agentes son los **coordinadores** que deciden que especialista trabaja en que tarea.
+En v15, Batuta cambio fundamentalmente como funcionan los agentes. El agente principal ya no ejecuta nada — es un **gestor** que contrata especialistas para cada tarea.
 
 ---
 
-## La orquesta inteligente: como Batuta delega
+## El modelo de contratacion
 
-Imagina una orquesta. El director (CLAUDE.md) no toca ningun instrumento — escucha lo que pide el publico y senala al musico correcto. En inteligencia artificial, este patron se llama **Mixture of Experts (MoE)**: un router decide que experto atiende cada tarea.
+Imagina una empresa. El CEO (agente principal) no programa, no investiga, no escribe codigo. Para cada tarea, contrata al profesional correcto. Si no existe, propone la contratacion al usuario.
 
-En Batuta funciona asi:
+| Concepto | Que es | Ejemplo |
+|----------|--------|---------|
+| **Agente principal** | El gestor que coordina | Recibe "agrega autenticacion JWT" y decide a quien contratar |
+| **Agente contratado** | Archivo `.md` con un contrato permanente | `backend-agent.md` con sus skills, modelo, y limites |
+| **Skill** | Conocimiento especializado que pertenece a un agente | `jwt-auth` pertenece a `backend-agent`, NO al agente principal |
+| **Contrato** | Que recibe, que produce, que archivos toca | "Recibe: spec.md. Produce: routes/. NO toca: tests/" |
 
-| Rol MoE | En Batuta | Que hace |
-|---------|-----------|---------|
-| **Router** | CLAUDE.md (agente principal) | Clasifica la intencion del usuario y delega. Incluye Step 0 (Gate Check) que verifica si hay un gate pendiente antes de clasificar |
-| **Experts** | Domain agents (backend, quality, data) | Ejecutan la tarea con conocimiento especializado |
-| **Parameters** | Skills (fastapi-crud, tdd-workflow, etc.) | Los instrumentos que cada experto toca |
-
-No necesitas activar nada manualmente. Batuta detecta las senales en tu peticion (APIs, tests, datos) y delega al agente correcto de forma automatica. A esto le llamamos **auto-invocacion**.
-
-### Step 0: Gate Check (v13.2)
-
-Antes de clasificar tu intencion, el router hace una verificacion previa: lee el campo `AWAITING_APPROVAL` en session.md. Si hay un gate pendiente (por ejemplo, una propuesta esperando tu aprobacion), el router **solo acepta aprobacion o feedback** — no permite que otro intent "se cuele" y desvie el flujo. Esto evita que digas "dale, continua" y el router lo interprete como continuar con OTRA cosa en vez de aprobar la propuesta pendiente.
-
-Principio: **"Los gates viven en el router, no en las skills"**. Las skills presentan las propuestas; el router se encarga de que la aprobacion se respete.
+**Regla fundamental**: El agente principal NO tiene skills cargados. Solo sabe a quien contratar.
 
 ---
 
-## Los 6 agentes
+## Los 5 agentes del hub
 
-Batuta tiene dos tipos de agentes: los que manejan la cocina (scope) y los que aportan expertise al plato (domain).
+Batuta v15 tiene 5 agentes pre-construidos en el hub. Cada uno tiene un contrato con skills asignados, un modelo recomendado, y limites claros.
 
-### Scope Agents — Los coordinadores de la cocina
+### Pipeline Agent — El director de obra
 
-Estos 3 agentes siempre estan cargados. Son la maquinaria del hub — sin ellos, nada funciona.
+Coordina el flujo SDD. Dos modos: SPRINT (implementar directo) y COMPLETO (explorar, disenar, aprobar, implementar). Nunca escribe codigo — delega a los demas agentes.
 
-#### Pipeline Agent — El director de obra
+| Aspecto | Detalle |
+|---------|---------|
+| **Skills** | sdd-explore, sdd-design, sdd-apply, sdd-verify, prd-generator |
+| **Modelo** | sonnet (orquestacion, no razonamiento pesado) |
+| **Entregable** | Reportes de fase, session.md actualizado, artefactos SDD |
 
-Coordina el flujo SDD completo (explorar a archivar). Maneja: sdd-init, sdd-explore, sdd-propose, sdd-spec, sdd-design, sdd-tasks, sdd-apply, sdd-verify, sdd-archive. Nunca ejecuta logica directamente — siempre delega a los skills.
+### Backend Agent — El ingeniero de APIs
 
-#### Infra Agent — El arquitecto de la casa
+Expertise en APIs, bases de datos, servicios backend. Se contrata cuando la tarea involucra FastAPI, Express, endpoints REST, autenticacion, o modelos de base de datos.
 
-Coordina organizacion de archivos, creacion de herramientas, seguridad. Maneja: ecosystem-creator, scope-rule, team-orchestrator, security-audit, skill-eval. Cada archivo que se crea pasa por el Scope Rule.
+| Aspecto | Detalle |
+|---------|---------|
+| **Skills** | fastapi-crud, jwt-auth, sqlalchemy-models, api-design, message-queues, typescript-node |
+| **Modelo** | sonnet (implementacion estandar) u opus (arquitectura critica) |
+| **Archivos** | Solo toca `src/api/**`, `src/services/**`, `src/models/**` |
 
-#### Observability Agent — El inspector de calidad
+### Data Agent — El ingeniero de datos
 
-Coordina registro de eventos, calidad, y continuidad de sesion. Es el motor O.R.T.A.:
-- **O**bservabilidad: Registra cada accion importante
-- **R**epetibilidad: Mismo input = mismo resultado
-- **T**razabilidad: Cada decision se puede rastrear
-- **A**uto-supervision: Detecta problemas antes de que escalen
+Pipelines ETL, IA, procesamiento de datos. Se contrata cuando hay pandas, Temporal, LangChain, bases vectoriales, o integraciones con ERPs.
 
-### Domain Agents — Los especialistas que llegan automaticamente
+| Aspecto | Detalle |
+|---------|---------|
+| **Skills** | data-pipeline-design, llm-pipeline-design, vector-db-rag, prefect-flows |
+| **Modelo** | sonnet (pipelines) u opus (arquitectura de datos compleja) |
+| **Archivos** | Solo toca `src/pipelines/**`, `src/etl/**`, `src/ai/**` |
 
-Estos agentes se auto-invocan cuando Batuta detecta senales tecnologicas en tu peticion. No tienes que llamarlos — el router (CLAUDE.md) los activa por ti.
+### Quality Agent — El ingeniero de calidad
 
-Cada domain agent tiene lo que llamamos **thick persona** (persona densa): entre 80 y 120 lineas de expertise embebido. Piensa en un chef que no solo sabe recetas, sino que tiene criterio propio sobre sabores, texturas y presentacion. Eso es lo que distingue a un domain agent de un skill suelto: no solo ejecuta, sino que toma decisiones informadas dentro de su dominio.
+Testing, validacion, seguridad. Se contrata para verificar que todo funcione correctamente.
 
-#### Backend Agent — El chef de platos fuertes
+| Aspecto | Detalle |
+|---------|---------|
+| **Skills** | tdd-workflow, e2e-testing, debugging-systematic, security-audit, accessibility-audit, performance-testing |
+| **Modelo** | sonnet (tests estandar) u opus (debugging profundo) |
+| **Archivos** | Solo toca `tests/**`, archivos de configuracion de testing |
 
-Expertise en APIs, bases de datos, y servicios backend. Se auto-invoca cuando detecta FastAPI, Express, Django, endpoints REST, autenticacion, o modelos de base de datos. Sus skills (fastapi-crud, jwt-auth, sqlalchemy-models, api-design) se cargan bajo demanda — solo cuando los necesita.
+### Infra Agent — El ingeniero de plataforma
 
-**Senales que lo activan**: endpoints API, flujos de autenticacion, modelos ORM, migraciones, diseno REST.
+Organizacion de archivos, Docker, CI/CD, deployment. Se contrata para decisiones de estructura y despliegue.
 
-#### Quality Agent — El catador oficial
-
-Testing, validacion, y buenas practicas de calidad. Es el unico domain agent que siempre se provisiona — todo proyecto necesita calidad, sin excepcion. Coordina tdd-workflow, e2e-testing, debugging-systematic, y la Piramide de Validacion.
-
-**Senales que lo activan**: estrategia de tests, debugging, revision de seguridad, calidad de codigo, tests E2E.
-
-#### Data Agent — El chef de ingredientes
-
-Expertise en pipelines de datos, ETL, IA y procesamiento. Se auto-invoca cuando detecta pandas, Temporal, LangChain, bases vectoriales, o integraciones con ERPs. Sus skills (data-pipeline-design, llm-pipeline-design, vector-db-rag) se cargan bajo demanda.
-
-**Senales que lo activan**: pipelines ETL, transformaciones de datos, clasificadores LLM, RAG, bases vectoriales.
-
-### Como funciona la auto-invocacion
-
-Cuando le pides algo a Batuta durante la implementacion (`sdd-apply`):
-
-1. El router (CLAUDE.md) examina la tarea y detecta senales tecnologicas
-2. Si una senal coincide con un domain agent, lo invoca automaticamente via Task tool
-3. El domain agent trabaja de forma autonoma — carga sus skills bajo demanda (`defer_loading: true`)
-4. El agente principal recibe el resultado y continua con la siguiente tarea
-
-Esto ahorra tokens: el agente principal se mantiene liviano mientras los expertos hacen el trabajo pesado.
-
-**Cuando NO se delega** (el agente principal actua directamente):
-- Preguntas sobre el dominio ("deberia usar JWT o sesiones?") — necesitan dialogo
-- Cambios de una sola linea o configuracion — el costo de invocar un agente supera el beneficio
-- Creacion de artefactos SDD (propuestas, specs) — eso lo maneja pipeline-agent + skills
-- Organizacion de archivos — eso lo maneja infra-agent + scope-rule
-
-### Discovery Depth: investigar antes de implementar (v13.2)
-
-La delegacion automatica funciona bien cuando el agente entiende correctamente el problema. Pero si la exploracion fue superficial, el domain agent recibe instrucciones incorrectas y produce codigo que hay que rehacer. Este es el modo de fallo mas caro del ecosistema: asumir mal -> implementar -> usuario corrige -> reimplementar.
-
-Para prevenir esto, la fase de exploracion (`sdd-explore`) ahora exige **profundidad verificable**:
-
-- **Leer codigo antes de asumir**: Si la tarea menciona una funcion existente, el agente DEBE leerla — no asumir por el nombre
-- **Verificar flujos de datos reales**: Trazar quien llama a quien, con que datos, en que orden
-- **Supuestos Tecnicos en la propuesta**: Lista explicita de lo que el agente cree que es verdad, para que el usuario valide
-- **Diagramas de secuencia para workflows complejos**: Obligatorios cuando hay 2+ integraciones
-
-Sin discovery profundo, la auto-invocacion del domain agent correcto no compensa — un experto excelente con instrucciones incorrectas produce resultados incorrectos.
+| Aspecto | Detalle |
+|---------|---------|
+| **Skills** | scope-rule, ecosystem-creator, ecosystem-lifecycle, ci-cd-pipeline, coolify-deploy, worker-scaffold |
+| **Modelo** | sonnet (configuraciones deterministas) |
+| **Archivos** | Dockerfiles, `.github/workflows/**`, configs de deploy |
 
 ---
 
-## Scope vs Domain: cuando se usa cada tipo
+## Como funciona la contratacion (agent-hiring)
 
-| Aspecto | Scope Agents | Domain Agents |
-|---------|-------------|---------------|
-| **Presencia** | Siempre cargados | Auto-invocados por senales tecnologicas |
-| **Funcion** | Coordinan el proceso (SDD, archivos, calidad) | Aportan expertise de dominio |
-| **Persona** | Ligera (coordinacion pura) | Densa (80-120 lineas de expertise embebido) |
-| **Analogia** | El gerente del restaurante | El chef especializado en cocina japonesa |
-| **Quien los activa** | Automatico — son la maquinaria base | El router detecta senales y los invoca |
-| **Skills** | No cargan skills propios | Cargan skills bajo demanda (`defer_loading`) |
-| **Excepcion** | — | quality-agent siempre se provisiona |
+Cuando le pides algo a Batuta, el agente principal sigue 5 pasos:
 
-**Cuando importa la diferencia**: Al crear Agent Teams (Nivel 3), los scope agents coordinan el equipo mientras los domain agents aportan conocimiento especializado. Un equipo puede tener un pipeline-agent como lead y un backend-agent como implementor experto.
+### Paso 1: Detectar necesidad
 
-### Cuantos agentes tiene Batuta
+"Que expertise necesito?" — mapea la tarea a capacidades: tecnologia, dominio, herramientas.
 
-| Tipo | Cantidad | Ejemplos | Crecimiento |
-|------|----------|----------|-------------|
-| **Scope** (fijos) | 3 | pipeline, infra, observability | No crece — son la maquinaria base |
-| **Domain** (expandibles) | 3-8 | backend, quality, data | Crece cuando un dominio nuevo lo justifica (mobile, DevOps, frontend) |
-| **Proyecto** (locales) | Variable | mi-agente-erp | Se quedan en el proyecto, no se sincronizan al hub |
+### Paso 2: Buscar agentes existentes
 
-Un domain agent nuevo solo se justifica cuando tiene: (1) convenciones propias que difieren de los agentes existentes, (2) 3 o mas skills que le pertenecen, y (3) limites de scope claros.
+Busca en `.claude/agents/` (proyecto) y `~/.claude/agents/` (global). Si encuentra uno adecuado, verifica que sus skills esten al dia.
 
-### Formato deployable: el bloque `sdk:`
+### Paso 3: Proponer contratacion (USER STOP)
 
-Todos los agentes (scope y domain) tienen un bloque `sdk:` en su definicion. Este bloque permite deployar el agente como un `AgentDefinition` programatico via Claude Agent SDK — util para CI/CD y deployment automatizado. No necesitas entender esto para usar Batuta, pero es la razon por la que los agentes son portables entre el hub y los proyectos.
+Si no existe un agente adecuado, presenta una propuesta al usuario:
+
+```
+PROPUESTA DE CONTRATACION:
+
+Agente: auth-specialist
+Rol: Implementar autenticacion JWT con refresh tokens
+Skills: jwt-auth, fastapi-crud, security-audit
+Modelo: sonnet
+Max turns: 15
+Entregable: Endpoints /login, /register, /refresh + tests
+
+Apruebas esta contratacion?
+```
+
+**Nunca se salta este paso**. El usuario es el "consejo directivo".
+
+### Paso 4: Crear archivo de agente
+
+Con la aprobacion, crea `.claude/agents/auth-specialist.md` con el contrato formal.
+
+### Paso 5: Invocar
+
+Lanza el agente con la tarea especifica, los archivos que puede tocar, y la referencia al PRD o diseno si aplica.
+
+---
+
+## Skills pertenecen a los agentes
+
+Este es el cambio mas importante de v15. Antes, el agente principal cargaba skills directamente. Ahora:
+
+| Antes (v14) | Ahora (v15) |
+|-------------|-------------|
+| Agente principal cargaba skills | Agente principal NO tiene skills |
+| Skills disponibles para todos | Skills asignados a agentes especificos |
+| 39 skills todos visibles | 43 skills en el hub, solo se cargan los del agente contratado |
+| Domain agents opcionales | Agentes son el unico camino de ejecucion |
+
+**Por que importa**: Cada agente solo ve los skills que necesita. Un backend-agent no carga skills de testing. Un quality-agent no carga skills de FastAPI. Esto mantiene el contexto limpio y el agente enfocado.
 
 ---
 
 ## 3 niveles de ejecucion
 
-No todo requiere un equipo. Batuta tiene 3 niveles de complejidad, y elige automaticamente:
+No todo requiere un equipo. Batuta elige automaticamente:
 
-| Nivel | Cuando | Quien trabaja | Costo | Ejemplo |
-|-------|--------|---------------|-------|---------|
-| 1 — Solo | 1 archivo, bug, pregunta | Agente principal | Normal | "Arregla typo en README" |
-| 2 — Subagente | 2-3 archivos, 1 fase SDD | Principal + domain agents auto-invocados | 1.2-1.5x | `sdd-apply` invoca backend-agent para implementar API |
-| 3 — Agent Team | 4+ archivos, multi-scope | Equipo coordinado con domain agents como teammates | 3-5x | Feature frontend + backend + BD |
-
-En Nivel 2, los domain agents entran y salen de forma transparente. No necesitas pedirlo — si la tarea involucra APIs, backend-agent se activa; si involucra tests, quality-agent se activa. Es como si el director de la orquesta senalara al musico correcto en el momento preciso.
+| Nivel | Cuando | Quien trabaja | Costo |
+|-------|--------|---------------|-------|
+| 1 — Solo | 1 archivo, bug trivial | Agente principal contrata 1 agente | Normal |
+| 2 — Subagentes | 2-3 archivos, 1 dominio | Principal contrata agentes que trabajan en secuencia | 1.2-1.5x |
+| 3 — Agent Team | 4+ archivos, multi-dominio | Principal contrata equipo coordinado con contratos formales | 3-5x |
 
 ### Como decide Batuta
 
 ```
 Archivos a cambiar?
-  1       -> Nivel 1 (solo — agente principal)
-  2-3     -> Nivel 2 (subagentes — domain agents auto-invocados)
+  1       -> Nivel 1 (contratar 1 agente)
+  2-3     -> Nivel 2 (contratar agentes en secuencia o paralelo)
   4+      -> Necesitan comunicarse?
-             No -> Nivel 2 (subagentes en paralelo)
-             Si -> Nivel 3 (equipo coordinado)
-                   Scope agents coordinan + domain agents como teammates
+             No -> Nivel 2 (agentes en paralelo, independientes)
+             Si -> Nivel 3 (equipo coordinado con contratos)
 ```
 
 ---
 
-## Agent Teams en accion
+## Agent Teams en v15
 
-Si Batuta determina Nivel 3, te pregunta antes de crear:
+Si Batuta determina Nivel 3, te pregunta antes de crear el equipo. Cada teammate se contrata con el protocolo de agent-hiring:
 
 ```
-"Cambio complejo (8 archivos, 2 scopes). Recomiendo Agent Team:
-- researcher: explore + propose
-- architect: spec + design (con backend-agent para expertise API)
-- implementor-1: apply (batch 1)
-- implementor-2: apply (batch 2)
-- reviewer: verify (con quality-agent para validacion)
+"Cambio complejo (8 archivos, 2 dominios). Recomiendo Agent Team:
+- researcher: sdd-explore (pipeline-agent)
+- implementor-api: backend (backend-agent, archivos: src/api/**)
+- implementor-data: ETL (data-agent, archivos: src/pipelines/**)
+- reviewer: verificacion (quality-agent, archivos: tests/**)
 Creo el equipo?"
 ```
-
-Nota como los domain agents enriquecen el equipo: en Nivel 2 se invocan como subagentes (entran, hacen su tarea, salen), pero en Nivel 3 se integran como teammates con contratos y comunicacion entre ellos. En vez de un implementor generico, tienes uno que sabe de APIs (backend-agent) o de datos (data-agent).
 
 ### Contract-First Protocol
 
@@ -185,12 +174,44 @@ Antes de que cada teammate empiece, se define:
 - **Que produce**: archivos y resultados especificos
 - **Que archivos toca**: ownership exclusivo (cada archivo pertenece a 1 solo teammate)
 
+Si un teammate intenta tocar archivos que no le pertenecen, el sistema lo detecta.
+
 ### Cuando NO usar equipos
 
 - Ediciones simples (1 archivo)
 - Tareas secuenciales (una depende de la otra)
 - Menos de 3 archivos
 - Commits, formateo, documentacion rutinaria
+
+---
+
+## Agentes en paralelo: investigacion en minutos
+
+Uno de los superpoderes de v15: 5 agentes investigando en paralelo resuelven en minutos lo que un solo agente tardaria horas. Research-first es obligatorio en todos los modos (incluso SPRINT), y los agentes se lanzan en paralelo para maximizar velocidad.
+
+```
+Tarea: "Agrega integracion con Siigo"
+
+Agente principal contrata en paralelo:
+  - data-agent: investiga API de Siigo
+  - backend-agent: investiga endpoints necesarios
+  - quality-agent: investiga como testear integraciones ERP
+
+Resultado: en 3 minutos tienes un panorama completo
+```
+
+---
+
+## Resumen del modelo v15
+
+| Aspecto | v14 | v15 |
+|---------|-----|-----|
+| Agente principal | Ejecutaba tareas | Solo gestiona y contrata |
+| Agentes en hub | 6 (3 scope + 3 domain) | 5 con contrato (pipeline, backend, data, quality, infra) |
+| Skills | Pertenecian al main agent | Pertenecen a los agentes |
+| Contratacion | Automatica/invisible | Explicita con aprobacion del usuario |
+| Agentes nuevos | Solo si justificaban 3+ skills | Cualquier tarea puede crear un agente via agent-hiring |
+| Ejecucion inline | Permitida para tareas simples | Prohibida. Siempre archivo primero. |
 
 ---
 

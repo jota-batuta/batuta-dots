@@ -52,7 +52,7 @@ sdd-new
 sdd-apply
 ```
 
-> **Gate G1** — El agente evalua:
+> **Design Approval** — El agente evalua:
 > "Este proyecto es una landing page estatica con un formulario. No requiere autenticacion, base de datos ni logica de negocio compleja. Riesgo de over-engineering: ALTO si se usa un framework pesado. Recomendacion: HTML/CSS/JS vanilla o un framework ligero como Astro."
 
 Este es un caso donde el pipeline se acorta. No necesitas `process-analyst` (no hay variantes de negocio complejas), no necesitas `recursion-designer` (no hay categorias recursivas), y el `sdd-ff` es casi inmediato porque el alcance ya esta claro.
@@ -76,7 +76,7 @@ features/
 sdd-verify
 ```
 
-> **Gate G2** — Verificacion:
+> **Verificacion Final** — Resultado:
 
 ```
 Layer 1 - Lint:           PASS (HTML valido, CSS sin errores)
@@ -95,19 +95,14 @@ Resultado: LISTO PARA REVIEW HUMANO
 
 > Nota: En proyectos simples, se activan menos skills. Eso esta bien. No fuerces herramientas que no necesitas.
 
-## Gates que pasas
+## Checkpoints que pasas
 
-### Gate G0.5 — Variantes de negocio
-- **Que evalua:** En este caso, casi nada. Una landing es lineal.
-- **Ejemplo concreto:** "No se detectan variantes de negocio significativas. El formulario captura un solo tipo de lead. Adelante."
-- **Si no pasa:** Raro en una landing, pero podria pasar si hay multiples audiencias con paginas diferentes
-
-### Gate G1 — No over-engineer
-- **Que evalua:** Que no uses un canon para matar un mosquito
+### Design Approval — No over-engineer
+- **Que evalua:** Que no uses un canon para matar un mosquito. Una landing es lineal, no hay variantes complejas.
 - **Ejemplo concreto:** "Se detecto riesgo de over-engineering. Una landing no necesita Next.js, base de datos ni autenticacion. Recomendacion: mantenerlo simple con HTML/CSS/JS o Astro."
-- **Si no pasa:** El agente te frena y te sugiere simplificar. Este gate es especialmente importante en proyectos pequenos.
+- **Si no pasa:** El agente te frena y te sugiere simplificar. Este checkpoint es especialmente importante en proyectos pequenos.
 
-### Gate G2 — Calidad de la implementacion
+### Verificacion Final — Calidad de la implementacion
 - **Que evalua:** Que la pagina cargue, que el formulario funcione, que sea responsive
 - **Ejemplo concreto:** "Pagina carga en 1.2 segundos, formulario envia al webhook correctamente, layout responsive verificado en 3 breakpoints."
 - **Si no pasa:** Se optimizan imagenes, se corrige CSS o se arregla el formulario

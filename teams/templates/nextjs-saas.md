@@ -32,7 +32,7 @@
 
 | Teammate | Recibe | De quien |
 |----------|--------|----------|
-| Todos | SDD spec + design artifacts | Lead |
+| Todos | PRD o brief del cambio | Lead |
 | `backend-dev` | API schema: endpoints, request/response types, auth requirements | Lead |
 | `frontend-dev` | Descripciones de UI o wireframes + API schema (para consumir endpoints) | Lead |
 | `infra-dev` | Requisitos de despliegue + lista de variables de entorno | Lead |
@@ -86,7 +86,7 @@ Una vez que cada teammate produce sus outputs, se cruzan revisiones para atrapar
 | `backend-dev` | `frontend-dev` | Las llamadas del frontend usan los endpoints y parametros correctos |
 | `infra-dev` | Ambos | Uso correcto de variables de entorno (nombres, valores esperados) |
 
-El Lead revisa todos los outputs contra la SDD spec original.
+El Lead revisa todos los outputs contra el PRD o brief original.
 
 ---
 
@@ -118,7 +118,7 @@ El Lead revisa todos los outputs contra la SDD spec original.
 
 Antes de crear el equipo, verifica que estos prerequisitos estan listos:
 
-- [ ] SDD spec y design completados (fases explore, propose, spec, design)
+- [ ] PRD completado o SPRINT mode con research hecho
 - [ ] API schema definido (lista de endpoints, tipos de request/response)
 - [ ] Wireframes o descripciones de UI disponibles
 - [ ] Target de despliegue decidido (Coolify, Vercel, Docker standalone)
@@ -127,6 +127,6 @@ Antes de crear el equipo, verifica que estos prerequisitos estan listos:
 
 ---
 
-**Nota v13**: Los domain agents (backend-agent, quality-agent, data-agent) aportan expertise embebida de dominio. En este template, pipeline-agent sigue siendo la mejor opcion para frontend (no existe frontend-agent aun). quality-agent puede asignarse a un reviewer o tester dedicado si se agrega al equipo. quality-agent esta disponible en todo proyecto.
+**v15**: 5 agentes contratables (pipeline, infra, backend, data, quality). pipeline-agent sigue siendo la mejor opcion para frontend (no existe frontend-agent). quality-agent disponible para reviewer/tester dedicado. El main agent contrata agentes de `.claude/agents/` — nunca implementa directamente.
 
 *Template basado en Pattern D (Cross-Layer) del team-orchestrator. Ajusta segun las necesidades especificas de tu proyecto.*

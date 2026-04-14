@@ -36,8 +36,8 @@ Antes de empezar, aqui tienes un mini-diccionario. No necesitas memorizarlo, vue
 | **Skill** | Un documento que le dice a Claude COMO hacer algo especifico. Como una receta de cocina. |
 | **SDD** | Spec-Driven Development. Un proceso paso a paso para construir software: primero planeas, luego construyes. Como un arquitecto que primero dibuja el plano y luego construye la casa. |
 | **Repositorio (repo)** | Una carpeta especial que guarda todo tu codigo y recuerda cada cambio que haces. |
-| **Scope Agent** | Un "jefe de area" especializado de Claude. Coordina un grupo de tareas relacionadas. |
-| **Execution Gate** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden. |
+| **Agente Contratado** | Un "jefe de area" especializado de Claude. Coordina un grupo de tareas relacionadas. |
+| **Research-First** | Un checklist que Claude ejecuta ANTES de hacer cualquier cambio de codigo. Verifica que todo este en orden. |
 
 ---
 
@@ -281,7 +281,7 @@ Aprobado, continua con el siguiente paso
 
 Ejecuta `/sdd-continue` UNA vez por fase. Claude mostrara el resultado y te pedira confirmacion antes de avanzar. Repite hasta completar las fases pendientes (specs, design, tasks).
 
-> **Alternativa rapida**: `/sdd-ff <nombre>` ejecuta todas las fases pendientes de corrido sin pausas.
+> **Alternativa rapida**: `/sdd-continue <nombre>` ejecuta todas las fases pendientes de corrido sin pausas.
 
 **Que esperar**: Claude ejecuta 3 fases:
 
@@ -330,7 +330,7 @@ Implementa todo el proyecto. Incluye:
 Crea tambien un entorno virtual para el proyecto.
 ```
 
-**Que esperar**: Antes de escribir codigo, Claude ejecuta el **Execution Gate** que verifica donde van los archivos y que todo este en orden.
+**Que esperar**: Antes de escribir codigo, Claude ejecuta el **Research-First** que verifica donde van los archivos y que todo este en orden.
 
 Te mostrara algo como:
 ```
@@ -860,7 +860,7 @@ Que los mueva a una carpeta llamada "Diseno/".
 Actualiza la configuracion por defecto y los tests.
 ```
 
-Y sigue el mismo flujo: propose → specs → design → tasks → apply → verify (el explore se ejecuta automaticamente dentro de `/sdd-new`).
+Y sigue el mismo flujo: design → apply → verify (el explore se ejecuta automaticamente dentro de `/sdd-new`).
 
 ---
 
@@ -940,7 +940,7 @@ R: Si. Usa `ordena config --agregar .sketch Diseno` para agregar una extension a
 **P: Necesito internet para usar la herramienta?**
 R: No. Una vez instalada, funciona completamente sin internet. Solo necesitas internet durante la construccion (para que Claude Code funcione) y para instalar librerias.
 
-**P: Que es el Execution Gate?**
+**P: Que es el Research-First?**
 R: Es un checklist automatico que Claude ejecuta antes de escribir codigo. Verifica donde van los archivos, que impacto tienen los cambios, y que todo siga las reglas del proyecto.
 
 ---
@@ -963,7 +963,7 @@ Tu (carpeta vacia)
  |     Tu: "Continua" (3 veces)
  |
  +-- Paso 6:    /sdd-apply ................. "Framework CLI + comandos"
- |     [Execution Gate valida antes de cada cambio]
+ |     [Research-First valida antes de cada cambio]
  |
  +-- Paso 7:    Tests ...................... "Verificar con pytest"
  |

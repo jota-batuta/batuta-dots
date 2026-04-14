@@ -63,22 +63,20 @@ Las 5 preguntas:
 /sdd-ff
 ```
 
-### Paso 6-8: Implementar, verificar, archivar
+### Paso 6-7: Implementar, verificar
 ```
 /sdd-apply onboarding-digital
 /sdd-verify onboarding-digital
-/sdd-archive onboarding-digital
 ```
 
 ---
 
-## Gates que pasas
+## Checkpoints que pasas
 
-| Gate | Que verifica en este caso |
-|------|--------------------------|
-| **G0.5** | Mapeaste los 4 tipos de empleado? Documentaste las actividades en paralelo? Listaste todos los participantes? |
-| **G1** | El scope es onboarding (no incluye nomina, evaluacion de desempeno, ni gestion de vacaciones)? |
-| **G2** | El portal de carga funciona? Los flujos paralelos se coordinan correctamente? El dashboard refleja el estado real? |
+| Checkpoint | Que verifica en este caso |
+|------------|--------------------------|
+| **Design Approval** | Mapeaste los 4 tipos de empleado? Documentaste las actividades en paralelo? El scope es onboarding (no incluye nomina ni evaluacion de desempeno)? |
+| **Verificacion Final** | El portal de carga funciona? Los flujos paralelos se coordinan correctamente? El dashboard refleja el estado real? |
 
 ---
 

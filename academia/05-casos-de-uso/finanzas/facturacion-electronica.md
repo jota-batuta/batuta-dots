@@ -93,21 +93,21 @@ Construye el sistema siguiendo el Scope Rule:
 | scope-rule | Organiza el codigo separando emision, recepcion y componentes compartidos |
 | security-audit | Protege la firma digital, credenciales DIAN y datos tributarios de la empresa |
 
-## Gates que pasas
+## Checkpoints que pasas
 
-### G0.5 — Discovery Complete
+### Design Approval — Discovery Complete
 - Los 4 tipos de documento estan documentados con sus variantes y reglas especificas
 - El flujo completo de emision y recepcion esta mapeado paso a paso
 - Los requisitos de compliance-colombia estan catalogados con referencias normativas
 - Las integraciones necesarias (ERP, DIAN, certificado digital) estan identificadas
 
-### G1 — Solution Worth Building
+### Design Approval — Solution Worth Building
 - La especificacion cubre los escenarios de la operacion real de la empresa
 - El analisis de compliance confirma que el diseno cumple la normativa vigente
 - Los riesgos estan identificados (cambios en Anexo Tecnico, vencimiento de certificado, caida del servicio DIAN)
 - El costo-beneficio vs proveedor tecnologico externo esta documentado
 
-### G2 — Ready for Production
+### Verificacion Final — Ready for Production
 - Los XML generados pasan la validacion del servicio de pruebas de la DIAN (ambiente de habilitacion)
 - La firma digital es valida y la cadena de confianza esta completa
 - Los 4 tipos de documento se emiten y reciben correctamente

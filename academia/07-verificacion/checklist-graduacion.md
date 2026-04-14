@@ -15,10 +15,10 @@ Marca cada item cuando puedas hacerlo **sin consultar la documentacion**. No se 
 - [ ] **Puedo explicar que es Batuta Dots** a alguien no-tecnico en 2 minutos
 - [ ] **Se ejecutar `/sdd-init`** en un proyecto nuevo y entiendo que crea
 - [ ] **Puedo iniciar un cambio** con `/sdd-new nombre` y se que fases ejecuta
-- [ ] **Entiendo las 9 fases** del pipeline SDD y su orden
-- [ ] **Se que son los gates** G0.5, G1, G2 y que verifican
-- [ ] **Se usar `/sdd-ff`** para avanzar rapido por las fases de documentacion
-- [ ] **Se usar `/sdd-continue`** para retomar donde quede
+- [ ] **Entiendo los 2 modos** del pipeline SDD (SPRINT y COMPLETO) y cuando se usa cada uno
+- [ ] **Se que Research-First** aplica en AMBOS modos y que implica
+- [ ] **Se usar `/sdd-ff`** para ejecutar explore + design en secuencia
+- [ ] **Se usar `/sdd-continue`** para retomar donde quede (detecta modo automaticamente)
 
 **Minimo para pasar**: 5 de 7
 
@@ -26,12 +26,12 @@ Marca cada item cuando puedas hacerlo **sin consultar la documentacion**. No se 
 
 ## Nivel Uno — Conocimiento del ecosistema
 
-- [ ] **Puedo nombrar las 4 categorias de skills** (Pipeline, CTO, Infra, Patrones reutilizables)
-- [ ] **Se que hacen los 3 agentes** (pipeline, infra, observability) y cuando se activan
+- [ ] **Puedo nombrar las categorias de skills** (Pipeline SDD, CTO, Infra, Tecnologias, Integraciones)
+- [ ] **Se que hacen los 5 agentes** (pipeline, infra, backend, data, quality) y cuando se contratan
 - [ ] **Entiendo el Scope Rule** y puedo decidir si un archivo va en features/, shared/, o core/
 - [ ] **Se que la capa CTO tiene 6 especialistas** y puedo nombrar al menos 3
-- [ ] **Entiendo que security-audit** revisa automaticamente en design y verify
-- [ ] **Puedo explicar cuando se activa un Agent Team** vs. trabajar en modo solo
+- [ ] **Entiendo la Delegacion por Contrato** — el main agent no ejecuta, contrata agentes
+- [ ] **Puedo explicar los 2 niveles de skills** (global vs proyecto) y como sincronizarlos
 
 **Minimo para pasar**: 4 de 6
 
@@ -65,9 +65,9 @@ Marca cada item cuando puedas hacerlo **sin consultar la documentacion**. No se 
 ## Nivel Practica — Casos de uso
 
 - [ ] **He completado al menos 1 caso de uso** de mi industria de principio a fin
-- [ ] **He pasado los 3 gates** (G0.5, G1, G2) en un proyecto real
-- [ ] **He usado `/sdd-archive`** para documentar lecciones aprendidas
-- [ ] **Se identificar que skills se activan** en mi caso de uso especifico
+- [ ] **He usado SPRINT y COMPLETO** al menos una vez cada uno
+- [ ] **He usado `/batuta-sync`** para sincronizar skills entre proyecto y hub
+- [ ] **Se identificar que agentes se contratan** en mi caso de uso especifico
 
 **Minimo para pasar**: 3 de 4
 

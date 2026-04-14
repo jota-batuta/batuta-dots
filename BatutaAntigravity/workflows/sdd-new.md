@@ -1,6 +1,6 @@
 # /sdd-new
 
-> Start a new change: explore the codebase and create a proposal. Runs sdd-explore then sdd-propose for the given change name.
+> Start a new change: explore the codebase and create a design. Runs sdd-explore then produces a design document for the given change name.
 
 ## Instructions
 
@@ -16,11 +16,12 @@ Create the directory `openspec/changes/{{args}}/` if it does not already exist.
 2. Follow the skill instructions exactly, using `{{args}}` as the exploration topic.
 3. Save the exploration output to `openspec/changes/{{args}}/explore.md`.
 
-### Step 3: Propose
+### Step 3: Design
 
-1. Locate and read the `sdd-propose` skill at `.agent/skills/sdd-propose/SKILL.md` or `~/.gemini/antigravity/skills/sdd-propose/SKILL.md`.
+1. Locate and read the `sdd-design` skill at `.agent/skills/sdd-design/SKILL.md` or `~/.gemini/antigravity/skills/sdd-design/SKILL.md`.
 2. Follow the skill instructions exactly, using the exploration results as input.
-3. Save the proposal output to `openspec/changes/{{args}}/proposal.md`.
+3. Save the design output to `openspec/changes/{{args}}/design.md`.
+4. **USER STOP**: Present the design to the user and wait for approval before proceeding.
 
 If any skill file does not exist, tell the user:
 

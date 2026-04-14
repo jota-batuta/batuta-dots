@@ -1,6 +1,6 @@
 # Quiz — Nivel Dos
 
-Verifica que dominas los flujos avanzados.
+Verifica que dominas los flujos avanzados de Batuta Dots v15.
 
 ---
 
@@ -60,13 +60,14 @@ Base rota = no hay revision humana. Si la Capa 1 (linting/tipos/build) falla, no
 ---
 
 ## Pregunta 5
-**Nombra los 2 hooks de Batuta y cuando se activan.**
+**Nombra los hooks de Batuta y que automatiza cada uno.**
 
 <details>
 <summary>Ver respuesta</summary>
 
-1. **SessionStart**: Al abrir Claude Code (restaura contexto)
-2. **Stop**: Al cerrar sesion (guarda estado)
+1. **SessionStart**: Al abrir Claude Code — inyecta session.md + CHECKPOINT.md + skill inventory
+2. **Stop**: Al cerrar sesion — archiva CHECKPOINT.md (10 versiones) + appends a session-log.jsonl
+3. **SubagentStop**: Al terminar un subagente — appends reportes a team-history.md
 </details>
 
 ---

@@ -1,6 +1,6 @@
 # Compliance y datos
 
-Si tu proyecto toca datos de personas o integra con sistemas colombianos, Batuta tiene dos especialistas listos: **compliance-colombia** y **data-pipeline-design**.
+Si tu proyecto toca datos de personas o integra con sistemas colombianos, Batuta tiene dos skills especializados: **compliance-colombia** y **data-pipeline-design**. En v15, estos skills se cargan en los agentes contratados cuando la tarea lo requiere.
 
 ---
 
@@ -12,6 +12,8 @@ Si tu proyecto toca datos de personas o integra con sistemas colombianos, Batuta
 - Usas IA para procesar datos de personas
 - Transfieres datos fuera de Colombia
 - Tu sistema maneja retencion tributaria (DIAN)
+
+En v15, el agente contratado carga `compliance-colombia` automaticamente al detectar estas senales durante research-first. No necesitas pedirlo.
 
 ### Que revisa
 
@@ -65,6 +67,8 @@ Acciones requeridas:
 - Integras con DIAN
 - Necesitas reglas de calidad de datos
 
+En v15, el **data-agent** carga este skill cuando lo contratan para trabajo de datos/ETL.
+
 ### Que disena
 
 1. **Extraccion**: De donde vienen los datos y como se conecta
@@ -106,13 +110,15 @@ Carga: PostgreSQL
 
 ---
 
-## Como se conectan
+## Como se conectan en v15
 
-Si tu proyecto necesita AMBOS (compliance + datos), se complementan:
+Si tu proyecto necesita AMBOS (compliance + datos), el agente principal contrata los agentes apropiados:
 
-1. **data-pipeline** disena el flujo de datos
-2. **compliance** valida que el flujo respete la regulacion
-3. **sdd-design** integra ambos en la arquitectura final
+1. El **data-agent** (con skill `data-pipeline-design`) disena el flujo de datos
+2. El quality-agent o un agente con **compliance-colombia** valida que el flujo respete la regulacion
+3. Si es modo COMPLETO, ambos analisis se integran en el artifact de diseno que aprueba el CTO
+
+Los agentes pueden trabajar en paralelo: mientras uno disena el pipeline, otro verifica compliance. Resultado en minutos, no horas.
 
 ---
 

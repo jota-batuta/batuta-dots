@@ -1,8 +1,14 @@
 # Skills — Referencia tecnica
 
-Ficha tecnica de cada uno de los 39 skills del ecosistema Batuta Dots v14.3.
+Ficha tecnica de cada uno de los 43 skills del ecosistema Batuta Dots v15.
 
-> **Nota sobre domain agents**: Los skills marcados como pertenecientes a un domain agent se cargan bajo demanda (`defer_loading: true`) cuando ese agente se auto-invoca. No necesitas activarlos manualmente — el router (CLAUDE.md) detecta la tecnologia y delega al agente correcto, que a su vez carga el skill necesario.
+> **Nota sobre carga de skills**: Los skills se distribuyen en dos niveles:
+> - `~/.claude/skills/` (GLOBAL) = skills universales que aplican a todo proyecto (max 5-8). Se instalan con `setup.sh --sync`.
+> - `.claude/skills/` (PROYECTO) = skills que este proyecto necesita. Se provisionan con `/batuta-init` y se amplian con `/batuta-sync`.
+>
+> El hub (batuta-dots repo) conserva los 43 skills como biblioteca. No se clona dentro de `~/.claude/`.
+>
+> **Delegacion por contrato (v15)**: El main agent no ejecuta directamente — contrata agentes especializados que cargan los skills relevantes. Los skills pertenecen a los agentes, no al main agent.
 
 ---
 
@@ -12,55 +18,31 @@ Ficha tecnica de cada uno de los 39 skills del ecosistema Batuta Dots v14.3.
 - **Scope**: pipeline
 - **Auto-invoke**: Si (al iniciar SDD)
 - **Tools**: Read, Edit, Write, Glob, Grep, Bash
-- **Que hace**: Detecta tipo de proyecto y stack, crea openspec/, genera config.yaml, opcionalmente genera domain-experts.md y hooks de proyecto
+- **Que hace**: Detecta tipo de proyecto y stack, crea openspec/, genera config.yaml, provisiona skills del hub segun tech stack detectado
 
 ### sdd-explore
 - **Scope**: pipeline
 - **Auto-invoke**: Si (al explorar)
 - **Tools**: Read, Glob, Grep, WebFetch, WebSearch
-- **Que hace**: Investiga codebase, compara opciones, detecta skill gaps, evalua Discovery Completeness (5 preguntas), detecta complejidad de proceso. Incluye MCP Discovery (local + web) y G0.25 (skill gaps como gate bloqueante)
-
-### sdd-propose
-- **Scope**: pipeline
-- **Auto-invoke**: Si (al proponer)
-- **Tools**: Read, Edit, Write, Glob, Grep
-- **Que hace**: Crea propuesta formal con scope, cost-benefit analysis (obligatorio), y Client Communication (lenguaje no-tecnico obligatorio). Cost-benefit analysis obligatorio, Amendment History para seguimiento de cambios
-
-### sdd-spec
-- **Scope**: pipeline
-- **Auto-invoke**: Si
-- **Tools**: Read, Edit, Write, Glob, Grep
-- **Que hace**: Escribe requisitos en formato Given/When/Then con RFC 2119 keywords
+- **Que hace**: Investiga codebase con subagentes en paralelo, compara opciones, detecta skill gaps, aplica Research-First (verificar conocimiento via web antes de asumir)
 
 ### sdd-design
 - **Scope**: pipeline
 - **Auto-invoke**: Si
 - **Tools**: Read, Edit, Write, Glob, Grep
-- **Que hace**: Disena arquitectura, toma decisiones (ADR), secciones condicionales LLM/Data/Infra, Architecture Validation Checklist (7 items), threat model
-
-### sdd-tasks
-- **Scope**: pipeline
-- **Auto-invoke**: Si
-- **Tools**: Read, Edit, Write, Glob, Grep
-- **Que hace**: Divide trabajo en tareas con dependencias, fases, y estimaciones. Fase de documentacion obligatoria en task breakdown
+- **Que hace**: Disena arquitectura, toma decisiones (ADR), secciones condicionales LLM/Data/Infra, Architecture Validation Checklist, threat model. USER STOP obligatorio al finalizar
 
 ### sdd-apply
 - **Scope**: pipeline + infra
 - **Auto-invoke**: Si (al implementar)
 - **Tools**: Read, Edit, Write, Glob, Grep, Bash
-- **Que hace**: Implementa codigo con Execution Gate, Scope Rule, documentacion obligatoria (docstrings + WHY comments), evaluacion de complejidad de equipo. MCP Documentation Check antes de implementar
+- **Que hace**: Implementa codigo con Execution Gate, Scope Rule, documentacion obligatoria. El main agent contrata agentes especializados segun tecnologias de cada tarea
 
 ### sdd-verify
 - **Scope**: pipeline
 - **Auto-invoke**: Si (al verificar)
 - **Tools**: Read, Glob, Grep, Bash
-- **Que hace**: Piramide de Validacion AI (5 capas), testing diferenciado por tipo (pure auto / auto+LLM / agent), verificacion de documentacion. Flag archive_ready para confirmar preparacion para produccion
-
-### sdd-archive
-- **Scope**: pipeline
-- **Auto-invoke**: Si (al archivar)
-- **Tools**: Read, Edit, Write, Glob, Grep
-- **Que hace**: Sincroniza specs, archiva cambio, Learning Loop (6 preguntas). Ecosystem improvement triggers: detecta cuando un cambio sugiere mejoras al ecosistema
+- **Que hace**: Piramide de Validacion AI (5 capas), testing diferenciado por tipo (pure auto / auto+LLM / agent), verificacion de documentacion
 
 ---
 
@@ -106,29 +88,34 @@ Ficha tecnica de cada uno de los 39 skills del ecosistema Batuta Dots v14.3.
 
 ## Infraestructura
 
+### agent-hiring
+- **Scope**: infra
+- **Auto-invoke**: Si (al delegar tareas)
+- **Tools**: Read, Glob, Grep
+- **Que hace**: Protocolo de contratacion de agentes: verifica si ya existe un agente en `.claude/agents/` o `~/.claude/agents/`, propone contratacion si no existe (USER STOP obligatorio), crea archivo de agente con contrato formal
+
 ### ecosystem-creator
 - **Scope**: infra
 - **Auto-invoke**: Si (al crear skills/agentes/workflows)
 - **Tools**: Read, Edit, Write, Glob, Grep, Bash, WebFetch, WebSearch, Task
-- **Que hace**: Crea SKILL.md, agent .md, workflow definitions con frontmatter correcto. Para agentes, genera thick persona (80-120 lineas de expertise embebido) y bloque `sdk:` con `defer_loading`. Step 5.5: RED-GREEN-REFACTOR para validar skills empiricamente antes de registrarlos. Despues de crear, invoca ecosystem-lifecycle para clasificar (generico vs proyecto-especifico)
+- **Que hace**: Crea SKILL.md, agent .md, workflow definitions con frontmatter correcto. RED-GREEN-REFACTOR para validar skills. Despues de crear, invoca ecosystem-lifecycle para clasificar
 
 ### ecosystem-lifecycle
 - **Scope**: infra
 - **Trigger**: Despues de crear un skill, cuando se reporta violacion de reglas, cuando falta un skill para una tecnologia
 - **Que hace**: Clasifica skills (generico vs proyecto-especifico), verifica y repara violaciones de reglas, auto-provisiona skills desde la libreria global
-- **Plataformas**: Claude Code, Antigravity
 
 ### scope-rule
 - **Scope**: infra
 - **Auto-invoke**: Si (al crear archivos)
 - **Tools**: Read, Glob, Grep
-- **Que hace**: Arbol de decision: 1 feature → features/, 2+ → shared/, toda app → core/. Anti-patterns.
+- **Que hace**: Arbol de decision: 1 feature -> features/, 2+ -> shared/, toda app -> core/. Anti-patterns
 
 ### team-orchestrator
 - **Scope**: infra
 - **Auto-invoke**: Si (al evaluar complejidad)
 - **Tools**: Read, Edit, Write, Glob, Grep, Bash, Task
-- **Que hace**: Decision tree (solo/subagente/team), Contract-First Protocol, 4 patrones de composicion, integracion con Execution Gate. Pattern E: Superpowers-Style Review (loop spec + calidad por task)
+- **Que hace**: Decision tree (solo/subagente/team), Contract-First Protocol, 4 patrones de composicion, integracion con Execution Gate
 
 ### security-audit
 - **Scope**: infra
@@ -140,41 +127,35 @@ Ficha tecnica de cada uno de los 39 skills del ecosistema Batuta Dots v14.3.
 - **Scope**: infra
 - **Auto-invoke**: No (invocado via `/skill:eval nombre`)
 - **Tools**: Read, Glob, Grep, Bash, Task
-- **Que hace**: Ejecuta tests comportamentales para skills usando SKILL.eval.yaml. Lanza sub-agentes que simulan escenarios reales, evalua quality_criteria y anti_criteria, genera reporte de salud. Modo benchmark para evaluar multiples skills
+- **Que hace**: Ejecuta tests comportamentales para skills usando SKILL.eval.yaml. Modo benchmark para evaluar multiples skills
 
 ### claude-agent-sdk
 - **Scope**: infra
 - **Auto-invoke**: Si (al trabajar con Claude Agent SDK)
 - **Tools**: Read, Edit, Write, Glob, Grep, Bash
-- **Que hace**: Patrones de deployment para Claude Agent SDK: AgentDefinitions, `defer_loading` (carga de skills bajo demanda en domain agents), `setting_sources` (configuracion por proyecto), Tool Search, configuracion de agents como servicios programaticos
+- **Que hace**: Patrones de deployment para Claude Agent SDK: AgentDefinitions, `defer_loading`, `setting_sources`, Tool Search, configuracion de agents como servicios programaticos
+
+### prd-generator
+- **Scope**: infra
+- **Auto-invoke**: Si (despues de aprobacion de plan)
+- **Tools**: Read, Edit, Write, Glob, Grep
+- **Que hace**: Consolida artefactos de planificacion SDD en un brief de ejecucion limpio (PRD). Invocado automaticamente por pipeline-agent
+
+### user-execution-guide
+- **Scope**: infra
+- **Auto-invoke**: Si (despues de plan con multiples slices/agentes)
+- **Tools**: Read, Edit, Write, Glob, Grep
+- **Que hace**: Genera guia de ejecucion (SPO) para el operador: prerequisitos, comandos, que monitorear, criterios de exito
+
+### ai-first
+- **Scope**: infra
+- **Auto-invoke**: Si (al decidir entre IA y codigo determinista)
+- **Tools**: Read, Glob, Grep
+- **Que hace**: Framework de decision para cuando usar IA/LLM vs codigo determinista. Evalua costo, precision, mantenibilidad
 
 ---
 
-## Patrones reutilizables
-
-> Estos skills se cargan bajo demanda dentro de **backend-agent** (`defer_loading: true`).
-
-### fastapi-crud
-- **Scope**: pipeline
-- **Domain agent**: backend-agent
-- **Auto-invoke**: Si (al construir APIs FastAPI)
-- **Que hace**: Genera CRUD completo: models, schemas, services, routes con SQLAlchemy
-
-### jwt-auth
-- **Scope**: pipeline
-- **Domain agent**: backend-agent
-- **Auto-invoke**: Si (al implementar auth)
-- **Que hace**: Register, login, token validation, password hashing con bcrypt
-
-### sqlalchemy-models
-- **Scope**: pipeline
-- **Domain agent**: backend-agent
-- **Auto-invoke**: Si (al crear modelos BD)
-- **Que hace**: Patrones one-to-many, many-to-many, database session, migrations
-
----
-
-## Tecnologias y Metodologias (v13)
+## Tecnologias y Metodologias
 
 ### react-nextjs
 - **Scope**: pipeline
@@ -193,6 +174,11 @@ Ficha tecnica de cada uno de los 39 skills del ecosistema Batuta Dots v14.3.
 - **Auto-invoke**: Si (al disenar APIs REST)
 - **Tools**: Read, Edit, Write, Glob, Grep, Bash
 - **Que hace**: Diseno de endpoints REST, versionado de API, contratos de error, paginacion, OpenAPI/Swagger
+
+### sqlalchemy-models
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al crear modelos BD)
+- **Que hace**: Patrones one-to-many, many-to-many, database session, migrations
 
 ### e2e-testing
 - **Scope**: pipeline
@@ -240,16 +226,62 @@ Ficha tecnica de cada uno de los 39 skills del ecosistema Batuta Dots v14.3.
 - **Scope**: pipeline
 - **Auto-invoke**: Si (al verificar accesibilidad)
 - **Tools**: Read, Edit, Write, Glob, Grep, Bash
-- **Que hace**: Auditoria WCAG 2.1/2.2, roles ARIA, contraste de colores, navegacion por teclado, lectores de pantalla, compliance Section 508
+- **Que hace**: Auditoria WCAG 2.1/2.2, roles ARIA, contraste de colores, navegacion por teclado, lectores de pantalla
 
 ### performance-testing
 - **Scope**: pipeline
 - **Auto-invoke**: Si (al implementar pruebas de rendimiento)
 - **Tools**: Read, Edit, Write, Glob, Grep, Bash
-- **Que hace**: Load testing (k6, Artillery, Locust), benchmarks, metricas de rendimiento (TTFB, P95, P99), profiling, capacity planning
+- **Que hace**: Load testing (k6, Artillery, Locust), benchmarks, metricas de rendimiento (TTFB, P95, P99), profiling
 
 ### technical-writer
 - **Scope**: pipeline
 - **Auto-invoke**: Si (al generar documentacion tecnica)
 - **Tools**: Read, Edit, Write, Glob, Grep
-- **Que hace**: Generacion de documentacion tecnica profesional: guias de usuario, API docs, changelogs, release notes, documentacion de arquitectura para stakeholders no-tecnicos
+- **Que hace**: Documentacion tecnica profesional: guias de usuario, API docs, changelogs, release notes, documentacion de arquitectura
+
+---
+
+## Integraciones y Plataformas
+
+### coolify-deploy
+- **Scope**: infra
+- **Auto-invoke**: Si (al deployar en Coolify)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Patrones de deploy para Coolify (self-hosted PaaS): servicios, Docker Compose, networking, environment variables
+
+### evolution-api
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al integrar WhatsApp)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Integracion WhatsApp via Evolution API (Baileys): webhooks, envio de mensajes, grupos
+
+### google-adk
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al construir agentes con Google ADK)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Patrones para Google Agent Development Kit: LlmAgent, FunctionTool, session management
+
+### icg-erp
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al trabajar con ICG ERP)
+- **Tools**: Read, Glob, Grep
+- **Que hace**: Schema y gotchas para ICG ERP (restaurantes) en SQL Server 2017: MOVIMENTS, STOCKS, TRASPASOSCAB
+
+### prefect-flows
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al usar Prefect)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Patrones para Prefect 3 self-hosted: flows, tasks, scheduling, Docker setup, work pools
+
+### pydantic-ai
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al construir agentes con Pydantic AI)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Framework de agentes Python con typed dependencies, function tools, dynamic instructions
+
+### supabase-python
+- **Scope**: pipeline
+- **Auto-invoke**: Si (al usar Supabase con Python)
+- **Tools**: Read, Edit, Write, Glob, Grep, Bash
+- **Que hace**: Patrones supabase-py: insert, select, RLS, service_role key, pgvector

@@ -5,25 +5,27 @@ Verifica que conoces las herramientas del ecosistema.
 ---
 
 ## Pregunta 1
-**Cuantos skills tiene Batuta Dots v12.2?**
+**Cuantos skills tiene Batuta Dots v15?**
 
 <details>
 <summary>Ver respuesta</summary>
 
-33 skills organizados en: 9 pipeline SDD, 6 capa CTO, 5 infraestructura, 3 patrones reutilizables, 10 tecnologias y metodologias.
+43 skills organizados en: 5 pipeline SDD, 6 capa CTO, 10 infraestructura, 13 tecnologias y metodologias, 7 integraciones y plataformas. Se distribuyen en 2 niveles: global (~/.claude/skills/) y proyecto (.claude/skills/).
 </details>
 
 ---
 
 ## Pregunta 2
-**Nombra los 3 agentes y su funcion principal.**
+**Nombra los 5 agentes y su funcion principal.**
 
 <details>
 <summary>Ver respuesta</summary>
 
-- **Pipeline Agent**: Coordina el flujo SDD (9 fases)
+- **Pipeline Agent**: Coordina el flujo SDD
 - **Infra Agent**: Organizacion de archivos, skills, seguridad
-- **Observability Agent**: Calidad, registro, sesiones (motor O.R.T.A.)
+- **Backend Agent**: Expertise en APIs, bases de datos, patrones de backend
+- **Data Agent**: Pipelines de datos, ETL, integraciones
+- **Quality Agent**: Testing, verificacion, calidad de codigo
 </details>
 
 ---
@@ -71,14 +73,12 @@ Cuando sdd-explore detecta 3+ variantes de caso, excepciones frecuentes, o multi
 ---
 
 ## Pregunta 6
-**Cuales son los 3 niveles de ejecucion?**
+**Que es la Delegacion por Contrato?**
 
 <details>
 <summary>Ver respuesta</summary>
 
-- Nivel 1 (Solo): 1 archivo, tarea simple. Costo normal.
-- Nivel 2 (Subagente): 2-3 archivos, delegacion. Costo 1.2-1.5x.
-- Nivel 3 (Agent Team): 4+ archivos, multi-scope. Costo 3-5x.
+El main agent es un GESTOR — no implementa, no investiga directamente, no escribe codigo. Para toda tarea, contrata un agente especializado via el skill `agent-hiring`. NUNCA se crean agentes inline (ad-hoc) — siempre se crea el archivo en `.claude/agents/` primero. Los agentes reportan con: FINDINGS / FAILURES / DECISIONS / GOTCHAS.
 </details>
 
 ---

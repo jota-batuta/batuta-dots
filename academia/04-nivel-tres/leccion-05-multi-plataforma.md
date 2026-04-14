@@ -36,7 +36,7 @@ Proyecto A (Claude Code)  ←→  batuta-dots (hub)  ←→  Proyecto B (Antigra
 3. Del hub se distribuye a todos los spokes (via `install.sh` para usuarios, o `setup.sh --update` / `setup-antigravity.sh --update` para desarrolladores)
 
 El campo `platforms` en el frontmatter de SKILL.md determina que plataformas reciben cada skill:
-- `platforms: [claude, antigravity]` — va a ambas (38 de 39 skills)
+- `platforms: [claude, antigravity]` — va a ambas (42 de 43 skills)
 - `platforms: [claude]` — solo Claude Code (1 skill que requiere Agent Teams)
 
 El bloque `sdk:` en los agents permite distribuirlos como AgentDefinitions programaticas para CI/CD y deployment automatizado. Es un canal de distribucion adicional: ademas de plataformas (Claude, Antigravity), los agentes pueden vivir en pipelines automatizados.
@@ -79,7 +79,7 @@ bash ~/batuta-dots/BatutaAntigravity/setup-antigravity.sh --all
 ```
 
 Esto:
-- Copia 39 skills a `.agent/skills/` (workspace) y `~/.gemini/antigravity/skills/` (global)
+- Copia 43 skills a `.agent/skills/` (workspace) y `~/.gemini/antigravity/skills/` (global)
 - Copia GEMINI.md al proyecto
 - Crea `.batuta/session.md` y `.batuta/ecosystem.json`
 
@@ -100,7 +100,7 @@ La estrategia no es "uno despues del otro" — es **ejecucion simultanea**:
 Claude Code                          Antigravity
 ─────────────                        ───────────
 Arquitectura de feature X            Script de migracion Y
-SDD completo (9 fases)               Configuracion n8n
+SDD completo (2 modos)               Configuracion n8n
 Feature multi-modulo                  Fix de docs
 Agent Teams para refactoring          Quick fixes en 3 archivos
 ```

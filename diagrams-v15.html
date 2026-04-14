@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>batuta-dots v14.3 vs v15 — Flujos de Trabajo</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  body { background: #0d1117; color: #e6edf3; font-family: system-ui, sans-serif; padding: 20px; max-width: 1400px; margin: 0 auto; }
+  h1 { text-align: center; color: #58a6ff; font-size: 28px; }
+  h2 { color: #ff7b72; border-bottom: 1px solid #30363d; padding-bottom: 8px; margin-top: 50px; }
+  h2.new { color: #3fb950; }
+  .mermaid { background: #161b22; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  .note { background: #1c2333; border-left: 4px solid #58a6ff; padding: 12px 16px; border-radius: 4px; margin: 16px 0; font-size: 14px; }
+  .note.warn { border-left-color: #ff7b72; }
+  .note.ok { border-left-color: #3fb950; }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+  .compare > div { background: #161b22; border-radius: 8px; padding: 16px; }
+  .compare .old { border: 1px solid #ff7b72; }
+  .compare .new { border: 1px solid #3fb950; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  th, td { padding: 8px 12px; border: 1px solid #30363d; text-align: left; }
+  th { background: #161b22; color: #58a6ff; }
+  .red { color: #ff7b72; }
+  .green { color: #3fb950; }
+</style>
+</head>
+<body>
+
+<h1>batuta-dots: v14.3 (actual) vs v15 (propuesto)</h1>
+
+<!-- ============ DIAGRAMA 1: FLUJO ACTUAL ============ -->
+
+<h2>1. Flujo Actual (v14.3) — El problema</h2>
+
+<div class="note warn">
+  331 lineas de CLAUDE.md &bull; 9 fases SDD &bull; 8 gates mandatorios &bull; 48 skills en inventario &bull; 5 fuentes de estado que se contradicen &bull; <strong>0 proyectos en produccion</strong>
+</div>
+
+<div class="mermaid">
+flowchart TD
+    A1["<b>CLAUDE.md</b><br/>331 lineas &bull; 37 secciones<br/>personalidad, filosofia, tone,<br/>expertise, routing, gates, slices..."]
+    A2["<b>SessionStart Hook</b><br/>Inyecta:<br/>- Inventario 48 skills<br/>- session.md<br/>- CHECKPOINT.md<br/>- team-history.md"]
+    A3{"<b>Auto-routing</b><br/>Clasifica intent<br/>en 7 categorias"}
+    A4["<b>SDD Pipeline</b><br/>9 fases secuenciales"]
+    A5["init &rarr; explore &rarr; propose &rarr; spec<br/>&rarr; design &rarr; tasks &rarr; apply<br/>&rarr; verify &rarr; archive"]
+    A6["<b>8 Gates Mandatorios</b><br/>ExecGate &bull; G0.25 &bull; G0.5<br/>G0.75 &bull; G1 &bull; Proposal<br/>TaskPlan &bull; G2"]
+    A7["<b>Execution Gate</b><br/>Antes de CADA cambio<br/>LIGHT: 1 linea<br/>FULL: 7 puntos"]
+    A8["<b>Main Agent hace TODO</b><br/>Sabe de ICG, FastAPI,<br/>compliance, ADK, Temporal...<br/>o delega con ceremony"]
+    A9["<b>ESTADO FRAGMENTADO</b><br/>session.md dice X<br/>specs dicen Y<br/>checkpoint dice Z<br/>memorias dicen W<br/>tasks.md dice V"]
+    A10["<b>Siguiente sesion</b><br/>Agente lee 5 fuentes<br/>contradictorias<br/>= CONFUSION"]
+
+    A1 --> A2 --> A3 --> A4
+    A4 --> A5 --> A6 --> A7
+    A7 --> A8 --> A9 --> A10
+
+    style A1 fill:#2d1b1b,stroke:#ff7b72,color:#e6edf3
+    style A6 fill:#2d1b1b,stroke:#ff7b72,color:#e6edf3
+    style A9 fill:#5c1010,stroke:#ff4444,color:#ffffff
+    style A10 fill:#5c1010,stroke:#ff4444,color:#ffffff
+</div>
+
+<!-- ============ DIAGRAMA 2: FLUJO PROPUESTO ============ -->
+
+<h2 class="new">2. Flujo Propuesto (v15) — La simplificacion</h2>
+
+<div class="note ok">
+  &lt;80 lineas de CLAUDE.md &bull; 2-3 fases &bull; 0-1 gates &bull; Skills por demanda &bull; 1 fuente de verdad &bull; <strong>SPRINT como default</strong><br/><br/>
+  <strong>Cambio critico vs v14:</strong> session.md se actualiza EN CADA INTERACCION, no al final. Las decisiones, discoveries, y cambios pasan sobre la marcha — si la sesion crashea o se compacta, nada se pierde.
+</div>
+
+<div class="mermaid">
+flowchart TD
+    B1["<b>CLAUDE.md &lt;80 lineas</b><br/>Orquestador puro:<br/>- Reglas anti-error<br/>- Delegacion a subagentes<br/>- Session continuity<br/>- Scope rule"]
+    B2["<b>SessionStart Hook</b><br/>Inyecta solo:<br/>- session.md (UNICA fuente)<br/>- CHECKPOINT.md"]
+    B3{"<b>Modo?</b>"}
+    B4["<b>SPRINT</b><br/>default &bull; 0 gates"]
+    B5["<b>COMPLETO</b><br/>CTO lo pide &bull; 1 gate"]
+
+    B4A["<b>Apply</b><br/>Subagentes con 1-3 skills"]
+    B4B["<b>Verify</b><br/>Funciona? Si: listo"]
+
+    B5A["<b>Explore</b><br/>Subagentes en paralelo"]
+    B5B["<b>Design</b><br/>USER STOP &bull; unico gate"]
+    B5C["<b>Apply + Verify</b>"]
+
+    SM["<b>session.md</b><br/>UNICA fuente de verdad"]
+
+    B7["<b>Siguiente sesion</b><br/>1 fuente coherente<br/>= CLARIDAD"]
+
+    B1 --> B2 --> B3
+    B3 -->|"trivial"| B4
+    B3 -->|"complejo"| B5
+    B4 --> B4A --> B4B
+    B5 --> B5A --> B5B --> B5C
+
+    B4A -.->|"decision tomada<br/>= escribir"| SM
+    B4B -.->|"resultado verify<br/>= escribir"| SM
+    B5A -.->|"discovery<br/>= escribir"| SM
+    B5B -.->|"design aprobado<br/>= escribir"| SM
+    B5C -.->|"resultado<br/>= escribir"| SM
+
+    SM --> B7
+
+    style B1 fill:#0d2818,stroke:#3fb950,color:#e6edf3
+    style SM fill:#0a3622,stroke:#3fb950,color:#ffffff,stroke-width:3px
+    style B7 fill:#1a4d2e,stroke:#3fb950,color:#ffffff
+</div>
+
+<div class="note ok">
+  <strong>Regla v15:</strong> session.md se escribe EN CADA INTERACCION. No es un resumen final — es un estado vivo que se actualiza con cada respuesta del agente. Discovery, decision, cambio de approach, resultado de test, eureka — todo se refleja inmediatamente. La sesion puede morir en cualquier momento y el estado sobrevive.
+</div>
+
+<!-- ============ DIAGRAMA 2B: PRD COMO ARTEFACTO UNICO ============ -->
+
+<h2 class="new">2b. PRD: artefacto unico de planificacion (reemplaza 5 fases)</h2>
+
+<div class="note ok">
+  La industria (GitHub Spec Kit 72k stars, Cursor+ChatPRD, Thoughtworks SDD) convergio: <strong>un PRD lean de 1-2 paginas reemplaza explore+propose+spec+design+tasks</strong> como input para agentes de IA.
+</div>
+
+<div class="compare">
+  <div class="old">
+    <h3 class="red">v14.3: 5 artefactos de planificacion</h3>
+    <pre>
+openspec/changes/nombre/
+  explore.md    (discovery)
+  proposal.md   (scope + stakeholders)
+  spec.md       (requisitos formales)
+  design.md     (arquitectura + ADRs)
+  tasks.md      (breakdown 46 tareas)
+    </pre>
+    <p class="red">5 archivos que se dessincronizan al pivotar</p>
+  </div>
+  <div class="new">
+    <h3 class="green">v15: 1 PRD</h3>
+    <pre>
+openspec/changes/nombre/
+  PRD.md        (problema + solucion
+                 + criterio de exito
+                 + constraints
+                 + fuera de alcance)
+    </pre>
+    <p class="green">1 archivo. Si pivoteas: archive/ + nuevo PRD</p>
+  </div>
+</div>
+
+<div class="mermaid">
+flowchart LR
+    subgraph V14["v14.3: 5 fases de planificacion"]
+        E1[explore] --> P1[propose] --> S1[spec] --> D1[design] --> T1[tasks]
+    end
+
+    subgraph V15["v15: 1 PRD"]
+        PRD["<b>PRD.md</b><br/>Problema + Solucion<br/>+ Criterio de exito<br/>+ Constraints<br/>+ Fuera de alcance"]
+    end
+
+    V14 -.->|"se comprime en"| V15
+
+    style V14 fill:#2d1b1b,stroke:#ff7b72,color:#e6edf3
+    style V15 fill:#0d2818,stroke:#3fb950,color:#e6edf3
+    style PRD fill:#1a4d2e,stroke:#3fb950,color:#ffffff
+</div>
+
+<!-- ============ DIAGRAMA 2C: CHECKPOINT vs SESSION ============ -->
+
+<h2 class="new">2c. CHECKPOINT.md vs session.md — complementarios, no redundantes</h2>
+
+<div class="note">
+  No se fusionan. CHECKPOINT es un <strong>seguro de vida</strong> (anti-compaction, mid-task recovery). session.md es el <strong>briefing estrategico</strong> (estado del proyecto). Ambos se mantienen en v15 con enforcement real.
+</div>
+
+<div class="mermaid">
+flowchart TD
+    subgraph SESSION["session.md — Briefing estrategico"]
+        S1["<b>Donde estamos</b><br/>Fase, stack, estado general"]
+        S2["<b>Por que</b><br/>Decisiones + rationale"]
+        S3["<b>Que sigue</b><br/>Proximos pasos"]
+        S4["Budget: 80 lineas<br/>Se escribe: CADA interaccion"]
+    end
+
+    subgraph CHECK["CHECKPOINT.md — Seguro anti-compaction"]
+        C1["<b>Que hago AHORA</b><br/>Paso N de M"]
+        C2["<b>Intentos</b><br/>Que probe, que fallo, por que"]
+        C3["<b>Gotchas</b><br/>Hechos verificados con evidencia"]
+        C4["Se escribe: antes de 3+ tool calls<br/>+ al cerrar sesion<br/>Archive: 10 versiones"]
+    end
+
+    CRASH["Sesion crashea<br/>mid-task"]
+    NEW["Nueva sesion<br/>o cambio de ventana"]
+
+    CRASH -->|"necesita"| CHECK
+    NEW -->|"necesita"| SESSION
+
+    CRASH -.->|"tambien lee"| SESSION
+    NEW -.->|"tambien lee"| CHECK
+
+    style SESSION fill:#0d2818,stroke:#3fb950,color:#e6edf3
+    style CHECK fill:#1c2333,stroke:#58a6ff,color:#e6edf3
+    style CRASH fill:#5c1010,stroke:#ff4444,color:#ffffff
+    style NEW fill:#1a4d2e,stroke:#3fb950,color:#ffffff
+</div>
+
+<!-- ============ DIAGRAMA 3: DELEGACION A SUBAGENTES ============ -->
+
+<h2 class="new">3. Delegacion a Subagentes (la magia de v15)</h2>
+
+<div class="note ok">
+  El main agent NO sabe de ICG, FastAPI, ni compliance. Solo sabe <strong>a quien preguntarle</strong>. Cada subagente carga 1-3 skills y tiene contexto limpio.
+</div>
+
+<div class="mermaid">
+flowchart TD
+    M["<b>Main Agent</b><br/>CLAUDE.md &lt;80 lineas<br/>Solo orquesta"]
+    Q{"Necesito<br/>expertise?"}
+    INV["Lee .provisions.json<br/>Busca skills relevantes"]
+
+    S1["<b>Subagente 1</b><br/>skill: icg-erp<br/>Tarea: explorar tablas<br/>inventario ICG"]
+    S2["<b>Subagente 2</b><br/>skill: fastapi-crud<br/>Tarea: crear endpoint<br/>/trigger/store-check"]
+    S3["<b>Subagente 3</b><br/>skill: security-audit<br/>Tarea: revisar queries<br/>SQL injection"]
+
+    R1["FINDINGS / FAILURES<br/>DECISIONS / GOTCHAS"]
+    R2["FINDINGS / FAILURES<br/>DECISIONS / GOTCHAS"]
+    R3["FINDINGS / FAILURES<br/>DECISIONS / GOTCHAS"]
+
+    INT["<b>Main Agent</b><br/>Integra resultados<br/>Actualiza session.md"]
+
+    M --> Q -->|si| INV
+    Q -->|"no, trivial"| INT
+    INV --> S1 & S2 & S3
+    S1 --> R1 --> INT
+    S2 --> R2 --> INT
+    S3 --> R3 --> INT
+
+    style M fill:#0d2818,stroke:#3fb950,color:#e6edf3
+    style S1 fill:#1c2333,stroke:#58a6ff,color:#e6edf3
+    style S2 fill:#1c2333,stroke:#58a6ff,color:#e6edf3
+    style S3 fill:#1c2333,stroke:#58a6ff,color:#e6edf3
+    style INT fill:#0d2818,stroke:#3fb950,color:#e6edf3
+</div>
+
+<!-- ============ DIAGRAMA 4: NOTION COMO HUB CENTRAL ============ -->
+
+<h2 class="new">4. Notion como hub central — cero copy/paste</h2>
+
+<div class="note ok">
+  <strong>Notion MCP es el puente.</strong> CTO Desktop escribe directives y PRDs en Notion. Claude Code los lee via MCP. Code escribe de vuelta discoveries, decisiones, y estado. Actualizacion <strong>CONSTANTE</strong>, no batch al final. JNMZ no copia ni pega nada.
+</div>
+
+<div class="mermaid">
+flowchart TD
+    subgraph NOTION["Notion — Sistema Operativo Central"]
+        CL["<b>Clientes DB</b><br/>Nombre, industria,<br/>ERPs, contacto"]
+        PR["<b>Proyectos DB</b><br/>Nombre, cliente, estado,<br/>campo de accion,<br/>directivas como paginas hijas"]
+        KB["<b>Knowledge Base DB</b><br/>Discoveries, decisiones,<br/>edge cases, patrones,<br/>reglas de negocio"]
+        DIR["<b>Directivas / PRDs</b><br/>Paginas hijas del proyecto<br/>con batuta-config"]
+    end
+
+    subgraph CTO["CTO (Claude Desktop)"]
+        C1["Investiga, diseña,<br/>toma decisiones"]
+    end
+
+    subgraph CODE["Claude Code (v15)"]
+        CO1["Lee directiva/PRD<br/>via Notion MCP"]
+        CO2["Implementa con<br/>subagentes"]
+        CO3["Escribe de vuelta<br/>constantemente"]
+    end
+
+    C1 -->|"escribe directiva/PRD"| DIR
+    C1 -->|"crea/actualiza cliente"| CL
+    C1 -->|"actualiza estado proyecto"| PR
+    C1 -->|"persiste conocimiento"| KB
+
+    DIR -->|"MCP: lee directiva"| CO1
+    PR -->|"MCP: lee contexto proyecto"| CO1
+    KB -->|"MCP: approach research"| CO1
+    CL -->|"MCP: contexto cliente"| CO1
+
+    CO1 --> CO2 --> CO3
+
+    CO3 -->|"MCP: discovery nuevo"| KB
+    CO3 -->|"MCP: actualiza estado"| PR
+    CO3 -->|"MCP: gotcha verificado"| KB
+
+    style NOTION fill:#1c2333,stroke:#58a6ff,color:#e6edf3,stroke-width:3px
+    style CTO fill:#2d1b3d,stroke:#a371f7,color:#e6edf3
+    style CODE fill:#0d2818,stroke:#3fb950,color:#e6edf3
+    style DIR fill:#0a3622,stroke:#3fb950,color:#ffffff
+    style KB fill:#0a3622,stroke:#3fb950,color:#ffffff
+</div>
+
+<!-- ============ DIAGRAMA 4B: CICLO ITERATIVO VIA NOTION ============ -->
+
+<h2 class="new">4b. Ciclo iterativo CTO &harr; Code via Notion</h2>
+
+<div class="note">
+  El flujo es iterativo. Discoveries en Code se escriben a Notion KB inmediatamente. CTO los lee y ajusta. <strong>Sin copy/paste, sin cambiar de ventana para transferir archivos.</strong>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant CTO as CTO (Desktop)
+    participant N as Notion
+    participant Code as Claude Code (v15)
+    participant DB as BD Cliente
+
+    CTO->>N: Escribe directiva SPRINT en Proyecto
+    Note over CTO,N: "Automatizar edades de cartera"
+
+    Code->>N: MCP: lee proyecto + directiva
+    Code->>DB: Subagente explora tablas
+    DB-->>Code: Tabla oculta con info valiosa
+
+    Code->>N: MCP: escribe a KB inmediatamente
+    Note over Code,N: Discovery: "tabla X tiene Y"
+    Code->>N: MCP: actualiza estado proyecto
+    Note over Code,N: Estado: "Explorando - eureka tabla X"
+
+    CTO->>N: Lee KB - ve el discovery
+    CTO->>N: Escribe nueva directiva
+    Note over CTO,N: "Integrar analisis Z con tabla X"
+
+    Code->>N: MCP: lee nueva directiva
+    Code->>Code: Subagentes implementan
+    Code->>N: MCP: decision tomada → KB
+    Code->>N: MCP: gotcha verificado → KB
+    Code->>N: MCP: Estado = "Capa 1 lista"
+
+    CTO->>N: Lee estado: deployable
+    Note over CTO: Decide deploy
+</div>
+
+<!-- ============ DIAGRAMA 5: AL PIVOTAR ============ -->
+
+<h2 class="new">5. Regla de Archivado al Pivotar (nuevo en v15)</h2>
+
+<div class="note warn">
+  En v14.3 cuando el proyecto pivotea, nada se actualiza. En v15, el archivado es <strong>forzoso</strong>.
+</div>
+
+<div class="mermaid">
+flowchart LR
+    P["<b>Proyecto pivotea</b><br/>Cambia arquitectura<br/>o scope"]
+
+    subgraph FORZOSO["Archivado Forzoso"]
+        F1["Artefactos SDD viejos<br/>&rarr; archive/ + SUPERSEDED.md"]
+        F2["Memorias obsoletas<br/>&rarr; eliminar o marcar OBSOLETE"]
+        F3["session.md<br/>&rarr; reescribir COMPLETO"]
+        F4["CHECKPOINT.md<br/>&rarr; borrar, empezar limpio"]
+    end
+
+    R["<b>Estado limpio</b><br/>1 fuente de verdad<br/>0 contradicciones<br/>Agente nuevo<br/>empieza claro"]
+
+    P --> FORZOSO --> R
+
+    style P fill:#2d1b1b,stroke:#ff7b72,color:#e6edf3
+    style R fill:#1a4d2e,stroke:#3fb950,color:#ffffff
+    style FORZOSO fill:#1c2333,stroke:#58a6ff,color:#e6edf3
+</div>
+
+<!-- ============ TABLA COMPARATIVA ============ -->
+
+<h2>6. Comparacion directa</h2>
+
+<table>
+  <tr>
+    <th>Aspecto</th>
+    <th class="red">v14.3 (actual)</th>
+    <th class="green">v15 (propuesto)</th>
+  </tr>
+  <tr><td>CLAUDE.md</td><td>331 lineas, 37 secciones</td><td>&lt;80 lineas, ~10 secciones</td></tr>
+  <tr><td>Fases SDD</td><td>9 (init&rarr;archive)</td><td>SPRINT: 2 &bull; COMPLETO: 3</td></tr>
+  <tr><td>Gates</td><td>8 mandatorios</td><td>SPRINT: 0 &bull; COMPLETO: 1</td></tr>
+  <tr><td>Modo default</td><td>Siempre COMPLETO</td><td>SPRINT</td></tr>
+  <tr><td>Fuentes de estado</td><td>5 (se contradicen)</td><td>1 (session.md)</td></tr>
+  <tr><td>Cuando se escribe estado</td><td>Al final (post-tests)</td><td><strong>Cada interaccion</strong></td></tr>
+  <tr><td>Quien sabe de tech</td><td>Main agent (todo)</td><td>Subagentes (skills por demanda)</td></tr>
+  <tr><td>Al pivotar</td><td>Nada se actualiza</td><td>Archivado forzoso</td></tr>
+  <tr><td>Skills en hub</td><td>48 (todos se listan)</td><td>48 (se conservan, carga selectiva)</td></tr>
+  <tr><td>Subagentes</td><td>Opcionales, con ceremony</td><td>Default, en paralelo</td></tr>
+  <tr><td>Agentes</td><td>11</td><td>5</td></tr>
+</table>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#1c2333',
+      primaryTextColor: '#e6edf3',
+      primaryBorderColor: '#58a6ff',
+      lineColor: '#8b949e',
+      secondaryColor: '#161b22',
+      tertiaryColor: '#0d1117'
+    },
+    flowchart: { curve: 'basis', padding: 15 },
+    sequence: { actorMargin: 50, mirrorActors: false }
+  });
+</script>
+
+</body>
+</html>

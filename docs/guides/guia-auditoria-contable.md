@@ -6,7 +6,7 @@
 > **Formato**: Sigue los pasos en orden, como cuando aprendes a manejar.
 > Cada paso depende del anterior. No saltes pasos.
 >
-> **Que tiene de especial esta guia**: Demuestra el flujo CTO completo (v11.0)
+> **Que tiene de especial esta guia**: Demuestra el flujo CTO completo (v15)
 > — desde que un cliente te contacta con un problema hasta tener la solucion
 > funcionando en produccion. Incluye Discovery, Process Analysis, y Cost-Benefit.
 
@@ -33,7 +33,7 @@ Antes de empezar, aqui tienes un mini-diccionario. No necesitas memorizarlo, vue
 | **Pipeline de datos** | Una "linea de ensamblaje" para datos. El extracto entra crudo, pasa por estaciones de limpieza y clasificacion, y sale conciliado. |
 | **Golden dataset** | Un conjunto de datos donde ya sabes la respuesta correcta. Se usa para verificar que el sistema clasifica bien. |
 | **Cost-Benefit** | Un analisis que compara cuanto cuesta hacer algo vs cuanto beneficio trae. Si automatizar la conciliacion cuesta $5M pero ahorra $3M al mes, se paga en menos de 2 meses. |
-| **Gate** | Un punto de control obligatorio. Claude no avanza al siguiente paso hasta que pase el gate. Como un peaje: si no pagas, no pasas. |
+| **Checkpoint** | Un punto de verificacion. Claude verifica que el research y la calidad estan al dia antes de avanzar. |
 | **SDD** | Spec-Driven Development. Un proceso paso a paso: primero planeas, luego construyes. Como un arquitecto que primero dibuja el plano. |
 | **Prompt** | El mensaje que le escribes a Claude. Como enviarle un WhatsApp con instrucciones. |
 | **Claude Code** | Un asistente de programacion en la terminal. Tu le dices que quieres y el lo construye. |
@@ -318,7 +318,7 @@ Perfecto. Ahora continua con la propuesta.
 
 ---
 
-## Paso 7 — Gate G0.5: Discovery Complete
+## Paso 7 — Checkpoint: Discovery: Discovery Complete
 
 **Que vamos a hacer**: Pasar el primer punto de control. Claude verifica que tenemos todo lo necesario para proponer una solucion.
 
@@ -342,7 +342,7 @@ Esto pasa **automaticamente**. Claude verifica las 5 preguntas de Discovery:
 
 **Que vamos a hacer**: Claude genera una propuesta formal que incluye cuanto cuesta y cuanto ahorra. Esto es lo que le presentas al cliente.
 
-Claude genera la propuesta con 3 secciones nuevas (v11.0):
+Claude genera la propuesta con 3 secciones nuevas (v15):
 
 ### Client Communication (lo que le envias al cliente)
 
@@ -381,7 +381,7 @@ Aprobado, continua
 
 ---
 
-## Paso 9 — Gate G1: Solution Worth Building
+## Paso 9 — Checkpoint: Worth Building: Solution Worth Building
 
 **Que vamos a hacer**: Segundo punto de control. Claude verifica que la solucion vale la pena construirse.
 
@@ -405,9 +405,9 @@ Esto tambien es **automatico**. Claude verifica:
 
 Ejecuta `/sdd-continue` UNA vez por fase. Repite hasta completar specs, design y tasks.
 
-> **Alternativa rapida**: `/sdd-ff conciliacion-automatica` hace todo de corrido.
+> **Alternativa rapida**: `/sdd-continue conciliacion-automatica` hace todo de corrido.
 
-### Que tiene de especial el design (v11.0)
+### Que tiene de especial el design (v15)
 
 Claude incluye **secciones condicionales** que antes no existian:
 
@@ -452,7 +452,7 @@ Se ve bien, continua
 | 6 | Reporte | Genera reporte de conciliacion para el contador |
 | 7 | Exportacion | Devuelve resultados a WorldOffice o CSV |
 
-**Antes de cada batch**, Claude ejecuta el Execution Gate:
+**Antes de cada batch**, Claude ejecuta el Research-First:
 
 ```
 Este cambio involucra scope pipeline + infra:
@@ -498,7 +498,7 @@ diccionario para probar el Recursion Designer.
 /sdd-verify conciliacion-automatica
 ```
 
-### Testing por tipo de solucion (v11.0)
+### Testing por tipo de solucion (v15)
 
 Claude aplica la **estrategia diferenciada** porque este proyecto usa LLM para clasificacion (si el design incluyo LLM) o puro automation (si no):
 
@@ -529,7 +529,7 @@ Despues de correcciones, verifica de nuevo:
 
 ---
 
-## Paso 13 — Gate G2: Ready for Production
+## Paso 13 — Checkpoint: Production Ready: Ready for Production
 
 **Que vamos a hacer**: Tercer y ultimo punto de control antes de archivar.
 
@@ -590,7 +590,7 @@ Ahorro estimado: 2.8 dias de trabajo manual
 /sdd-archive conciliacion-automatica
 ```
 
-### Learning Loop (v11.0)
+### Learning Loop (v15)
 
 Claude responde 6 preguntas de mejora del ecosistema:
 
@@ -711,7 +711,7 @@ conciliacion-bancaria/
 
 ---
 
-## Flujo visual completo (CTO v11.0)
+## Flujo visual completo (CTO v15)
 
 ```
 Cliente: "Necesito automatizar conciliacion bancaria"
@@ -728,12 +728,12 @@ Cliente: "Necesito automatizar conciliacion bancaria"
  |
  +-- Paso 6:  /recursion-designer ........ "4 mecanismos: detectar → aprobar → propagar → versionar"
  |
- +-- Paso 7:  === GATE G0.5 === .......... "Discovery Complete? 5/5 Si → PASS"
+ +-- Paso 7:  === CHECKPOINT: Discovery === .......... "Discovery Complete? 5/5 Si → PASS"
  |
  +-- Paso 8:  Propuesta .................. "Cost-Benefit + Client Communication"
  |     Tu: "Aprobado"
  |
- +-- Paso 9:  === GATE G1 === ............ "Worth Building? Scope + ROI → PASS"
+ +-- Paso 9:  === CHECKPOINT: Worth Building === ............ "Worth Building? Scope + ROI → PASS"
  |
  +-- Paso 10: /sdd-continue .............. "Specs → Design (data pipeline + compliance) → Tasks"
  |
@@ -742,7 +742,7 @@ Cliente: "Necesito automatizar conciliacion bancaria"
  |
  +-- Paso 12: /sdd-verify ................ "AI Pyramid + Testing por tipo solucion"
  |
- +-- Paso 13: === GATE G2 === ............ "Production Ready? Tests + Docs + Rollback → PASS"
+ +-- Paso 13: === CHECKPOINT: Production Ready === ............ "Production Ready? Tests + Docs + Rollback → PASS"
  |
  +-- Paso 14: Prueba con datos reales .... "84.9% cruzado, 12.3 segundos"
  |

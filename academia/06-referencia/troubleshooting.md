@@ -49,12 +49,12 @@ git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git /tmp/batuta-i
 **Solucion**: Ejecuta `/sdd-init` antes de `/sdd-new`.
 
 ### /sdd-continue no detecta la fase actual
-**Causa**: Los artefactos del cambio estan incompletos o corruptos.
-**Solucion**: Revisa `openspec/changes/{nombre}/` y verifica que los archivos existen. Si faltan, ejecuta la fase manualmente (ej: `/sdd-ff`).
+**Causa**: session.md no tiene estado SDD o los artefactos del cambio estan incompletos.
+**Solucion**: `/sdd-continue` detecta el modo (SPRINT o COMPLETO) desde session.md. Si session.md no existe, cae en deteccion por artefactos. Revisa `openspec/changes/{nombre}/` y verifica que los archivos existen.
 
 ### /sdd-ff se detiene a mitad
-**Causa**: Un gate no paso (G0.5 o G1).
-**Solucion**: Revisa el checklist del gate. Completa los items faltantes y ejecuta `/sdd-continue`.
+**Causa**: La fase de explore encontro informacion insuficiente o el design requiere aprobacion.
+**Solucion**: `/sdd-ff` se detiene despues del design para aprobacion. Revisa el design generado y aprueba para continuar con `/sdd-apply`.
 
 ---
 

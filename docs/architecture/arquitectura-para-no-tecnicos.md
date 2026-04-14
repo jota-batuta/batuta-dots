@@ -1,4 +1,4 @@
-# Entendiendo la Arquitectura de Batuta — Sin Palabras Tecnicas (v14.1)
+# Entendiendo la Arquitectura de Batuta — Sin Palabras Tecnicas (v15)
 
 > **Para quien es esto**: Para cualquier persona que quiera entender COMO funciona
 > el ecosistema Batuta sin necesitar saber programar. Si puedes entender como funciona
@@ -12,235 +12,253 @@ Imagina que Batuta es un restaurante. Vamos a usar esta analogia para explicar c
 
 ---
 
-## El Chef Principal (Claude Code)
+## El Gerente del Restaurante (Main Agent)
 
-**Claude Code** es tu chef principal. Es un cocinero con inteligencia artificial que sabe
-hacer muchos platos, pero necesita recetas especificas para cocinar AL ESTILO de tu
-restaurante.
+En v15, el agente principal ya NO es un chef. Es un **gerente** — un manager que coordina
+pero nunca toca una olla.
 
-Sin recetas, el chef cocina "a su manera" — y cada vez lo hace diferente. Con recetas,
-siempre cocina igual, siempre bien.
+El gerente recibe tu pedido, identifica que tipo de especialista necesita, y lo **contrata**.
+No cocina, no investiga directamente, no escribe codigo. Solo decide a quien llamar.
 
----
-
-## Las Instrucciones del Chef (CLAUDE.md)
-
-**CLAUDE.md** es la hoja de instrucciones que el chef lee cada vez que empieza a trabajar. Contiene:
-
-- Que personalidad tiene (CTO/Mentor: paciente, educador)
-- Que reglas seguir siempre
-- Donde encontrar cada receta (skill)
-- Como organizar la cocina (Scope Rule)
-- Que hacer cuando no tiene una receta (Skill Gap Detection)
-
-> **Regla importante**: Solo hay UN archivo de instrucciones. Si quieres cambiar algo,
-> cambias CLAUDE.md y todas las sucursales (proyectos) se actualizan.
+> **Cambio clave vs versiones anteriores**: Antes, el agente principal era un "chef que delegaba". Ahora es un gerente puro — su unica funcion es contratar al especialista correcto para cada tarea.
 
 ---
 
-## El Sistema de Expertos del Restaurante (Mixture of Experts)
+## Las Instrucciones del Gerente (CLAUDE.md)
 
-Imagina que el restaurante funciona asi: cuando un cliente hace un pedido, el chef principal
-NO cocina el mismo. Lee el pedido, identifica de que tipo es, y lo pasa al **experto correcto**.
+**CLAUDE.md** es la hoja de instrucciones del gerente. Son solo **105 lineas** — corta y directa. Contiene:
 
-Es como un hospital con especialistas:
+- Que reglas seguir siempre (investigar antes de actuar, nunca asumir)
+- Como contratar especialistas (protocolo de contratacion)
+- Como mantener el estado del proyecto (una sola fuente de verdad)
+- Como conectar con el director (Notion)
+- Los dos modos de trabajo (rapido y completo)
+
+> **Regla importante**: El gerente no tiene recetas (skills) propias. Solo sabe a QUIEN llamar. Las recetas las tienen los especialistas.
+
+---
+
+## El Protocolo de Contratacion (Agent Hiring)
+
+Cuando llega un pedido, el gerente sigue este proceso:
 
 ```
-Cliente dice: "Me duele la rodilla"
-   ↓
-Recepcion (el router): "Esto es traumatologia"
-   ↓
-Traumatologo (el experto): Examina, diagnostica, trata
-   ↓
-Protocolos medicos (los parametros): Guia especifica para lesion de rodilla
+Tu dices: "Necesito un endpoint de login"
+   |
+Gerente piensa: "Necesito un especialista en APIs"
+   |
+Gerente revisa: "Tengo un especialista en APIs contratado?"
+   |
+SI → Lo llama directamente
+NO → Te propone contratar uno nuevo:
+     "Necesito contratar un backend-specialist.
+      Va a usar estas recetas: jwt-auth, fastapi-crud.
+      Te parece bien?"
+   |
+TU APRUEBAS → Se crea el contrato → El especialista trabaja
 ```
 
-En Batuta funciona igual:
-
-| Parte del sistema | Rol en el restaurante | Que hace |
-|-------------------|----------------------|---------|
-| **Las instrucciones del chef** (CLAUDE.md) | La recepcion del hospital — decide a que especialista mandarte | Lee el pedido y detecta pistas: si mencionas "API" o "base de datos" → lo manda al chef de linea. Si mencionas "datos" o "inteligencia artificial" → lo manda al sous chef de reposteria. Si mencionas "pruebas" o "seguridad" → lo manda al inspector |
-| **Los especialistas** (Domain Agents) | Los doctores especialistas — cada uno experto en su area | Cada especialista tiene 80-120 lineas de conocimiento profundo en su area. Saben que hacer sin que nadie les explique lo basico |
-| **Las recetas** (Skills) | Los protocolos medicos — instrucciones especificas | Dentro de cada especialista, se cargan las recetas que necesita para ESE plato en particular |
-
-### Por que no cocina el chef principal?
-
-Porque es mas eficiente. Si el chef principal tuviera que recordar TODAS las recetas de
-TODOS los tipos de cocina, se le olvidarian cosas. En cambio:
-
-- El chef principal solo recuerda a QUIEN pasarle cada pedido (~220 lineas de instrucciones)
-- Cada especialista recuerda TODO sobre SU area (~80-120 lineas de expertise)
-- Las recetas especificas se abren solo cuando hacen falta
-
-Es como la diferencia entre un medico general que intenta hacer TODO vs un hospital con
-especialistas: el general sabe un poco de todo pero el especialista sabe TODO de lo suyo.
-
-**Lo mejor**: Los especialistas trabajan en su propia cocina (su propio espacio de trabajo).
-No comparten espacio con el chef principal. Esto significa que el restaurante funciona mas
-rapido — cada quien tiene lo que necesita sin estorbarse.
+**Lo importante**: El gerente NUNCA improvisa. Si no tiene un especialista para la tarea, te pide permiso antes de contratar uno nuevo. Cada contrato queda escrito en un archivo — no se pierde.
 
 ---
 
-## Las Recetas Individuales (Skills)
+## Los 5 Especialistas del Restaurante (Agents)
 
-Cada **skill** es una receta especifica. Por ejemplo:
+El restaurante tiene 5 especialistas de planta, cada uno experto en su area:
 
-| Receta (Skill) | Que le ensena al chef |
-|----------------|----------------------|
+| Especialista | Que hace | Cuando lo llaman |
+|-------------|---------|-----------------|
+| **Jefe de produccion** (pipeline) | Coordina el proceso completo de crear platos nuevos | Cuando hay que construir algo nuevo |
+| **Chef de linea** (backend) | Sabe de APIs, autenticacion, bases de datos | Cuando mencionas "API", "login", "base de datos" |
+| **Sous chef de datos** (data) | Experto en datos, transformaciones, inteligencia artificial | Cuando mencionas "datos", "ETL", "IA" |
+| **Inspector de calidad** (quality) | Revisa que cada plato cumpla estandares | Siempre disponible — la calidad no es opcional |
+| **Jefe de instalaciones** (infra) | Maneja despliegue, servidores, monitoreo | Cuando mencionas "deploy", "servidor", "monitoreo" |
+
+Cada especialista tiene sus propias recetas (skills). El gerente no necesita saber las recetas — solo necesita saber a quien llamar.
+
+**Los especialistas trabajan en paralelo**. Si necesitas investigar 3 cosas a la vez, el gerente contrata 3 especialistas y todos trabajan al mismo tiempo. 5 especialistas investigando = minutos, no horas.
+
+---
+
+## Las Recetas (Skills)
+
+Cada **skill** es una receta especifica. Hay **43 recetas** en el libro maestro:
+
+- **13 recetas universales** que todos los restaurantes (proyectos) necesitan
+- **30 recetas especializadas** que se asignan segun el tipo de cocina del restaurante
+
+| Receta (Skill) | Que le ensena al especialista |
+|----------------|------------------------------|
 | `scope-rule` | Donde guardar cada ingrediente en la cocina (organizacion) |
-| `sdd-init` | Como empezar a preparar un plato nuevo (planificacion) |
-| `temporal-worker` | Como cocinar platos que llevan muchos pasos y pueden fallar |
-| `nextjs-portal` | Como montar el plato para que se vea bonito (la cara que ve el cliente) |
+| `fastapi-crud` | Como preparar APIs rapidas |
+| `jwt-auth` | Como verificar la identidad de los clientes |
+| `tdd-workflow` | Como probar cada plato antes de servirlo |
+| `agent-hiring` | Como contratar especialistas nuevos |
 
-El chef tiene **38 recetas** que siempre estan disponibles (incluyendo 6 recetas de estrategia CTO y 12 recetas tecnicas), y puede **aprender recetas nuevas** cuando las necesita.
+**Detalle clave**: Las recetas NO pertenecen al gerente — pertenecen a los **especialistas**. El gerente no lee recetas. Los especialistas si.
 
-**Detalle importante**: Las recetas NO se leen todas al empezar. El chef solo abre la
-receta que necesita para el plato que esta preparando. Esto se llama "carga bajo demanda"
-y hace que el chef sea mas rapido y eficiente.
-
----
-
-## El Proceso de Cocina (SDD Pipeline)
-
-Cuando un cliente pide un plato nuevo que nunca se ha hecho, el chef NO empieza a
-cocinar de una. Sigue un proceso de 9 pasos:
-
-### Los 9 pasos para crear un plato nuevo
-
-Lo mejor: no necesitas memorizar estos pasos. Le dices al chef "quiero un plato de pollo al horno para 20 personas" y el automaticamente sigue el proceso. Tu solo apruebas en los puntos clave.
-
-```
-Tu dices: "Quiero un plato de pollo al horno para 20 personas"
-      ↓
-   EL CHEF AUTOMATICAMENTE:
-1. INIT        → "Que tipo de plato es?" (entrada, principal, postre)
-2. EXPLORE     → "Que ingredientes tenemos? Que tecnicas podemos usar?"
-3. PROPOSE     → "Esta es mi propuesta de plato. Te parece bien?"
-      ↓
-   TU APRUEBAS O PIDES CAMBIOS
-      ↓
-4. SPEC        → "Estos son los requisitos exactos del plato"
-5. DESIGN      → "Este es el diseno: que va primero, que va despues"
-6. TASKS       → "Estos son los pasos que voy a seguir, en orden"
-      ↓
-   TU APRUEBAS
-      ↓
-7. APPLY       → "Ahora si, estoy cocinando" (aqui se escribe el codigo)
-8. VERIFY      → "Termine. Voy a probar que todo sabe bien"
-9. ARCHIVE     → "Documento la receta para que cualquiera pueda repetirla"
-```
-
-### Que pasa si descubres un problema a mitad de camino?
-
-En un restaurante real, a veces descubres que falta un ingrediente cuando ya estas cocinando. El chef de Batuta no empieza de cero — **retrocede** a la receta, la corrige, y continua desde ahi.
-
-| El chef esta... | Descubre que... | Entonces... |
-|----------------|-----------------|-------------|
-| Cocinando (APPLY) | Falta un ingrediente en la receta | Vuelve a la receta (SPEC), la corrige, y sigue cocinando |
-| Cocinando (APPLY) | La tecnica no funciona | Vuelve al plan de cocina (DESIGN), lo ajusta, y replanifica |
-| Probando (VERIFY) | El plato no sabe como esperaba | Vuelve a cocinar (APPLY) si es un ajuste, o al plan (DESIGN) si hay que repensar |
-
-Cada retroceso queda anotado en una bitacora para que no se pierda el aprendizaje.
-
-### Por que tantos pasos?
-
-Porque es MAS RAPIDO planear bien que arreglar errores despues.
-
-Imagina que empiezas a cocinar sin receta:
-- "Ups, necesitaba harina y no compre" → parar, ir al supermercado, volver
-- "Ups, tenia que precalentar el horno hace 30 minutos" → esperar 30 minutos
-- "Ups, la salsa no combina con la carne" → empezar de cero
-
-Con los 9 pasos, la mayoria de esos problemas se detectan ANTES de empezar a cocinar. Y si aparece uno nuevo durante la coccion, hay un proceso claro para manejarlo sin empezar de cero.
-
-### La investigacion profunda (Discovery Depth) — v13.2
-
-Imagina que un cliente pide "pasta con mariscos". Un chef novato escucha "pasta" y "mariscos" y empieza a cocinar inmediatamente. Un chef experimentado PRIMERO investiga: que tipo de pasta? que mariscos hay disponibles? el cliente es alergico a algo? como se quiere la coccion?
-
-El error mas caro en un restaurante no es equivocarse con la sal — es preparar un plato ENTERO basandose en suposiciones incorrectas. Si asumiste que queria linguini y queria ravioli, perdiste todos los ingredientes y el tiempo.
-
-En Batuta funciona igual: la **discovery superficial** (investigar a medias) es el modo de fallo mas caro. Si el chef asume como funciona un sistema sin revisarlo, implementa algo incorrecto, tu lo corriges, y hay que reimplementar todo.
-
-**Las reglas de investigacion profunda**:
-- **Revisar antes de asumir**: No adivinar que hace una funcion por su nombre — abrirla y leerla
-- **Verificar los flujos reales**: Como una cadena de produccion en cocina — saber exactamente que ingrediente va a donde y en que orden
-- **Escribir los supuestos**: La propuesta ahora incluye una lista de "Supuestos Tecnicos" — cosas que el chef CREE que son verdad pero que tu debes confirmar
-- **Diagramar los pasos complejos**: Para recetas complicadas, un diagrama de "quien hace que, cuando, y con que" es obligatorio
-
-> **La prueba de fuego**: Si la propuesta del chef dice "se conecta con el proveedor" pero no puede explicar COMO se conecta, con que datos, y que pasa si falla — necesita investigar mas.
+Las recetas no se leen todas al empezar. Solo se abre la que el especialista necesita para el plato que esta preparando.
 
 ---
 
-## La Capa CTO (CTO Strategy Layer) — v11.0
+## Los Dos Modos de Trabajo (SDD Pipeline)
 
-Imagina que antes tu restaurante tenia DOS manuales: uno para el equipo de cocina (como preparar los platos) y otro para el director del restaurante (como evaluar si un plato nuevo vale la pena ofrecerlo). El director leia su manual aparte y luego le daba instrucciones verbales al chef.
+En v15, hay DOS modos de trabajo. Piensa en ellos como dos tipos de pedido:
 
-**El problema**: A veces las instrucciones se perdian en la traduccion.
+### SPRINT — El pedido rapido (default)
 
-**La solucion (v11.0)**: Ahora hay UN solo manual que integra ambas perspectivas. El chef no solo sabe COMO cocinar, sino tambien sabe hacer las preguntas estrategicas del director.
-
-### Los 3 puntos de control (Gates)
-
-Antes de ciertos pasos, el chef debe pasar un "control de calidad estrategico":
-
-| Control | Cuando | Que verifica |
-|---------|--------|-------------|
-| **G0.5 — Entiendo el problema?** | Antes de proponer una solucion | Que todas las variantes del plato estan identificadas, que los ingredientes especiales estan mapeados, que se sabe quien lo va a comer |
-| **G1 — Vale la pena?** | Antes de empezar a planear | Que el costo de hacer el plato no supera lo que van a pagar por el, que hay suficientes clientes que lo pedirian |
-| **G2 — Listo para servir?** | Antes de cerrar | Que todos los controles de calidad pasaron, que la receta esta documentada, que si algo sale mal se puede corregir |
-
-### La nota del mesero (Gate Status) — v13.2
-
-Imagina que el mesero toma tu orden y te pregunta: "Pediste el pollo al horno con ensalada, sin gluten. Confirmas?" Tu no puedes pedirle otra cosa hasta que confirmes o cambies tu orden. **No se puede cambiar de opinion despues de que la cocina empieza a preparar el plato.**
-
-Eso es exactamente lo que hace el **Gate Status**: cuando el chef te presenta una propuesta o un plan de tareas, anota en su cuaderno "ESPERANDO CONFIRMACION". Hasta que no digas "dale" o "quiero cambiar algo", el chef NO empieza otra cosa. No importa si le pides algo diferente — primero hay que resolver la orden pendiente.
-
-**Por que esto importa**: Sin esta nota, a veces el chef se confundia. Decias "dale, continua" y el creia que le estabas pidiendo continuar con OTRA cosa en vez de aprobar la propuesta que te acababa de mostrar. Ahora, con la nota del mesero, el chef sabe exactamente en que estado esta cada pedido.
+Como pedir un sandwich en un cafe. No necesitas planificacion elaborada.
 
 ```
-Tu: "Quiero un plato de pollo" → Chef propone receta → Anota: ESPERANDO CONFIRMACION
-Tu: "Dale"                     → Chef confirma aprobacion → Borra nota → Avanza
-Tu: "Quiero cambiar la salsa"  → Chef entiende: es feedback a la propuesta → Ajusta
+Tu dices: "Necesito arreglar el boton de login"
+   |
+Gerente: INVESTIGA primero (obligatorio, siempre)
+   → Revisa el archivo del restaurante (Notion KB)
+   → Lee la receta relevante (skill)
+   → Verifica en internet que la receta este al dia
+   |
+Gerente contrata al especialista correcto
+   |
+El especialista COCINA (implementa)
+   |
+El inspector VERIFICA que todo funcione
+   |
+LISTO
 ```
 
-### Los consultores especializados (6 skills nuevos)
+**Sin gates formales.** No hay pausas para aprobacion. Pero la investigacion es OBLIGATORIA — nunca se salta.
 
-El chef ahora puede llamar a **consultores** cuando necesita ayuda especializada:
+### COMPLETO — El menu degustacion (cuando el director lo pide)
 
-| Consultor | Cuando lo llama | Que hace |
-|-----------|---------------|---------|
-| **Analista de procesos** | Cuando el plato tiene muchas variantes | Mapea TODOS los casos: el plato normal, el vegetariano, el sin gluten, el para ninos... |
-| **Diseñador de aprendizaje** | Cuando los proveedores cambian sus productos | Diseña como el chef aprende nuevos ingredientes sin romper recetas existentes |
-| **Ingeniero de datos** | Cuando hay que conectar con el sistema del proveedor | Diseña como llegan los pedidos y como se transforman |
-| **Especialista LLM** | Cuando se usa inteligencia artificial | Diseña como la IA evalua, con que confianza, y como detectar cuando se equivoca |
-| **Ingeniero de infraestructura** | Cuando hay que montar una nueva cocina | Diseña los contenedores, el despliegue, el monitoreo |
-| **Oficial de cumplimiento** | Cuando hay datos personales o financieros | Verifica que se cumplan las normas colombianas de proteccion de datos |
+Como planear un banquete. El director (CTO) escribe un documento de planificacion (PRD) con todo lo que necesita.
 
-> **La clave**: Estos consultores NO se llaman siempre — solo cuando el plato lo requiere. Un plato simple no necesita al consultor de IA. Pero un plato que usa ingredientes de otro pais SI necesita al oficial de cumplimiento.
+```
+El director escribe el PRD en Notion:
+   "Necesito un sistema de pagos con estas caracteristicas..."
+   |
+Gerente lee el PRD via Notion
+   |
+INVESTIGA (obligatorio)
+   |
+Especialistas EXPLORAN opciones (en paralelo)
+   |
+Especialista de pipeline produce el DISENO
+   |
+*** PAUSA: El gerente te muestra el diseno ***
+*** TU APRUEBAS o pides cambios ***
+   |
+Especialistas IMPLEMENTAN
+   |
+Inspector VERIFICA
+   |
+LISTO
+```
+
+**Un solo gate**: la aprobacion del diseno. No mas cadenas de 8 aprobaciones.
+
+### El ticket de pedido (PRD)
+
+El **PRD** (Product Requirements Doc) es como el ticket de pedido en un restaurante.
+Antes habia 5 documentos separados (investigacion, propuesta, especificaciones, diseno, tareas).
+Ahora hay UNO SOLO: el PRD. Todo lo que el especialista necesita saber esta ahi.
+
+El director lo escribe en Notion. El gerente lo lee automaticamente. Asi de simple.
 
 ---
 
-## Las Dos Cocinas (Multi-Plataforma) — v11.2
+## La Investigacion Antes de Todo (Research-First)
 
-Imagina que tu restaurante crece y ahora tienes DOS cocinas con roles distintos:
+Esta es la regla mas importante de v15: **SIEMPRE investigar antes de actuar**.
 
-| Cocina | Que es | Cuando se usa |
-|--------|--------|--------------|
-| **Cocina principal** (Claude Code) | La cocina completa del restaurante, con todo el equipamiento: hornos industriales, alarmas automaticas, equipo completo de chefs | Platos elaborados, banquetes, menus nuevos, todo lo que requiere planificacion seria y produccion |
-| **Cocina de ideas** (Antigravity Lite) | Una cocina satellite para experimentar: probar recetas nuevas, hacer bocetos de platos, preparaciones rapidas. Mismo recetario, sin alarmas automaticas | Brainstorming de menus, prototipos de platos, sandwiches, ensaladas, pedidos simples |
-
-**Lo importante**: Ambas cocinas usan las MISMAS recetas (skills). Si un chef inventa una receta nueva en la cocina de ideas, se copia al libro maestro y automaticamente esta disponible en la cocina principal. Y viceversa.
+No importa si es un pedido rapido (SPRINT) o un banquete (COMPLETO). Antes de que cualquier especialista empiece a cocinar, el gerente investiga:
 
 ```
-Cocina principal (Claude Code)  ←→  Libro maestro (batuta-dots)  ←→  Cocina de ideas (Antigravity Lite)
+1. Revisar el archivo del restaurante (Notion KB)
+   → "Alguien ya resolvio algo similar?"
+
+2. Leer la receta relevante (skill)
+   → "Tenemos un procedimiento para esto?"
+   → "La receta esta al dia o el ingrediente cambio?"
+
+3. Consultar el manual oficial del proveedor (docs)
+   → "El proveedor cambio algo recientemente?"
+
+4. Buscar en internet
+   → "Como lo resolvieron otros restaurantes?"
 ```
 
-**Por que dos cocinas?** Porque la cocina principal es para produccion seria pero tiene costo ($200/mes), mientras que la cocina de ideas es GRATIS y perfecta para explorar y prototipar. Usas la principal para lo que va a produccion y la de ideas para brainstorming y tareas mecanicas. Ambas trabajan en paralelo — como tener dos turnos trabajando al mismo tiempo.
+Esta cadena de investigacion se hace con **subagentes en paralelo**. 5 investigadores al mismo tiempo = rapido.
 
-**Diferencias tecnicas simplificadas**:
-- La cocina principal tiene alarmas automaticas (hooks) que le recuerdan al chef hacer el checklist. La cocina de ideas no tiene alarmas — tiene un letrero en la pared que dice "No olvides el checklist" (rules).
-- La cocina principal puede armar equipos temporales especiales (Agent Teams). La cocina de ideas tiene un coordinador que maneja varios chefs al mismo tiempo (Manager View).
-- Ambas comparten las mismas recetas base. Solo algunas recetas son exclusivas de la cocina principal.
+> **Regla de oro**: No existe tarea tan trivial que justifique saltar la investigacion. Asumir sin verificar es el error mas caro del restaurante.
+
+---
+
+## El Cuaderno del Turno (session.md)
+
+Imagina que hay un cuaderno en la cocina donde el turno actual anota TODO lo que esta pasando. No solo al final del turno — **en cada momento**.
+
+Eso es `.batuta/session.md`. Es la **unica fuente de verdad** del estado del proyecto. Responde tres preguntas:
+
+- **DONDE**: En que parte del proyecto estamos
+- **POR QUE**: Que estamos haciendo y por que
+- **COMO**: Que decisiones tomamos y que convenciones descubrimos
+
+**Diferencia con versiones anteriores**: Antes, el cuaderno se escribia solo al final del turno. Ahora se actualiza en CADA interaccion. Si el gerente toma una decision a las 3pm, queda anotada a las 3pm — no al cerrar.
+
+---
+
+## La Ficha de Estado (CHECKPOINT.md)
+
+Ademas del cuaderno, hay una **ficha de estado** pegada en la estacion de trabajo.
+
+```
+FICHA DE ESTADO
+---
+Que estoy haciendo: integrar pagos
+Paso actual: 3 de 7
+Lo que intente y fallo: endpoint /pay → error 401
+Lo que decidi: usar SDK en vez de llamada directa
+Lo que falta: configurar retry, probar con tarjeta test
+Descubrimiento: proveedor requiere IP fija para webhooks
+```
+
+Esta ficha existe porque a veces el contexto se satura (como un chef que pierde el hilo
+en un turno largo). La ficha le permite retomar exactamente donde estaba.
+
+Se escribe automaticamente antes de tareas largas y al cerrar el turno. Se inyecta automaticamente al abrir el siguiente turno. Nadie tiene que recordar hacerlo.
+
+---
+
+## El Director y su Oficina (Notion + CTO)
+
+El restaurante tiene un **director** (CTO) que planifica desde su oficina (Notion).
+El gerente (Claude Code) esta en la cocina. Se comunican por un sistema de mensajes (Notion MCP).
+
+El flujo:
+
+1. **El director escribe** el plan del nuevo plato (PRD) en su oficina (Notion)
+2. **El gerente lee** el plan automaticamente via el sistema de mensajes
+3. **El gerente contrata** a los especialistas y ejecuta
+4. **Los especialistas reportan** resultados
+5. **El gerente escribe** los descubrimientos de vuelta al archivo del director
+
+**Regla importante**: El gerente busca todo por NOMBRE, nunca por codigo. Si el proyecto se llama "batuta-portal", busca "batuta-portal" — no un numero de serie. Los numeros cambian; los nombres persisten.
+
+Si el sistema de mensajes no esta disponible, el gerente continua sin bloquear. El trabajo no se detiene porque la oficina este cerrada.
+
+---
+
+## Las Alarmas Automaticas (Hooks)
+
+El restaurante tiene alarmas automaticas que funcionan sin que nadie las active:
+
+| Alarma | Cuando suena | Que hace |
+|--------|-------------|---------|
+| **Alarma de apertura** (SessionStart) | Al empezar el turno | Lee el cuaderno del turno anterior + la ficha de estado + el inventario de recetas |
+| **Alarma de cierre** (Stop) | Al terminar el turno | Escribe la ficha de estado + actualiza el log + envia descubrimientos al archivo del director |
+| **Alarma de sub-agente** (SubagentStop) | Cuando un especialista contratado termina | Guarda su reporte en el historial del equipo |
+
+Las alarmas son deterministicas — funcionan solas, sin que nadie recuerde activarlas.
 
 ---
 
@@ -250,680 +268,102 @@ En un restaurante organizado, cada cosa tiene su lugar:
 
 | Que es | Donde va | Ejemplo |
 |--------|---------|---------|
-| **Especias que solo usa un plato** | En la estacion de ese plato | La salsa secreta del ramen va en la estacion de ramen |
-| **Especias que usan 2+ platos** | En el estante compartido | La sal y la pimienta van en el estante central |
-| **Equipos de toda la cocina** | En el area principal | El horno, la nevera, el lavaplatos — hay uno solo para todos |
+| Especias que solo usa un plato | En la estacion de ese plato | La salsa secreta del ramen |
+| Especias que usan 2+ platos | En el estante compartido | Sal y pimienta |
+| Equipos de toda la cocina | En el area principal | Horno, nevera, lavaplatos |
 
-En codigo, esto se traduce a:
-
-| Quien lo usa | Donde va |
-|---|---|
-| Solo una funcionalidad | Dentro de esa funcionalidad |
-| Dos o mas funcionalidades | En una carpeta compartida |
-| Toda la aplicacion | En una carpeta central |
-
-**La regla de oro**: NUNCA tires todo en un mismo cajon. Cada cosa en su lugar segun QUIEN la usa.
+**La regla**: NUNCA tires todo en un mismo cajon. Cada cosa en su lugar segun QUIEN la usa.
 
 ---
 
-## El Detector de Recetas Faltantes (Skill Gap Detection)
+## El Inventario de Recetas (Sync)
 
-Imagina que un cliente pide "sushi" pero tu restaurante nunca ha hecho sushi.
+Cuando un especialista inventa una receta nueva en un proyecto, puede compartirla:
 
-Un chef malo diria: "Bueno, voy a intentar" y te serviria algo horrible.
+```
+Especialista crea receta nueva de sushi
+   |
+/batuta-sync → opcion 2: "subir al hub"
+   |
+La receta llega al libro maestro (batuta-dots)
+   |
+Todos los proyectos futuros pueden usarla
+```
 
-El chef de Batuta dice:
+Y al reves — si una receta del libro maestro no esta en tu proyecto:
 
-> "El cliente quiere sushi, pero yo no tengo la receta de sushi.
-> Sin receta, puedo hacerlo pero no va a seguir nuestros estandares.
->
-> Te propongo:
-> 1. Investigo como se hace sushi profesionalmente y creo la receta (~5 min)
-> 2. Igual, pero hago una receta generica para cualquier restaurante
-> 3. Lo intento sin receta y documentamos despues
->
-> Que prefieres?"
-
-Esto es lo que pasa AUTOMATICAMENTE cuando Claude necesita usar una tecnologia para
-la que no tiene un skill documentado. Se detiene, te pregunta, y si quieres, investiga
-y aprende antes de empezar.
-
-**Por que esto importa**: Un skill de 5 minutos evita horas de arreglos despues.
+```
+/batuta-sync → opcion 3: "traer del hub"
+   |
+Seleccionas la receta que necesitas
+   |
+Se copia a tu proyecto
+```
 
 ---
 
-## El Sub-Chef (Sub-Agente)
+## El Control de Calidad por Capas (Validation Pyramid)
 
-El chef principal NO hace todo el mismo. Tiene sub-chefs para el proceso de planificacion:
+Antes de servir un plato, pasa por 5 controles:
 
-| Sub-chef | Que hace |
-|----------|---------|
-| Sub-chef de investigacion | Explora ingredientes y tecnicas disponibles |
-| Sub-chef de propuestas | Escribe la propuesta del plato nuevo |
-| Sub-chef de recetas | Escribe las especificaciones exactas |
-| Sub-chef de ejecucion | Cocina el plato (escribe el codigo) |
-| Sub-chef de calidad | Prueba que todo este bien |
+```
+Nivel 5: TU pruebas el plato (humano obligatorio)
+Nivel 4: Un critico lo evalua (humano experto)
+Nivel 3: Se prueba el plato completo junto
+Nivel 2: Se prueba cada ingrediente por separado
+Nivel 1: Se verifica que los ingredientes basicos sean correctos
+```
 
-El chef principal SOLO coordina. Le dice al sub-chef: "Investiga esto" y el sub-chef
-vuelve con un reporte. El chef principal nunca toca una olla.
-
-**Diferencia entre sub-chefs y especialistas**: Los sub-chefs manejan *fases del proceso*
-(investigar, proponer, ejecutar). Los especialistas manejan *dominios de conocimiento*
-(backend, datos, calidad). Un especialista puede ser invocado DURANTE la fase de ejecucion
-del sub-chef — por ejemplo, cuando el sub-chef de ejecucion necesita escribir codigo de API,
-el chef principal llama al especialista de backend (chef de linea) para que lo haga.
+Los niveles 1-3 los hace el inspector automaticamente. Los niveles 4-5 SIEMPRE requieren un humano. Tu tienes la ultima palabra antes de servir.
 
 ---
 
-## Los Jefes de Area y Especialistas (Scope + Domain Agents)
+## El Glosario: Restaurante → Batuta
 
-Pero el chef principal no le habla directamente a cada sub-chef. Tiene **jefes de area**
-que coordinan grupos de sub-chefs:
-
-| Jefe de area | Que coordina | Sub-chefs a su cargo |
-|-------------|-------------|----------------------|
-| **Jefe de Cocina** (pipeline) | Todo el proceso de crear platos nuevos | Los 9 sub-chefs del proceso SDD |
-| **Jefe de Almacen** (infra) | Organizacion, inventario, seguridad, recetas | Organizacion de ingredientes (scope-rule), creacion de recetas (ecosystem-creator), coordinador de equipo (team-orchestrator), protocolo de higiene (security-audit) |
-| **Jefe de Calidad** (observability) | Ciclo de sesion | (sin sub-chefs activos actualmente) |
-
-Los sub-chefs (skills) se asignan automaticamente a cada jefe de area basandose en su descripcion — no hace falta asignarlos manualmente.
-
-Ademas de los 3 jefes de area (pipeline, infra, observability) que manejan la cocina central, hay 3 **especialistas** (backend, quality, data) que se envian a las sucursales segun lo que cocinen. Los jefes de area siempre estan en la cocina central; los especialistas viajan a donde se necesiten.
-
-| Especialista | Que hace | Cuando se activa automaticamente |
-|-------------|---------|----------------------------------|
-| **Chef de linea** (backend-agent) | Sabe cocinar platos salados (APIs, autenticacion, bases de datos) | Cuando el pedido menciona "API", "login", "base de datos", "ORM" |
-| **Inspector de calidad** (quality-agent) | Revisa que cada plato cumpla estandares antes de servirse | Siempre presente — la calidad no es opcional |
-| **Sous chef de reposteria** (data-agent) | Especialista en datos, transformaciones y recetas con IA | Cuando el pedido menciona "datos", "ETL", "inteligencia artificial", "RAG" |
-
-### La delegacion automatica
-
-Lo importante es que el chef principal **detecta automaticamente** a que especialista
-llamar. No necesitas decirle "usa al chef de linea" — simplemente describes lo que
-necesitas y el chef principal identifica las pistas:
-
-```
-Tu dices: "Necesito un endpoint de login con JWT"
-   ↓
-Chef principal detecta: "API" + "autenticacion" → Chef de linea (backend-agent)
-   ↓
-Chef de linea trabaja EN SU PROPIA COCINA (subproceso autonomo)
-   ↓
-Resultado vuelve al chef principal → te lo presenta
-```
-
-Cada especialista trabaja en su propia cocina temporal. Esto significa que:
-- El chef principal NO se llena la cabeza con los detalles de cada especialidad
-- Cada especialista carga solo lo que necesita para SU trabajo
-- Es mas rapido y mas barato (menos "memoria" usada)
-
-**Por que es mejor asi?** Porque el chef principal no necesita recordar todos los recetarios.
-Solo necesita saber 3 numeros de telefono (jefes de area) y detectar automaticamente que
-especialista necesita segun las pistas del pedido. Cada jefe de area conoce en detalle
-las recetas de su area, y cada especialista domina su tipo de plato.
+| En el restaurante | En Batuta | Que hace |
+|-------------------|-----------|---------|
+| **Gerente** | Main Agent + CLAUDE.md (105 lineas) | Recibe pedidos, contrata especialistas. NUNCA cocina |
+| **Contrato de especialista** | Archivo .md en .claude/agents/ | Documento permanente que define que sabe hacer el especialista |
+| **Protocolo de contratacion** | agent-hiring skill | Como el gerente decide a quien contratar |
+| **Especialistas** (5) | Agents (pipeline, backend, data, quality, infra) | Expertos que hacen el trabajo. Cada uno con sus recetas |
+| **Recetas** (43) | Skills (SKILL.md) | Instrucciones especificas. Pertenecen a los especialistas |
+| **Ticket de pedido** | PRD (Product Requirements Doc) | El unico documento de planificacion |
+| **Pedido rapido** | SPRINT mode (default) | Research → Apply → Verify. Sin gates |
+| **Menu degustacion** | COMPLETO mode | Research → Explore → Design (aprobacion) → Apply → Verify |
+| **Investigar antes de cocinar** | Research-First chain | Notion → skill → docs → web. OBLIGATORIO siempre |
+| **Cuaderno del turno** | session.md | Fuente unica de verdad. Se actualiza en cada interaccion |
+| **Ficha de estado** | CHECKPOINT.md | Seguro anti-confusion. Paso actual, intentos, gotchas |
+| **Oficina del director** | Notion via MCP | Donde el CTO planifica. Busqueda por nombre, nunca IDs |
+| **Alarmas automaticas** | Hooks (SessionStart, Stop, SubagentStop) | Acciones obligatorias que nadie puede saltarse |
+| **Organizacion de cocina** | Scope Rule | Donde va cada cosa segun quien la usa |
+| **Control de calidad** | AI Validation Pyramid | 5 niveles. Los primeros 3 automaticos, los ultimos 2 humanos |
 
 ---
 
-## El Checklist Antes de Cocinar (Execution Gate)
-
-Imagina que antes de empezar CUALQUIER plato, el chef revisa un checklist:
-
-```
-Antes de cocinar:
- ✓ Tengo todos los ingredientes? (skill check)
- ✓ Se donde va a ir este plato en el menu? (scope/location)
- ✓ Cuantos platos diferentes voy a afectar? (impacto)
- ✓ Hay una receta aprobada para esto? (SDD check)
- → Si todo esta bien: "Voy a preparar {plato} en {estacion}. Procedo?"
-```
-
-Este checklist es el **Execution Gate**. Se ejecuta ANTES de cada cambio de codigo.
-No se puede saltar. Tiene dos modos:
-
-| Modo | Cuando | Ejemplo |
-|------|--------|---------|
-| **Rapido** | Un solo cambio simple | "Modifico el archivo X. Procedo?" |
-| **Completo** | Multiples cambios o algo nuevo | Lista de archivos + impacto + donde van |
-
-**Por que esto importa**: Es la diferencia entre un chef que verifica la receta antes
-de cocinar y uno que improvisa. El checklist previene errores ANTES de que ocurran.
-
----
-
-## Probando las Recetas (Skill Eval) — v13
-
-Antes, probabas un plato una vez y confiabas en tu instinto. Ahora hay un **protocolo de degustacion**: le das la misma receta a dos cocineros (uno con el manual de estilo y otro sin el) y comparas los resultados. Si el que tiene el manual no produce algo notablemente mejor, el manual necesita mejorar.
-
-Esto es lo que hace el sistema de evaluacion de recetas (skill-eval). Tiene 3 modos:
-
-| Modo | Que hace | Analogia |
-|------|---------|----------|
-| **Evaluar** | Ejecuta una tarea con la receta y califica el resultado | Un juez de cocina prueba el plato y le pone nota segun criterios claros |
-| **Mejorar** | Lee los resultados de la evaluacion y propone cambios a la receta | El juez le dice al chef: "la sal esta bien, pero le falta acido — agrega limon en el paso 3" |
-| **Benchmark** | Evalua MUCHAS recetas al mismo tiempo y genera un reporte de salud | Una auditoria general de la cocina: cuales recetas son excelentes, cuales necesitan trabajo |
-
-El protocolo de degustacion usa un formato especial (SKILL.eval.yaml) que define: que criterios de calidad tiene cada receta, que tareas de prueba se usan, y como se califica. Es como tener una ficha de degustacion estandar para todo el restaurante.
-
-**Por que esto importa**: Antes solo sabias si una receta era buena por intuicion. Ahora tienes datos: "esta receta mejora la calidad del plato en un 35% comparado con cocinar sin ella". Si una receta no aporta valor medible, se mejora o se retira.
-
----
-
-## El Inventario Automatico (Sync)
-
-Imagina que cada vez que un chef agrega una receta nueva al libro, el sistema
-automaticamente actualiza:
-1. El menu del restaurante (para los clientes)
-2. La lista de recetas de cada jefe de area (para los sub-chefs)
-
-Nadie tiene que recordar hacerlo. Es automatico.
-
-El inventario automatico ahora tambien asigna especialistas (agents) segun lo que el proyecto necesite cocinar. Cuando se inicializa un proyecto (`sdd-init`), el sistema detecta que tipo de cocina se va a hacer (APIs, datos, IA) y envia a los especialistas correspondientes. El inspector de calidad (quality-agent) siempre se asigna — porque la calidad no es opcional.
-
-Ademas, `setup.sh --all` tambien instala las **alarmas automaticas** (hooks) que
-hacen que el checklist y la bitacora funcionen automaticamente.
-
-Eso es lo que hace **sync.sh**: cuando se crea o modifica una receta (SKILL.md),
-un script lee todas las recetas y valida el inventario automaticamente.
-
-```
-Chef crea nueva receta de sushi
-   ↓
-sync.sh lee TODAS las recetas
-   ↓
-Actualiza el menu general (CLAUDE.md)
-   ↓
-Actualiza la lista del jefe de cocina (pipeline-agent)
-   ↓
-Listo — todos saben que ahora hay sushi disponible
-```
-
-**Por que esto importa**: Sin inventario automatico, alguien tendria que recordar
-actualizar el menu cada vez que se agrega una receta. Con sync.sh, es imposible
-que una receta quede "invisible" — siempre aparece en el inventario.
-
----
-
-## La Actualizacion de Recetas (Auto-Update SPO)
-
-Imagina que en una sucursal del restaurante, un chef inventa una receta nueva increible
-para "tacos de cochinita". Esa receta deberia llegar a TODAS las sucursales.
-
-Eso es lo que hace el Auto-Update SPO:
-
-```
-Sucursal A inventa receta → Un solo boton → Se copia al libro maestro
-→ Todas las sucursales la tienen
-```
-
-Ahora es un solo paso: el boton de publicar (`sync.sh --push`) toma las recetas nuevas del proyecto, las copia al libro maestro, las adapta para ambas cocinas (Claude Code y Antigravity), y las publica. Un solo boton en vez de tres pasos separados.
-
-Al final de cada proyecto, Claude te pregunta:
-
-> "Durante este proyecto creamos estas recetas nuevas:
-> - Receta de sushi (Temporal.io)
-> - Receta de tempura (n8n workflows)
->
-> Quieres que las mande al libro maestro para que otros proyectos las tengan?"
-
----
-
-## El Ciclo de Vida de un Especialista (Agent Lifecycle)
-
-Los especialistas (domain agents) no aparecen de la nada. Tienen un ciclo de vida completo, como contratar personal para una franquicia de restaurantes:
-
-```
-1. CREAR       → El restaurante necesita un nuevo tipo de especialista
-                  (ej: "necesitamos un chef de sushi")
-   ↓
-2. CLASIFICAR  → Es un especialista que sirve para CUALQUIER sucursal?
-                  O solo para ESTA sucursal?
-   ↓
-3. SINCRONIZAR → Si sirve para todas: se agrega al manual de franquicia
-                  (el hub) y se distribuye a todas las sucursales
-   ↓
-4. PROVISIONAR → Cuando se abre una sucursal nueva, se asignan los
-                  especialistas que necesita segun su tipo de cocina
-   ↓
-5. DEVOLVER    → Si una sucursal inventa un gran especialista, puede
-                  proponerlo al manual de franquicia para que todos
-                  lo tengan (siempre con tu autorizacion)
-```
-
-### Cuantos especialistas puede haber?
-
-| Tipo | Cuantos | Regla |
-|------|---------|-------|
-| **Jefes de area** (pipeline, infra, calidad) | Siempre 3 | Son la estructura fija del restaurante — no crece |
-| **Especialistas** (backend, quality, data) | Entre 3 y 8 | Solo se agrega uno nuevo cuando hay un tipo de cocina que NADIE existente sabe hacer (ej: cocina molecular, cocina asiatica) |
-| **Especialistas de sucursal** | Los que se necesiten | Se quedan en esa sucursal, no se comparten a menos que demuestren ser utiles para todas |
-
-**La regla de oro**: No contratar por contratar. Un nuevo especialista solo se justifica cuando (1) tiene una tecnica propia diferente a los demas, (2) maneja al menos 3 recetas, y (3) tiene un area clara que no se cruza con los otros.
-
----
-
-## El Cuaderno del Turno (Continuidad de Sesion)
-
-Imagina que en el restaurante hay tres turnos de chefs. Si el chef del turno de la mañana
-preparo una salsa especial y dejo notas de como le quedo, el chef de la tarde puede
-continuar sin empezar de cero.
-
-Eso es lo que hace `.batuta/session.md` — es el **cuaderno del turno**. Cada vez que
-Claude termina un trabajo importante, anota:
-
-- Que estaba haciendo
-- Que decisiones tomo
-- Que le falta por hacer
-- Que convenciones descubrio del proyecto
-- **Estado del gate**: Hay alguna orden pendiente de confirmar? (la "nota del mesero")
-
-La proxima vez que abras Claude, el lee el cuaderno del turno y sabe exactamente
-donde quedaste. Ya no necesitas repetirle "estabamos haciendo X con Y". Y si habia
-una propuesta esperando tu aprobacion, el chef lo sabe inmediatamente — no te pide
-otra cosa hasta que resuelvas esa orden pendiente.
-
----
-
-## Las Dos Ventanas: El Director y la Cocina (v13.3)
-
-Imagina que el restaurante crece y ahora tiene un **director general** (CTO) que planifica
-los menus y un **jefe de cocina** (Claude Code) que los ejecuta. No trabajan en la misma
-oficina — el director esta en su despacho pensando estrategia, y el jefe de cocina esta
-en la cocina con las manos en la masa.
-
-El flujo funciona asi:
-
-1. **El director piensa**: Analiza el problema, consulta con especialistas (Product Designer,
-   Process Analyst, Recursion Designer), y diseña la solucion completa.
-
-2. **El director corta en porciones**: En lugar de mandar toda la receta de golpe, la divide
-   en "porciones" (slices). Cada porcion es un plato que se puede servir solo — no depende
-   de los otros para funcionar.
-
-3. **El director manda UNA porcion**: Le da al jefe de cocina una "directiva" — un papel
-   con instrucciones claras que incluye un bloque especial llamado `batuta-config` que dice
-   "esta es la porcion 1 de 3, y el plato esta listo cuando pasa este criterio".
-
-4. **El jefe de cocina ejecuta**: Sigue su proceso normal (SDD Pipeline), cocina el plato,
-   lo prueba, y reporta: "Porcion 1 de 3 lista. Criterio: cumplido."
-
-5. **JNMZ lleva el reporte al director**: El humano es el puente. Toma el reporte de la
-   cocina y se lo lleva al director, que decide si mandar la siguiente porcion.
-
-**Por que dos ventanas en lugar de una?** Porque cuando el director y el jefe de cocina
-trabajan en la misma sala, el jefe de cocina empieza a cocinar antes de que el director
-termine de pensar. El resultado: platos a medio hacer que no conectan entre si. Separar
-las funciones evita ese problema.
-
-**Como sabe el chef que es una orden del director?** Por el bloque `batuta-config` en la
-directiva — un formato especifico que solo el director usa. Si un cliente (usuario directo)
-pide algo sin ese formato, el chef sabe que es un pedido normal, no una directiva del CTO.
-
-**El cuaderno del turno como puente**: session.md ahora tiene una seccion `## Slice Status`
-que dice en que porcion esta y si el criterio se cumplio. El director lee esto para decidir
-que mandar despues.
-
----
-
-## El Chef Consulta el Archivo Antes de Inventar (Research Gate) — v14.0
-
-Imagina que un cliente te pide "una tarta de queso al horno". Antes de inventarte una receta, un chef profesional primero consulta:
-
-1. **¿Ya tenemos esta receta en nuestro recetario interno?** (Notion KB)
-2. **¿Alguien la hizo antes en otra cocina reconocida?** (busqueda en internet)
-
-Si la receta ya existe — sea en tu recetario o en un libro de cocina de confianza — es mucho mas rapido adaptarla que inventarla desde cero. Y probablemente mejor.
-
-Esto es lo que hace el **Research Gate** (v14.0): antes de proponer como resolver algo, el chef revisa el archivo de la empresa y busca en internet si ya hay una solucion probada.
-
-**¿Por que importa?** Porque inventar algo desde cero cuando la solucion ya existe:
-- Cuesta tiempo extra (lo construyes en vez de adaptarlo)
-- Puede ser inferior (la solucion existente tiene mas pruebas)
-- Es trabajo que ya se hizo antes, quizas incluso tu mismo
-
-> **La regla**: "¿Alguien ya resolvio esto?" siempre va ANTES de "¿Como lo resuelvo yo?"
-
----
-
-## El Director Pre-Cocina (CTO Artifact Detection) — v14.0
-
-Imagina que el director del restaurante tiene su propia cocina de pruebas en casa. A veces, antes de mandar las instrucciones al jefe de cocina, el director ya preparo algunos ingredientes: ya investigo el problema, ya hizo el boceto de la receta, ya definio los pasos.
-
-Antes, el jefe de cocina llegaba a la cocina y REPETIA todo ese trabajo desde cero porque no sabia que el director ya lo habia hecho.
-
-**La solucion (v14.0)**: El jefe de cocina ahora DETECTA si el director ya preparo algo. Si encuentra ingredientes pre-preparados en la despensa, los usa — no los repite. Solo empieza a trabajar desde el punto donde el director se detuvo.
-
-```
-Director prepara en su cocina de ideas:
-  ✓ Investigacion del problema (explore.md)
-  ✓ Boceto de receta (proposal.md)
-  ✗ Receta formal (spec.md) — no lo hizo aun
-  ✗ Plan de coccion (tasks.md) — no lo hizo aun
-
-Jefe de cocina detecta: "Tengo investigacion y boceto. Empiezo desde la receta formal."
-```
-
-**¿Cómo sabe el chef que es del director?** El director deja una nota especial (`batuta-config`) que dice "estos ingredientes los prepare yo". Sin esa nota, el chef no asume — verifica lo que hay en la despensa.
-
----
-
-## Las Alarmas Automaticas (Native Hooks) — v14.1
-
-Imagina que el restaurante tiene un sistema de alarmas automaticas que funcionan sin que nadie las active:
-
-| Alarma | Cuando suena | Que hace |
-|--------|-------------|---------|
-| **Alarma de apertura** (SessionStart) | Cuando el chef empieza su turno | Lee el cuaderno del turno anterior y la ficha de estado actual |
-| **Alarma de cierre** (Stop) | Cuando el chef termina su turno | Ejecuta 3 pasos OBLIGATORIOS (ver abajo) |
-
-**El sistema de cierre de 3 pasos** (v14.1 — todos obligatorios, sin excepcion):
-
-```
-1. Escribe la FICHA DE ESTADO del turno actual
-   ↓
-2. Si hay lecciones importantes → las guarda en el libro de lecciones del restaurante
-   ↓
-3. Si se hizo trabajo importante → actualiza el cuaderno del turno para el proximo chef
-```
-
-**¿Por que esto importa?** Antes, el chef tenia que "acordarse" de hacer este proceso. Ahora las alarmas lo obligan — es imposible saltarselo. Es como tener un sistema contra incendios que funciona solo.
-
----
-
-## La Ficha de Estado (Checkpoint Anti-Compaction) — v14.1
-
-Imagina que en un turno largo, el chef de repente tiene un "momento de confusion" — como si perdiera el hilo de lo que estaba haciendo. Esto pasa en la vida real cuando el contexto es muy complejo.
-
-Antes de Batuta v14.1: si el chef tenia ese momento de confusion, perdia todo el avance del turno. No sabia en que paso iba, que habia intentado, que habia descubierto.
-
-**La solucion**: La **Ficha de Estado** (`.batuta/CHECKPOINT.md`).
-
-Funciona como la hoja de control que los chefs profesionales tienen pegada en la estacion de trabajo:
-
-```
-FICHA DE ESTADO — Turno actual
-────────────────────────────────
-Que estoy haciendo: integrar el sistema de pagos
-Paso actual: 3 de 7 — configurando el webhook
-Lo que intente y salio mal:
-  - Usar el endpoint /pay directamente → error 401
-Lo que decidi y por que:
-  - Usar SDK en vez de llamada directa → mas estable
-Lo que me falta:
-  [ ] Configurar el retry
-  [ ] Probar con tarjeta de prueba
-Descubrimientos importantes:
-  - El proveedor requiere IP fija para webhooks en produccion
-```
-
-**¿Cuando se escribe?**
-1. **SIEMPRE** cuando el turno termina (la alarma de cierre la escribe sin excepciones)
-2. **Obligatoriamente** antes de hacer 3 o mas acciones seguidas sin parar (regla MUST)
-
-**¿Como se recupera?** La alarma de apertura del siguiente turno la inyecta automaticamente. El chef no tiene que buscarla — ya esta ahi cuando empieza.
-
----
-
-## El Libro de Lecciones Aprendidas (Closed RAG Loop) — v14.1
-
-Imagina que cada vez que un chef descubre algo importante — una trampa en una receta, un truco que funciona, un error comun — lo escribe en un **libro de lecciones** que todos los chefs del restaurante pueden consultar.
-
-La diferencia con un cuaderno normal: este libro es **indexado y buscable**. Cuando un chef nuevo llega con un problema similar, puede buscar en el libro y encontrar la leccion del chef anterior.
-
-Antes, este libro no existia. Los chefs descubrian las mismas trampas una y otra vez.
-
-**Como funciona ahora (v14.1)**:
-
-```
-Chef termina su turno
-       ↓
-La alarma de cierre revisa la Ficha de Estado:
-"¿Hay algo no trivial aqui? ¿Un gotcha? ¿Una decision importante?"
-       ↓
-Si si → lo escribe en Notion (el libro de lecciones del restaurante)
-       ↓
-La proxima vez que otro chef investiga el mismo tipo de problema:
-"¿Tenemos lecciones sobre esto en el libro?" → Encuentra la nota → Evita el error
-```
-
-| Que se guarda | Que no se guarda |
-|---------------|-----------------|
-| "El proveedor X requiere IP fija para webhooks" | "Estaba en el paso 3 de 7" |
-| "pymssql no soporta async — usar aiomssql" | "Eran las 3pm cuando termine" |
-| "Si el token expira, la libreria devuelve 200 con error en el body" | "Habia 5 archivos en la carpeta" |
-
-**La analogia completa**:
-
-```
-Turno actual → Ficha de Estado (.batuta/CHECKPOINT.md)
-       ↓
-Si hay lecciones → Libro de lecciones (Notion KB)
-       ↓
-Proximo proyecto → Chef consulta el libro antes de proponer
-       ↓
-El conocimiento no se pierde entre turnos
-```
-
-Este ciclo es lo que se llama un **"RAG barato"**: en vez de pagar por un sistema de IA caro para recordar cosas, usamos Notion (que ya tenemos) como biblioteca consultable. El chef (Claude) escribe automaticamente, y el siguiente chef consulta automaticamente.
-
----
-
-## El Equipo Temporal (Agent Teams) — v7
-
-Hasta ahora, el chef principal trabaja con sus sub-chefs uno a la vez: le pide algo a uno, espera la respuesta, y luego le pide algo al siguiente. Funciona bien para el dia a dia.
-
-Pero imagina que llega un pedido ENORME: un banquete para 200 personas, con 5 platos diferentes, postre, y decoracion especial. Un solo chef coordinando sub-chefs uno por uno NO da abasto.
-
-**La solucion**: El chef principal puede armar un **equipo temporal** — como contratar cocineros extra para el banquete.
-
-### Los 3 niveles de trabajo
-
-| Nivel | Analogia | Cuando se usa |
-|-------|----------|---------------|
-| **Nivel 1: Solo** | El chef (router) resuelve pedidos simples el mismo | Arreglar un error, responder una pregunta, editar algo simple |
-| **Nivel 2: Especialistas** | El chef detecta el tipo de pedido y llama al especialista correcto (backend, data, quality) | El especialista trabaja en su propia cocina y devuelve el resultado |
-| **Nivel 3: Equipo temporal** | El chef arma un squad completo con cocina propia | Cada cocinero tiene su propia estacion, su propio espacio, y se comunican entre ellos — para banquetes grandes |
-
-### Como funciona el equipo temporal
-
-```
-1. PLANEAR    → El chef evalua: "Esto es grande, necesito equipo"
-2. ARMAR      → Elige cocineros segun el menu (uno para carnes, otro para postres)
-3. ASIGNAR    → Reparte las tareas: "Tu haces el pollo, tu el pastel"
-4. COCINAR    → Cada cocinero trabaja EN PARALELO en su estacion
-5. VERIFICAR  → Un inspector revisa cada plato antes de servirlo
-6. CONSOLIDAR → El chef junta todo y presenta el banquete completo
-```
-
-### Las reglas del equipo
-
-- **Cada cocinero tiene su propia cocina**: No se estorban entre ellos
-- **Se comunican por notas**: "Ya termine la salsa, la dejo en el refrigerador"
-- **Hay un inspector automatico**: Cuando alguien termina un plato, el inspector verifica que siga la receta y que los ingredientes esten en su lugar
-- **Solo el chef principal anota en la bitacora**: Para evitar que todos escriban al mismo tiempo y hagan un desorden
-- **El chef puede pedirle al cocinero que PLANEE antes de cocinar**: Como un Execution Gate para cada miembro del equipo
-
-### Ejemplo practico
-
-Imagina que quieres construir una app con tres partes: la pantalla que ve el usuario, los calculos internos, y la conexion con otra app.
-
-**Sin equipo temporal**: El chef hace las tres cosas UNA POR UNA. Primero la pantalla, luego los calculos, luego la conexion. Toma 3x tiempo.
-
-**Con equipo temporal**: El chef arma tres cocineros, cada uno hace una parte AL MISMO TIEMPO. El chef coordina y al final junta todo. Toma ~1x tiempo (con un poco extra de coordinacion).
-
-### Los jefes de area se convierten en "manuales de entrenamiento"
-
-Los jefes de area (pipeline, infra, calidad) ahora tienen un doble rol:
-
-- **Cuando trabaja solo el chef**: Funcionan como siempre — guias de referencia
-- **Cuando hay equipo temporal**: Se convierten en el "manual de entrenamiento" para cada cocinero nuevo. El chef le da el manual al cocinero y este sabe exactamente que hacer
-
-> **Importante**: El equipo temporal es como contratar extras para un banquete — se arma para la tarea grande y cuando termina, cada quien se va. No es permanente. Para tareas normales, el chef sigue trabajando solo o con sus sub-chefs de siempre.
-
----
-
-## Las Alarmas Automaticas (Native Hooks) — v14.1
-
-> Ver la seccion completa en **"Las Alarmas Automaticas (Native Hooks) — v14.1"** mas arriba, que incluye el sistema de 3 pasos obligatorios del cierre.
-
-En resumen: las alarmas obligan al chef a seguir el proceso sin que pueda saltarselo. La alarma de apertura inyecta el cuaderno del turno anterior y la ficha de estado. La alarma de cierre escribe la ficha de estado, guarda lecciones en Notion, y actualiza el cuaderno — todo obligatorio, sin excepciones.
-
----
-
-## El Control de Calidad por Capas (AI Validation Pyramid) — v8
-
-Imagina que antes de servir un plato, pasa por 5 controles de calidad, como una linea de inspeccion en una fabrica:
-
-```
-Nivel 5: TU pruebas el plato (obligatorio — el humano tiene la ultima palabra)
-Nivel 4: Un critico gastronomico lo evalua (humano experto o chef senior)
-Nivel 3: Se prueba que el plato completo funcione junto (integracion)
-Nivel 2: Se prueba cada ingrediente por separado (sabor, frescura)
-Nivel 1: Se verifica que los ingredientes basicos sean correctos (no estan vencidos)
-```
-
-**La regla clave**: Los niveles 1-3 los hace el chef automaticamente (rapido). Los niveles 4-5 SIEMPRE requieren un humano. No existe la calidad 100% automatica — tu siempre tienes la ultima palabra antes de servir.
-
----
-
-## La Comanda Precisa (Contract-First Protocol) — v9
-
-En un restaurante con equipo temporal, el error mas comun es que el chef le dice al cocinero "haz el pollo" y el cocinero hace algo completamente diferente a lo esperado. La solucion? **Comandas precisas**.
-
-Antes de que el cocinero empiece, el chef le entrega una comanda que dice:
-
-```
-COMANDA PARA COCINERO A
-- Recibiras: la receta del pollo al horno, los ingredientes ya pesados
-- Debes producir: el pollo listo, en bandeja #3, con salsa aparte
-- Tu estacion: solo usas el horno #2 y la mesa 4 (no toques nada mas)
-```
-
-Esto evita tres problemas clasicos:
-1. **Producto diferente al esperado**: La comanda dice exactamente que se espera
-2. **Cocineros estorbandose**: Cada uno tiene su estacion asignada — no se cruzan
-3. **Platos incompletos**: Antes de servir, el chef compara el plato con la comanda. Si falta la salsa, se devuelve
-
-> **Tip**: Piensa en las comandas como los contratos de un proyecto — si todo esta escrito desde el principio, nadie puede decir "yo entendi otra cosa".
-
----
-
-## Los Menus Especializados (Team Templates) — v9
-
-Imagina que el restaurante tiene menus pre-armados para diferentes tipos de eventos:
-
-| Evento | Menu | Cocineros |
-|--------|------|-----------|
-| **Boda elegante** (App web SaaS) | Menu de 5 tiempos con decoracion | Chef de carnes, pastelero, decorador |
-| **Catering de oficina** (Microservicio API) | Sandwiches + ensaladas + bebidas | Chef rapido, ayudante de calidad, empacador |
-| **Food truck** (Automatizacion n8n) | Tacos + aguas frescas | Taquero, ayudante |
-| **Curso de cocina** (Agente IA) | Clase practica paso a paso | Instructor, ayudante de seguridad, critico |
-| **Banquete industrial** (Pipeline de datos) | Comida para 500+ personas | Chef de linea, inspector de calidad, logistica |
-| **Renovar el menu** (Refactoring) | Modernizar platos clasicos sin perder sabor | Analista de recetas, dos cocineros, critico |
-
-Estos menus se guardan en `teams/templates/` y el chef solo tiene que elegir el que mas se parece a lo que necesitas.
-
----
-
-## El Manual del Mesero Experimentado (Playbook) — v9
-
-El **playbook** (`teams/playbook.md`) es como el manual que le das a un mesero nuevo para que sepa como funciona todo sin tener que preguntarle a alguien cada 5 minutos:
-
-- **Cuando pedir equipo extra**: Solo para eventos grandes. Para un sandwich, no necesitas 3 cocineros
-- **Errores que todos cometen**: No armar equipo para tareas simples, no dar comandas claras, dejar que dos cocineros usen la misma olla
-- **Como elegir el menu correcto**: Segun el tipo de evento y cuantos invitados hay
-- **Como crear un menu nuevo**: Si ningun menu existente sirve para tu evento
-
----
-
-## El Protocolo de Higiene (Security-Audit) — v9
-
-Todo restaurante serio tiene un protocolo de higiene. En la cocina digital, la "higiene" es la **seguridad**:
-
-| Inspeccion | Que revisa | Ejemplo |
-|-----------|-----------|---------|
-| **Ingredientes contaminados** | Codigo con vulnerabilidades comunes (OWASP) | Verificar que no hay inyecciones de codigo o datos sin validar |
-| **Llaves de la cocina expuestas** | Secretos visibles en el codigo | Contraseñas, tokens de API, credenciales de base de datos |
-| **Proveedores dudosos** | Dependencias con problemas conocidos | Librerias desactualizadas o con vulnerabilidades |
-| **Plan contra robos** | Modelo de amenazas | Quien podria atacar, como, y que protegemos |
-| **Higiene del chef AI** | Proteccion especifica para apps con IA | Que nadie pueda manipular al agente o abusar del servicio |
-
-El protocolo de higiene se revisa en DOS momentos:
-1. **Al disenar el plato** (sdd-design): Se planea la proteccion ANTES de cocinar
-2. **Al verificar el plato** (sdd-verify): Se inspecciona DESPUES de cocinar
-
-> **Regla de oro**: La seguridad no se agrega al final — se planea desde el principio. Es como lavarse las manos ANTES de cocinar, no despues de servir.
-
----
-
-## Como le hablas al chef
+## Como le hablas al gerente
 
 No necesitas saber programar NI memorizar comandos. Simplemente describe lo que necesitas:
 
-| Que quieres | Que le dices a Batuta |
-|-------------|----------------------|
+| Que quieres | Que le dices |
+|-------------|-------------|
 | Construir algo nuevo | "Necesito una app que haga X" |
+| Arreglar algo | "El boton de login no funciona" |
 | Investigar algo | "Como funciona el sistema de pagos?" |
-| Continuar donde quedaste | "Donde quedamos?" o "sigue con lo de ayer" |
-| Corregir un problema descubierto | "Esto no funciona, falta manejar el caso X" |
-| Arreglar un bug puntual | "El boton de login no funciona" |
+| Continuar donde quedaste | "Donde quedamos?" |
 
-Batuta detecta que necesitas y ejecuta el proceso automaticamente. Tu solo apruebas en los momentos clave (la propuesta y el plan de tareas).
+Batuta detecta que necesitas y contrata al especialista correcto automaticamente. Tu solo apruebas cuando el gerente te lo pide (y en SPRINT, ni siquiera eso).
 
-### Comandos manuales (para los que quieren control total)
-
-Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
+### Comandos manuales (opcionales)
 
 | Que quieres | Que escribes |
 |-------------|-------------|
-| Instalar Batuta en un proyecto nuevo | `/batuta-init nombre-del-proyecto` |
-| Empezar a planear algo nuevo | `/sdd-init` |
-| Investigar como hacer algo | `/sdd-explore tema` |
-| Crear una propuesta formal | `/sdd-new nombre` |
-| Continuar al siguiente paso | `/sdd-continue` |
-| Construir lo que se planeo | `/sdd-apply` |
-| Verificar que todo funcione | `/sdd-verify` |
-| Cerrar y documentar | `/sdd-archive` |
+| Instalar Batuta en un proyecto | `/batuta-init` |
+| Explorar un tema | `/sdd-explore tema` |
+| Empezar algo nuevo | `/sdd-new nombre` |
+| Implementar desde PRD | `/sdd-apply` |
+| Verificar que funcione | `/sdd-verify` |
+| Sincronizar recetas | `/batuta-sync` |
 | Crear una receta nueva | `/create skill nombre` |
-
----
-
-## Los Roles en el Restaurante
-
-| Rol | Quien es | Que hace |
-|-----|---------|---------|
-| **Dueno del restaurante** | Tu (el usuario) | Decides que platos ofrecer, apruebas propuestas |
-| **Chef principal (router MoE)** | Claude Code + CLAUDE.md | Recibe pedidos, detecta pistas, y delega al especialista correcto. Nunca cocina — solo coordina |
-| **Jefes de area** | Scope Agents (pipeline, infra, observability) | Coordinan a los sub-chefs de su area (siempre en la cocina central) |
-| **Especialistas (experts MoE)** | Domain Agents (backend, quality, data) | Expertos con conocimiento profundo de su area. Trabajan en su propia cocina (subproceso autonomo). Se activan automaticamente segun las pistas del pedido |
-| **Sub-chefs** | Sub-agentes SDD | Hacen el trabajo pesado: investigar, disenar, cocinar, verificar |
-| **Recetas (parameters MoE)** | Skills (SKILL.md) | Instrucciones detalladas para cada plato/tecnologia — se cargan dentro de cada especialista |
-| **Organizacion de cocina** | Scope Rule | Donde va cada cosa |
-| **Checklist pre-cocina** | Execution Gate | Verifica antes de cocinar: ingredientes, ubicacion, impacto |
-| **Control de calidad** | sdd-verify + O.R.T.A. | Verifican que todo salga bien |
-| **Bitacora del turno** | .batuta/session.md | El cuaderno donde el chef anota en que quedo para el proximo turno |
-| **Nota del mesero** | Gate Status (v13.2) | La nota que dice "ESPERANDO CONFIRMACION" cuando hay una orden pendiente — el chef no empieza otra cosa hasta resolver |
-| **Investigacion profunda** | Discovery Depth (v13.2) | Regla de investigar a fondo antes de proponer — no asumir, verificar los flujos reales |
-| **Inventario automatico** | sync.sh | Actualiza el inventario de recetas automaticamente |
-| **Aprendiz que investiga** | ecosystem-creator | Cuando falta una receta, investiga y la crea |
-| **Equipo temporal** | Agent Teams (v7) | Cocineros extra para banquetes grandes — trabajan en paralelo, cada uno con su estacion |
-| **Coordinador de equipo** | team-orchestrator (v7) | Decide cuando armar equipo temporal y como repartir las tareas |
-| **Alarmas automaticas** | Native Hooks (v14.1) | Alarmas que obligan al chef a seguir el proceso sin que pueda saltarselo. La de cierre tiene 3 pasos obligatorios: ficha de estado, libro de lecciones, cuaderno del turno |
-| **Ficha de estado** | CHECKPOINT.md (v14.1) | La hoja pegada en la estacion de trabajo: paso actual, lo que intento y fallo, lo que decidio y por que, lo que falta. Siempre escrita al cerrar, automaticamente inyectada al abrir |
-| **Libro de lecciones aprendidas** | Notion KB + RAG Loop (v14.1) | Cuando el chef descubre una trampa importante, la escribe automaticamente en Notion. Los chefs futuros la consultan antes de proponer soluciones |
-| **Chef consulta el archivo** | Research Gate (v14.0) | Antes de inventar, el chef busca: ¿Ya tenemos esta receta? ¿Alguien mas la resolvio? (Notion KB + internet) |
-| **Director pre-cocina** | CTO Artifact Detection (v14.0) | Si el director preparo ingredientes en su cocina de ideas, el chef los detecta y continua desde ahi — sin repetir el trabajo |
-| **Control de calidad por capas** | AI Validation Pyramid (v8) | 5 niveles de inspeccion — los primeros 3 automaticos, los ultimos 2 humanos |
-| **Comandas precisas** | Contract-First Protocol (v9) | Contratos escritos que definen que recibe y que produce cada cocinero |
-| **Menus especializados** | Team Templates (v9) | Configuraciones pre-armadas de equipo para diferentes tipos de proyecto |
-| **Manual del mesero** | Playbook (v9) | Guia de cuando y como usar equipos temporales, errores comunes |
-| **Protocolo de higiene** | Security-Audit (v9) | Revision de seguridad: al disenar y al verificar |
-| **Controles estrategicos** | Gates G0.5/G1/G2 (v10) | Entiendo? Vale la pena? Listo? |
-| **Consultores especializados** | 6 skills CTO (v10) | Procesos, IA, datos, infra, compliance |
-| **Cocina rapida** | Antigravity Lite (v11.2) | Segunda cocina para brainstorming y prototipado rapido, con el mismo recetario |
-| **Libro maestro compartido** | batuta-dots hub (v11.0) | Todas las recetas en un solo lugar, sincronizadas entre ambas cocinas |
-| **Protocolo de degustacion** | skill-eval (v13) | Evalua recetas con criterios medibles, propone mejoras, audita el ecosistema |
-| **Instructivo de franquicia** | SDK Deployment (v13) | Ficha tecnica en cada agent para desplegar sucursales automaticamente via CI/CD |
-| **Filosofia justo lo necesario** | Anti-Overengineering (v13.1) | Solo 4 alarmas obligatorias, el resto son guias. El chef actua con criterio, no pide permiso para cada paso |
 
 ---
 
@@ -931,38 +371,21 @@ Si prefieres controlar cada paso directamente, tambien puedes usar comandos:
 
 ```
 TU IDEA
-   ↓
+   |
 "Quiero una app que haga X"
-   ↓
-Batuta detecta: proyecto nuevo, necesita SDD
-   ↓
-Automaticamente: instala ecosistema + investiga el problema
-   ↓
-(Si falta un skill → lo crea automaticamente)
-   ↓
-Claude te presenta la propuesta
-   ↓
-TU APRUEBAS
-   ↓
-Claude automaticamente: Specs + Diseno + Tareas
-   ↓
-Claude te presenta el plan
-   ↓
-TU APRUEBAS
-   ↓
-Claude construye la app (Execution Gate verifica cada archivo)
-   ↓
-(Si descubre un problema → retrocede, corrige, y sigue)
-   ↓
-Claude verifica que funcione
-   ↓
-Pruebas en tu computadora
-   ↓
-Deploy a internet (Coolify)
-   ↓
-Claude documenta y cierra
-   ↓
-APP LISTA EN INTERNET
+   |
+Gerente INVESTIGA (obligatorio, siempre):
+   → Notion KB → skill → docs → web
+   |
+Gerente contrata al especialista correcto
+   |
+Especialista trabaja (con sus recetas)
+   |
+Inspector verifica la calidad
+   |
+Session.md actualizado
+   |
+RESULTADO LISTO
 ```
 
 ---
@@ -970,96 +393,31 @@ APP LISTA EN INTERNET
 ## Preguntas frecuentes
 
 **P: Necesito saber programar para usar esto?**
-R: No. Solo necesitas describir lo que quieres en lenguaje natural. Claude programa por ti. Los comandos existen como opcion para control directo, pero no son necesarios.
+R: No. Solo describes lo que quieres. El gerente contrata al especialista correcto.
 
-**P: Que pasa si Claude hace algo mal?**
-R: El paso de `/sdd-verify` revisa todo automaticamente. Si encuentra errores, te dice cuales son y los corrige.
+**P: Que pasa si algo sale mal?**
+R: El inspector de calidad (quality-agent) revisa automaticamente. Si encuentra errores, te dice cuales son y los corrige.
 
-**P: Puedo usar esto para cualquier tipo de proyecto?**
-R: Si. El sistema funciona para aplicaciones web, automatizaciones, agentes de IA, infraestructura, y mas. Solo cambia la descripcion en `/sdd-init`.
+**P: Por que el gerente nunca cocina directamente?**
+R: Porque si el gerente se pone a cocinar, nadie esta coordinando. Ademas, si cargara TODAS las recetas de TODOS los especialistas, se le llenaria la memoria y seria mas lento.
 
-**P: Cuanto cuesta?**
-R: Claude Code tiene un costo de suscripcion. Las APIs de Google (Gmail, Gemini) son practicamente gratis para uso normal. Coolify puede correr en tu propio servidor.
+**P: Que es la diferencia entre SPRINT y COMPLETO?**
+R: SPRINT es para tareas del dia a dia — rapido, sin pausas. COMPLETO es para proyectos grandes donde el director escribe un plan formal (PRD) y hay una pausa para aprobar el diseno.
 
-**P: Que es O.R.T.A.?**
-R: Son cuatro cosas que toda aplicacion de Batuta debe tener:
-- **O**bservabilidad: Puedes ver que esta pasando en la app (logs, metricas)
-- **R**epetibilidad: Si algo funciona hoy, funciona manana igual
-- **T**razabilidad: Puedes seguir el rastro de cada decision y cambio. El **session.md** implementa esto — guarda el contexto de cada sesion.
-- **A**uto-supervision: La app se vigila a si misma y te avisa si algo sale mal. Incluye el **Execution Gate** (preventivo: verifica ANTES de actuar)
+**P: Que es el PRD?**
+R: El ticket de pedido. Un solo documento con todo lo que el especialista necesita saber. Reemplaza los 5 documentos que habia antes.
 
-**P: Si cierro la terminal, Claude se olvida de todo?**
-R: No. Gracias al cuaderno del turno (`.batuta/session.md`), Claude lee donde quedo la ultima vez y continua sin que tengas que repetirle todo. Es automatico.
+**P: Si cierro la terminal, el gerente se olvida de todo?**
+R: No. Gracias al cuaderno del turno (session.md), el gerente lee donde quedo y continua sin que repitas nada.
 
-**P: Cuando se usa el equipo temporal (Agent Teams)?**
-R: Solo para tareas grandes que tienen muchas partes independientes. Piensa en la diferencia entre cocinar un sandwich (solo) y preparar un banquete (equipo). Para el dia a dia, el chef trabaja solo o con ayuda puntual. El equipo temporal se arma solo cuando vale la pena la coordinacion extra.
-
-**P: El equipo temporal cuesta mas?**
-R: Si. Cada cocinero temporal es como tener otro chef completo trabajando. Si armas un equipo de 3, es como pagar 3 chefs. Por eso solo se usa cuando la tarea es lo suficientemente grande para justificarlo.
-
-**P: Por que el chef principal nunca cocina directamente?**
-R: Porque un CTO (director tecnico) no escribe codigo el mismo. Coordina al equipo, toma decisiones, y se asegura de que todo siga el plan. Si el CTO se pone a cocinar, nadie esta viendo el panorama completo. Ademas, si el chef principal cargara TODO el conocimiento de TODOS los especialistas, se le llenaria la memoria y seria mas lento y mas caro.
-
-**P: Que es eso de "Mixture of Experts"?**
-R: Es un concepto de inteligencia artificial donde, en vez de usar UN solo modelo gigante para todo, se usan VARIOS especialistas y un "router" que decide cual usar para cada tarea. Batuta aplica la misma idea: el chef principal (router) decide a que especialista (experto) llamar, y cada especialista carga solo las recetas (parametros) que necesita. Es como la diferencia entre un medico general que intenta saber todo vs un hospital con especialistas — el hospital es mas eficiente.
+**P: Cuantas recetas tiene el sistema?**
+R: 43 en el libro maestro. 13 universales que todos los proyectos usan. 30 especializadas que se asignan segun el tipo de proyecto.
 
 **P: Batuta tiene demasiadas reglas?**
-R: Batuta tiene pocas reglas OBLIGATORIAS (4 puntos de aprobacion humana) y muchas GUIAS (sugerencias de estilo y formato). Las guias ayudan al chef a cocinar mejor, pero no lo detienen en cada paso. Si una regla no aporta valor, se revisa y se ajusta — hay un proceso para eso (self-heal).
-
----
-
-## La Filosofia del "Justo lo Necesario" (Anti-Overengineering) — v13.1
-
-Un restaurante puede tener demasiadas reglas. Si el chef tiene que llenar un formulario de 20 paginas antes de hacer un sandwich, algo esta mal. Las reglas deben proteger contra errores reales, no crear burocracia.
-
-En Batuta, esto se traduce a un principio simple:
-
-| Tipo de instruccion | Como se escribe | Ejemplo |
-|---------------------|----------------|---------|
-| **Puntos de aprobacion humana** (4 en total) | Con enfasis fuerte — son paradas obligatorias | "No avanzar sin aprobacion del usuario" |
-| **Reglas de estilo y formato** | Con tono de guia — orientan pero no bloquean | "Preferir respuesta directa para tareas simples" |
-| **Consejos operativos** | Con tono de sugerencia — el chef usa su criterio | "Delegar cuando las tareas pueden correr en paralelo" |
-
-**La analogia**: Imagina que en la cocina hay 4 alarmas contra incendios (las aprobaciones humanas) y 20 letreros de "lavese las manos" (las guias de estilo). Las alarmas son OBLIGATORIAS — si suenan, paras todo. Los letreros son recordatorios importantes, pero el chef no necesita parar a releerlos cada vez que toca una olla.
-
-El objetivo es un chef que actue con **criterio propio**, no uno que pida permiso para cada paso. Si el chef necesita picar una cebolla, simplemente la pica — no llena un formulario. Pero si va a cambiar todo el menu del restaurante, ahi si necesita tu aprobacion.
-
----
-
-## La Regla y el MCP Discovery (v11.0)
-
-### La Regla — Como un reglamento de seguridad en una fabrica
-
-En una fabrica, hay procedimientos obligatorios: casco, gafas de seguridad, protocolo de emergencia. No importa si eres el mas experimentado — SIEMPRE los sigues. "La Regla" en Batuta es igual: si existe un procedimiento (skill) para lo que estas haciendo, lo sigues. No hay excepciones, no hay atajos.
-
-Antes de v11.0, era como tener carteles de seguridad pegados en la pared — dependias de que la gente los leyera. Ahora es como un torniquete automatico: no entras a la planta sin tu casco.
-
-### MCP Discovery — Como verificar herramientas antes de construir
-
-Antes de empezar a construir una pared, un albanil revisa: "Tengo las herramientas correctas? Hay una mejor que la que tengo?". MCP Discovery hace exactamente eso — antes de escribir codigo, verifica que herramientas (servidores MCP) estan disponibles y cuales convendria instalar.
-
-Es como la diferencia entre un albanil que trabaja con lo que tiene en el bolsillo vs uno que primero revisa la bodega completa de la ferreteria.
-
-### Review en 2 etapas — Como una revision de planos
-
-Un arquitecto diseña los planos, pero antes de construir: un ingeniero estructural verifica que cumple con las normas (revision de spec), y un inspector de calidad verifica que los materiales son correctos (revision de calidad). Solo cuando ambos aprueban, se construye. En Batuta v11.0, las tareas complejas pasan por esta misma doble revision automatica.
-
----
-
-## El Instructivo de Franquicia (SDK Deployment) — v13
-
-Ademas de coordinar en la cocina, los jefes de area y especialistas ahora tienen un manual que permite **abrir sucursales automaticamente**. El bloque `sdk:` es como un instructivo de franquicia que un programa de computadora puede leer para replicar al equipo.
-
-Antes, los jefes de area y especialistas solo existian dentro de la cocina principal (tu sesion de Claude Code). Ahora, cada uno tiene una ficha tecnica (`sdk:`) que dice exactamente:
-- Que modelo de chef usar (como decir "necesito un chef nivel senior")
-- Cuanto presupuesto tiene (maximo de tokens)
-- Que herramientas puede usar (cuchillos, horno, batidora)
-- De donde leer su configuracion (que manuales consultar)
-
-Esto permite que un sistema automatizado (CI/CD) lea esa ficha y despliegue al especialista como un servicio independiente — sin que un humano tenga que configurar nada manualmente. Es la diferencia entre abrir una sucursal contratando uno por uno vs tener un manual de franquicia que replica todo el equipo automaticamente.
+R: Batuta tiene pocas reglas OBLIGATORIAS (investigar siempre, aprobar contrataciones nuevas, 1 gate en modo COMPLETO). El resto son guias que ayudan a los especialistas a cocinar mejor.
 
 ---
 
 > **Recuerda**: No necesitas entender como funciona un motor para manejar un carro.
 > Solo necesitas saber los pedales y el volante. Los comandos son tus pedales,
-> las guias son tu manual, y Claude es el motor.
+> las guias son tu manual, y el gerente es quien coordina todo bajo el capo.

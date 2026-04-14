@@ -1,6 +1,6 @@
 # El Pipeline SDD
 
-SDD significa **Spec-Driven Development** — Desarrollo Dirigido por Especificaciones. Es la forma en que Batuta Dots organiza el trabajo: primero pensar, luego documentar, y al final construir.
+SDD significa **Spec-Driven Development** — Desarrollo Dirigido por Especificaciones. Es la forma en que Batuta Dots organiza el trabajo: primero investigar, luego (opcionalmente) disenar, y al final construir y verificar.
 
 ---
 
@@ -15,159 +15,163 @@ Imagina que vas a preparar un banquete para 50 personas.
 - Algunos invitados tienen alergias que no consideraste
 
 **Con proceso** (como programar con SDD):
+
+Para una cena rapida (modo **SPRINT**):
+1. **Investiga**: Que quieren comer? Hay alergias? (siempre obligatorio)
+2. **Cocina**: Siguiendo lo investigado
+3. **Prueba**: Cada plato antes de servir
+
+Para un banquete de 50 personas (modo **COMPLETO**):
 1. **Investiga**: Cuantos invitados? Alergias? Preferencias?
-2. **Propone menu**: 3 opciones con costos y tiempos
-3. **Especifica recetas**: Ingredientes exactos, cantidades, tiempos
-4. **Disena la cocina**: Que cocinero hace que, en que orden
-5. **Divide tareas**: "Tu: entradas. Tu: plato fuerte. Tu: postre."
-6. **Cocina**: Siguiendo las recetas
-7. **Prueba**: Cada plato antes de servir
-8. **Documenta**: Las recetas que funcionaron para el proximo banquete
+2. **Explora**: Que cocinas disponemos? Cuantos cocineros?
+3. **Disena el menu**: Que cocinero hace que, en que orden. **Aprobacion del cliente antes de cocinar.**
+4. **Cocina**: Siguiendo el diseño aprobado
+5. **Prueba**: Cada plato antes de servir
 
 ---
 
-## Las 9 fases (maquina de estados)
+## Los 2 modos del pipeline
 
-El camino feliz (happy path) es lineal:
+En v15, Batuta simplifica drasticamente el pipeline. En vez de 9 fases obligatorias con 8 gates, ahora tienes **2 modos** que se adaptan a la complejidad de tu tarea:
 
 ```
-init → explore → [G0.5] → propose → [G1] → spec → design → tasks → apply → verify → [G2] → archive
+SPRINT (default):  Research → Apply → Verify         (0 gates)
+COMPLETO (via PRD): Research → Explore → Design[STOP] → Apply → Verify  (1 gate)
 ```
 
-Pero la realidad no siempre es lineal. A veces descubres en la fase de implementacion que falta algo en el spec, o que el diseno no soporta un caso. Por eso el pipeline es una **maquina de estados** — puedes retroceder a la fase que necesites corregir y luego re-avanzar:
+### Por que el cambio?
 
-### Fase 1: Init (Preparar la cocina)
+Las 9 fases anteriores (init → explore → propose → spec → design → tasks → apply → verify → archive) eran como usar un contrato de obra para colgar un cuadro. La mayoria de tareas no necesitan 5 artefactos de planificacion separados (explore, proposal, spec, design, tasks). En v15, esos 5 artefactos se consolidan en un **PRD** (Product Requirements Document) unico cuando la tarea lo amerita.
 
-**Comando**: `/sdd-init`
-**Que hace**: Prepara el proyecto para trabajar con SDD. Detecta que tipo de proyecto es, que tecnologias usa, y crea la estructura de documentacion.
-**Resultado**: Carpeta `openspec/` con configuracion.
-**Analogia**: Equipar la cocina con las herramientas correctas antes de cocinar.
+---
 
-### Fase 2: Explore (Investigar el banquete)
+## Modo SPRINT (el default — 0 gates)
 
-**Comando**: `/sdd-explore <tema>` o `/sdd-new <nombre>`
-**Que hace**: Investiga el problema. Lee codigo existente, busca patrones, compara opciones, detecta si necesitas especialistas.
-**Resultado**: Reporte de exploracion con opciones y recomendaciones.
-**Analogia**: Hablar con los invitados para entender sus preferencias y restricciones.
+Para la mayoria de tareas del dia a dia. No tiene gates formales, pero research es **obligatorio**.
 
-### Gate G0.5: Discovery Complete
+### Fase 1: Research (Investigar — NO NEGOCIABLE)
 
-**Antes de proponer, verificamos**: Identificamos todos los tipos de caso? Documentamos excepciones? Mapeamos dependencias externas? Listamos participantes? Cubrimos todas las ramas?
+**Que hace**: Antes de tocar una sola linea de codigo, Batuta investiga. Siempre. Sin excepciones. Lanza subagentes en paralelo que buscan en: (1) Notion KB (ya resolvimos algo similar?), (2) skills relevantes, (3) documentacion oficial via web, (4) busqueda web general.
+**Resultado**: Conocimiento verificado y actualizado.
+**Analogia**: Antes de cocinar, verificas que los ingredientes estan frescos y la receta es correcta.
 
-### Fase 3: Propose (Proponer el menu)
+> **Esto es lo mas importante de v15**: No existe tarea tan trivial que justifique saltar research. Los frameworks cambian cada dia. Conocimiento estatico es conocimiento peligroso.
 
-**Comando**: Se ejecuta con `/sdd-new` o `/sdd-continue`
-**Que hace**: Presenta una propuesta formal con alcance, costos, beneficios, y un resumen en lenguaje simple para stakeholders no-tecnicos.
-**Resultado**: Documento de propuesta (`proposal.md`).
-**Analogia**: Presentar 3 opciones de menu con presupuesto y tiempo.
-
-### Gate G1: Solution Worth Building
-
-**Antes de disenar, verificamos**: El problema justifica el esfuerzo? El scope esta acotado? Los stakeholders estan informados? Los riesgos son aceptables?
-
-### Fase 4: Spec (Escribir las recetas)
-
-**Comando**: `/sdd-ff` o `/sdd-continue`
-**Que hace**: Escribe los requisitos exactos en formato Given/When/Then. Cada escenario describe un comportamiento esperado.
-**Resultado**: Especificacion (`spec.md`).
-**Analogia**: Las recetas con ingredientes, cantidades, y pasos exactos.
-
-### Fase 5: Design (Disenar la cocina)
-
-**Comando**: `/sdd-ff` o `/sdd-continue`
-**Que hace**: Define la arquitectura tecnica — que componentes, como se comunican, que decisiones se tomaron y por que. Si el proyecto toca LLM, datos, o infra, agrega secciones especiales.
-**Resultado**: Documento de diseno (`design.md`).
-**Analogia**: El layout de la cocina — que cocinero trabaja en que estacion.
-
-> **Nota**: Spec y Design pueden ejecutarse en paralelo.
-
-### Fase 6: Tasks (Dividir el trabajo)
-
-**Comando**: `/sdd-ff` o `/sdd-continue`
-**Que hace**: Divide el diseno en tareas concretas, ordenadas por dependencia, con estimaciones.
-**Resultado**: Lista de tareas (`tasks.md`).
-**Analogia**: "Tu: corta verduras (20 min). Tu: prepara la salsa (15 min)."
-
-### Fase 7: Apply (Cocinar)
+### Fase 2: Apply (Construir)
 
 **Comando**: `/sdd-apply`
-**Que hace**: Implementa el codigo siguiendo las tareas. Cada archivo pasa por el Execution Gate. El codigo se documenta con el estandar de documentacion (docstrings, comentarios WHY).
-**Resultado**: Codigo funcionando.
-**Analogia**: Cocinar siguiendo las recetas, plato por plato.
+**Que hace**: El main agent contrata agentes especializados que implementan con los skills verificados durante research. Cada agente reporta sus hallazgos (FINDINGS / FAILURES / DECISIONS / GOTCHAS).
+**Resultado**: Codigo funcionando, documentado.
+**Analogia**: Cocinar con ingredientes frescos y receta verificada.
 
-### Fase 8: Verify (Probar cada plato)
+### Fase 3: Verify (Verificar)
 
 **Comando**: `/sdd-verify`
-**Que hace**: Ejecuta la Piramide de Validacion AI — 5 capas desde linting automatico hasta pruebas manuales.
+**Que hace**: Ejecuta la Piramide de Validacion AI — linting, tests, revision de codigo.
 **Resultado**: Reporte de verificacion.
 **Analogia**: Probar cada plato: sabor, presentacion, temperatura.
 
-### Gate G2: Ready for Production
+---
 
-**Antes de archivar, verificamos**: La piramide de validacion esta completa? La documentacion esta actualizada? Hay plan de rollback? No hay warnings criticos?
+## Modo COMPLETO (via PRD — 1 gate)
 
-### Fase 9: Archive (Documentar las recetas exitosas)
+Para proyectos complejos donde el CTO escribe un PRD (Product Requirements Document) en Notion. Batuta lo lee via MCP.
 
-**Comando**: `/sdd-archive`
-**Que hace**: Sincroniza los cambios con las specs principales, documenta lecciones aprendidas, mueve artefactos al archivo.
-**Resultado**: Cambio archivado, lecciones documentadas.
-**Analogia**: Guardar las recetas que funcionaron para el proximo banquete.
+### Fase 1: Research (Investigar — NO NEGOCIABLE)
+
+Identico al modo SPRINT. Research es obligatorio en AMBOS modos.
+
+### Fase 2: Explore (Investigar en profundidad)
+
+**Comando**: `/sdd-explore <tema>` o `/sdd-new <nombre>`
+**Que hace**: Lanza subagentes en paralelo para explorar el problema desde multiples angulos. Investigan el codebase, buscan patrones, comparan opciones, detectan si necesitas especialistas.
+**Resultado**: Reporte de exploracion con opciones y recomendaciones.
+**Analogia**: Hablar con cada invitado para entender sus preferencias y restricciones.
+
+### Fase 3: Design (Disenar — USER STOP)
+
+**Que hace**: Consolida todo en un PRD unico (reemplaza los 5 artefactos anteriores: explore, proposal, spec, design, tasks). Define arquitectura, decisiones, y plan de implementacion.
+**Resultado**: PRD aprobado.
+**Analogia**: Presentar el menu completo al cliente para aprobacion.
+
+> **Design Approval** — El unico gate. El usuario DEBE aprobar el diseno explicitamente antes de que Batuta empiece a construir. Sin aprobacion, no hay implementacion.
+
+### Fase 4: Apply (Construir)
+
+**Comando**: `/sdd-apply`
+**Que hace**: Agentes contratados implementan siguiendo el PRD aprobado.
+**Resultado**: Codigo funcionando, documentado.
+**Analogia**: Cocinar siguiendo el menu aprobado por el cliente.
+
+### Fase 5: Verify (Verificar)
+
+**Comando**: `/sdd-verify`
+**Que hace**: Ejecuta la Piramide de Validacion AI.
+**Resultado**: Reporte de verificacion.
+**Analogia**: Probar cada plato antes de servir.
 
 ---
 
-## Flujo visual (maquina de estados)
+## Flujo visual
 
+### Modo SPRINT (default)
 ```
-[Tu idea]
+[Tu idea / tarea]
     |
     v
-  INIT ───→ Prepara proyecto
+  RESEARCH ──→ Investigar (Notion KB → skills → web)
+    |             5 subagentes en paralelo = minutos
+    v
+  APPLY ─────→ Agentes contratados implementan
+    |             ↑
+    v             │ bug? → fix directo
+  VERIFY ────→ Piramide de Validacion
     |
     v
-  EXPLORE ──→ Investiga problema ◄──────────────┐
-    |                                            │
-   G0.5 ───→ Entendemos bien? (si/no)           │
-    |                                            │
-    v                                            │
-  PROPOSE ──→ Propone solucion ◄─────────┐      │
-    |                                    │      │
-   G1 ─────→ Vale la pena? (si/no)      │      │
-    |                                    │      │
-    v                                    │      │
-  SPEC ←──→ DESIGN (paralelo) ◄────┐    │      │
-    |                               │    │      │
-    v                               │    │      │
-  TASKS ───→ Divide trabajo         │    │      │
-    |                               │    │      │
-    v                               │    │      │
-  APPLY ───→ Escribe codigo ────────┴────┴──────┘
-    |            ↑                backtrack triggers
-    v            │
-  VERIFY ──→ Prueba todo ───→ issues? → APPLY (fix) o DESIGN (re-pensar)
-    |
-   G2 ─────→ Listo para produccion? (si/no)
+[Codigo funcionando + session.md actualizado]
+```
+
+### Modo COMPLETO (via PRD)
+```
+[PRD del CTO en Notion]
     |
     v
-  ARCHIVE ──→ Documenta y cierra
+  RESEARCH ──→ Investigar (obligatorio, igual que SPRINT)
     |
     v
-[Software funcionando + documentado]
+  EXPLORE ───→ Subagentes exploran en profundidad
+    |
+    v
+  DESIGN ────→ Consolida en PRD
+    |
+    ▼
+  ══════════════════════════════
+  DESIGN APPROVAL (USER STOP)
+  "Apruebas este diseno?"
+  ══════════════════════════════
+    |
+    v
+  APPLY ─────→ Agentes implementan segun PRD
+    |
+    v
+  VERIFY ────→ Piramide de Validacion
+    |
+    v
+[Software funcionando + PRD como documentacion]
 ```
 
 ### Retrocesos (backtracks)
 
-A veces en la cocina descubres que te falta un ingrediente que no estaba en la receta. En vez de empezar de cero, vuelves a corregir la receta y continuas desde ahi.
+A veces durante la implementacion descubres que falta algo. En v15, los retrocesos son mas simples porque hay menos fases:
 
 | Estas en... | Descubres que... | Vuelves a... | Ejemplo |
 |-------------|------------------|-------------|---------|
-| APPLY | Falta un caso en el spec | SPEC | "Necesitamos manejar mensajes de audio" |
-| APPLY | La arquitectura no soporta algo | DESIGN | "pymssql no soporta async" |
-| APPLY | El problema es diferente | EXPLORE | "Hay un segundo servidor que no mapeamos" |
-| DESIGN | El alcance cambio | PROPOSE | "El cliente quiere incluir la Planta" |
-| VERIFY | Tests revelan fallo de diseno | DESIGN | "El retry no maneja desconexiones de VPN" |
-| VERIFY | Bug puntual | APPLY | "El query tiene un typo en el JOIN" |
+| APPLY | Falta investigar algo | RESEARCH | "El framework cambio su API, necesito verificar" |
+| APPLY | El diseno no soporta algo | DESIGN (modo COMPLETO) | "pymssql no soporta async" |
+| VERIFY | Tests revelan fallo | APPLY | "El query tiene un typo en el JOIN" |
+| VERIFY | Fallo de diseno profundo | DESIGN (modo COMPLETO) | "El retry no maneja desconexiones" |
 
-Los artefactos no se borran — se actualizan in-place. Git guarda el historial. Y cada retroceso se registra en `backtrack-log.md` para trazabilidad.
+session.md se actualiza en CADA interaccion. CHECKPOINT.md captura el estado exacto para recuperacion.
 
 ---
 
@@ -177,17 +181,17 @@ No necesitas memorizar slash commands. Batuta detecta automaticamente que necesi
 
 | Tu dices... | Batuta hace... |
 |------------|----------------|
-| "Tengo un problema de inventarios negativos" | Detecta: problema nuevo → explora → propone solucion |
-| "El boton de login no funciona" | Detecta: bug puntual → fix directo (sin SDD) |
-| "Donde quedamos?" | Detecta: continuar → busca la fase actual y avanza |
-| "Esto no funciona como pense, falta manejar audios" | Detecta: backtrack → ajusta spec + re-avanza |
+| "Tengo un problema de inventarios negativos" | Detecta: problema nuevo → SPRINT: research → apply → verify |
+| "El boton de login no funciona" | Detecta: bug puntual → research rapido → fix directo |
+| "Donde quedamos?" | Lee session.md → retoma desde el ultimo estado |
+| "Esto necesita un PRD completo" | Detecta: modo COMPLETO → research → explore → design [USER STOP] → apply → verify |
 | "Que es SDD?" | Detecta: pregunta → responde directamente |
 
 El flujo natural es:
 1. Tu describes el problema
-2. Batuta investiga y te presenta una propuesta
-3. Tu apruebas (o ajustas)
-4. Batuta disena, planifica e implementa
+2. Batuta investiga (siempre, sin excepcion)
+3. Batuta implementa (modo SPRINT) o te presenta un diseno para aprobacion (modo COMPLETO)
+4. Batuta verifica
 5. Tu revisas el resultado
 
 **Los slash commands siguen existiendo** como override manual si quieres controlar cada paso directamente.
@@ -198,11 +202,12 @@ El flujo natural es:
 
 | Quieres... | Usa | Que hace |
 |-----------|-----|---------|
-| Empezar algo nuevo | `/sdd-new nombre` | explore + propose |
-| Avanzar rapido | `/sdd-ff` | propose + spec + design + tasks |
-| Continuar donde quedaste | `/sdd-continue` | Detecta fase actual y avanza |
+| Empezar algo nuevo | `/sdd-new nombre` | explore + design |
+| Continuar donde quedaste | `/sdd-continue` | Lee session.md y avanza |
 | Solo investigar | `/sdd-explore tema` | Solo explore, sin crear cambio |
+| Implementar | `/sdd-apply` | Implementar desde PRD/design |
+| Verificar | `/sdd-verify` | Piramide de Validacion |
 
 ---
 
-→ [Los gates](los-gates.md) — Tus checkpoints de calidad
+→ [Los gates](los-gates.md) — Design Approval: tu unico checkpoint de calidad

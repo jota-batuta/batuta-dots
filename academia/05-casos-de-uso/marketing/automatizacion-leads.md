@@ -83,7 +83,7 @@ El skill define los flujos de consentimiento que el sistema debe implementar por
 sdd-ff
 ```
 
-La secuencia `sdd-propose` → `sdd-spec` → `sdd-design` → `sdd-tasks` define la arquitectura completa. Se pasa por G0.5 y G1. El diseno integra la captura multicanal, el motor de scoring, y los flujos de consentimiento.
+El `sdd-ff` genera el PRD consolidado con la arquitectura completa. Se pasa por Design Approval. El diseno integra la captura multicanal, el motor de scoring, y los flujos de consentimiento.
 
 ### Fase 6 — Implementacion
 
@@ -96,7 +96,7 @@ Se genera el codigo del sistema: conectores por canal, normalizacion de datos, m
 ### Fase 7 — Verificacion
 
 ```
-sdd-verify → G2
+sdd-verify
 ```
 
 Se valida que la captura funcione desde todos los canales, que el scoring sea coherente, que el consentimiento se gestione correctamente, y que la asignacion a vendedores opere segun las reglas definidas.
@@ -109,22 +109,22 @@ Se valida que la captura funcione desde todos los canales, que el scoring sea co
 | `llm-pipeline-design` | Disena el motor de scoring con IA: modelo, entrenamiento, actualizacion, costos, guardrails |
 | `compliance-colombia` | Gestiona consentimiento de marketing separado del tratamiento de datos — Ley 1581 + reglas SIC |
 
-## Gates que pasas
+## Checkpoints que pasas
 
-### G0.5 — Discovery Complete
+### Design Approval — Discovery Complete
 - Los canales de captacion estan documentados con sus volumenes, formatos y niveles de confianza
 - Los criterios de calificacion de un "buen lead" estan identificados con el equipo comercial
 - Los requisitos de consentimiento por canal estan mapeados
 - Los datos historicos disponibles para entrenar el modelo estan evaluados (volumen, calidad)
 
-### G1 — Solution Worth Building
+### Design Approval — Solution Worth Building
 - La arquitectura integra captura multicanal, scoring, y consentimiento de forma coherente
 - El modelo de scoring es viable con los datos disponibles (o tiene estrategia de arranque en frio)
 - Los flujos de consentimiento no generan friccion excesiva en la captacion
 - El costo de operacion del modelo de IA esta dentro del presupuesto
 - La asignacion automatica a vendedores respeta las reglas del equipo comercial
 
-### G2 — Ready for Production
+### Verificacion Final — Ready for Production
 - Los leads de todos los canales se capturan y normalizan correctamente
 - El scoring produce resultados coherentes y explicables
 - El consentimiento se registra correctamente para cada canal

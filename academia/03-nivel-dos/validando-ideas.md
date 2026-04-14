@@ -1,6 +1,6 @@
 # Validando ideas
 
-`/sdd-explore` no es solo para empezar proyectos. Es una de las herramientas mas poderosas de Batuta Dots para **pensar mejor**.
+`/sdd-explore` no es solo para empezar proyectos. Es una de las herramientas mas poderosas de Batuta Dots para **pensar mejor**. En v15, explore usa subagentes en paralelo para investigar en minutos.
 
 ---
 
@@ -12,7 +12,7 @@ Puedes usar explore sin comprometerte a construir nada:
 /sdd-explore "Es buena idea migrar de REST a GraphQL?"
 ```
 
-Batuta investiga tu codebase actual, compara opciones, y te da un analisis estructurado — sin escribir una sola linea de codigo.
+Batuta contrata agentes que investigan tu codebase actual en paralelo, comparan opciones, y te dan un analisis estructurado — sin escribir una sola linea de codigo.
 
 ---
 
@@ -24,7 +24,7 @@ Batuta investiga tu codebase actual, compara opciones, y te da un analisis estru
 /sdd-explore "Deberiamos agregar cache con Redis?"
 ```
 
-Batuta analiza tu proyecto, mide donde hay cuellos de botella, y te dice si Redis resolveria el problema o si es over-engineering.
+Los agentes analizan tu proyecto, miden donde hay cuellos de botella, y te dicen si Redis resolveria el problema o si es over-engineering.
 
 ### 2. Comparar opciones tecnicas
 
@@ -48,7 +48,7 @@ Llegas a la reunion con un analisis de impacto: archivos afectados, riesgos, y e
 /sdd-explore "Como funciona el sistema de autenticacion actual?"
 ```
 
-Batuta lee el codigo, traza el flujo, y te explica como funciona — util cuando heredas un proyecto.
+Los agentes leen el codigo, trazan el flujo, y te explican como funciona — util cuando heredas un proyecto.
 
 ### 5. Detectar riesgos antes de que sean problemas
 
@@ -56,7 +56,20 @@ Batuta lee el codigo, traza el flujo, y te explica como funciona — util cuando
 /sdd-explore "Que riesgos tiene nuestro manejo de datos personales?"
 ```
 
-Batuta activa security-audit y compliance-colombia para darte un panorama completo.
+Se contratan agentes con security-audit y compliance-colombia para darte un panorama completo.
+
+---
+
+## Research-first: la base de explore en v15
+
+En v15, research-first es **obligatorio en TODO modo**, incluyendo SPRINT. Antes de que cualquier agente implemente, investiga:
+
+1. **Notion KB via MCP**: Ya resolvimos algo similar?
+2. **Skill relevante**: Leerlo, verificar que este al dia
+3. **WebFetch docs oficiales**: Los frameworks cambian constantemente
+4. **WebSearch**: Buscar soluciones actuales
+
+Explore lleva esto al maximo: lanza subagentes en paralelo para cada area de investigacion. 5 subagentes investigando = resultados en minutos.
 
 ---
 
@@ -69,22 +82,23 @@ Siempre obtienes:
 3. **Skill Gap Analysis** — Tienes las herramientas para esto?
 4. **Discovery Completeness** — Entendemos bien el problema?
 5. **Complejidad del proceso** — Necesitamos especialistas?
-6. **Impacto en stakeholders** — A quien afecta?
-7. **Opciones** — Con pros, contras, y esfuerzo
-8. **Recomendacion** — La opinion informada de Batuta
-9. **Riesgos** — Que podria salir mal
-10. **Resumen simple** — Para quien no es tecnico
+6. **Opciones** — Con pros, contras, y esfuerzo
+7. **Recomendacion** — La opinion informada de los agentes
+8. **Riesgos** — Que podria salir mal
 
 ---
 
-## Explore standalone vs explore con cambio
+## Explore en los 2 modos SDD
 
-| Modo | Comando | Crea archivos? | Avanza a propose? |
-|------|---------|---------------|-------------------|
-| Standalone | `/sdd-explore "tema"` | No | No |
-| Con cambio | `/sdd-new nombre-cambio` | Si (`explore.md`) | Si (automaticamente) |
+| Modo | Comando | Crea artefactos? | Siguiente paso |
+|------|---------|-----------------|----------------|
+| **SPRINT** | Research integrado en `/sdd-apply` | No formales | Implementar directo |
+| **COMPLETO** | `/sdd-explore "tema"` o `/sdd-new nombre` | Si (explore.md, design.md) | Design → USER STOP → Apply |
 
-Usa standalone para pensar. Usa con cambio cuando ya decidiste construir.
+### Explore standalone vs explore con cambio
+
+- **Standalone**: `/sdd-explore "tema"` — Para pensar. No crea archivos formales. No avanza a disenar.
+- **Con cambio**: `/sdd-new nombre-cambio` — Explore + Design. Crea artefactos en `openspec/changes/`. Avanza al gate de diseno.
 
 ---
 

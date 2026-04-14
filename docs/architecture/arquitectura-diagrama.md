@@ -1,608 +1,407 @@
-# Diagrama de Arquitectura — Ecosistema Batuta (v14.1)
+# Diagrama de Arquitectura — Ecosistema Batuta (v15)
 
 ## Vista General del Ecosistema
 
 ```mermaid
 flowchart TB
-    subgraph FUENTE["PUNTO DE ENTRADA UNICO"]
-        CLAUDE_SRC["BatutaClaude/CLAUDE.md<br/>Personalidad, reglas, Scope Rule,<br/>Gap Detection, routing de skills"]
+    subgraph FUENTE["CLAUDE.md — 105 LINEAS, ORQUESTADOR PURO"]
+        CLAUDE_SRC["BatutaClaude/CLAUDE.md<br/>Rules, Delegation, State,<br/>Notion, SDD modes, Commands"]
     end
 
-    subgraph AGENTS_SRC["SCOPE AGENTS"]
-        AG_PIPELINE["pipeline-agent.md"]
-        AG_INFRA["infra-agent.md"]
-        AG_OBS["observability-agent.md"]
+    subgraph AGENTS_SRC["5 AGENTS (contract templates)"]
+        AG_PIPELINE["pipeline-agent"]
+        AG_BACKEND["backend-agent"]
+        AG_DATA["data-agent"]
+        AG_QUALITY["quality-agent"]
+        AG_INFRA["infra-agent"]
     end
 
-    subgraph DOMAIN_SRC["DOMAIN AGENTS (provisioned)"]
-        AG_BACKEND["backend-agent.md"]
-        AG_QUALITY["quality-agent.md"]
-        AG_DATA["data-agent.md"]
+    subgraph SKILLS_SRC["43 SKILLS EN HUB"]
+        SK_GLOBAL["13 globales<br/>(~/.claude/skills/)"]
+        SK_PROJECT["30 per-project<br/>(.claude/skills/)"]
     end
 
     subgraph SETUP["SCRIPTS"]
-        SETUP_SH["setup.sh<br/>--claude | --sync | --all | --hooks | --update | --verify"]
-        REPLICATE["replicate-platform.sh<br/>--antigravity | --copilot | --codex"]
-        SYNC_BI["sync.sh<br/>--to-antigravity | --from-project | --push"]
+        SETUP_SH["setup.sh<br/>--claude | --sync | --all | --hooks | --verify"]
+        SYNC_BI["sync.sh / batuta-sync"]
     end
 
     subgraph GENERADO["ARCHIVOS GENERADOS (gitignored)"]
         CLAUDE_GEN["CLAUDE.md (raiz)<br/>(copia directa)"]
     end
 
-    subgraph SKILLS_LOCAL["~/.claude/skills/ (usuario)"]
-        SK_ECO["ecosystem-creator"]
-        SK_SCOPE["scope-rule"]
-        SK_SDD["sdd-init...sdd-archive<br/>(9 sub-agentes)"]
-        SK_PROJECT["skills de proyecto<br/>(creados bajo demanda)"]
-    end
-
-    subgraph COMMANDS_LOCAL["~/.claude/commands/ (usuario)"]
-        CMD_INIT["/batuta-init"]
-        CMD_UPDATE["/batuta-update"]
-    end
-
     CLAUDE_SRC --> SETUP_SH
     AGENTS_SRC --> SETUP_SH
-    DOMAIN_SRC --> SETUP_SH
+    SKILLS_SRC --> SETUP_SH
     SETUP_SH -->|"--claude"| CLAUDE_GEN
-    SETUP_SH -->|"--sync"| SKILLS_LOCAL
-    SETUP_SH -->|"--sync"| COMMANDS_LOCAL
-    CLAUDE_SRC --> REPLICATE
+    SETUP_SH -->|"--sync"| SK_GLOBAL
 
     style FUENTE fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
     style GENERADO fill:#1a1a1a,stroke:#666,color:#999,stroke-dasharray: 5 5
-    style SKILLS_LOCAL fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
-    style COMMANDS_LOCAL fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
-    style DOMAIN_SRC fill:#2d2d2d,stroke:#9B7AB8,color:#F5EDE4
+    style SKILLS_SRC fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
+    style AGENTS_SRC fill:#2d2d2d,stroke:#9B7AB8,color:#F5EDE4
 ```
 
 ---
 
-## Mixture of Experts (MoE): Modelo Conceptual (v13.1)
+## Modelo de Delegacion: Main Agent = Gestor (v15)
 
-Batuta sigue una arquitectura **Mixture of Experts** adaptada a agentes de IA:
-
-```mermaid
-flowchart TD
-    INPUT["Prompt del usuario"]
-
-    subgraph ROUTER["ROUTER (CLAUDE.md — ~220 lineas)"]
-        CLASSIFY["Clasifica intent:<br/>Build | Fix | Continue |<br/>Backtrack | Question"]
-        ROUTE["Routing table:<br/>API/auth/ORM → backend-agent<br/>ETL/AI/RAG → data-agent<br/>tests/security → quality-agent"]
-    end
-
-    subgraph EXPERTS["EXPERTS (Domain Agents — 80-120 lineas c/u)"]
-        direction LR
-        BACKEND_E["backend-agent<br/>Thick persona:<br/>API, auth, DB patterns"]
-        DATA_E["data-agent<br/>Thick persona:<br/>ETL, RAG, LLM pipelines"]
-        QUALITY_E["quality-agent<br/>Thick persona:<br/>TDD, debugging, security"]
-    end
-
-    subgraph PARAMETERS["PARAMETERS (Skills — carga lazy)"]
-        direction LR
-        SK1["fastapi-crud<br/>jwt-auth<br/>sqlalchemy-models"]
-        SK2["data-pipeline-design<br/>llm-pipeline-design"]
-        SK3["security-audit<br/>tdd-workflow<br/>e2e-testing"]
-    end
-
-    OUTPUT["Resultado especializado"]
-
-    INPUT --> ROUTER
-    CLASSIFY --> ROUTE
-    ROUTE -->|"senales tech"| EXPERTS
-    BACKEND_E --> SK1
-    DATA_E --> SK2
-    QUALITY_E --> SK3
-    SK1 --> OUTPUT
-    SK2 --> OUTPUT
-    SK3 --> OUTPUT
-
-    style ROUTER fill:#D4956A,color:#fff
-    style EXPERTS fill:#2d2d2d,stroke:#9B7AB8,color:#F5EDE4
-    style PARAMETERS fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
-    style CLASSIFY fill:#E8B84D,color:#000
-    style ROUTE fill:#E8B84D,color:#000
-    style BACKEND_E fill:#C4A47A,color:#fff
-    style DATA_E fill:#7AC4A4,color:#fff
-    style QUALITY_E fill:#D47272,color:#fff
-```
-
-> **Analogia con MoE en ML**: En un modelo Mixture of Experts, un router decide que experto procesa cada token. En Batuta: el **Router** (CLAUDE.md) clasifica el intent del usuario y las senales tecnologicas. Los **Experts** (domain agents) son subprocesos autonomos con 80-120 lineas de expertise embebido ("thick persona"). Los **Parameters** (skills) son patrones cargados bajo demanda dentro de cada experto. Esta separacion ahorra tokens — cada domain agent corre en su propio contexto via Task tool, sin inyectar su expertise en el agente principal.
-
-### Tabla de Routing: Senales → Experto
-
-| Senales en el prompt | Experto activado | Delegacion |
-|---------------------|-----------------|------------|
-| API endpoints, auth flows, ORM, migrations, REST | `backend-agent` | Implementacion server-side, esquema DB, middleware auth |
-| ETL, transformaciones de datos, LLM, RAG, vector DBs | `data-agent` | Diseno de pipeline, implementacion AI/ML, arquitectura de datos |
-| Tests, debugging, security review, code quality, E2E | `quality-agent` | Planes de test, debugging sistematico, auditorias de seguridad |
-
-Los domain agents corren como **subprocesos autonomos** (Task tool), no como inyeccion de contexto inline. Esto significa que cada experto carga su propio contexto y skills, manteniendo al agente principal ligero.
-
----
-
-## Scope + Domain Agents: Routing del Agente Principal (v13.2)
+El main agent NUNCA ejecuta. Para toda tarea, contrata un agente especializado via el skill `agent-hiring`.
 
 ```mermaid
 flowchart TD
     USER["Usuario escribe prompt"]
-    BOOTSTRAP["Batuta Bootstrap<br/>La Regla: skill aplica? USALO.<br/>MCP disponible? CONSULTALO."]
-    ROUTER["CLAUDE.md (Router)<br/>~220 lineas: personalidad,<br/>reglas, auto-routing"]
 
-    STEP0{"Step 0: Gate Check<br/>session.md → AWAITING_APPROVAL?"}
-    GATE_LOCK["Solo acepta:<br/>aprobacion o feedback<br/>(dale/proceed/si/no/ajusta...)"]
-
-    AUTOROUTE["Step 1-2: Auto-Routing<br/>Clasifica intent:<br/>Build | Fix | Continue | Backtrack | Question"]
-
-    subgraph SCOPE_AGENTS["SCOPE AGENTS (siempre cargados — maquinaria del hub)"]
-        PIPELINE["pipeline-agent<br/>SDD State Machine<br/>(9 skills)"]
-        INFRA["infra-agent<br/>Infraestructura<br/>(5 skills)"]
-        OBS["observability-agent<br/>Ciclo de sesion<br/>(sin skills activos)"]
+    subgraph MAIN["MAIN AGENT (CLAUDE.md — 105 lineas)"]
+        RULES["Research-First<br/>Self-Awareness<br/>Delegation por Contrato"]
+        DETECT["Detecta necesidad:<br/>que expertise necesito?"]
     end
 
-    subgraph DOMAIN_AGENTS["DOMAIN AGENTS (provisionados por tech detection)"]
-        BACKEND["backend-agent<br/>API, auth, DB patterns"]
-        QUALITY["quality-agent<br/>TDD, debugging, security<br/>(siempre provisionado)"]
-        DATA["data-agent<br/>ETL, RAG, LLM pipelines"]
+    CHECK{"Agente existe en<br/>.claude/agents/ o<br/>~/.claude/agents/?"}
+
+    subgraph HIRE["AGENT-HIRING PROTOCOL"]
+        PROPOSE["Propuesta de contratacion<br/>(USER STOP obligatorio)"]
+        CREATE_AGENT["Crea archivo .md<br/>en .claude/agents/"]
     end
 
-    subgraph SKILLS["SKILLS (carga lazy)"]
-        SDD["sdd-init...sdd-archive"]
-        ECO["ecosystem-creator<br/>ecosystem-lifecycle<br/>scope-rule<br/>team-orchestrator<br/>security-audit"]
+    subgraph AGENTS["5 AGENTS (contract templates)"]
+        PIPELINE["pipeline-agent<br/>(SDD lifecycle)"]
+        BACKEND["backend-agent<br/>(API, auth, DB)"]
+        DATA["data-agent<br/>(ETL, RAG, LLM)"]
+        QUALITY["quality-agent<br/>(tests, debug, security)"]
+        INFRA["infra-agent<br/>(deploy, CI/CD, monitoring)"]
     end
 
-    RESULT["Resultado al usuario"]
-    DIRECT["Responde directo<br/>(preguntas simples)"]
-    GATE["Execution Gate<br/>LIGHT | FULL"]
+    REPORT["Agente reporta:<br/>FINDINGS / FAILURES /<br/>DECISIONS / GOTCHAS"]
 
-    USER --> BOOTSTRAP --> ROUTER --> STEP0
-    STEP0 -->|"AWAITING_APPROVAL:<br/>proposal | task_plan"| GATE_LOCK --> RESULT
-    STEP0 -->|"AWAITING_APPROVAL:<br/>none"| AUTOROUTE
-    AUTOROUTE -->|"Build/Continue/Backtrack"| PIPELINE
-    AUTOROUTE -->|"scope: infra"| INFRA
-    AUTOROUTE -->|"scope: observability"| OBS
-    AUTOROUTE -->|"Question"| DIRECT
-    AUTOROUTE -->|"Quick fix"| GATE --> RESULT
-    PIPELINE --> SDD
-    PIPELINE --> BACKEND
-    PIPELINE --> QUALITY
-    PIPELINE --> DATA
-    INFRA --> ECO
-    SDD --> RESULT
-    ECO --> RESULT
-    BACKEND --> RESULT
-    QUALITY --> RESULT
-    DATA --> RESULT
+    USER --> MAIN --> DETECT --> CHECK
+    CHECK -->|"Si"| AGENTS
+    CHECK -->|"No"| HIRE --> PROPOSE -->|"aprobado"| CREATE_AGENT --> AGENTS
+    AGENTS --> REPORT
 
-    style ROUTER fill:#D4956A,color:#fff
-    style BOOTSTRAP fill:#D47272,color:#fff
-    style STEP0 fill:#D47272,color:#fff
-    style GATE_LOCK fill:#D47272,color:#fff
-    style AUTOROUTE fill:#E8B84D,color:#000
-    style PIPELINE fill:#7AAFC4,color:#fff
-    style INFRA fill:#8BB87A,color:#fff
-    style OBS fill:#9B7AB8,color:#fff
-    style SCOPE_AGENTS fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
-    style DOMAIN_AGENTS fill:#2d2d2d,stroke:#9B7AB8,color:#F5EDE4
-    style BACKEND fill:#C4A47A,color:#fff
-    style QUALITY fill:#D47272,color:#fff
-    style DATA fill:#7AC4A4,color:#fff
-    style DIRECT fill:#666,color:#fff
-    style GATE fill:#E8B84D,color:#000
+    style MAIN fill:#D4956A,color:#fff
+    style HIRE fill:#2d2d2d,stroke:#E8B84D,color:#F5EDE4
+    style AGENTS fill:#2d2d2d,stroke:#9B7AB8,color:#F5EDE4
+    style REPORT fill:#8BB87A,color:#fff
+    style PROPOSE fill:#D47272,color:#fff
 ```
 
-> El agente principal es un **router** con **auto-routing** y un **Step 0 (Gate Check)** previo a la clasificacion de intent. Antes de clasificar, el router lee `AWAITING_APPROVAL` de session.md. Si hay un gate pendiente (proposal o task_plan), SOLO se aceptan tokens de aprobacion o feedback — cualquier otro input se interpreta como feedback al gate, no como un nuevo intent. Principio: **"Los gates viven en el router, no en las skills"**. Si no hay gate pendiente, el routing continua normalmente: clasifica el intent del usuario (Build, Fix, Continue, Backtrack, Question) y delega automaticamente. Los **scope agents** siempre estan cargados (maquinaria del hub). Los **domain agents** se provisionan a cada proyecto segun su tech stack — excepto quality-agent que siempre esta presente.
+> El main agent no tiene skills cargados. Solo sabe a quien contratar. Skills pertenecen a los AGENTES. Los agentes reportan con formato estandar: FINDINGS, FAILURES, DECISIONS, GOTCHAS. Los agentes pueden correr en paralelo — 5 agentes investigando = minutos, no horas.
 
 ---
 
-## Skill Inventory: Sync Automatico
+## SDD Pipeline: 2 Modos (v15)
 
 ```mermaid
 flowchart LR
-    subgraph FUENTE["FUENTES DE VERDAD"]
-        SKILLS_MD["SKILL.md frontmatters<br/>(scope, auto_invoke,<br/>allowed-tools)"]
-    end
-
-    SYNC["infra/sync.sh<br/>(lee → agrupa → valida)"]
-
-    subgraph RESULTADO["INVENTARIO VALIDADO"]
-        CLAUDE_TABLE["Skills auto-descubiertos<br/>por Claude Code via<br/>campo description"]
-    end
-
-    SKILLS_MD --> SYNC
-    SYNC --> CLAUDE_TABLE
-
-    style FUENTE fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
-    style SYNC fill:#E8B84D,color:#000
-    style RESULTADO fill:#1a1a1a,stroke:#666,color:#999,stroke-dasharray: 5 5
-```
-
-> Agregar un skill nuevo = crear SKILL.md con frontmatter → correr sync.sh → inventario validado automaticamente.
-
----
-
-### Flujo de Provisioning de Skills y Agents (v13)
-
-```mermaid
-flowchart TD
-    INIT["sdd-init"]
-    READ["Lee skill-provisions.yaml"]
-    DETECT["Detecta tech stack"]
-
-    subgraph SKILLS_PROV["Provisioning de Skills"]
-        COPY_SKILLS["Copia skills relevantes<br/>a .claude/skills/"]
-    end
-
-    subgraph AGENTS_PROV["Provisioning de Agents"]
-        ALWAYS["always_agents:<br/>quality-agent<br/>(siempre provisionado)"]
-        RULES["agent_rules:<br/>backend-agent → Python|Node|Go<br/>data-agent → pandas|ETL|RAG|LLM"]
-        COPY_AGENTS["Copia agents relevantes<br/>a .claude/agents/ (proyecto)"]
-    end
-
-    MANIFEST[".provisions.json<br/>(skills + agents)"]
-
-    INIT --> READ --> DETECT
-    DETECT --> COPY_SKILLS
-    DETECT --> ALWAYS
-    DETECT --> RULES
-    ALWAYS --> COPY_AGENTS
-    RULES --> COPY_AGENTS
-    COPY_SKILLS --> MANIFEST
-    COPY_AGENTS --> MANIFEST
-
-    style SKILLS_PROV fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
-    style AGENTS_PROV fill:#2d2d2d,stroke:#9B7AB8,color:#F5EDE4
-    style ALWAYS fill:#D47272,color:#fff
-    style RULES fill:#E8B84D,color:#000
-    style MANIFEST fill:#7AAFC4,color:#fff
-```
-
-session-start.sh usa logica 3-way:
-- `.provisions.json` existe → SOLO skills y agents locales (proyecto provisionado)
-- `.claude/skills/` sin manifest → locales + globales (backward compatible)
-- Sin skills locales → solo globales (backward compatible)
-
-> El provisioning permite que cada proyecto reciba exactamente los skills y agents que necesita segun su tech stack. `always_agents` garantiza que quality-agent este en todos los proyectos. `agent_rules` mapea tecnologias detectadas a domain agents especificos. La logica 3-way garantiza compatibilidad hacia atras con proyectos existentes.
-
----
-
-## Ciclo de Vida de un Agent (v13.1)
-
-```mermaid
-flowchart LR
-    CREATE["CREATE<br/>ecosystem-creator<br/>genera agent en<br/>BatutaClaude/agents/<br/>o .claude/agents/"]
-    CLASSIFY["CLASSIFY<br/>ecosystem-lifecycle<br/>generic vs<br/>project-specific"]
-    SYNC["SYNC<br/>setup.sh --sync<br/>copia hub agents<br/>a ~/.claude/agents/"]
-    PROVISION["PROVISION<br/>sdd-init<br/>copia agents relevantes<br/>a .claude/agents/"]
-    SYNCBACK["SYNC BACK<br/>ecosystem-lifecycle<br/>propagacion al hub<br/>(requiere auth)"]
-
-    CREATE --> CLASSIFY
-    CLASSIFY -->|"generic"| SYNC --> PROVISION
-    CLASSIFY -->|"project-specific"| PROVISION
-    PROVISION -.->|"agent util para otros"| SYNCBACK --> SYNC
-
-    style CREATE fill:#8BB87A,color:#fff
-    style CLASSIFY fill:#E8B84D,color:#000
-    style SYNC fill:#7AAFC4,color:#fff
-    style PROVISION fill:#9B7AB8,color:#fff
-    style SYNCBACK fill:#D4956A,color:#fff
-```
-
-> **Ciclo completo**: crear → clasificar → sincronizar → provisionar → (opcionalmente) sincronizar de vuelta al hub. Los agents **genericos** (utiles para cualquier proyecto) fluyen al hub y de ahi a todos los proyectos. Los agents **project-specific** se quedan locales. Si un agent local demuestra utilidad general, `ecosystem-lifecycle` propone propagarlo al hub — siempre con autorizacion del usuario.
-
-### Modelo de Cantidad de Agents
-
-| Tipo | Cantidad | Criterio de crecimiento |
-|------|----------|------------------------|
-| **Scope agents** (pipeline, infra, observability) | Fijo en 3 | Maquinaria del SDD pipeline — no crece |
-| **Domain agents** (backend, quality, data) | 3-8 total | Solo crece para dominios genuinamente nuevos (mobile, DevOps, frontend) |
-| **Project-specific** | Variable | Se quedan locales, no sincronizan al hub a menos que se generalicen |
-
-Un domain agent nuevo solo se justifica cuando el dominio tiene: (1) convenciones propias que difieren de agents existentes, (2) 3+ skills que le pertenecen, y (3) limites de scope claros (own/coordinate/don't-touch).
-
----
-
-## Flujo de Trabajo SDD (Spec-Driven Development) — v11 State Machine
-
-```mermaid
-flowchart LR
-    subgraph USUARIO["TU (el humano)"]
-        U_DESCRIBE["Describes el<br/>problema"]
-        U_APRUEBA["Apruebas en<br/>checkpoints"]
-    end
-
-    subgraph ORQUESTADOR["AGENTE PRINCIPAL (auto-routing)"]
-        ORC["Clasifica intent<br/>Avanza automaticamente<br/>Para en checkpoints"]
-    end
-
-    subgraph PIPELINE["SUB-AGENTES SDD (state machine)"]
+    subgraph SPRINT["SPRINT (default — 0 gates formales)"]
         direction LR
-        INIT["sdd-init<br/>Tipo de<br/>proyecto"]
-        EXPLORE["sdd-explore<br/>(+ MCP Discovery)<br/>Investigar opciones"]
-        G025{{"G0.25<br/>MCP Ready"}}
-        PROPOSE["sdd-propose<br/>Propuesta<br/>formal"]
-        SPEC["sdd-spec<br/>Especificaciones<br/>tecnicas"]
-        DESIGN["sdd-design<br/>Arquitectura<br/>y diseno"]
-        TASKS["sdd-tasks<br/>Dividir<br/>en tareas"]
-        APPLY["sdd-apply<br/>Escribir<br/>codigo"]
-        VERIFY["sdd-verify<br/>Verificar<br/>calidad"]
-        ARCHIVE["sdd-archive<br/>Archivar y<br/>documentar"]
+        S_RESEARCH["Research<br/>(obligatorio)"]
+        S_APPLY["Apply<br/>(subagentes implementan)"]
+        S_VERIFY["Verify"]
     end
 
-    U_DESCRIBE --> ORC
-    ORC --> INIT --> EXPLORE --> G025 --> PROPOSE
-    PROPOSE --> SPEC
-    PROPOSE --> DESIGN
-    SPEC --> TASKS
-    DESIGN --> TASKS
-    TASKS --> APPLY --> VERIFY --> ARCHIVE
-    ARCHIVE --> U_APRUEBA
+    subgraph COMPLETO["COMPLETO (CTO lo pide via PRD — 1 gate)"]
+        direction LR
+        C_RESEARCH["Research<br/>(obligatorio)"]
+        C_EXPLORE["Explore<br/>(subagentes en paralelo)"]
+        C_DESIGN["Design"]
+        C_GATE{{"USER STOP<br/>Design Approval"}}
+        C_APPLY["Apply"]
+        C_VERIFY["Verify"]
+    end
 
-    APPLY -.->|"backtrack"| SPEC
-    APPLY -.->|"backtrack"| DESIGN
-    APPLY -.->|"backtrack"| EXPLORE
-    VERIFY -.->|"backtrack"| DESIGN
-    VERIFY -.->|"backtrack"| APPLY
+    S_RESEARCH --> S_APPLY --> S_VERIFY
+    C_RESEARCH --> C_EXPLORE --> C_DESIGN --> C_GATE --> C_APPLY --> C_VERIFY
 
-    ORC -.->|"auto-routing"| PIPELINE
-    U_APRUEBA -.->|"checkpoints"| ORC
-
-    style USUARIO fill:#2d2d2d,stroke:#E8B84D,color:#F5EDE4
-    style ORQUESTADOR fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
-    style PIPELINE fill:#1a1a1a,stroke:#8BB87A,color:#F5EDE4
-    style G025 fill:#E8B84D,color:#000
+    style SPRINT fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
+    style COMPLETO fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style C_GATE fill:#D47272,color:#fff
+    style S_RESEARCH fill:#E8B84D,color:#000
+    style C_RESEARCH fill:#E8B84D,color:#000
 ```
 
-### Dependencias entre fases (con backtracks)
+> **Research-First es NO NEGOCIABLE en ambos modos**. SPRINT no tiene gates formales — research → apply → verify. COMPLETO tiene 1 gate en Design Approval. PRD es el artefacto unico de planificacion — el CTO lo escribe en Notion, Claude Code lo lee via MCP.
 
-```mermaid
-graph LR
-    E[explore] --> G025{{"G0.25"}} --> P[propose] --> S[spec]
-    P --> D[design]
-    S --> T[tasks]
-    D --> T
-    T --> A[apply]
-    A --> V[verify]
-    V --> AR[archive]
-
-    A -.->|"caso faltante"| S
-    A -.->|"problema de arch"| D
-    A -.->|"problema nuevo"| P
-    V -.->|"fallo de diseno"| D
-    V -.->|"bug puntual"| A
-
-    style S fill:#7AAFC4,color:#fff
-    style D fill:#7AAFC4,color:#fff
-    style G025 fill:#E8B84D,color:#000
-```
-
-> **spec** y **design** en paralelo. Lineas punteadas = backtracks (retrocesos cuando se descubren problemas). Gates G0.25 (MCP Ready), G0.5 (Discovery Complete), G1 (Solution Worth Building) y G2 (Production Ready) son checkpoints estrategicos. Cada backtrack se registra en `backtrack-log.md` para trazabilidad. 6 specialist skills se invocan condicionalmente: process-analyst, recursion-designer, llm-pipeline-design, data-pipeline-design, worker-scaffold, compliance-colombia.
-
-### Discovery Depth (anti-shallow-loop) — v13.2
-
-La discovery superficial causa el modo de fallo mas caro del pipeline: asumir mal -> implementar -> usuario corrige -> re-implementar -> repetir. Para prevenir esto:
-
-| Regla | Que significa | Ejemplo |
-|-------|-------------|---------|
-| **Leer antes de asumir** | Explorar codigo existente antes de proponer | Verificar que un endpoint realmente existe antes de integrarlo |
-| **Verificar flujos reales** | No asumir comportamiento por nombre de funcion | Leer `processOrder()` para saber que realmente hace, no adivinarlo |
-| **Reafirmar con especificos** | Reformular flujos con datos concretos | "La factura se crea en `billing.create()` que llama a `tax.calculate(subtotal, iva_rate)`" |
-| **Technical Assumptions** | Seccion obligatoria en proposals | Lista explicita de supuestos de arquitectura para revision del usuario |
-| **Diagramas de secuencia** | Obligatorios para workflows complejos | Quien llama a quien, con que datos, en que orden |
-
-> **Test de completitud**: Si la propuesta no puede responder el flujo de datos para CADA integracion, la exploracion necesita profundizar mas. Una propuesta que dice "se conecta con el ERP" sin especificar el endpoint, formato de datos y manejo de errores es una propuesta incompleta.
-
----
-
-## Carga Lazy de Skills (4 niveles — v13)
+### PRD como Artefacto Unico
 
 ```mermaid
 flowchart TD
-    START["Claude inicia conversacion"]
-    READ["Nivel 1: Lee CLAUDE.md<br/>(~220 lineas: personalidad,<br/>reglas, scope routing table)"]
-    TASK["Usuario pide tarea"]
-    GATE["Execution Gate<br/>clasifica scope"]
-    LOAD_AGENT["Nivel 2: Carga agent<br/>(scope o domain, ~80-120 lineas:<br/>reglas del scope/dominio)"]
-    LOAD_SKILL["Nivel 3: Carga SKILL.md<br/>(~200-500 lineas:<br/>patrones especificos)"]
-    WORK["Ejecuta la tarea"]
-    SIMPLE{"Pregunta simple?"}
-    DIRECT["Responde directo<br/>(sin routing)"]
-
-    subgraph SDK_LEVEL["Nivel 4: SDK Deployment"]
-        SDK_BLOCK["sdk: block en agent<br/>(model, max_tokens,<br/>allowed_tools, settings)"]
-        CI_CD["CI/CD lee sdk: block<br/>→ deploya agente como<br/>servicio independiente"]
+    subgraph CTO["CAPA CTO — Notion"]
+        PRD["PRD<br/>(Product Requirements Doc)<br/>unico artefacto de planificacion"]
     end
 
-    START --> READ --> TASK --> SIMPLE
-    SIMPLE -->|"Si"| DIRECT
-    SIMPLE -->|"No"| GATE --> LOAD_AGENT --> LOAD_SKILL --> WORK
-    LOAD_AGENT -.->|"deployment channel"| SDK_BLOCK --> CI_CD
+    subgraph BRIDGE["PUENTE"]
+        MCP["Notion MCP<br/>(busqueda semantica<br/>por nombre, nunca IDs)"]
+    end
 
-    style READ fill:#D4956A,color:#fff
-    style LOAD_AGENT fill:#7AAFC4,color:#fff
-    style LOAD_SKILL fill:#8BB87A,color:#fff
-    style GATE fill:#E8B84D,color:#000
-    style DIRECT fill:#666,color:#fff
-    style SDK_LEVEL fill:#2d2d2d,stroke:#D47272,color:#F5EDE4
-    style SDK_BLOCK fill:#D47272,color:#fff
-    style CI_CD fill:#9B7AB8,color:#fff
+    subgraph CODE["CAPA CODE — Claude Code"]
+        READ_PRD["Lee PRD via MCP"]
+        EXECUTE["Ejecuta segun modo:<br/>SPRINT o COMPLETO"]
+    end
+
+    PRD -->|"escrito en Notion"| MCP
+    MCP -->|"leido via MCP"| READ_PRD --> EXECUTE
+
+    style CTO fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
+    style BRIDGE fill:#E8B84D,color:#000
+    style CODE fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style PRD fill:#D4956A,color:#fff
 ```
 
-> **Mapeo MoE**: El Nivel 1 es el **router** (CLAUDE.md, ~220 lineas). El Nivel 2 carga al **expert** (domain agent, ~80-120 lineas de thick persona). El Nivel 3 carga los **parameters** (skill, ~200-500 lineas de patrones especificos). Solo se carga lo que se necesita — los domain agents corren como subprocesos autonomos (Task tool), no como contexto inyectado en el agente principal. El **Nivel 4** es un canal de deployment: el bloque `sdk:` en cada agent define model, max_tokens, allowed_tools y settings, permitiendo que CI/CD despliegue agentes como servicios independientes.
+> El PRD reemplaza la cadena de 5 artefactos (explore → propose → spec → design → tasks). Un solo documento con todo lo necesario para ejecutar.
 
 ---
 
-## Continuidad de Sesion (con Gate Status y Checkpoint) — v14.1
+## Skills: Pertenecen a los Agentes, No al Main Agent (v15)
 
 ```mermaid
 flowchart TD
-    START["Claude inicia conversacion<br/>(SessionStart hook)"]
+    subgraph HUB["batuta-dots HUB (43 skills)"]
+        ALL_SKILLS["43 skills totales"]
+    end
+
+    subgraph GLOBAL["~/.claude/skills/ (13 globales)"]
+        G_SCOPE["scope-rule"]
+        G_ECO["ecosystem-creator<br/>ecosystem-lifecycle"]
+        G_HIRING["agent-hiring"]
+        G_SDD["sdd-init, sdd-explore<br/>sdd-apply, sdd-verify<br/>sdd-design"]
+        G_OTHER["team-orchestrator<br/>security-audit<br/>skill-eval, prd-generator"]
+    end
+
+    subgraph PROJECT[".claude/skills/ (per-project, provisionados)"]
+        P_TECH["Skills segun tech stack<br/>(fastapi-crud, react-nextjs,<br/>sqlalchemy-models, etc.)"]
+    end
+
+    subgraph AGENTS["AGENTES CARGAN SUS SKILLS"]
+        A_PIPELINE["pipeline-agent<br/>→ sdd-*, prd-generator"]
+        A_BACKEND["backend-agent<br/>→ fastapi-crud, jwt-auth"]
+        A_DATA["data-agent<br/>→ data-pipeline, llm-pipeline"]
+        A_QUALITY["quality-agent<br/>→ tdd-workflow, e2e-testing"]
+        A_INFRA["infra-agent<br/>→ coolify-deploy, ci-cd"]
+    end
+
+    HUB -->|"setup.sh --sync"| GLOBAL
+    HUB -->|"/batuta-init<br/>(tech detection)"| PROJECT
+    GLOBAL --> AGENTS
+    PROJECT --> AGENTS
+
+    style HUB fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
+    style GLOBAL fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
+    style PROJECT fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style AGENTS fill:#2d2d2d,stroke:#9B7AB8,color:#F5EDE4
+```
+
+> El main agent NO carga skills. Claude Code carga solo descripciones de 1 linea (~450 tokens) al inicio. El contenido completo carga solo cuando un agente contratado lo necesita. Skills del hub: 13 globales + 30 per-project = 43 total.
+
+---
+
+## State: session.md como Fuente Unica de Verdad (v15)
+
+```mermaid
+flowchart TD
+    START["Claude inicia sesion<br/>(SessionStart hook)"]
     CHECK_SESSION{"Existe<br/>.batuta/session.md?"}
     CHECK_CP{"Existe<br/>.batuta/CHECKPOINT.md?"}
-    READ_SESSION["Lee session.md:<br/>estado SDD, decisiones,<br/>convenciones del proyecto"]
-    READ_CP["Inyecta CHECKPOINT.md:<br/>estado operacional anterior<br/>(intentos, decisiones, gotchas)"]
-    READ_GATE["Lee Gate Status:<br/>AWAITING_APPROVAL =<br/>proposal | task_plan | none"]
-    NO_SESSION["Procede normalmente<br/>(proyecto nuevo)"]
-    WORK["Trabaja en la tarea"]
-    BEFORE3["Antes de secuencia<br/>de 3+ tool calls"]
-    WRITE_CP["MUST: escribe<br/>.batuta/CHECKPOINT.md"]
-    STOP_HOOK["Stop hook<br/>(fin de sesion o compaction)"]
-    CP_MANDATORY["STEP 1: Escribe CHECKPOINT.md<br/>(SIEMPRE, sin condicion)"]
-    NOTION_PERSIST["STEP 2: Persiste en Notion KB<br/>(si MCP disponible +<br/>contenido no trivial)"]
-    UPDATE_SESSION["STEP 3: Actualiza session.md<br/>(si trabajo significativo)"]
+    READ_SESSION["Lee session.md:<br/>WHERE / WHY / HOW<br/>80 lineas max"]
+    READ_CP["Inyecta CHECKPOINT.md:<br/>paso N de M, intentos,<br/>gotchas con evidencia"]
+    NOTION["Notion MCP:<br/>busca proyecto por nombre<br/>→ inyecta contexto"]
+    NO_SESSION["Proyecto nuevo"]
+
+    subgraph WORK["DURANTE LA SESION"]
+        UPDATE["session.md se actualiza<br/>en CADA INTERACCION"]
+        MUST["MUST: CHECKPOINT.md<br/>antes de 3+ tool calls"]
+    end
+
+    subgraph STOP["STOP HOOK"]
+        S1["CHECKPOINT.md<br/>(archiva ultimas 10)"]
+        S2["session-log.jsonl<br/>(append)"]
+        S3["Notion KB<br/>(gotchas, decisions)"]
+    end
 
     START --> CHECK_SESSION
     CHECK_SESSION -->|"Si"| READ_SESSION --> CHECK_CP
-    CHECK_SESSION -->|"No"| NO_SESSION --> WORK
-    CHECK_CP -->|"Si"| READ_CP --> READ_GATE --> WORK
-    CHECK_CP -->|"No"| READ_GATE --> WORK
-    WORK --> BEFORE3 --> WRITE_CP
-    WORK --> STOP_HOOK
-    STOP_HOOK --> CP_MANDATORY --> NOTION_PERSIST --> UPDATE_SESSION
+    CHECK_SESSION -->|"No"| NOTION --> NO_SESSION
+    CHECK_CP -->|"Si"| READ_CP --> WORK
+    CHECK_CP -->|"No"| WORK
+    WORK --> STOP
+    S1 --> S2 --> S3
 
     style READ_SESSION fill:#8BB87A,color:#fff
     style READ_CP fill:#9B7AB8,color:#fff
-    style READ_GATE fill:#D47272,color:#fff
-    style WRITE_CP fill:#9B7AB8,color:#fff
-    style CP_MANDATORY fill:#9B7AB8,color:#fff
-    style NOTION_PERSIST fill:#7AAFC4,color:#fff
-    style UPDATE_SESSION fill:#7AAFC4,color:#fff
+    style UPDATE fill:#7AAFC4,color:#fff
+    style MUST fill:#D47272,color:#fff
+    style NOTION fill:#E8B84D,color:#000
     style NO_SESSION fill:#666,color:#fff
-    style STOP_HOOK fill:#D47272,color:#fff
-    style BEFORE3 fill:#E8B84D,color:#000
 ```
 
-**Tres capas de persistencia**:
-| Archivo | Propósito | Escrito por | Leído por |
-|---------|-----------|-------------|-----------|
-| `MEMORY.md` | Preferencias de usuario (global, entre proyectos) | Usuario / agente | Todos los proyectos |
-| `.batuta/session.md` | Briefing entre sesiones (WHERE/WHY/HOW, 80 líneas) | Stop hook (si trabajo significativo) | SessionStart, CTO |
-| `.batuta/CHECKPOINT.md` | Estado operacional entre compactions (solo estado actual) | Stop hook (SIEMPRE) + MUST rule (pre-tool-calls) | SessionStart (auto-inyectado) |
+**Capas de persistencia (v15)**:
 
-> CHECKPOINT.md captura lo que session.md no puede: qué step iba el agente, qué intentó y falló, qué decidió con qué evidencia. Obligation, no cognitivo — el Stop hook siempre escribe, SessionStart siempre inyecta si existe.
+| Capa | Archivo | Proposito | Escrito | Leido |
+|------|---------|-----------|---------|-------|
+| Global | `MEMORY.md` | Preferencias usuario | Usuario/agente | Todos los proyectos |
+| Sesion | `.batuta/session.md` | Fuente unica de verdad (WHERE/WHY/HOW) | Cada interaccion | SessionStart, CTO |
+| Anti-compaction | `.batuta/CHECKPOINT.md` | Estado operacional (paso N de M) | MUST rule + Stop | SessionStart (auto) |
+| Largo plazo | Notion KB | Gotchas, decisions, discoveries | Stop (auto, si MCP) | Research-First chain |
+
+> session.md se actualiza en CADA interaccion, no solo al cerrar. Es la fuente unica de verdad. CHECKPOINT.md es el seguro anti-compaction — captura lo que session.md no puede (intentos fallidos, evidencia de decisiones).
 
 ---
 
-## Flujo CTO → Ejecucion: Two-Layer Pipeline (v13.3)
+## Research-First Chain (v15)
 
 ```mermaid
-flowchart TD
-    JNMZ(["JNMZ"])
+flowchart LR
+    TASK["Tarea nueva"]
+    R1["1. Notion KB via MCP<br/>(ya resolvimos esto?)"]
+    R2["2. Skill relevante<br/>(leerlo, verificar vigencia)"]
+    R3["3. WebFetch docs oficiales<br/>(framework changes)"]
+    R4["4. WebSearch<br/>(como otros lo resolvieron)"]
+    EXECUTE["Implementar con<br/>conocimiento verificado"]
 
-    subgraph CTO ["CAPA CTO — Claude.ai"]
-        direction TB
-        IDEA["Idea / Problema"]
+    TASK --> R1 --> R2 --> R3 --> R4 --> EXECUTE
 
-        subgraph PENSAR ["PENSAR"]
-            PD["00 Product Designer"]
-            G0{"Gate 0\nProblem Worth Solving?"}
-            PRE["Pre-G1 Filters"]
-            PA["14 Process Analyst"]
-            RD["15 Recursion Designer"]
-            KG["16 Knowledge Gap Detector"]
-            G05{"Gate 0.5\nDiscovery Complete?"}
-            G1{"Gate 1\nSolution Worth Building?"}
-            AR["01 Solution Architect"]
-            SM["Slice Map"]
-            G075{"Gate 0.75\nSlice Map Approved?"}
-        end
-
-        DIR["Directiva Slice N + BATUTA CONFIG"]
-    end
-
-    subgraph DEVOPS ["CAPA EJECUCION — Claude Code"]
-        SDD["SDD Pipeline\nExplore - Spec - Apply - Verify"]
-        CONSTRUIR["02 Data - 03 LLM - 04 Platform"]
-        REPORT["Reporte: criterio met / not met"]
-    end
-
-    subgraph PROD ["PRODUCTIVIZAR"]
-        P1["05 Security - 06 Compliance\n07 QA - 08 Tech Writer"]
-        ORTA["10 O.R.T.A. — Gate 2"]
-    end
-
-    subgraph OPERAR ["OPERAR"]
-        OP["09 Cost - 13 Client Success"]
-        FB["Feedback"]
-    end
-
-    JNMZ --> IDEA --> PD --> G0
-    G0 -->|NO-GO| JNMZ
-    G0 -->|GO| PRE
-    PRE --> PA & RD & KG
-    KG -->|"GAP — skill-creator"| JNMZ
-    PA & RD --> G05
-    G05 -->|"INCOMPLETO"| PD
-    G05 -->|COMPLETO| G1
-    G1 -->|KILL/ITERATE| JNMZ
-    G1 -->|BUILD| AR --> SM --> G075
-    G075 -->|"AJUSTAR"| AR
-    G075 -->|APROBADO| DIR
-
-    DIR --> SDD --> CONSTRUIR --> REPORT
-    REPORT -->|not met| DIR
-    REPORT -->|"met - N+1"| DIR
-    REPORT -->|ultimo slice met| PROD
-
-    PROD --> P1 --> ORTA
-    ORTA -->|FIX| PROD
-    ORTA -->|"SHIP"| OPERAR
-    OPERAR --> OP --> FB --> IDEA
-
-    style G05 fill:#e74c3c,color:#fff
-    style G075 fill:#e74c3c,color:#fff
-    style KG fill:#f39c12,color:#fff
-    style DIR fill:#2ecc71,color:#fff
-    style ORTA fill:#3498db,color:#fff
+    style R1 fill:#7AAFC4,color:#fff
+    style R2 fill:#8BB87A,color:#fff
+    style R3 fill:#E8B84D,color:#000
+    style R4 fill:#D4956A,color:#fff
+    style EXECUTE fill:#8BB87A,color:#fff
 ```
 
-> **Flujo de dos capas (v13.3)**: La capa CTO (Claude.ai Projects) hace discovery profundo, arquitectura, y corta en slices verticales. La capa de ejecucion (Claude Code) recibe una directiva por slice via bloque `batuta-config`, ejecuta el SDD Pipeline completo, y reporta criterio de salida. JNMZ es el puente humano entre ambas capas — lleva reportes al CTO y directivas a Claude Code. El Knowledge Gap Detector (16) puede detener el flujo si detecta tecnologias sin skill, devolviendo al usuario para crear el skill antes de continuar. Gate 0.75 (Slice Map Approved) es el punto donde el usuario valida que los slices del CTO cubren toda la solucion antes de ejecutar la primera directiva.
+> Research se hace con subagentes en paralelo. 5 subagentes investigando = minutos. Training data puede estar desactualizado — verificar SIEMPRE. Si no hay skill → buscar en web → considerar crear skill si el patron es reutilizable.
 
 ---
 
-## Deteccion de Skills Faltantes
+## Notion MCP: Puente CTO ↔ Code (v15)
 
 ```mermaid
 flowchart TD
-    START["Usuario pide implementar<br/>algo con tecnologia X"]
-    CHECK{"Existe un skill activo<br/>en ~/.claude/skills/ o<br/>.claude/skills/?"}
-    LOAD["Cargar skill<br/>y continuar"]
-    STOP["PARAR — Informar<br/>al usuario"]
-    OPTIONS{"Usuario elige"}
-    OPT1["Opcion 1:<br/>Investigar Context7<br/>+ crear skill proyecto"]
-    OPT2["Opcion 2:<br/>Investigar Context7<br/>+ crear skill global"]
-    OPT3["Opcion 3:<br/>Continuar sin skill<br/>+ agregar TODO"]
-    CREATE["ecosystem-creator<br/>auto-discovery flow"]
-    CONTINUE["Implementar<br/>con skill cargado"]
+    subgraph CTO_DESKTOP["CTO DESKTOP (Notion)"]
+        PROJ["Proyectos DB"]
+        KB["Knowledge Base"]
+        PRD_N["PRDs / Directivas"]
+    end
 
-    START --> CHECK
-    CHECK -->|"Si"| LOAD
-    CHECK -->|"No"| STOP
-    LOAD --> CONTINUE
-    STOP --> OPTIONS
-    OPTIONS -->|"1"| OPT1
-    OPTIONS -->|"2"| OPT2
-    OPTIONS -->|"3"| OPT3
-    OPT1 --> CREATE
-    OPT2 --> CREATE
-    CREATE --> CONTINUE
-    OPT3 --> CONTINUE
+    subgraph MCP_BRIDGE["NOTION MCP (busqueda semantica)"]
+        SEARCH["Busca por NOMBRE<br/>(nunca hardcodear IDs)"]
+    end
 
-    style STOP fill:#D47272,color:#fff
-    style CREATE fill:#8BB87A,color:#fff
-    style CONTINUE fill:#7AAFC4,color:#fff
+    subgraph CODE_LAYER["CLAUDE CODE"]
+        INTERACTION0["Interaction 0:<br/>busca proyecto por nombre<br/>del directorio de trabajo"]
+        READ_PRD_N["Lee PRD/directiva activa<br/>en paginas hijas"]
+        WRITE_KB["Escribe gotchas,<br/>decisions a KB"]
+    end
+
+    PROJ --> SEARCH
+    KB --> SEARCH
+    PRD_N --> SEARCH
+    SEARCH --> INTERACTION0
+    SEARCH --> READ_PRD_N
+    CODE_LAYER -->|"Stop hook"| WRITE_KB --> KB
+
+    style CTO_DESKTOP fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
+    style MCP_BRIDGE fill:#E8B84D,color:#000
+    style CODE_LAYER fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style SEARCH fill:#E8B84D,color:#000
+```
+
+> NUNCA hardcodear database IDs, page IDs, o data_source_ids. Los IDs cambian — los nombres persisten. Si Notion MCP no disponible, continuar sin bloquear.
+
+---
+
+## Flujo Completo: Desde Prompt hasta Resultado (v15)
+
+```mermaid
+flowchart TD
+    USER["Usuario describe tarea"]
+
+    subgraph MAIN["MAIN AGENT (gestor)"]
+        RESEARCH["Research-First chain<br/>(Notion → skill → web)"]
+        CLASSIFY{"Modo SDD?"}
+    end
+
+    subgraph SPRINT_FLOW["SPRINT (default)"]
+        S_HIRE["Contrata agente(s)<br/>via agent-hiring"]
+        S_APPLY_F["Agentes implementan<br/>con skills verificados"]
+        S_VERIFY_F["Agente quality verifica"]
+    end
+
+    subgraph COMPLETO_FLOW["COMPLETO (CTO via PRD)"]
+        C_PRD["Lee PRD de Notion"]
+        C_EXPLORE_F["Agentes exploran<br/>en paralelo"]
+        C_DESIGN_F["Agente pipeline<br/>produce Design"]
+        C_GATE_F{{"USER STOP"}}
+        C_APPLY_F["Agentes implementan"]
+        C_VERIFY_F["Verificacion"]
+    end
+
+    RESULT["Resultado + session.md<br/>actualizado"]
+
+    USER --> MAIN --> RESEARCH --> CLASSIFY
+    CLASSIFY -->|"sin PRD"| SPRINT_FLOW --> RESULT
+    CLASSIFY -->|"con PRD"| COMPLETO_FLOW --> RESULT
+
+    S_HIRE --> S_APPLY_F --> S_VERIFY_F
+    C_PRD --> C_EXPLORE_F --> C_DESIGN_F --> C_GATE_F --> C_APPLY_F --> C_VERIFY_F
+
+    style MAIN fill:#D4956A,color:#fff
+    style SPRINT_FLOW fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
+    style COMPLETO_FLOW fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
+    style C_GATE_F fill:#D47272,color:#fff
+    style RESEARCH fill:#E8B84D,color:#000
 ```
 
 ---
 
-## Scope Rule (Regla de Alcance)
+## Hooks: Enforcement Deterministico (v15)
 
 ```mermaid
 flowchart TD
-    START["Crear un archivo nuevo"]
-    Q{"Quien lo va a usar?"}
-    F1["1 feature sola"]
+    subgraph HOOKS["CLAUDE CODE HOOKS"]
+        SS["SessionStart<br/>(command)"]
+        STOP_H["Stop<br/>(prompt)"]
+        SUB_STOP["SubagentStop<br/>(prompt)"]
+    end
+
+    subgraph SS_ACTIONS["SessionStart — lee + inyecta"]
+        READ_SKILLS["Inventario de skills<br/>(descripciones 1 linea)"]
+        READ_SESSION_H["session.md<br/>(WHERE/WHY/HOW)"]
+        READ_CP_H["CHECKPOINT.md<br/>(si existe)"]
+    end
+
+    subgraph STOP_ACTIONS["Stop — archiva + persiste"]
+        STEP1["CHECKPOINT.md<br/>(archiva last 10)"]
+        STEP2["session-log.jsonl<br/>(append)"]
+        STEP3["Notion KB<br/>(gotchas si MCP)"]
+    end
+
+    subgraph SUB_ACTIONS["SubagentStop — reporta"]
+        TEAM_HIST["team-history.md<br/>(append sub-agent report)"]
+    end
+
+    SS --> SS_ACTIONS
+    STOP_H --> STOP_ACTIONS
+    SUB_STOP --> SUB_ACTIONS
+
+    style HOOKS fill:#2d2d2d,stroke:#E8B84D,color:#F5EDE4
+    style SS fill:#8BB87A,color:#fff
+    style STOP_H fill:#D47272,color:#fff
+    style SUB_STOP fill:#9B7AB8,color:#fff
+    style STEP1 fill:#9B7AB8,color:#fff
+    style STEP2 fill:#7AAFC4,color:#fff
+```
+
+> Hooks ejecutan deterministicamente — no dependen de que Claude "recuerde". SessionStart inyecta contexto. Stop archiva y persiste. SubagentStop captura reportes de agentes contratados en team-history.md.
+
+---
+
+## Scope Rule
+
+```mermaid
+flowchart TD
+    START["Crear archivo nuevo"]
+    Q{"Quien lo usa?"}
+    F1["1 feature"]
     F2["2+ features"]
     FALL["Toda la app"]
 
@@ -613,9 +412,9 @@ flowchart TD
     NEVER["NUNCA crear:<br/>utils/, helpers/, lib/,<br/>components/ en la raiz"]
 
     START --> Q
-    Q -->|"Solo inventario"| F1
-    Q -->|"Checkout + carrito"| F2
-    Q -->|"Auth, DB, logging"| FALL
+    Q -->|"Solo una"| F1
+    Q -->|"Varias"| F2
+    Q -->|"Todo"| FALL
     F1 --> PATH1
     F2 --> PATH2
     FALL --> PATH3
@@ -632,337 +431,46 @@ flowchart TD
 
 ---
 
-## Auto-Update SPO (Propagacion de Skills)
+## Skill Sync: Hub → Proyectos (v15)
 
 ```mermaid
 flowchart TD
-    PROJECT["Proyecto X crea<br/>un skill nuevo"]
-    Q1{"Es reutilizable<br/>en otros proyectos?"}
-    STAYS["Se queda solo<br/>en Proyecto X"]
-    PUSH_CMD["sync.sh --push<br/>(import + cross-sync<br/>+ commit + push)"]
-    BENEFIT["Todos los proyectos<br/>futuros se benefician"]
+    subgraph HUB_SYNC["batuta-dots HUB (43 skills, 5 agents)"]
+        BC["BatutaClaude/<br/>skills/ + agents/"]
+    end
 
-    PROJECT --> Q1
-    Q1 -->|"No"| STAYS
-    Q1 -->|"Si"| PUSH_CMD --> BENEFIT
+    subgraph GLOBAL_SYNC["~/.claude/skills/ (13 globales)"]
+        G_SK["Skills universales"]
+    end
 
-    style PROJECT fill:#7AAFC4,color:#fff
-    style BENEFIT fill:#8BB87A,color:#fff
-    style STAYS fill:#666,color:#fff
-    style PUSH_CMD fill:#E8B84D,color:#000
+    subgraph PROJECT_SYNC["Proyecto (.claude/)"]
+        P_SKILLS[".claude/skills/<br/>(provisionados por tech)"]
+        P_AGENTS[".claude/agents/<br/>(contratados bajo demanda)"]
+        P_SESSION[".batuta/session.md"]
+    end
+
+    BC -->|"setup.sh --sync"| G_SK
+    BC -->|"/batuta-init"| P_SKILLS
+    BC -->|"agent-hiring"| P_AGENTS
+
+    P_SKILLS -->|"/batuta-sync<br/>opcion 2: subir al hub"| BC
+
+    style HUB_SYNC fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
+    style GLOBAL_SYNC fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
+    style PROJECT_SYNC fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
 ```
+
+> `/batuta-sync` maneja el flujo bidireccional: opcion 2 = subir al hub, opcion 3 = traer del hub. Skills se provisionan con `/batuta-init` (tech detection). Agents se crean bajo demanda via `agent-hiring`.
 
 ---
 
-## Modelo de Ejecucion de 3 Niveles (v13.1)
-
-```mermaid
-flowchart TD
-    USER["Usuario pide tarea"]
-    GATE["Execution Gate<br/>clasifica complejidad"]
-
-    subgraph NIVEL1["NIVEL 1 — Main Agent (CLAUDE.md router)"]
-        SOLO["Claude trabaja solo<br/>Bug fix, pregunta, edicion<br/>CLAUDE.md → Gate → skill → ejecutar<br/><br/>Maneja tareas simples directamente.<br/>El router MoE decide si escalar."]
-    end
-
-    subgraph NIVEL2["NIVEL 2 — Domain Agents (subagents via Task tool)"]
-        direction TB
-        SUBAGENT["Domain agents como subprocesos autonomos<br/>Cada uno con su propio contexto + skills"]
-        BACKEND_SUB["backend-agent<br/>(API/auth/DB)"]
-        DATA_SUB["data-agent<br/>(ETL/AI/RAG)"]
-        QUALITY_SUB["quality-agent<br/>(tests/debug/security)"]
-
-        SUBAGENT --> BACKEND_SUB
-        SUBAGENT --> DATA_SUB
-        SUBAGENT --> QUALITY_SUB
-    end
-
-    subgraph NIVEL3["NIVEL 3 — Agent Teams (orquestacion completa)"]
-        LEAD["Lead (coordinador)"]
-        TM1["Teammate 1<br/>(sesion independiente)"]
-        TM2["Teammate 2<br/>(sesion independiente)"]
-        TM3["Teammate N<br/>(sesion independiente)"]
-        MAILBOX["Mailbox<br/>(comunicacion)"]
-        TASKLIST["Task List compartido<br/>(dependencias)"]
-
-        LEAD --> TM1
-        LEAD --> TM2
-        LEAD --> TM3
-        TM1 <--> MAILBOX
-        TM2 <--> MAILBOX
-        TM3 <--> MAILBOX
-        LEAD <--> TASKLIST
-    end
-
-    USER --> GATE
-    GATE -->|"1 archivo, simple"| NIVEL1
-    GATE -->|"implementacion de dominio,<br/>investigacion, verificacion"| NIVEL2
-    GATE -->|"multi-modulo,<br/>pipeline completo,<br/>4+ archivos multi-scope"| NIVEL3
-
-    style NIVEL1 fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
-    style NIVEL2 fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
-    style NIVEL3 fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
-    style GATE fill:#E8B84D,color:#000
-    style LEAD fill:#D4956A,color:#fff
-    style MAILBOX fill:#9B7AB8,color:#fff
-    style TASKLIST fill:#7AAFC4,color:#fff
-    style BACKEND_SUB fill:#C4A47A,color:#fff
-    style DATA_SUB fill:#7AC4A4,color:#fff
-    style QUALITY_SUB fill:#D47272,color:#fff
-```
-
-> **Nivel 1** = Main agent (CLAUDE.md como router MoE). Maneja tareas simples directamente. **Nivel 2** = Domain agents como subprocesos autonomos via Task tool. Cada experto carga su propio contexto, ahorrando tokens en el agente principal. **Nivel 3** = Agent Teams con orquestacion completa: teammates con sesiones independientes, mailbox para comunicacion y task list con dependencias. El Execution Gate recomienda el nivel segun la complejidad.
-
----
-
-## Ciclo de Vida de un Agent Team (v11.3)
-
-```mermaid
-flowchart LR
-    PLAN["PLAN<br/>Lead evalua complejidad<br/>y decide crear team"]
-    SPAWN["SPAWN<br/>Lead crea teammates<br/>con spawn prompts<br/>(scope agents)"]
-    ASSIGN["ASSIGN<br/>Lead crea task list<br/>con dependencias"]
-    WORK["WORK<br/>Teammates ejecutan<br/>tasks en paralelo"]
-    REVIEW["REVIEW<br/>Lead revisa<br/>resultados"]
-    CLOSE["CLOSE<br/>Lead consolida<br/>resultados"]
-
-    PLAN --> SPAWN --> ASSIGN --> WORK
-    WORK --> REVIEW
-    REVIEW -->|"OK"| CLOSE
-    REVIEW -->|"Ajustes"| WORK
-
-    style PLAN fill:#E8B84D,color:#000
-    style SPAWN fill:#D4956A,color:#fff
-    style ASSIGN fill:#7AAFC4,color:#fff
-    style WORK fill:#8BB87A,color:#fff
-    style REVIEW fill:#9B7AB8,color:#fff
-    style CLOSE fill:#D4956A,color:#fff
-```
-
-> PLAN → SPAWN → ASSIGN → WORK → REVIEW → CLOSE. El lead revisa los resultados de cada teammate y consolida.
-
----
-
-## O.R.T.A. con Agent Teams (v11.3)
-
-```mermaid
-flowchart TD
-    subgraph TEAM["AGENT TEAM"]
-        LEAD["Lead<br/>(coordinador)"]
-        TM1["Teammate 1"]
-        TM2["Teammate 2"]
-    end
-
-    subgraph ORTA["O.R.T.A. PRINCIPLES"]
-        SCOPE["Scope Rule Check<br/>(archivos en lugar correcto?)"]
-        SDD_CHECK["SDD Artifacts Check<br/>(spec? design? tests?)"]
-        SESSION["session.md<br/>(continuidad)"]
-    end
-
-    TM1 -->|"termina task"| LEAD
-    TM2 -->|"termina task"| LEAD
-
-    LEAD --> SCOPE
-    LEAD --> SDD_CHECK
-    LEAD --> SESSION
-
-    style TEAM fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
-    style ORTA fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
-    style SESSION fill:#9B7AB8,color:#fff
-    style SCOPE fill:#E8B84D,color:#000
-    style SDD_CHECK fill:#7AAFC4,color:#fff
-```
-
-> O.R.T.A. principles in Agent Teams: **[O]** Lead observes teammate results. **[R]** Task list con dependencias = mismo orden. **[T]** Cada teammate tiene ID, tasks → artefactos. **[A]** Lead revisa calidad antes de consolidar.
-
----
-
-## SDD Pipeline como Task List Paralelo (v7)
-
-```mermaid
-flowchart TD
-    subgraph TASKS["TASK LIST CON DEPENDENCIAS"]
-        T1["Task 1: explore<br/>(sin deps)"]
-        T2["Task 2: propose<br/>(deps: 1)"]
-        T3["Task 3: spec<br/>(deps: 2)"]
-        T4["Task 4: design<br/>(deps: 2)"]
-        T5["Task 5: tasks<br/>(deps: 3, 4)"]
-        T6["Task 6: apply batch-1<br/>(deps: 5)"]
-        T7["Task 7: apply batch-2<br/>(deps: 5)"]
-        T8["Task 8: verify<br/>(deps: 6, 7)"]
-        T9["Task 9: archive<br/>(deps: 8)"]
-    end
-
-    subgraph TEAMMATES["ASIGNACION DE TEAMMATES"]
-        RESEARCHER["teammate-researcher"]
-        ARCHITECT["teammate-architect"]
-        LEAD_TM["lead (sintetiza)"]
-        IMPL1["teammate-impl-1"]
-        IMPL2["teammate-impl-2"]
-        REVIEWER["teammate-reviewer"]
-    end
-
-    T1 --> T2
-    T2 --> T3
-    T2 --> T4
-    T3 --> T5
-    T4 --> T5
-    T5 --> T6
-    T5 --> T7
-    T6 --> T8
-    T7 --> T8
-    T8 --> T9
-
-    RESEARCHER -.-> T1
-    ARCHITECT -.-> T2
-    ARCHITECT -.-> T3
-    ARCHITECT -.-> T4
-    LEAD_TM -.-> T5
-    IMPL1 -.-> T6
-    IMPL2 -.-> T7
-    REVIEWER -.-> T8
-    LEAD_TM -.-> T9
-
-    style TASKS fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
-    style TEAMMATES fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
-    style T3 fill:#7AAFC4,color:#fff
-    style T4 fill:#7AAFC4,color:#fff
-    style T6 fill:#8BB87A,color:#fff
-    style T7 fill:#8BB87A,color:#fff
-```
-
-> **spec** y **design** corren EN PARALELO (resaltados en azul). **apply batch-1** y **apply batch-2** corren EN PARALELO (resaltados en verde). El lead sintetiza tasks y archiva. Las dependencias garantizan el orden correcto.
-
----
-
-## Scope Agents: Documentos + Spawn Prompts (v7)
-
-```mermaid
-flowchart TD
-    subgraph AGENT_FILE["scope-agent.md (doble proposito)"]
-        REFERENCE["Seccion de Referencia<br/>(reglas, skills, routing)<br/>Nivel 1-2: se lee como doc"]
-        SPAWN["Seccion Spawn Prompt<br/>(instrucciones optimizadas)<br/>Nivel 3: se usa como prompt"]
-        CONTEXT["Seccion Team Context<br/>(info que el teammate necesita)"]
-    end
-
-    subgraph NIVEL12["NIVELES 1-2 (Solo/Subagent)"]
-        READ_DOC["CLAUDE.md lee el agent.md<br/>como referencia"]
-    end
-
-    subgraph NIVEL3_USE["NIVEL 3 (Agent Team)"]
-        SPAWN_TM["Lead usa Spawn Prompt<br/>para crear teammate"]
-        TM_RESULT["Teammate trabaja con<br/>su propio context window"]
-    end
-
-    REFERENCE --> READ_DOC
-    SPAWN --> SPAWN_TM
-    CONTEXT --> SPAWN_TM
-    SPAWN_TM --> TM_RESULT
-
-    style AGENT_FILE fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
-    style NIVEL12 fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
-    style NIVEL3_USE fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
-    style SPAWN fill:#D4956A,color:#fff
-    style CONTEXT fill:#7AAFC4,color:#fff
-```
-
-> Los scope agents **no desaparecen** — evolucionan. En Nivel 1-2 funcionan como siempre (documentos de referencia). En Nivel 3, sus secciones Spawn Prompt y Team Context se usan para crear teammates con context windows independientes.
-
----
-
-## Flujo Completo: Desde Carpeta Vacia hasta App en Internet (v11)
-
-```mermaid
-flowchart TD
-    EMPTY["Carpeta vacia"]
-    INIT_CMD["/batuta-init mi-app"]
-    BATUTA_DIR["Crea .batuta/<br/>(session.md + ecosystem.json)"]
-    DESCRIBE["Usuario describe:<br/>'Necesito una app que haga X'"]
-    AUTOROUTE["Auto-routing clasifica:<br/>Build → SDD Pipeline"]
-    SDD_AUTO["Batuta automaticamente:<br/>init → explore → propose"]
-    GAP["Deteccion de gaps<br/>(crea skills si faltan)"]
-    APPROVAL["Usuario aprueba propuesta"]
-    PLAN["Batuta planifica:<br/>spec → design → tasks"]
-    APPROVAL2["Usuario aprueba plan"]
-    SDD_APPLY["Batuta implementa:<br/>apply (por lotes)"]
-    BACKTRACK{"Problema<br/>descubierto?"}
-    RETHINK["Backtrack:<br/>ajustar spec/design<br/>→ re-avanzar"]
-    SDD_VERIFY["Batuta verifica"]
-    TEST["Probar en localhost"]
-    DEPLOY["Configurar Coolify"]
-    PUSH["Push a GitHub"]
-    LIVE["App en internet"]
-    SDD_ARCHIVE["Archiva cambio"]
-    UPDATE{"Skills nuevos<br/>creados?"}
-    PROPAGATE["Propagar a<br/>batuta-dots"]
-
-    EMPTY --> INIT_CMD --> BATUTA_DIR --> DESCRIBE --> AUTOROUTE
-    AUTOROUTE --> SDD_AUTO --> GAP --> APPROVAL
-    APPROVAL --> PLAN --> APPROVAL2 --> SDD_APPLY
-    SDD_APPLY --> BACKTRACK
-    BACKTRACK -->|"Si"| RETHINK --> SDD_APPLY
-    BACKTRACK -->|"No"| SDD_VERIFY
-    SDD_VERIFY --> TEST --> DEPLOY --> PUSH --> LIVE
-    LIVE --> SDD_ARCHIVE --> UPDATE
-    UPDATE -->|"Si"| PROPAGATE
-    UPDATE -->|"No"| FIN["Proyecto completo"]
-
-    style EMPTY fill:#666,color:#fff
-    style LIVE fill:#8BB87A,color:#fff
-    style GAP fill:#E8B84D,color:#000
-    style PROPAGATE fill:#D4956A,color:#fff
-    style AUTOROUTE fill:#E8B84D,color:#000
-    style BACKTRACK fill:#D4956A,color:#fff
-    style RETHINK fill:#7AAFC4,color:#fff
-```
-
----
-
-## Native Hooks: Deterministic Enforcement (v14.1)
-
-```mermaid
-flowchart TD
-    subgraph HOOKS["CLAUDE CODE NATIVE HOOKS"]
-        direction TB
-        SS["SessionStart<br/>(command)"]
-        STOP["Stop<br/>(prompt)"]
-    end
-
-    subgraph SS_ACTIONS["SessionStart — lee + inyecta"]
-        READ_SKILLS["Lee inventario de skills"]
-        READ_SESSION["Lee .batuta/session.md<br/>(briefing CTO, 80 lineas)"]
-        READ_CP["Lee .batuta/CHECKPOINT.md<br/>(estado operacional anterior)"]
-    end
-
-    subgraph STOP_ACTIONS["Stop — 3 pasos OBLIGATORIOS"]
-        STEP1["STEP 1: Escribe CHECKPOINT.md<br/>(SIEMPRE — sin condicion)"]
-        STEP2["STEP 2: Persiste en Notion KB<br/>(si MCP + contenido no trivial)"]
-        STEP3["STEP 3: Actualiza session.md<br/>(si trabajo significativo)"]
-    end
-
-    SS --> SS_ACTIONS
-    STOP --> STOP_ACTIONS
-    STEP1 --> STEP2 --> STEP3
-
-    style HOOKS fill:#2d2d2d,stroke:#E8B84D,color:#F5EDE4
-    style SS fill:#8BB87A,color:#fff
-    style STOP fill:#D47272,color:#fff
-    style READ_CP fill:#9B7AB8,color:#fff
-    style STEP1 fill:#9B7AB8,color:#fff
-    style STEP2 fill:#7AAFC4,color:#fff
-```
-
-> Los hooks nativos de Claude Code ejecutan de forma **determinista** — no dependen de que Claude "recuerde" hacerlo. SessionStart carga contexto al iniciar (incluyendo CHECKPOINT.md si existe). Stop tiene 3 pasos OBLIGATORIOS: escribir CHECKPOINT.md (siempre), persistir en Notion KB (si MCP disponible y contenido no trivial), actualizar session.md (si trabajo significativo).
-
----
-
-## AI Validation Pyramid (v8)
+## AI Validation Pyramid
 
 ```mermaid
 flowchart BT
-    subgraph PYRAMID["PIRAMIDE DE VALIDACION AI"]
+    subgraph PYRAMID["PIRAMIDE DE VALIDACION"]
         direction BT
-        L1["Layer 1: Type Check / Lint<br/>(automatico, agente)"]
+        L1["Layer 1: Lint / Type Check<br/>(automatico, agente)"]
         L2["Layer 2: Unit Tests<br/>(automatico, agente)"]
         L3["Layer 3: E2E / Integration<br/>(automatico, agente)"]
         L4["Layer 4: Code Review<br/>(humano o agente senior)"]
@@ -971,467 +479,72 @@ flowchart BT
 
     L1 --> L2 --> L3 --> L4 --> L5
 
-    subgraph LABELS["QUIEN EJECUTA"]
-        AUTO["Layers 1-3: AGENTE<br/>(automatico, rapido)"]
-        HUMAN["Layers 4-5: HUMANO<br/>(juicio, validacion final)"]
-    end
-
     style L1 fill:#8BB87A,color:#fff
     style L2 fill:#8BB87A,color:#fff
     style L3 fill:#7AAFC4,color:#fff
     style L4 fill:#E8B84D,color:#000
     style L5 fill:#D4956A,color:#fff
-    style AUTO fill:#8BB87A,color:#fff
-    style HUMAN fill:#D4956A,color:#fff
 ```
 
-> Las capas 1-3 se ejecutan automaticamente por el agente (sdd-verify). Las capas 4-5 REQUIEREN un humano. No existe la validacion 100% automatica — el humano siempre tiene la ultima palabra.
+> Layers 1-3: agente (automatico). Layers 4-5: humano (obligatorio). No existe validacion 100% automatica.
 
 ---
 
-## Contract-First Protocol (v9)
-
-```mermaid
-flowchart TD
-    LEAD["Lead evalua tarea"]
-    CONTRACTS["Define contratos ANTES de crear teammates"]
-
-    subgraph CONTRACT_DEF["DEFINICION DE CONTRATOS"]
-        INPUT["Input Contract<br/>(que recibe cada teammate)"]
-        OUTPUT["Output Contract<br/>(que debe producir)"]
-        FILES["File Ownership<br/>(que archivos puede tocar)"]
-    end
-
-    SPAWN["Spawn teammates con contratos"]
-
-    subgraph TEAMMATES["TEAMMATES TRABAJANDO"]
-        TM1["Teammate A<br/>Owns: src/api/*"]
-        TM2["Teammate B<br/>Owns: src/ui/*"]
-        TM3["Teammate C<br/>Owns: tests/*"]
-    end
-
-    DIFF["Contract Diff<br/>(output vs contrato)"]
-    CROSS["Cross-Review<br/>(A revisa interfaces de B)"]
-
-    LEAD --> CONTRACTS
-    CONTRACTS --> CONTRACT_DEF
-    CONTRACT_DEF --> SPAWN --> TEAMMATES
-    TEAMMATES --> DIFF
-    DIFF -->|"OK"| CROSS
-    DIFF -->|"Falta campo"| TEAMMATES
-    CROSS --> DONE["Task completa"]
-
-    style CONTRACT_DEF fill:#2d2d2d,stroke:#E8B84D,color:#F5EDE4
-    style TEAMMATES fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
-    style DIFF fill:#E8B84D,color:#000
-    style CROSS fill:#7AAFC4,color:#fff
-    style FILES fill:#D4956A,color:#fff
-```
-
-> El lead define QUE recibe y QUE produce cada teammate ANTES de crearlos. File Ownership evita conflictos: cada archivo pertenece a exactamente 1 teammate. Contract Diff verifica que el output cumpla el contrato antes de cerrar la task.
-
----
-
-## Team Templates + Playbook (v9)
-
-```mermaid
-flowchart TD
-    USER["Usuario describe proyecto"]
-    DECIDE{"Que tipo de proyecto?"}
-
-    subgraph TEMPLATES["TEAM TEMPLATES (teams/templates/)"]
-        T1["nextjs-saas.md<br/>App SaaS multi-tenant"]
-        T2["fastapi-service.md<br/>Microservicio API"]
-        T3["n8n-automation.md<br/>Automatizacion workflows"]
-        T4["ai-agent.md<br/>Agente IA (LangChain/ADK)"]
-        T5["data-pipeline.md<br/>Pipeline de datos ETL"]
-        T6["refactoring.md<br/>Refactoring legacy"]
-    end
-
-    PLAYBOOK["teams/playbook.md<br/>Guia: cuando usar teams,<br/>errores comunes, mejores practicas"]
-
-    LEAD["Lead configura equipo<br/>usando template + contratos"]
-    TEAM["Agent Team ejecuta"]
-
-    USER --> DECIDE
-    DECIDE --> TEMPLATES
-    TEMPLATES --> LEAD
-    PLAYBOOK -.->|"consulta"| LEAD
-    LEAD --> TEAM
-
-    style TEMPLATES fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
-    style PLAYBOOK fill:#7AAFC4,color:#fff
-    style LEAD fill:#D4956A,color:#fff
-```
-
-> Los templates son "recetas pre-armadas" para equipos de agentes. El playbook es la guia de cuando y como usarlos. Cada template define composicion, contratos, file ownership, y lecciones aprendidas.
-
----
-
-## Security-Audit Integration (v9)
-
-```mermaid
-flowchart TD
-    subgraph SDD["SDD PIPELINE"]
-        DESIGN["sdd-design<br/>(incluye Threat Model)"]
-        APPLY["sdd-apply<br/>(escribe codigo)"]
-        VERIFY["sdd-verify<br/>(incluye Security Check)"]
-    end
-
-    subgraph SECURITY["SECURITY-AUDIT SKILL"]
-        CHECKLIST["AI-First Checklist<br/>(10 puntos OWASP+AI)"]
-        THREAT["Threat Model Template<br/>(assets, vectors, mitigations)"]
-        SECRETS["Secrets Scanning<br/>(regex patterns)"]
-        DEPS["Dependency Audit<br/>(npm/pip/cargo audit)"]
-        CLAUDE_SEC["Claude Security<br/>(prompt protection, PII)"]
-    end
-
-    DESIGN -->|"Step: Threat Model"| THREAT
-    VERIFY -->|"Step 4.7: Security Check"| CHECKLIST
-    VERIFY -->|"Step 4.7"| SECRETS
-    VERIFY -->|"Step 4.7"| DEPS
-
-    style SDD fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
-    style SECURITY fill:#2d2d2d,stroke:#D47272,color:#F5EDE4
-    style CHECKLIST fill:#D47272,color:#fff
-    style THREAT fill:#E8B84D,color:#000
-    style SECRETS fill:#D4956A,color:#fff
-```
-
-> El skill de security-audit se integra en DOS puntos del pipeline: en sdd-design (threat model ANTES de construir) y en sdd-verify (security check DESPUES de construir). Cubre OWASP + amenazas especificas de codigo generado por AI.
-
----
-
-## Hub & Spoke: Sync Multi-Plataforma (v13)
-
-```mermaid
-flowchart TD
-    subgraph HUB["batuta-dots (HUB)"]
-        BC["BatutaClaude/<br/>skills/ (38) + agents/ (6)"]
-        BA["BatutaAntigravity/<br/>skills/ (filtrados)"]
-        SYNC["infra/sync.sh"]
-    end
-
-    subgraph SPOKE_CLAUDE["Proyecto A (Claude Code)"]
-        PC_SKILLS["~/.claude/skills/"]
-        PC_AGENTS[".claude/agents/<br/>(domain agents provisionados)"]
-        PC_LOCAL[".claude/skills/<br/>(proyecto-local)"]
-        PC_ECO[".batuta/ecosystem.json"]
-    end
-
-    subgraph SPOKE_ANTIGRAVITY["Proyecto B (Antigravity Lite)"]
-        PA_SKILLS[".agent/skills/"]
-        PA_ECO[".batuta/ecosystem.json"]
-    end
-
-    BC -->|"setup.sh --sync"| PC_SKILLS
-    BC -->|"sdd-init provisioning"| PC_AGENTS
-    BC -->|"sync.sh --to-antigravity"| BA
-    BA -->|"setup-antigravity.sh"| PA_SKILLS
-
-    PC_LOCAL -->|"sync.sh --push"| BC
-    PA_SKILLS -->|"sync.sh --push"| BC
-
-    PC_ECO -.->|"version check"| HUB
-    PA_ECO -.->|"version check"| HUB
-
-    style HUB fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
-    style SPOKE_CLAUDE fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
-    style SPOKE_ANTIGRAVITY fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
-    style SYNC fill:#E8B84D,color:#000
-    style PC_AGENTS fill:#9B7AB8,color:#fff
-```
-
-> batuta-dots es el **hub central**. Los proyectos y plataformas son **spokes**. Skills y agents fluyen: hub → spokes. Los proyectos reciben tanto skills como domain agents provisionados segun su tech stack. `sync.sh --push` combina import + cross-sync + commit + push en un solo comando. El campo `platforms` en SKILL.md filtra que skills van a cada plataforma. `ecosystem.json` detecta drift de version.
-
----
-
-## Folder Structure (v13)
+## Folder Structure (v15)
 
 ```mermaid
 flowchart TD
     subgraph ROOT["batuta-dots/"]
-        CLAUDE_DIR["BatutaClaude/<br/>CLAUDE.md, settings.json,<br/>agents/, skills/, commands/"]
-        ANTIGRAVITY_DIR["BatutaAntigravity/ (Lite)<br/>GEMINI.md, workflows/,<br/>setup-antigravity.sh"]
+        CLAUDE_DIR["BatutaClaude/<br/>CLAUDE.md (105 lineas), VERSION,<br/>settings.json, agents/ (5), skills/ (43),<br/>commands/ (12)"]
         INFRA_DIR["infra/<br/>setup.sh, sync.sh, hooks/"]
         DOCS["docs/<br/>architecture/, guides/, qa/"]
         TEAMS["teams/<br/>templates/, playbook.md"]
-        ACADEMIA["academia/<br/>8 modulos, 54 lecciones"]
-        README["README.md, README.es.md"]
-        CHANGELOG["CHANGELOG-refactor.md"]
     end
 
-    subgraph CLAUDE_DETAIL["BatutaClaude/"]
-        CLAUDE_MD["CLAUDE.md (router)"]
-        AGENTS["agents/ (6 agents)<br/>Scope: pipeline, infra, observability<br/>Domain: backend, quality, data"]
-        SKILLS_38["skills/ (38 skills)<br/>pipeline (27: 9 SDD + 6 CTO + 12 tech),<br/>infra (9: +skill-eval),<br/>observability (2)"]
-    end
-
-    subgraph ANTIGRAVITY_DETAIL["BatutaAntigravity/ (Lite)"]
-        GEMINI_MD["GEMINI.md (CTO brain)"]
-        WORKFLOWS["workflows/ (11)<br/>SDD + save-session +<br/>push-skill + batuta-update"]
-        SETUP_AG["setup-antigravity.sh"]
-    end
-
-    subgraph DOCS_DETAIL["docs/"]
-        ARCH["architecture/<br/>diagrama, para-no-tecnicos"]
-        GUIDES["guides/<br/>14 guias de uso"]
-        QA["qa/<br/>auditorias, correcciones,<br/>tests integracion, smoke tests"]
+    subgraph CLAUDE_DETAIL["BatutaClaude/ detalle"]
+        CLAUDE_MD_D["CLAUDE.md<br/>(orquestador puro, 105 lineas)"]
+        AGENTS_D["agents/ (5):<br/>pipeline, backend, data,<br/>quality, infra"]
+        SKILLS_D["skills/ (43):<br/>13 globales + 30 per-project"]
+        COMMANDS_D["commands/ (12):<br/>sdd-*, batuta-*, create, skill-eval"]
     end
 
     CLAUDE_DIR --> CLAUDE_DETAIL
-    ANTIGRAVITY_DIR --> ANTIGRAVITY_DETAIL
-    DOCS --> DOCS_DETAIL
 
     style ROOT fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
     style CLAUDE_DETAIL fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
-    style ANTIGRAVITY_DETAIL fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
-    style DOCS_DETAIL fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
     style TEAMS fill:#E8B84D,color:#000
 ```
 
 ---
 
-## Agent Types: Scope vs Domain — MoE Mapping (v13.1)
+## Modelo de Agentes (v15)
 
-```mermaid
-flowchart TD
-    subgraph MOE_LABEL["MIXTURE OF EXPERTS — Roles"]
-        direction LR
-        MOE_ROUTER["Router = CLAUDE.md"]
-        MOE_EXPERTS["Experts = Domain Agents"]
-        MOE_PARAMS["Parameters = Skills"]
-    end
+| Agente | Rol | Skills que carga | Cuando se activa |
+|--------|-----|-----------------|-----------------|
+| `pipeline-agent` | SDD lifecycle | sdd-*, prd-generator | Build / Continue |
+| `backend-agent` | API, auth, DB | fastapi-crud, jwt-auth, sqlalchemy-models | Senales: API, auth, ORM |
+| `data-agent` | ETL, RAG, LLM | data-pipeline, llm-pipeline, vector-db-rag | Senales: datos, ETL, AI |
+| `quality-agent` | Tests, debug, security | tdd-workflow, e2e-testing, security-audit | Siempre disponible |
+| `infra-agent` | Deploy, CI/CD, monitoring | coolify-deploy, ci-cd-pipeline, observability | Senales: deploy, infra |
 
-    subgraph SCOPE["SCOPE AGENTS (maquinaria del hub — no son 'experts' MoE)"]
-        direction TB
-        PIPELINE["pipeline-agent<br/>SDD lifecycle<br/>(explore → archive)"]
-        INFRA["infra-agent<br/>File/skill/agent creation<br/>(scope-rule, ecosystem-creator)"]
-        OBS["observability-agent<br/>Session continuity<br/>(session.md, hooks)"]
-    end
-
-    subgraph DOMAIN["DOMAIN AGENTS (los 'experts' del MoE — thick persona)"]
-        direction TB
-        BACKEND["backend-agent<br/>API, auth, DB patterns<br/>(80-120 lineas expertise)<br/>(provisionado: Python|Node|Go)"]
-        QUALITY["quality-agent<br/>TDD, debugging, security<br/>(80-120 lineas expertise)<br/>(siempre provisionado)"]
-        DATA["data-agent<br/>ETL, RAG, LLM pipelines<br/>(80-120 lineas expertise)<br/>(provisionado: pandas|ETL|RAG|LLM)"]
-    end
-
-    subgraph SDK["SDK DEPLOYABLE (todos los agents)"]
-        SDK_BLOCK["Bloque sdk: en frontmatter<br/>model, max_tokens,<br/>allowed_tools, setting_sources,<br/>defer_loading"]
-    end
-
-    MOE_ROUTER -.-> SCOPE
-    MOE_EXPERTS -.-> DOMAIN
-    SCOPE --> SDK_BLOCK
-    DOMAIN --> SDK_BLOCK
-
-    style MOE_LABEL fill:#2d2d2d,stroke:#E8B84D,color:#F5EDE4
-    style MOE_ROUTER fill:#D4956A,color:#fff
-    style MOE_EXPERTS fill:#9B7AB8,color:#fff
-    style MOE_PARAMS fill:#8BB87A,color:#fff
-    style SCOPE fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
-    style DOMAIN fill:#2d2d2d,stroke:#9B7AB8,color:#F5EDE4
-    style SDK fill:#2d2d2d,stroke:#D47272,color:#F5EDE4
-    style PIPELINE fill:#7AAFC4,color:#fff
-    style INFRA fill:#8BB87A,color:#fff
-    style OBS fill:#9B7AB8,color:#fff
-    style BACKEND fill:#C4A47A,color:#fff
-    style QUALITY fill:#D47272,color:#fff
-    style DATA fill:#7AC4A4,color:#fff
-    style SDK_BLOCK fill:#D47272,color:#fff
-```
-
-> En el modelo **MoE**: CLAUDE.md es el **router** (clasifica intent, activa expertos). Los **domain agents** son los **experts** — subprocesos autonomos con "thick persona" de 80-120 lineas de expertise embebido que corren via Task tool, no como contexto inyectado. Los **skills** son los **parameters** — patrones cargados bajo demanda dentro de cada experto. Los **scope agents** no son "experts" en el sentido MoE — son la maquinaria fija del hub (SDD lifecycle, infraestructura, sesion). quality-agent siempre se provisiona; la calidad aplica a todo proyecto. Todos los agents (6 en total) tienen un bloque `sdk:` para deployment independiente.
+> 5 agentes como contract templates. El main agent los contrata via `agent-hiring`. Cada agente es un archivo `.md` — contrato permanente que persiste entre proyectos. Los agentes pueden correr en paralelo.
 
 ---
 
-## Eval Flow: Skill Evaluation Framework (v13)
+## Resumen de Cambios v14 → v15
 
-```mermaid
-flowchart TD
-    subgraph EVAL_MODE["Eval Mode"]
-        direction LR
-        E_TASK["Tarea de prueba"]
-        E_EXEC["Executor<br/>(ejecuta tarea con skill)"]
-        E_GRADE["Grader<br/>(evalua quality_criteria<br/>de SKILL.eval.yaml)"]
-        E_REPORT["Eval Report<br/>(score + detalles)"]
-        E_TASK --> E_EXEC --> E_GRADE --> E_REPORT
-    end
-
-    subgraph IMPROVE_MODE["Improve Mode"]
-        direction LR
-        I_READ["Lee SKILL.md +<br/>resultados de eval"]
-        I_ANALYZE["Analyzer<br/>(identifica debilidades)"]
-        I_PROPOSAL["Proposal<br/>(ediciones especificas<br/>al SKILL.md)"]
-        I_READ --> I_ANALYZE --> I_PROPOSAL
-    end
-
-    subgraph BENCHMARK_MODE["Benchmark Mode"]
-        direction LR
-        B_ITER["Iterator<br/>(ejecuta eval para<br/>N skills)"]
-        B_COMPARE["Comparator<br/>(compara scores<br/>entre skills)"]
-        B_HEALTH["Health Report<br/>(estado del<br/>ecosistema)"]
-        B_ITER --> B_COMPARE --> B_HEALTH
-    end
-
-    EVAL_YAML["SKILL.eval.yaml<br/>(quality_criteria,<br/>test_tasks,<br/>grading_rubric)"]
-
-    EVAL_YAML --> E_EXEC
-    E_REPORT -.->|"alimenta"| I_READ
-    E_REPORT -.->|"alimenta"| B_ITER
-
-    style EVAL_MODE fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
-    style IMPROVE_MODE fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
-    style BENCHMARK_MODE fill:#2d2d2d,stroke:#E8B84D,color:#F5EDE4
-    style EVAL_YAML fill:#D4956A,color:#fff
-    style E_GRADE fill:#8BB87A,color:#fff
-    style I_PROPOSAL fill:#7AAFC4,color:#fff
-    style B_HEALTH fill:#E8B84D,color:#000
-```
-
-> **Eval Mode**: ejecuta una tarea con y sin el skill, compara la calidad usando criterios definidos en SKILL.eval.yaml. **Improve Mode**: analiza los resultados del eval y propone ediciones concretas al SKILL.md para mejorar su efectividad. **Benchmark Mode**: corre eval para multiples skills y genera un reporte de salud del ecosistema. El formato SKILL.eval.yaml define quality_criteria, test_tasks y grading_rubric para testing conductual de skills.
-
----
-
-## Anti-Overengineering: Principios de Calibracion (v13.1)
-
-El modelo Opus 4.6 se beneficia de instrucciones **calmadas y directas**. El lenguaje agresivo (NEVER/MUST/ALWAYS en exceso) causa overtriggering — el agente interpreta instrucciones informativas como gates obligatorios.
-
-### Principios
-
-| Principio | Aplicacion en Batuta |
-|-----------|---------------------|
-| **Enfasis selectivo** | Solo 4 puntos de aprobacion humana usan lenguaje imperativo fuerte (proposal approval, task plan approval, y 2 gates de produccion) |
-| **Reglas como advisory** | Las reglas de estilo, tono y formato son "advisory" — guian pero no bloquean |
-| **Gates como mandatory** | Solo los gates del pipeline y el Execution Gate son puntos de parada obligatorios |
-| **Accion directa sobre delegacion** | Preferir accion directa para tareas simples. Delegar via subagent solo cuando las tareas pueden correr en paralelo, requieren contexto aislado, o involucran workstreams independientes |
-
-> El objetivo es un agente que actue con criterio, no uno que pida permiso para cada linea de codigo. Las reglas existen para prevenir errores recurrentes, no para crear burocracia. Cuando una regla no agrega valor, se revisa via self-heal — no se ignora ni se duplica.
-
----
-
-## Research Gate + CTO Artifact Detection (v14.0)
-
-```mermaid
-flowchart TD
-    subgraph EXPLORE["sdd-explore (v14.0)"]
-        direction TB
-        E1["Step 2.1-2.7: discovery normal"]
-        E2["Step 2.8: Approach Research"]
-        E3["Busca en Notion KB<br/>(por campo de accion)"]
-        E4["Busca en web<br/>(por tipo de problema)"]
-        E5["Conclusion: build | adapt | reuse"]
-    end
-
-    subgraph APPLY["sdd-apply (v14.0)"]
-        direction TB
-        A1["Step 1.5: Existing Solutions Check"]
-        A2["Lee explore.md → Approach Research"]
-        A3["Verifica si librerias estan instaladas"]
-        A4["Evalua: install+adapt vs build custom"]
-    end
-
-    subgraph CTO_DETECT["CTO Artifact Detection (pipeline-agent Rule 10)"]
-        direction TB
-        CD1{"explore.md existe?"}
-        CD2{"proposal.md existe?"}
-        CD3{"design.md + tasks.md existen?"}
-        CD4["Salta a primera fase faltante"]
-        CD5["Informa: 'Detecte artefactos pre-existentes del CTO'"]
-    end
-
-    NOTION_KB[("Notion KB<br/>data_source_id: 58433974")]
-
-    E1 --> E2
-    E2 --> E3
-    E2 --> E4
-    E3 & E4 --> E5
-    E3 -.->|"consulta"| NOTION_KB
-
-    A1 --> A2 --> A3 --> A4
-
-    CD1 -->|"Si"| CD2
-    CD2 -->|"Si"| CD3
-    CD3 -->|"Si"| CD4
-    CD1 & CD2 & CD3 -->|"No"| CD5 --> CD4
-
-    style EXPLORE fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
-    style APPLY fill:#2d2d2d,stroke:#8BB87A,color:#F5EDE4
-    style CTO_DETECT fill:#2d2d2d,stroke:#D4956A,color:#F5EDE4
-    style E2 fill:#E8B84D,color:#000
-    style A1 fill:#E8B84D,color:#000
-    style CD4 fill:#8BB87A,color:#fff
-    style CD5 fill:#D4956A,color:#fff
-    style NOTION_KB fill:#7AAFC4,color:#fff
-```
-
-> **Research Gate (Step 2.8)**: Antes de proponer approaches, sdd-explore consulta Notion KB y web. Previene reinvención cuando la solución ya existe. **CTO Artifact Detection**: Si el CTO produjo artefactos SDD desde Claude.ai y los copió al repo, el pipeline los detecta y salta a la primera fase faltante — sin re-discovery. El campo `artifacts_from: cto` en BATUTA CONFIG señala este caso explícitamente.
-
----
-
-## Checkpoint Anti-Compaction + Closed RAG Loop (v14.1)
-
-```mermaid
-flowchart TD
-    subgraph SESSION["SESION ACTUAL"]
-        WORK["Agente trabaja<br/>(sdd-apply, debugging, etc.)"]
-        MUST_RULE["MUST Rule: antes de 3+ tool calls<br/>→ escribe CHECKPOINT.md"]
-        COMPACTION["Compaction ocurre<br/>(contexto saturado)"]
-        RESTORE["SessionStart inyecta CHECKPOINT.md<br/>→ agente restaura estado operacional"]
-    end
-
-    subgraph CHECKPOINT_FILE[".batuta/CHECKPOINT.md"]
-        CP_CONTENT["Qué estoy haciendo<br/>Paso actual / archivo<br/>Intentos y resultados<br/>Decisiones con evidencia<br/>Qué falta<br/>Gotchas descubiertos"]
-    end
-
-    subgraph STOP_HOOK_FLOW["Stop Hook — Siempre, sin condicion"]
-        S1["STEP 1: Escribe CHECKPOINT.md<br/>(plantilla completa)"]
-        S2["STEP 2: Evalua contenido<br/>(gotchas no triviales?)"]
-        S3{"Notion MCP<br/>disponible?"}
-        S4["Persiste en Notion KB<br/>(data_source_id: 58433974)"]
-        S5["STEP 3: Actualiza session.md<br/>(si trabajo significativo)"]
-    end
-
-    subgraph NOTION_RAG["NOTION KB — RAG Loop"]
-        NB[("Notion KB<br/>Tipo: Gotcha | Decision | Workaround")]
-        RETRIEVE["sdd-explore Step 2.8<br/>busca en KB antes de proponer"]
-        LEARN["Agente futuro aprende<br/>de sesiones anteriores"]
-    end
-
-    WORK --> MUST_RULE --> CHECKPOINT_FILE
-    WORK --> COMPACTION --> RESTORE
-    CHECKPOINT_FILE --> RESTORE
-    WORK --> STOP_HOOK_FLOW
-    S1 --> S2 --> S3
-    S3 -->|"Si"| S4 --> S5
-    S3 -->|"No"| S5
-    S4 --> NB
-    NB --> RETRIEVE --> LEARN
-
-    style SESSION fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
-    style CHECKPOINT_FILE fill:#2d2d2d,stroke:#9B7AB8,color:#F5EDE4
-    style STOP_HOOK_FLOW fill:#2d2d2d,stroke:#D47272,color:#F5EDE4
-    style NOTION_RAG fill:#2d2d2d,stroke:#7AAFC4,color:#F5EDE4
-    style MUST_RULE fill:#D47272,color:#fff
-    style S1 fill:#9B7AB8,color:#fff
-    style S4 fill:#7AAFC4,color:#fff
-    style NB fill:#7AAFC4,color:#fff
-    style LEARN fill:#8BB87A,color:#fff
-    style COMPACTION fill:#D47272,color:#fff
-    style RESTORE fill:#8BB87A,color:#fff
-```
-
-**Por qué no cognitivo**: La compaction ocurre exactamente cuando el contexto está saturado — el momento en que el agente es MENOS capaz de "recordar" checkpointear. El Stop hook corre siempre con contexto completo, antes de cualquier compaction. No puede racionalizarse.
-
-**Closed RAG Loop**: `Stop hook → CHECKPOINT.md (local) → Notion KB (persistido) → sdd-explore Step 2.8 (futuras sesiones) → el agente aprende de lecciones pasadas`. Notion actúa como índice RAG barato y consultable — principio de Google LLM: la memoria externa debe escribirse proactivamente, no solo a demanda.
-
-| Capa | Archivo | Escrito por | Leído por | Propósito |
-|------|---------|-------------|-----------|-----------|
-| Global | `MEMORY.md` | Usuario/agente | Todos los proyectos | Preferencias, convenciones |
-| Entre sesiones | `.batuta/session.md` | Stop (si sig.) | SessionStart, CTO | Briefing 80 líneas |
-| Entre compactions | `.batuta/CHECKPOINT.md` | Stop (SIEMPRE) + MUST | SessionStart (auto) | Estado operacional |
-| Largo plazo | Notion KB | Stop (auto, si MCP) | sdd-explore Step 2.8 | Lecciones, gotchas, decisiones |
+| Aspecto | v14 | v15 |
+|---------|-----|-----|
+| CLAUDE.md | ~331 lineas (personalidad, filosofia, routing) | 105 lineas (orquestador puro: rules, delegation, state) |
+| SDD Pipeline | 9 fases, 8 gates | 2 modos: SPRINT (0 gates) y COMPLETO (1 gate en Design) |
+| Artefactos de planificacion | 5 (explore, propose, spec, design, tasks) | 1 (PRD) |
+| Main agent | Router MoE que ejecuta via routing | Gestor que NUNCA ejecuta — contrata agentes |
+| Skills | Pertenecen al main agent | Pertenecen a los AGENTES |
+| Agents | 6 (3 scope + 3 domain) | 5 contract templates (pipeline, backend, data, quality, infra) |
+| session.md | Escrito al cerrar sesion | Actualizado en CADA interaccion |
+| Notion | IDs hardcodeados | Busqueda semantica por nombre, nunca IDs |
+| Research | Gate opcional en explore | NO NEGOCIABLE en todos los modos |
+| Hub skills | 38 | 43 (13 globales + 30 per-project) |
 
 ---
 

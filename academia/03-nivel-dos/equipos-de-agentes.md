@@ -1,8 +1,8 @@
 # Equipos de agentes
 
-Ya conoces los 3 niveles: Solo, Subagente, y Agent Team. Con 6 agentes disponibles (3 scope + 3 domain), aqui aprendes cuando y como usar cada uno para maximizar resultados.
+Ya conoces los 3 niveles: Solo, Subagentes, y Agent Team. Con 5 agentes en el hub y la capacidad de crear agentes nuevos via agent-hiring, aqui aprendes cuando y como usar cada nivel para maximizar resultados.
 
-Recuerda: los domain agents se auto-invocan — no necesitas pedirlos. En Nivel 2, Batuta los activa como subagentes que entran, ejecutan, y devuelven el resultado. En Nivel 3, se integran como teammates con contratos formales y comunicacion entre ellos.
+Recuerda: en v15, el agente principal NUNCA ejecuta — siempre contrata. La diferencia entre niveles es cuantos agentes se contratan y como se coordinan.
 
 ---
 
@@ -14,19 +14,19 @@ Nueva tarea llega
   Q1: Cuantos archivos?
   |
   +-- 1 archivo
-  |     -> NIVEL 1 (solo session)
+  |     -> NIVEL 1 (contratar 1 agente)
   |     Ejemplo: arreglar bug, editar config
   |
-  +-- 2-3 archivos, mismo scope
-  |     -> NIVEL 2 (subagente)
+  +-- 2-3 archivos, mismo dominio
+  |     -> NIVEL 2 (contratar agentes en secuencia)
   |     Ejemplo: agregar endpoint + test + docs
   |
-  +-- 4+ archivos O multi-scope
+  +-- 4+ archivos O multi-dominio
         |
         Q2: Necesitan comunicarse?
         |
         +-- No (tareas independientes)
-        |     -> NIVEL 2 (subagentes en paralelo)
+        |     -> NIVEL 2 (agentes en paralelo)
         |     Ejemplo: 3 endpoints independientes
         |
         +-- Si (decisiones compartidas)
@@ -36,10 +36,9 @@ Nueva tarea llega
               +-- No (archivos diferentes)
               |     -> NIVEL 3 (Agent Team)
               |     Ejemplo: frontend + backend + BD
-              |     Domain agents como teammates especializados
               |
               +-- Si (mismos archivos)
-                    -> NIVEL 2 (subagentes secuenciales)
+                    -> NIVEL 2 (agentes secuenciales)
                     Ejemplo: refactoring en cascada
 ```
 
@@ -51,74 +50,95 @@ Nueva tarea llega
 
 Para implementar una feature completa:
 
-| Teammate | Fase | Tarea | Domain Agent opcional |
-|----------|------|-------|---------------------|
-| researcher | explore + propose | Investigar y proponer | — |
-| architect | spec + design | Especificar y disenar | backend-agent o data-agent |
-| implementor-1 | apply batch 1 | Implementar backend | backend-agent |
-| implementor-2 | apply batch 2 | Implementar frontend | — |
-| reviewer | verify | Verificar todo | quality-agent |
+| Teammate | Fase | Agente contratado | Archivos |
+|----------|------|-------------------|----------|
+| researcher | explore | pipeline-agent | openspec/ |
+| architect | design | pipeline-agent + backend-agent | openspec/ |
+| implementor-api | apply | backend-agent | src/api/**, src/services/** |
+| implementor-data | apply | data-agent | src/pipelines/** |
+| reviewer | verify | quality-agent | tests/** |
+
+Cada teammate se contrata con el protocolo de agent-hiring. Cada uno tiene file ownership exclusivo.
 
 ### Patron B: Revision Paralela (Piramide)
 
-Para revisar codigo exhaustivamente:
+Para verificar codigo exhaustivamente:
 
-| Teammate | Capa | Que revisa |
-|----------|------|-----------|
-| static-reviewer | L1 | Lint, tipos, formateo |
-| test-reviewer | L2-L3 | Tests unitarios y E2E |
-| security-reviewer | Transversal | OWASP, secrets, auth |
-| perf-reviewer | Transversal | N+1 queries, memoria |
+| Teammate | Capa | Agente contratado |
+|----------|------|-------------------|
+| static-reviewer | L1 | quality-agent (tdd-workflow) |
+| test-reviewer | L2-L3 | quality-agent (e2e-testing) |
+| security-reviewer | Transversal | quality-agent (security-audit) |
+| perf-reviewer | Transversal | quality-agent (performance-testing) |
 
 ### Patron C: Investigacion
 
-Para debugging complejo:
+Para debugging complejo o research en paralelo:
 
-| Teammate | Hipotesis | Enfoque |
-|----------|----------|---------|
-| hypothesis-1 | Problema de red | Trazar API calls |
-| hypothesis-2 | Bug de estado | Trazar mutaciones |
-| hypothesis-3 | Error de config | Revisar env vars |
+| Teammate | Hipotesis | Agente contratado |
+|----------|----------|-------------------|
+| hypothesis-1 | Problema de API | backend-agent |
+| hypothesis-2 | Problema de datos | data-agent |
+| hypothesis-3 | Problema de infra | infra-agent |
+
+5 agentes investigando en paralelo = discovery en minutos.
 
 ### Patron D: Cross-Layer
 
 Para cambios que cruzan capas:
 
-| Teammate | Capa | Archivos | Domain Agent |
-|----------|------|----------|-------------|
-| backend-dev | API | Routes, services | backend-agent |
-| frontend-dev | UI | Components, pages | — |
-| infra-dev | Deploy | Docker, CI/CD | — |
-| quality-dev | Tests | E2E, integration | quality-agent |
-
-Los domain agents aportan su **thick persona** al equipo — 80-120 lineas de expertise embebido que les permite tomar decisiones de dominio sin consultar al agente principal. Por ejemplo, backend-agent sabe de patrones FastAPI y JWT, mientras que data-agent conoce ETL y pipelines de datos.
-
-### Domain agents en Nivel 2 vs Nivel 3
-
-| Aspecto | Nivel 2 (Subagente) | Nivel 3 (Teammate) |
-|---------|--------------------|--------------------|
-| **Invocacion** | Auto-invocado por el router | Asignado en el equipo con contrato |
-| **Comunicacion** | Unidireccional (recibe tarea, devuelve resultado) | Bidireccional (lee y escribe en contexto compartido) |
-| **Skills** | Cargados bajo demanda (`defer_loading`) | Cargados bajo demanda (`defer_loading`) |
-| **Autonomia** | Ejecuta una tarea y sale | Mantiene contexto durante toda la sesion del equipo |
-
-En Nivel 2, piensa en el domain agent como un consultor externo: le das una tarea, la ejecuta, y te devuelve el resultado. En Nivel 3, es un miembro del equipo con escritorio propio: tiene acceso al contexto compartido y puede coordinarse con otros teammates.
+| Teammate | Capa | Agente contratado | Archivos |
+|----------|------|-------------------|----------|
+| backend-dev | API | backend-agent | src/api/** |
+| frontend-dev | UI | agente ad-hoc (react-nextjs) | src/app/** |
+| infra-dev | Deploy | infra-agent | Dockerfile, .github/** |
+| quality-dev | Tests | quality-agent | tests/** |
 
 ---
 
 ## Contract-First en la practica
 
-Antes de crear un equipo, el lead define para cada teammate:
+En v15, el contrato se define antes de crear el equipo. Cada teammate tiene:
 
 ```
 CONTRATO teammate: backend-dev
-  Recibe: spec.md + design.md
-  Produce: routes/, services/, tests/
-  Archivos: SOLO toca features/api/**
-  NO toca: features/ui/**, core/**
+  Agente: backend-agent
+  Recibe: design.md + PRD
+  Produce: routes/, services/
+  Archivos: SOLO toca src/api/**
+  NO toca: src/app/**, tests/**, core/**
+  Skills: fastapi-crud, jwt-auth, api-design
 ```
 
-Si un teammate intenta tocar archivos que no le pertenecen, el sistema lo detecta.
+Si un teammate intenta tocar archivos que no le pertenecen, el sistema lo detecta. Esto previene conflictos entre agentes que trabajan en paralelo.
+
+---
+
+## Creando agentes nuevos para el equipo
+
+Si el equipo necesita un agente que no existe, el protocolo de agent-hiring se aplica:
+
+1. El agente principal detecta la necesidad ("necesito expertise en React para el frontend")
+2. Busca en `.claude/agents/` y `~/.claude/agents/` — no encuentra match
+3. Propone contratacion al usuario:
+
+```
+PROPUESTA DE CONTRATACION:
+
+Agente: react-frontend
+Rol: Implementar componentes React/Next.js
+Skills: react-nextjs
+Modelo: sonnet
+Max turns: 20
+Entregable: Componentes + paginas en src/app/**
+
+Apruebas esta contratacion?
+```
+
+4. Con aprobacion, crea `.claude/agents/react-frontend.md`
+5. Lo integra al equipo con su contrato de file ownership
+
+El agente queda disponible para futuros equipos — no se pierde.
 
 ---
 
@@ -130,7 +150,9 @@ Si un teammate intenta tocar archivos que no le pertenecen, el sistema lo detect
 | 2 | 1.2-1.5x | Tareas medianas, ganas velocidad |
 | 3 | 3-5x | Tareas complejas, ganas calidad y paralelismo |
 
-**Regla**: Si la tarea te tomaria mas de 2 horas en Nivel 1, probablemente vale Nivel 3. Los domain agents en Nivel 2 no agregan costo significativo — son auto-invocados segun la necesidad. En Nivel 3, el costo viene de la coordinacion entre teammates, no de la expertise en si.
+**Regla**: Si la tarea te tomaria mas de 2 horas en Nivel 1, probablemente vale Nivel 3.
+
+**Research en paralelo**: Uno de los mayores beneficios de v15. 5 agentes investigando simultaneamente resuelven en minutos lo que un solo agente tardaria mucho mas. El costo en tokens es mayor, pero el tiempo se reduce drasticamente.
 
 ---
 

@@ -82,20 +82,14 @@ La Piramide de Validacion verifica:
 - L2: Tests unitarios (flujo de estados, validaciones)
 - L3: Tests de integracion (flujo completo de OT)
 
-### Paso 8: Archivar
-```
-/sdd-archive sistema-ordenes-trabajo
-```
-
 ---
 
-## Gates que pasas
+## Checkpoints que pasas
 
-| Gate | Que verifica en este caso |
-|------|--------------------------|
-| **G0.5** | Mapeaste los 4 tipos de OT? Documentaste el flujo de emergencia? Listaste todos los roles? |
-| **G1** | El sistema justifica el esfuerzo? El scope esta acotado a OT (no inventarios, no compras)? |
-| **G2** | Los flujos de aprobacion funcionan? El dashboard muestra datos correctos? Hay plan de rollback? |
+| Checkpoint | Que verifica en este caso |
+|------------|--------------------------|
+| **Design Approval** | Mapeaste los 4 tipos de OT? Documentaste el flujo de emergencia? El scope esta acotado a OT (no inventarios, no compras)? |
+| **Verificacion Final** | Los flujos de aprobacion funcionan? El dashboard muestra datos correctos? Hay plan de rollback? |
 
 ---
 

@@ -49,7 +49,7 @@ Cada variante afecta el algoritmo de ruteo de manera diferente.
 sdd-ff
 ```
 
-La secuencia `sdd-propose` → `sdd-spec` → `sdd-design` → `sdd-tasks` define la arquitectura. Se pasa por G0.5 y G1. El diseno incluye el modelo de optimizacion y las restricciones que debe respetar.
+El `sdd-ff` genera el PRD consolidado con la arquitectura. Se pasa por Design Approval. El diseno incluye el modelo de optimizacion y las restricciones que debe respetar.
 
 ### Fase 4 — Implementacion
 
@@ -76,7 +76,7 @@ Es un proceso separado porque el calculo de rutas es intensivo y no debe afectar
 ### Fase 6 — Verificacion
 
 ```
-sdd-verify → G2
+sdd-verify
 ```
 
 Se valida que las rutas generadas sean viables, que las restricciones se respeten, y que el worker funcione correctamente bajo carga.
@@ -88,21 +88,21 @@ Se valida que las rutas generadas sean viables, que las restricciones se respete
 | `process-analyst` | Clasifica los 4 tipos de entrega (urbana, rural, express, fragil) con sus restricciones |
 | `worker-scaffold` | Crea el worker de calculo de rutas que opera en segundo plano sin bloquear el sistema |
 
-## Gates que pasas
+## Checkpoints que pasas
 
-### G0.5 — Discovery Complete
+### Design Approval — Discovery Complete
 - Los tipos de entrega estan documentados con sus restricciones especificas
 - La flota actual esta mapeada (vehiculos, capacidades, conductores)
 - Las zonas de operacion estan identificadas con sus particularidades
 - Las ventanas de tiempo de los clientes estan registradas
 
-### G1 — Solution Worth Building
+### Design Approval — Solution Worth Building
 - El algoritmo de optimizacion propuesto respeta todas las restricciones identificadas
 - La arquitectura separa correctamente el calculo (worker) de la operacion (sistema principal)
 - El recalculo de rutas ante cambios es viable en tiempo real
 - El alcance es implementable con la infraestructura disponible
 
-### G2 — Ready for Production
+### Verificacion Final — Ready for Production
 - Las rutas generadas son mas eficientes que las rutas manuales actuales
 - El worker de calculo responde en tiempos aceptables para la operacion
 - Las restricciones de cada tipo de entrega se respetan en todos los casos de prueba

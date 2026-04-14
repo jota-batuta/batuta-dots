@@ -1,6 +1,6 @@
 # /sdd-verify
 
-> Verify implementation using the AI Validation Pyramid: linting, tests, documentation checks, and cross-layer security validation.
+> Verify implementation: linting, tests, documentation checks, and security validation.
 
 ## Instructions
 

@@ -58,7 +58,7 @@ process-analyst detecta:
 - Plan Enterprise: usuarios ilimitados, API access, soporte prioritario
 ```
 
-> **Gate G0.5** — El agente te pregunta:
+> **Design Approval (variantes)** — El agente te pregunta:
 > "Encontre 3 tipos de suscripcion con diferencias significativas en permisos y limites. Confirmas estos planes antes de continuar?"
 > --> Si, pero el plan Enterprise tambien incluye SSO
 
@@ -70,7 +70,7 @@ sdd-ff
 
 Se congela la especificacion. A partir de aca, no se agregan funcionalidades nuevas.
 
-> **Gate G1** — El agente evalua:
+> **Design Approval (viabilidad)** — El agente evalua:
 > "Este proyecto requiere autenticacion custom, multi-tenancy y gestion de suscripciones. WordPress con plugins NO cubre multi-tenancy real ni permisos por plan. Veredicto: vale la pena construirlo a medida."
 
 ### Paso 5: Aplicar la implementacion
@@ -105,7 +105,7 @@ Cada teammate trabaja en sus archivos asignados siguiendo el **Contract-First Pr
 sdd-verify
 ```
 
-> **Gate G2** — Verificacion completa:
+> **Verificacion Final** — Resultado:
 
 ```
 Layer 1 - Type Check:     PASS (0 errores TypeScript)
@@ -118,14 +118,6 @@ Layer 3 - Security Audit: PASS (JWT seguro, no secrets expuestos)
 Resultado: LISTO PARA REVIEW HUMANO
 ```
 
-### Paso 7: Archivar
-
-```bash
-sdd-archive
-```
-
-Se genera el archivo de documentacion del proyecto con decisiones, trade-offs y lecciones aprendidas.
-
 ## Skills que se activan
 
 | Skill | Por que |
@@ -136,19 +128,14 @@ Se genera el archivo de documentacion del proyecto con decisiones, trade-offs y 
 | **team-orchestrator** | Decide que se necesita un equipo de 4 agentes y asigna contratos y archivos |
 | **process-analyst** | Identifica las variantes de suscripcion y sus implicaciones en permisos |
 
-## Gates que pasas
+## Checkpoints que pasas
 
-### Gate G0.5 — Variantes de negocio
-- **Que evalua:** Las diferencias entre planes de suscripcion
-- **Ejemplo concreto:** "El plan Free permite 1 usuario sin reportes. El plan Enterprise permite SSO. Estas diferencias afectan la arquitectura de permisos."
-- **Si no pasa:** Se pausan las variantes hasta que el usuario confirme
+### Design Approval — Variantes + viabilidad
+- **Que evalua:** Las diferencias entre planes de suscripcion y si la solucion justifica desarrollo custom
+- **Ejemplo concreto:** "El plan Free permite 1 usuario sin reportes. El plan Enterprise permite SSO. Multi-tenancy real con aislamiento de datos no es posible con WordPress plugins estandar. Veredicto: construir a medida."
+- **Si no pasa:** Se pausan las variantes o el agente sugiere alternativas (WordPress + plugin, Webflow, etc.)
 
-### Gate G1 — Vale la pena construirlo?
-- **Que evalua:** Si la solucion justifica desarrollo custom vs usar algo existente
-- **Ejemplo concreto:** "Multi-tenancy real con aislamiento de datos no es posible con WordPress plugins estandar. Veredicto: construir a medida."
-- **Si no pasa:** El agente sugiere alternativas (WordPress + plugin, Webflow, etc.)
-
-### Gate G2 — Calidad de la implementacion
+### Verificacion Final — Calidad de la implementacion
 - **Que evalua:** Tests, build, seguridad, documentacion
 - **Ejemplo concreto:** "42 unit tests pasando, 0 errores de TypeScript, JWT auditado, 100% de modulos documentados."
 - **Si no pasa:** No se permite review humano hasta corregir
@@ -163,7 +150,6 @@ Al terminar, tenes:
 - 3 planes de suscripcion con permisos diferenciados
 - Panel de admin por organizacion
 - Tests automatizados cubriendo los flujos criticos
-- Documentacion completa del proyecto archivada
 - Codigo organizado por features siguiendo la Scope Rule
 
 ## Siguientes pasos

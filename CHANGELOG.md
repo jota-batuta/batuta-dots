@@ -3,6 +3,31 @@
 All notable changes to the Batuta ecosystem are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## v15.0.0 — 2026-04-13 — Simplification Refactor
+
+### Breaking Changes
+- CLAUDE.md rewritten: 331 → 77 lines. Removed: personality, philosophy, tone, expertise, 8 gates, auto-routing table, detail_level, slice sequencing, execution gate
+- SDD pipeline: 9 phases → 2 modes (SPRINT default: apply→verify | COMPLETO: explore→design→apply→verify)
+- Gates: 8 → 1 (design approval in COMPLETO mode only)
+- Agents: 11 → 5 (removed batovf-builder, batovf-copywriter, batovf-deployer, batovf-qa, batovf-supervisor, observability-agent)
+- Commands: removed sdd-spec, sdd-archive. Simplified sdd-ff (2 steps), sdd-continue (mode-aware)
+- PRD replaces 5-artifact chain (explore+propose+spec+design+tasks) as single planning artifact
+
+### New Features
+- PRD as single planning artifact (prd-generator v2.0). CTO writes in Notion, Code reads via MCP
+- session.md updates on EVERY interaction (not just at session close)
+- Notion KB updates CONSTANTLY during implementation (not batch at archive)
+- Forced archival rule: when pivoting, old artifacts → archive/ + SUPERSEDED.md
+- SPRINT mode as default (zero gates, zero ceremony)
+
+### Bug Fixes
+- setup-antigravity.sh: corrected GitHub URL (batuta → jota-batuta)
+- setup.sh: resolve_home() validates USERPROFILE directory exists before use
+- session-start.sh: json_escape() fallback produces correct literal \n
+
+### Why
+0 of ~20 projects reached production. Root causes: state fragmentation (5 contradictory sources), ceremony overhead (46 tasks for a CRUD), tooling detours. v15 addresses all three with: 1 source of truth (session.md), 2 modes (SPRINT/COMPLETO), constant Notion sync.
+
 ## [14.1.0] - 2026-03-20
 
 ### Added
