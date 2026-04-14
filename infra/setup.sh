@@ -52,7 +52,11 @@ resolve_home() {
             drive_letter=$(echo "${BASH_REMATCH[1]}" | tr '[:upper:]' '[:lower:]')
             win_home="/${drive_letter}${win_home:2}"
         fi
-        echo "$win_home"
+        if [[ -d "$win_home" ]]; then
+            echo "$win_home"
+        else
+            echo "$HOME"
+        fi
     else
         echo "$HOME"
     fi

@@ -52,7 +52,7 @@ json_escape() {
         jq)      jq -Rs '.' ;;
         python3) python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))" ;;
         python)  python -c "import sys,json; print(json.dumps(sys.stdin.read()))" ;;
-        *)       sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g' | tr '\n' '\\' | sed 's/\\/\\n/g; s/^/"/; s/$/"/' ;;
+        *)       sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g' | tr '\n' '\\' | sed 's/\\/\\\\n/g; s/^/"/; s/$/"/' ;;
     esac
 }
 

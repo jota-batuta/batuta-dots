@@ -93,7 +93,7 @@ detect_repo_root() {
     # 4. Clone from GitHub as last resort
     log_warning "batuta-dots not found locally. Cloning from GitHub..."
     if command -v git &>/dev/null; then
-        git clone --depth 1 https://github.com/batuta/batuta-dots.git "$HOME_DIR/batuta-dots" 2>/dev/null || {
+        git clone --depth 1 https://github.com/jota-batuta/batuta-dots.git "$HOME_DIR/batuta-dots" 2>/dev/null || {
             log_error "Failed to clone batuta-dots. Please clone manually to ~/batuta-dots"
             return 1
         }
