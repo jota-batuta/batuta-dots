@@ -3,6 +3,50 @@
 All notable changes to the Batuta ecosystem are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## v15.5.0 — 2026-04-15 — Plugin SessionStart Hook (Auto-Init Detection)
+
+### Problem
+
+After v15.4 fixed the plugin install, users noticed that the plugin doesn't set up project-level files (CLAUDE.md, .batuta/) the way the bash installer does. This is by design — Claude Code plugins distribute skills/agents globally, they don't modify project directories.
+
+Result: Users had to remember to run `/batuta-init` after installing the plugin in a new project.
+
+### Fix
+
+Added SessionStart hook to the plugin that detects uninitialized Batuta projects:
+
+**`hooks/session-start-notice.sh`** — runs at session start, checks:
+- Is this a project directory? (has package.json, pyproject.toml, .git, etc.)
+- Does it already have `.batuta/`? → silent if yes
+- Does it already have `CLAUDE.md`? → silent if yes
+- Otherwise → injects a notice telling Claude to suggest `/batuta-dots:batuta-init`
+
+**`hooks/hooks.json`** — declares the SessionStart hook for plugin
+
+### Behavior
+
+| Scenario | Hook output |
+|----------|-------------|
+| New project with package.json, no .batuta/ | Injects notice suggesting /batuta-init |
+| Project with .batuta/ already | Silent (already initialized) |
+| Random directory without project markers | Silent (don't nag) |
+| User's home directory | Silent |
+
+### Result
+
+Better UX: users get reminded to initialize batuta in projects they're actively working on, without auto-modifying anything. Notice is suggestive only — Claude surfaces it to user, user decides.
+
+### Two-command workflow now
+
+```
+/plugin install batuta-dots                 # one-time, gets skills/agents globally
+/batuta-dots:batuta-init                    # per-project, sets up CLAUDE.md + .batuta/
+```
+
+The SessionStart hook reminds you about step 2 automatically.
+
+VERSION: 15.4.0 → 15.5.0
+
 ## v15.4.0 — 2026-04-15 — Plugin Manifest Schema Fix
 
 ### Critical Fix
