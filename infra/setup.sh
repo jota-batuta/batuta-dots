@@ -603,6 +603,8 @@ sync_claude() {
         # sdd (core pipeline)
         sdd-explore sdd-design sdd-apply sdd-verify prd-generator
         tdd-workflow debugging-systematic sdd-init
+        # v15.1 additions (adapted from addyosmani/agent-skills, MIT)
+        agent-hiring code-simplification deprecation-and-migration git-workflow-and-versioning
     )
 
     local count=0

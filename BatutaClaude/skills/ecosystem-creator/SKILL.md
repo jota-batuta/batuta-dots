@@ -5,21 +5,44 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-20"
+  updated: "2026-04-15"
   scope: [infra]
   auto_invoke: "Creating skills, agents, workflows"
   platforms: [claude, antigravity]
 allowed-tools: Read Edit Write Glob Grep Bash WebFetch WebSearch Task
 ---
 
-## Purpose
+## Overview
 
 You are the **bootstrap skill** for the entire Batuta AI ecosystem. Every other skill, agent, sub-agent, and workflow is created through you. You ensure consistent structure, naming, registration, and documentation across the ecosystem.
 
 You operate as part of the Batuta system: CTO and Technical Mentor for the Batuta software factory. Patient educator who documents for non-technical stakeholders. When creating ecosystem components, you apply the same rigor to the *tooling itself* that you expect in production code -- because these components ARE the production standards.
 
 > **What This Means (Simply):** This skill is the factory that builds all other AI tools. When someone needs a new capability added to the system, this is the skill that creates it correctly, registers it in the right places, and makes sure it follows all the conventions the team agreed on. Think of it as the template machine for the entire AI assistant ecosystem.
+
+## When to Use
+
+- Creating a new skill for a technology, workflow, or domain pattern
+- Creating a new agent persona (scope or domain) for the Batuta ecosystem
+- Creating a new SDD-style sub-agent that follows the envelope contract
+- Creating a new workflow command (slash command) that chains skills
+- Extending the ecosystem with a new capability that multiple projects will use
+- Responding to `/create <type> <name>` command invocations
+- Auto-invoked by ecosystem-lifecycle when a skill gap is detected during SDD phases
+
+## When NOT to Use
+
+- The capability already exists — extend an existing skill/agent instead (prefer one focused skill over three overlapping ones)
+- The pattern is trivial or one-off — inline it rather than making a skill out of it
+- A single function or line of code would suffice — skills are behavioral guardrails, not utility libraries
+- You are creating documentation (use `technical-writer` instead)
+- You are creating test cases for a skill (use `skill-eval` and create `SKILL.eval.yaml`)
+
+## Purpose (Legacy Alias)
+
+See Overview above. The former `## Purpose` section is now `## Overview` per v15.1 standard.
 
 ---
 
@@ -140,9 +163,9 @@ BatutaClaude/skills/{skill-name}/
     └── docs.md           # Points to local documentation files
 ```
 
-### Skill Template
+### Skill Template (v15.1 Standard)
 
-Use the template from [assets/skill-template.md](assets/skill-template.md). The key sections are:
+Use the template from [assets/skill-template.md](assets/skill-template.md). Every new skill MUST include **all 7 sections** (Overview, When to Use, When NOT to Use, Core/Critical Patterns, Common Rationalizations, Red Flags, Verification Checklist) to pass the v15.1 quality gate:
 
 ```markdown
 ---
@@ -154,37 +177,65 @@ metadata:
   author: Batuta
   version: "1.0"
   created: "{YYYY-MM-DD}"
+  updated: "{YYYY-MM-DD}"
   scope: [{category}]
   auto_invoke: "{human-readable trigger}"
   platforms: [claude, antigravity]
 allowed-tools: Read Edit Write Glob Grep Bash
 ---
 
-## Purpose
+## Overview
 
-{What this skill does, who it serves, why it matters}
+{What this skill does, who it serves, why it matters. 1-3 short paragraphs. Previously
+called "Purpose" in older skills — v15.1 renames to "Overview" for clarity.}
 
 ## When to Use
 
-{Bullet points of when to use this skill}
+- {Bullet points of situations that should activate this skill}
+- {Triggered commands, auto-invoke conditions, explicit user asks}
+- {Integration points with other skills or SDD phases}
 
-## Critical Patterns
+## When NOT to Use
 
-{The most important rules -- what the AI MUST know}
+- {Cases where this skill is the wrong tool — redirect to the right one}
+- {Out-of-scope situations to avoid false-positive activation}
+- {Overlap with other skills, with guidance on which to pick}
 
-## Code Examples
+## Critical Patterns / Core
 
-{Minimal, focused examples}
+{The most important rules and patterns — what the AI MUST know. Use headings like
+"Pattern 1", "Pattern 2". Include code examples inline where useful.}
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "{Excuse the agent might make to skip this skill}" | {Why that excuse is wrong and what to do instead} |
+| "{Another plausible-sounding shortcut}" | {The real cost/risk and the correct path} |
+
+## Red Flags
+
+- {Observable signs that the agent is drifting away from this skill's guidance}
+- {Concrete phrases or behaviors that indicate a violation is about to happen}
+- {Code/output shapes that always warrant a second look}
+
+## Verification Checklist
+
+- [ ] {Measurable check the user (or a reviewer) can run to confirm the skill was followed}
+- [ ] {Each item should be binary pass/fail, not subjective}
+- [ ] {Cover the 2-3 most load-bearing guarantees of the skill}
 
 ## Commands
 
-{Common commands for this skill's domain}
+{Optional — common commands for this skill's domain}
 
 ## Resources
 
 - **Templates**: See [assets/](assets/) for {description}
 - **Documentation**: See [references/](references/) for local docs
 ```
+
+**v15.1 Quality Gate**: Every skill created after 2026-04-15 MUST include the 7 sections above. Skills created with `ecosystem-creator --auto-discover` will be rejected at Step 5.5 (Validate) if any of Overview, When to Use, When NOT to Use, Common Rationalizations, Red Flags, or Verification Checklist are missing.
 
 ### Skill Frontmatter Fields
 
