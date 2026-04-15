@@ -9,7 +9,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-03-30"
   scope: [pipeline]
   auto_invoke: "Evaluating AI vs deterministic approach in sdd-design"
@@ -151,3 +151,34 @@ Decision confidence: High / Medium / Low
 
 This section is **mandatory** when the change involves any of: text processing, matching,
 classification, extraction, or user-facing content generation.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Deterministic is always safer — let's avoid AI" | Safety depends on the task type. Deterministic regex for OCR is GUARANTEED to fail on edge cases. Safer = the approach with the lower failure rate for the actual task, not the one without API calls. |
+| "AI is too expensive — let's write the rules" | Total cost = API + Dev + Debug + Maintenance + JNMZ time. For tasks with frequent rule changes, deterministic costs JNMZ 2h per change vs $0.01 per prompt update. The "expensive" option saves money. |
+| "We can use sentence-transformers locally — no API cost" | Local embedding models from 2022-2024 are 2-3x worse than current API embeddings (Voyage AI, OpenAI text-embedding-3). The accuracy gap costs more in human review than the API saves. |
+| "Let's start with regex and add AI later if needed" | Once regex is in production, the rules accumulate. By the time AI is "needed", you have 200 regex patches that nobody dares to remove. Choose the right tool first. |
+| "The user wants 100% accuracy — only deterministic can give that" | Deterministic gives 100% accuracy on the cases you wrote rules for, and 0% on the cases you didn't. AI gives 95% on all cases. For most tasks, 95% on all cases > 100% on a subset. |
+
+## Red Flags
+
+- Recommending AI for exact ID matching, financial arithmetic, or date calculations — these are deterministic by definition
+- Recommending deterministic for OCR, semantic matching, or free-text classification — these are AI by definition
+- Cost estimate omits JNMZ time multiplier (treats engineering time as $0)
+- Stack recommendation lists `sentence-transformers` or `fuzzywuzzy` for semantic tasks (2022-era tools, current alternatives are 10x better)
+- Decision made without splitting hybrid tasks into deterministic + AI components
+- "Confidence: High" stated without production evidence backing the claim
+- Recommendation skips Step 5 (sdd-design integration) when the change involves text processing or matching
+
+## Verification Checklist
+
+- [ ] Task classified using Step 1 table (Exact matching / Semantic matching / OCR / Classification / etc.)
+- [ ] If hybrid: split into deterministic and AI components separately, with stack for each
+- [ ] Stack recommendation uses 2025-2026 current tools (Voyage AI / Claude multimodal / OpenAI text-embedding-3) not deprecated alternatives
+- [ ] Cost estimate includes ALL components: API + Dev + Debug + Maintenance + JNMZ time
+- [ ] Volume × cost-per-call calculation included with monthly total
+- [ ] Rejected approach is named explicitly with concrete failure mode (not "it's worse")
+- [ ] Confidence level (High/Medium/Low) stated with justification
+- [ ] If invoked from sdd-design: AI-First Evaluation table appended to design.md Architecture Validation Checklist

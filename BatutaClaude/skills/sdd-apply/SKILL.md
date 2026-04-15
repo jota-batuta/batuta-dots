@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: 2025-06-01
   scope: [pipeline, infra]
   auto_invoke: "Implementing task batches, /sdd-apply"
@@ -439,3 +439,40 @@ risks:
 - Implement ONE batch at a time — complete it, verify it, then move to the next batch
 - ALWAYS include Implementation Notes explaining WHY decisions were made, not just WHAT was built
 - Return a structured envelope with: `status`, `executive_summary`, `detailed_report` (optional), `artifacts`, `next_recommended`, and `risks`
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Tests are optional for this change" | Tests are the executable spec. Skipping tests means the spec is whatever the next reader assumes the code does. Pyramid Layer 2 is mandatory, not aspirational. |
+| "I'll refactor and add docs later" | "Later" is the cemetery of code quality. Documentation is part of the deliverable per Batuta's DOCUMENTATION > CODE rule — a file without docstrings is incomplete code. |
+| "MCP verification slows me down" | Coding from stale training data produces bugs that surface in production. The MCP/WebFetch chain costs minutes; production debugging costs hours. |
+| "I know the pattern, no need to consult skills" | Skills encode project-specific conventions. Skipping them produces code that looks correct but violates project standards — and reviewers will ask you to redo it. |
+| "Marking tasks done in batch is faster" | Marking [x] as you go protects against compaction and gives the orchestrator real-time progress. Batch updates lose granularity and break the audit trail. |
+| "I'll deviate from design — it's a small improvement" | Silent deviations break the spec ↔ design ↔ code chain. Note the deviation in the return summary so the orchestrator can decide whether the design needs updating. |
+
+## Red Flags
+
+- Source files missing module docstrings (first-line `"""` or block comment with WHAT + WHY)
+- Public functions without docstrings (Args, Returns)
+- Security-relevant code lacking `# SECURITY:` prefix
+- Workarounds without `# WORKAROUND:` prefix and context
+- Tests not written for the implemented spec scenarios
+- `tasks.md` not updated with `[x]` markers as work progresses
+- Documentation Verification section missing from Implementation Progress report
+- Files modified that were NOT in design.md's File Changes table (silent scope creep)
+- "Implementation Notes" section absent or contains only WHAT (no WHY explanations)
+- Documentation ratio under 80% on changed files (Layer 1d threshold)
+
+## Verification Checklist
+
+- [ ] All assigned tasks marked `[x]` in `tasks.md`
+- [ ] Every changed file has a module docstring with business context
+- [ ] Every public function has docstring with Args + Returns (and WHY for business logic)
+- [ ] Tests written and passing for each spec scenario in scope
+- [ ] Documentation Verification table shows source + status for each technology used
+- [ ] Implementation Notes table explains WHY decisions were made (not just WHAT)
+- [ ] Files Changed table matches design.md File Changes (deviations explicitly flagged)
+- [ ] No deviations from design.md that weren't reported in the return summary
+- [ ] `# SECURITY:`, `# WORKAROUND:`, `# BUSINESS RULE:` prefixes used where applicable
+- [ ] Pre-Delivery Documentation Check passed for every modified file

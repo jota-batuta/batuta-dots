@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-26"
   scope: [pipeline]
   auto_invoke:
@@ -245,3 +245,36 @@ npx vitest --coverage
 > sure all checks still pass. This approach catches bugs before they reach users,
 > creates a permanent safety net for future changes, and ensures every feature is
 > tested -- not just the ones someone remembered to check manually.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Tests slow me down — I'll add them after the feature works" | Tests written AFTER code prove only that the code matches itself, not that it matches the requirement. After-the-fact tests miss bugs the test-first cycle would have surfaced during the RED step. |
+| "I'll add tests later" | "Later" never arrives. Code without tests becomes legacy code on day one. The cost of adding tests grows quadratically as the implementation hardens. |
+| "This change is too small to need a test" | Small changes to untested code are how regressions ship. The cost of writing one test is < 5 minutes; the cost of debugging a production regression is hours. |
+| "I'll mock the internal function — the test runs faster" | Mocking internals tests your mocks, not your code. Refactors break the test even when behavior is correct, training the agent to delete tests. |
+| "The bug is obvious — I don't need to write a failing test first" | Without the failing test, you have no proof the bug existed. Future regressions reintroducing the same bug will not be caught. |
+
+## Red Flags
+
+- Writing implementation code before any test exists for the new behavior
+- Test passes immediately on first run without ever failing — your test is wrong or testing nothing new
+- Test name contains "works", "test_function", "test_case_3" — name describes mechanics not behavior
+- Multiple `assert` statements in one test covering different behaviors — split required
+- Mocking a function defined in the same module as the code under test — boundary violation
+- Skipping REFACTOR step "to save time" — duplication left compounds across the codebase
+- Editing a test to make it pass after a code change without questioning whether the requirement changed
+- Three consecutive failing implementations on the same test — STOP, the test or requirement is wrong
+
+## Verification Checklist
+
+- [ ] Failing test was written and observed to fail (RED) BEFORE any implementation code
+- [ ] Test failure was for the right reason (missing feature), not a typo or import error
+- [ ] Implementation is the SIMPLEST code that turns the test green — no extra features
+- [ ] All existing tests still pass after the new test (`pytest` or `vitest` exit code 0)
+- [ ] Test name describes WHAT the system does (not HOW the test works)
+- [ ] Mocking is only at boundaries (external APIs, DB, filesystem) — no internal-function mocks
+- [ ] One logical behavior per test — no "and" in the test name
+- [ ] REFACTOR step was executed; tests stayed green throughout
+- [ ] Test lives next to the code it tests per Scope Rule (no root-level `tests/` mirroring src)

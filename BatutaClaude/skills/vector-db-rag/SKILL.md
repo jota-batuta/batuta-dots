@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-26"
   scope: [pipeline]
   auto_invoke:
@@ -242,3 +242,35 @@ psql -c "SELECT phase, tuples_done, tuples_total FROM pg_stat_progress_create_in
 ## What This Means (Simply)
 
 > **For non-technical readers**: RAG is how we give our AI a "knowledge library" to consult before answering questions. Instead of relying only on what the AI was trained on, we break our documents into small pieces (chunks), convert them into numerical representations (embeddings), and store them in a searchable database. When a user asks a question, we first search the library for relevant pieces, then give those pieces to the AI along with the question. This means the AI gives answers based on our actual documents, not guesses. The skill ensures we do this consistently, securely (each customer only searches their own documents), and with quality measurements so we know the system actually works.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "RLS for embeddings is overkill — they're just numbers" | Embeddings reconstruct the source text. Without RLS, Tenant A can semantically search Tenant B's documents and read fragments of their data. This is a data leak, not a theoretical risk. |
+| "Any chunk size works — we'll tune it later" | Chunks larger than ~512 tokens dilute relevance and degrade retrieval quality immediately. Tuning later means re-embedding the entire corpus — a cost users can avoid by starting with 256-512. |
+| "We don't need an evaluation set yet" | Without hit_rate and MRR on labeled data, you cannot tell if changes (new embedding model, new chunking strategy) help or hurt. You are flying blind. |
+
+## Red Flags
+
+- `document_embeddings` table without `tenant_id` column or without RLS enabled.
+- Single chunking strategy applied to all document types (PDFs, code, markdown all use the same splitter).
+- Re-embedding documents on every query instead of at ingestion.
+- No similarity threshold — retriever returns "best match" even when score is 0.3 (irrelevant).
+- HNSW index missing on production embedding table — sequential scans on >100K vectors.
+- No hit_rate / MRR tracked on a labeled test set.
+- Embedding dimensions hardcoded in multiple files (changing models requires hunting through code).
+- Pure semantic search without keyword fallback for product codes, SKUs, exact names.
+
+## Verification Checklist
+
+- [ ] `document_embeddings` table has `tenant_id` column with RLS policy enabled
+- [ ] HNSW index built with `m=16, ef_construction=64` (or justified alternative)
+- [ ] Chunking strategy routes by `doc_type` (pdf/markdown/code use different splitters)
+- [ ] Chunk size between 256-512 tokens (verified, not assumed)
+- [ ] Hybrid search (semantic + keyword) is the default retrieval strategy
+- [ ] Minimum similarity threshold enforced (0.7 for cosine) — irrelevant results filtered
+- [ ] Embedding API calls batched (not one-per-chunk)
+- [ ] Labeled test set (50+ Q&A pairs) exists and hit_rate/MRR are tracked over time
+- [ ] Embedding model is language-appropriate (Spanish corpus → Spanish-trained model)
+- [ ] Re-embedding only triggered on document content change, never per-query

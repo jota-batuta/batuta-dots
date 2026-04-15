@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "2.0"
+  version: "2.1"
   created: "2026-02-20"
   scope: [pipeline]
   auto_invoke: "Verifying implementation, /sdd-verify"
@@ -595,3 +595,43 @@ These principles guide how this skill communicates its findings:
 3. **Documentation is a deliverable**: Code without documentation is a liability. Every public interface, every non-obvious decision, every workaround must be documented. If it is not written down, it does not exist.
 4. **Operational readiness is not optional**: Code that works on a developer's machine but cannot be observed, reproduced, traced, or self-monitored in production is not done. O.R.T.A. is the minimum bar.
 5. **Teach through verification**: Each finding is a teaching opportunity. Frame issues as learning moments, not blame. The goal is to raise the team's quality bar over time.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Tests pass, so we're done" | Passing tests verify what you wrote, not what you missed. The Reality Check Protocol exists because golden-path bias is the #1 cause of "passed verify, failed in production". |
+| "100% coverage is overkill" | The bar is not 100% — it's "every spec scenario covered". A spec without a test is an unverified claim. |
+| "Skip Layer 3 (E2E) — too slow" | Layer 3 catches integration failures invisible at unit level. If E2E exists in the project, it MUST run. "No E2E configured" is the only valid reason to skip. |
+| "Security check is for production-only changes" | Every change adds attack surface. The 10-point AI-First Security Checklist runs every verify, not just for "security changes". |
+| "Documentation gaps aren't blockers" | Per Batuta philosophy: code without documentation is incomplete code. Documentation Verification is a first-class layer, not a nice-to-have. |
+| "First implementation deserves a PASS" | Default to NEEDS WORK. First iterations typically need 2-3 revision cycles. PASS on first verify with no warnings is a Reality Check failure trigger. |
+| "I'll fix the CRITICAL after archive" | CRITICAL means archive is blocked. `archive_ready: false` is deterministic — sdd-archive will refuse. |
+
+## Red Flags
+
+- Verify report verdict is PASS but Pyramid Layers 1-3 not all executed
+- "Zero issues found" claim with no comprehensive evidence
+- Reality Check Protocol section missing or all questions marked PASS without notes
+- Documentation Verification section absent or all rows marked N/A without justification
+- O.R.T.A. score reported but pillars not individually evaluated
+- Layer marked PASS that was actually SKIP or PARTIAL
+- Sync-in-async findings not flagged when async functions present in the change
+- `archive_ready: true` despite CRITICAL findings present in the report
+- Security check skipped despite changes touching auth, input, file I/O, or external APIs
+- Verdict text contradicts the layer-by-layer evidence (e.g., "PASS" with one FAIL row)
+
+## Verification Checklist
+
+- [ ] `openspec/changes/{change-name}/verify-report.md` exists and follows the Step 8 template
+- [ ] Pyramid Layer 1 executed (lint + type check + build) — PASS / PARTIAL / FAIL recorded
+- [ ] Pyramid Layer 1d (Code Documentation Check) executed with metrics
+- [ ] Pyramid Layer 1e (Sync-in-Async detection) executed for async code
+- [ ] Pyramid Layer 2 (unit tests) executed with results from actual test runner
+- [ ] Pyramid Layer 3 (E2E/integration) attempted (or "not configured" stated)
+- [ ] Reality Check Protocol completed — all 5 questions answered with notes
+- [ ] Cross-Layer Security Check executed (10-point checklist + secrets scan)
+- [ ] Documentation Verification table present with status per document type
+- [ ] O.R.T.A. score computed across all 4 pillars (Observability, Repeatability, Traceability, Auto-supervision)
+- [ ] Every CRITICAL finding includes a `business_impact` explanation in plain language
+- [ ] `archive_ready` field set deterministically (no CRITICAL → true, otherwise false)

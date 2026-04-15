@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-20"
   scope: [pipeline]
   auto_invoke: "Technical design documents"
@@ -328,3 +328,37 @@ Return a structured envelope:
 - When a design introduces multi-tenant concerns, explicitly address RLS policies, tenant context propagation, and data isolation
 - The Component Lifecycle table is MANDATORY for any design that introduces connections, clients, sessions, or stateful components. Specify creation point (startup/per-request/lazy), threading model (sync/async), and disposal strategy for each. Ambiguous lifecycle specifications lead to per-request engine creation and sync-in-async bugs in production (GAP-10).
 - Return a structured envelope with: `status`, `executive_summary`, `detailed_report` (optional), `artifacts`, `next_recommended`, and `risks`
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Skip design for small changes" | "Small" changes cause production incidents because no one thought through error paths, lifecycle, or rollback. Even 1-file changes deserve the 7-item Architecture Validation Checklist. |
+| "I'll add architecture notes after implementation" | Design after code is post-hoc rationalization, not architecture. ADRs written backwards lose the rejected alternatives — the most valuable part. |
+| "The decision is obvious, no ADR needed" | "Obvious" decisions are the ones future maintainers reverse because they don't see the rejected paths. ADR format (Choice / Alternatives / Rationale) is cheap; reversed decisions are expensive. |
+| "Threat model is overkill for this feature" | Every feature touching input, auth, file I/O, or external APIs has attack surface. "No new attack surface" is a valid statement only after you've thought about it — not before. |
+| "Component lifecycle is implementation detail" | Per-request engine creation, sync-in-async, connection leaks — all caused by ambiguous lifecycle in design. The table catches them BEFORE code is written. |
+
+## Red Flags
+
+- Code being written without an existing `design.md` in the change folder
+- ADRs missing the "Alternatives considered" field (decision shown without rejected options)
+- Threat Model section absent when the change handles input, auth, or external APIs
+- Component Lifecycle table missing despite design introducing connections, clients, or sessions
+- File Changes table omitted or showing only "modify" with no description
+- Documentation Plan empty or lacking a non-technical stakeholder entry
+- Architecture Validation Checklist not completed (7 items not all evaluated)
+- Conditional sections (LLM/Data/Infra) skipped despite domain being involved
+- "What This Means (Simply)" section missing or written in technical jargon
+
+## Verification Checklist
+
+- [ ] `openspec/changes/{change-name}/design.md` exists with all mandatory sections
+- [ ] Every Architecture Decision uses ADR format with Choice + Alternatives + Rationale
+- [ ] Threat Model present (or explicit "No new attack surface" justification)
+- [ ] Component Lifecycle table completed for every connection/client/session component
+- [ ] File Changes table lists every file with action + description
+- [ ] Testing Strategy table covers Unit, Integration, and E2E layers
+- [ ] Documentation Plan has at least one entry targeting non-technical stakeholders
+- [ ] Architecture Validation Checklist shows all 7 items evaluated (failures documented)
+- [ ] "What This Means (Simply)" section reads as plain language a stakeholder can understand

@@ -3,6 +3,52 @@
 All notable changes to the Batuta ecosystem are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## v15.2.0 — 2026-04-15 — Skill Standardization + Plugin Foundation + Provisioning Fixes
+
+### Skill Standardization (43 skills)
+All pre-v15.1 skills updated to the standard 7-section format:
+- Overview, When to Use, When NOT to Use, Core Sections (preserved), Common Rationalizations, Red Flags, Verification Checklist
+- **Common Rationalizations** tables document the excuses agents use to skip each skill, paired with factual rebuttals (pattern adapted from addyosmani/agent-skills MIT)
+- **Red Flags** section documents specific signals that a skill is being violated
+- **Verification Checklist** provides objective completion criteria
+- All skill versions bumped
+
+The 3 v15.1 skills (code-simplification, deprecation-and-migration, git-workflow-and-versioning) already had the standard format.
+
+### Critical Provisioning Fixes
+- **Ghost references removed**: `skill-provisions.yaml` line 43 referenced `fastapi-crud` and `jwt-auth` (archived in v15.0). Replaced with `api-design` which is the v15-compatible alternative. FastAPI projects will now provision correctly.
+- **v15.1 meta skills documented**: Added `v15_1_meta` section to `skill-provisions.yaml` listing agent-hiring, code-simplification, deprecation-and-migration, git-workflow-and-versioning as ecosystem-essential meta skills.
+- **New tech_rules**:
+  - `prefect-flows` — triggers on Prefect 3+ detection in requirements.txt or prefect.yaml
+  - `pydantic-ai` — triggers on pydantic-ai package detection
+
+### Plugin Foundation
+batuta-dots is now installable as a native Claude Code plugin:
+- `.claude-plugin/plugin.json` — plugin manifest declaring skills/, agents/, commands/, hooks/ locations
+- `.claude-plugin/marketplace.json` — marketplace manifest for `/plugin marketplace add jota-batuta/batuta-dots`
+- Bash installer remains as fallback for backward compatibility
+- Future: split into `batuta-core` (essential, always) + `batuta-specialized` (optional per tech stack) when repository separation is needed
+
+### Installation (two methods now supported)
+
+**Method 1: Plugin marketplace (recommended for v15.2+)**
+```
+/plugin marketplace add jota-batuta/batuta-dots
+/plugin install batuta-dots@batuta-ecosystem
+```
+
+**Method 2: Bash installer (existing)**
+```
+install-batutadots
+```
+
+### Deferred
+- Repository separation (batuta-core vs batuta-specialized) — next iteration when plugin ecosystem matures
+- Dynamic skill loading via fetch commands — decided NOT to pursue (security risk, against plugin philosophy)
+
+### Attribution
+Common Rationalizations, Red Flags, Verification Checklist patterns adapted from addyosmani/agent-skills v0.5.0 (MIT License).
+
 ## v15.1.0 — 2026-04-15 — agent-skills Integration
 
 ### New Skills (adapted from addyosmani/agent-skills, MIT License)

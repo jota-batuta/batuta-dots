@@ -8,7 +8,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-03-09"
   scope: [infra]
   auto_invoke: "Building applications with Claude Agent SDK or deploying batuta agents programmatically"
@@ -592,3 +592,42 @@ with open('BatutaClaude/agents/pipeline-agent.md') as f:
 > processing data in the background, or powering an AI feature in your product.
 > The key idea is that the agent behaves the same whether you are talking to it
 > directly or it is running on its own.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "setting_sources is optional -- I'll just put the rules in the prompt" | Rules in the prompt are a snapshot. The next time CLAUDE.md updates, your SDK agent silently runs with stale rules. `setting_sources=["project"]` keeps the SDK agent in lockstep with what developers see in Claude Code. Skipping it guarantees prod-vs-dev drift |
+| "I'll skip defer_loading -- 5 MCPs is not that many" | 5 MCP servers is roughly 10-20K tokens of tool definitions loaded on every turn. That is 10-20K tokens of context the model could be using for actual work. With `defer_loading=true` the model discovers tools on demand via Tool Search and reclaims that context |
+| "I'll grant the assistant Edit and Write -- it makes the API more useful" | Embedded assistants serving end users should never have write access. The first prompt-injection attack in user input becomes an arbitrary file write or shell execution. Read-only tools by default; expand only after a documented threat-model review |
+| "I'll hardcode the agent prompt in the SDK code -- it's faster than parsing the .md" | Hardcoded prompts diverge from the source of truth in `BatutaClaude/agents/`. The agent file gets updated, the SDK keeps the old prompt, and you debug ghost behavior for hours. Parse the `.md` file at startup; the cost is one regex per process |
+| "Different behavior in SDK vs Claude Code is fine -- they are different runtimes" | Different is acceptable; surprising is not. The SDK is designed to mirror Claude Code behavior when `setting_sources=["project"]` is set. If they diverge, it is almost always a missing setting (hooks not mapped, tools not allowed, defer_loading not enabled), and fixing the config restores parity |
+
+## Red Flags
+
+- `query()` or `Query()` called without `setting_sources=["project"]` in a batuta project
+- 5+ MCP servers configured without `defer_loading=true`
+- `allowed_tools` includes write tools (`Edit`, `Write`, `Bash`) for an embedded/end-user-facing assistant
+- Agent prompt hardcoded as a Python string literal instead of parsed from `BatutaClaude/agents/*.md`
+- SDK deployment without a `CLAUDE.md` file in the project root
+- `sdk:` block in agent .md frontmatter ignored when configuring `ClaudeAgentOptions`
+- Production deployment without a prior `claude --print` smoke test run locally
+- Hooks defined in `settings.json` for Claude Code but not mapped to SDK `Hooks` for the SDK agent
+- `model` not pinned in `ClaudeAgentOptions` (relies on SDK default which can change between releases)
+- `max_tokens` left at default for a long-running review task (will silently truncate)
+- Agent that streams output but the consumer never filters by `msg.type == "text"` (collects metadata as content)
+
+## Verification Checklist
+
+- [ ] `ClaudeAgentOptions(setting_sources=["project"], ...)` is set on every batuta agent run
+- [ ] `defer_loading=True` is enabled when 5 or more MCP servers are configured
+- [ ] `allowed_tools` is the minimal list required for the task (principle of least privilege)
+- [ ] Embedded/end-user-facing assistants are restricted to read-only tools (`Read`, `Glob`, `Grep`)
+- [ ] Agent prompt and config are parsed from `BatutaClaude/agents/*.md` via `parse_agent_md()` -- not hardcoded
+- [ ] `CLAUDE.md` exists in the project root that the SDK loads via `setting_sources=["project"]`
+- [ ] Local smoke test with `claude --print "..."` passes before deploying to CI/CD or production
+- [ ] Claude Code hooks (PreToolUse, PostToolUse, SessionStart, Stop) are mapped to SDK `Hooks` equivalents
+- [ ] `model` is explicitly set in `ClaudeAgentOptions` (e.g., `claude-sonnet-4-6`); not relying on SDK default
+- [ ] `max_tokens` is sized for the worst-case task output (16384 for reviews; 4096-8192 for short responses)
+- [ ] Stream consumer filters by `msg.type == "text"` to collect only user-visible content
+- [ ] `.mcp.json` is committed and validated as JSON; MCP servers are reachable from the deployment environment

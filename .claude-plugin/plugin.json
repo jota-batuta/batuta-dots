@@ -1,0 +1,24 @@
+{
+  "name": "batuta-dots",
+  "description": "Batuta ecosystem — contract-based agent delegation, SDD pipeline (SPRINT/COMPLETO), reviewer personas, and Colombian domain expertise for AI-assisted development.",
+  "version": "15.2.0",
+  "author": {
+    "name": "Batuta AI",
+    "url": "https://github.com/jota-batuta"
+  },
+  "homepage": "https://github.com/jota-batuta/batuta-dots",
+  "repository": "https://github.com/jota-batuta/batuta-dots",
+  "license": "MIT",
+  "keywords": [
+    "sdd",
+    "spec-driven-development",
+    "agent-orchestration",
+    "contract-based-agents",
+    "colombian-business",
+    "multi-tenant"
+  ],
+  "skills": "BatutaClaude/skills/",
+  "agents": "BatutaClaude/agents/",
+  "commands": "BatutaClaude/commands/",
+  "hooks": "BatutaClaude/hooks/hooks.json"
+}

@@ -28,6 +28,14 @@ sdd:
   - tdd-workflow
   - debugging-systematic
 
+# --- Skills: v15.1 meta additions (adapted from addyosmani/agent-skills, MIT) ---
+# Provisioned in EVERY project — quality guardrails applicable cross-domain
+v15_1_meta:
+  - agent-hiring              # Contract-based agent delegation protocol
+  - code-simplification       # Chesterton's Fence, Rule of 500
+  - deprecation-and-migration # Code-as-liability, feature flag lifecycle
+  - git-workflow-and-versioning # Trunk-based commits, Build Cop role
+
 # --- Skills: Technology-detected ---
 # Each rule has: detect (signals) + skills (to provision)
 # Signal types:
@@ -36,17 +44,29 @@ sdd:
 #   project_type: match against sdd-init Step 1 project type detection
 #   context_mentions: keywords that may appear in user conversation or project docs
 tech_rules:
-  # Python + FastAPI
+  # Python + FastAPI — triggers api-design (fastapi-crud and jwt-auth were archived in v15.0)
   - detect:
       files: [requirements.txt, pyproject.toml, setup.py, Pipfile]
       content_pattern: "fastapi|FastAPI"
-    skills: [fastapi-crud, jwt-auth]
+    skills: [api-design]
 
   # SQLAlchemy / ORM (often paired with PostgreSQL)
   - detect:
       content_pattern: "sqlalchemy|SQLAlchemy|alembic"
     skills: [sqlalchemy-models]
     mcps: [postgres]
+
+  # Prefect 3 self-hosted flows (v15.2 addition)
+  - detect:
+      content_pattern: "prefect>=3|prefect_3|from prefect import"
+      files: [requirements.txt, pyproject.toml, prefect.yaml]
+    skills: [prefect-flows]
+
+  # Pydantic AI agent framework (v15.2 addition)
+  - detect:
+      content_pattern: "pydantic-ai|pydantic_ai|from pydantic_ai"
+      files: [requirements.txt, pyproject.toml]
+    skills: [pydantic-ai]
 
   # LLM / AI Agents
   - detect:

@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-04-07"
   scope: [capability]
   auto_invoke: "When building or deploying Prefect flows"
@@ -158,3 +158,41 @@ Use `pause_on_shutdown=False` and `restart: unless-stopped` in Docker to mitigat
 5. **pymssql needs freetds-dev** — Install system package in Dockerfile before pip install
 6. **Logs only appear in UI if PREFECT_API_URL is correctly set** — Otherwise they go to stdout only
 7. **Redis is optional** for single-worker setup — Can be added later for scaling
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Cron is simpler -- I'll just use a system crontab and skip Prefect" | System cron has no observability, no retry, no logging UI, no schedule history, no failure alerting, and no concurrency control. The first time a job silently fails on Saturday at 3am you will spend hours rebuilding what Prefect gives you out of the box |
+| "I'll skip retries on tasks -- the network is reliable enough" | The network is never reliable enough. Transient failures (DNS hiccup, SQL Server restart, brief auth refresh) are the most common cause of false alerts. `retries=3` with exponential backoff costs nothing and turns a 5% failure rate into a 0.0125% one |
+| "I'll use .deploy() with work pools because that's what the docs show" | The docs show .deploy() because it scales horizontally. For a single-node Coolify deployment, .serve() is the correct pattern -- it runs flows in the same container, no work pool config, no separate worker process. Use .deploy() only when you actually have multiple workers |
+| "Prefect 3 still uses agents -- I saw `prefect agent start` in a tutorial" | That tutorial is for Prefect 2. Prefect 3 uses workers, not agents. Mixing the two leads to processes that start without errors but never pick up flow runs. Always verify version-specific docs |
+| "PREFECT_API_URL is the same everywhere -- localhost:4200" | The server uses `0.0.0.0:4200` to bind, but workers and clients inside Docker need `http://prefect-server:4200/api` (the Docker DNS name). Using localhost from inside a container connects to the container itself, not to the Prefect server |
+
+## Red Flags
+
+- A scheduled job running via `crontab -e` instead of a Prefect flow (no observability, no retry, no UI)
+- `@task` without `retries=` for any operation that touches network, database, or external API
+- `@flow` deployed via `.deploy()` + work pool when only a single Prefect process exists
+- `prefect agent start` in a Dockerfile or compose file (Prefect 2 syntax; Prefect 3 uses `prefect worker start`)
+- `PREFECT_API_URL=http://localhost:4200/api` in a container that needs to reach a sibling container
+- `postgresql://` (psycopg2) in `PREFECT_API_DATABASE_CONNECTION_URL` instead of `postgresql+asyncpg://`
+- `print()` calls in flows without `log_prints=True` on the `@flow` decorator (logs lost)
+- Prefect server exposed on port 4200 without auth or reverse-proxy protection
+- Dockerfile installing `pymssql` without `apt-get install freetds-dev` first (build will fail)
+- `pause_on_shutdown=True` (default) on a `serve()` call where you want schedules to survive container restart
+- Same flow function used for both proactive (scheduled) and reactive (manual) runs without parameter differentiation
+
+## Verification Checklist
+
+- [ ] All scheduled work is defined as Prefect flows; no system crontab entries running production logic
+- [ ] Every `@task` that touches network/DB/external API has `retries=` and `retry_delay_seconds=` configured (use `exponential_backoff` for variability)
+- [ ] Single-node deployments use `.serve()` and `serve(...)`; only multi-worker setups use `.deploy()` + work pools
+- [ ] Prefect 3 syntax used throughout: `prefect worker start` (not `prefect agent start`)
+- [ ] `PREFECT_API_URL` for workers/flows uses Docker DNS name (`http://prefect-server:4200/api`), not localhost
+- [ ] Database connection string uses `postgresql+asyncpg://` driver
+- [ ] All `@flow` decorators include `log_prints=True` if the flow uses `print()` for output
+- [ ] Prefect server port 4200 is firewalled or fronted by an authenticated reverse proxy
+- [ ] Dockerfile installs `freetds-dev` (or equivalent system deps) before `pip install pymssql`
+- [ ] `serve()` is called with `pause_on_shutdown=False` and the container has `restart: unless-stopped`
+- [ ] Proactive and reactive runs use different flow names or parameters so logs and history are separable

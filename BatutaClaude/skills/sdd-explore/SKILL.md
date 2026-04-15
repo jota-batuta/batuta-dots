@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-20"
   scope: [pipeline]
   auto_invoke: "Exploring codebase for changes, /sdd-explore"
@@ -629,3 +629,35 @@ APPROACH RESEARCH EXIT GATE:
 - When exploring AI pipeline changes, ALWAYS consider Langfuse observability and Presidio PII compliance
 - Frame risks in terms of both technical impact AND business impact
 - Return a structured envelope with: `status`, `executive_summary`, `detailed_report` (optional), `artifacts`, `next_recommended`, and `risks`
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Skip exploration, I already know this codebase" | Knowledge decays. Files move, conventions shift, new patterns appear. The 5 minutes to verify beats 5 hours debugging an outdated assumption. |
+| "Exploration is slow, I'll just start coding" | Coding without explore.md means designing in your head. You will discover constraints during apply that should have been caught in explore — and refactoring then costs 10x. |
+| "I'll ask clarifying questions later" | Late questions force rework. Discovery Completeness has 5 mandatory questions — answering them BEFORE proposal is the cheapest moment. |
+| "Notion KB has nothing useful for this" | You don't know until you query. Silent skip hides the gap. The mandate is "consult and document outcome" — even "no results" is valuable evidence. |
+| "MCP discovery is overkill for this change" | MCPs provide CURRENT docs. Skipping MCP discovery means coding from training-data patterns that may be 12+ months stale. |
+
+## Red Flags
+
+- Implementation work begins without an `explore.md` artifact present in `openspec/changes/{change-name}/`
+- Explore.md exists but lacks the `Approach Research` block with KB + Web entries
+- Skill Gap Analysis table missing or has empty "Action Taken" column
+- HIGH skill gaps documented but not resolved (no user decision recorded)
+- Discovery Completeness has any "No" or "Unknown" answer with no follow-up action
+- MCP Discovery Map missing despite project having a configured `.mcp.json`
+- Gotchas section in CHECKPOINT.md is empty after exploration completed
+- "Ready for Proposal" marked Yes despite incomplete Discovery Completeness
+
+## Verification Checklist
+
+- [ ] `openspec/changes/{change-name}/explore.md` exists and follows the mandatory template
+- [ ] Notion KB consulted (or absence documented with the required disclosure note)
+- [ ] Skill Gap Analysis table completed with HIGH gaps resolved or justified
+- [ ] MCP Discovery Map present with each configured MCP showing utilization evidence
+- [ ] Discovery Completeness table has all 5 questions answered (no "Unknown" without flagging)
+- [ ] Approach Research section contains the auditable `RESEARCH GATE:` block
+- [ ] Process Complexity evaluated and recommendation included (or "no signals" stated)
+- [ ] Stakeholder Impact section addresses Technical, End Users, Business, and Tenant impact

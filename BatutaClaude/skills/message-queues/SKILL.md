@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-26"
   scope: [pipeline]
   auto_invoke:
@@ -245,3 +245,38 @@ psql -c "SELECT source_queue, count(*) FROM dead_letter_queue GROUP BY source_qu
 ## What This Means (Simply)
 
 > **For non-technical readers**: Message queues are like the "to-do inbox" between different parts of our software. When one part finishes its work and needs another part to take action (e.g., "send a confirmation email"), it drops a note in the inbox instead of waiting. This makes the system faster (the first part does not wait) and more reliable (if the second part is busy, the note stays in the inbox until it is ready). This skill ensures that notes are never lost (dead letter queues catch failures), never processed twice (idempotency), and each customer's notes stay separate (tenant isolation). Think of it as the postal service rules for our software's internal mail system.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "DLQ is overkill — we'll just retry forever" | Poison messages block the queue indefinitely. Healthy messages pile up behind one bad record. The queue stops processing for ALL tenants until someone notices and manually intervenes. |
+| "Retry forever is fine — eventually it'll work" | Downstream service is down? You generate millions of retry attempts, get rate-limited, blocked by the provider, and burn money on infinastructure spinning on failed work. Set max_retries; send to DLQ. |
+| "We'll add idempotency when duplicates become a problem" | Duplicates ARE a problem from message #1 — you just won't notice until you double-charge a customer or send two confirmation emails. Idempotency is foundational, not optional. |
+
+## Red Flags
+
+- Consumer auto-acknowledges before processing completes — message lost on crash.
+- No deduplication table — same message processed twice produces double side effects.
+- Retry without backoff — thundering herd on downstream service.
+- No max_retries configured — infinite retry loop with poison messages.
+- DLQ entries never inspected — failures pile up unnoticed.
+- Message envelope missing `tenant_id` and `message_id` — cannot route or dedupe.
+- Synchronous RPC pattern over queues — adds latency vs direct HTTP for no benefit.
+- Payloads >256KB sent through the broker — should be S3/DB reference.
+- Outbox pattern missing when DB write must be atomic with publish — split-brain risk.
+- Using a queue for a multi-step saga that needs compensation — should be Temporal.
+
+## Verification Checklist
+
+- [ ] Every consumer is idempotent: deduplication table checked in same transaction as processing
+- [ ] Exponential backoff with jitter implemented (verified, not assumed)
+- [ ] `max_retries` configured per queue type with documented rationale
+- [ ] DLQ table created in PostgreSQL AND DLQ topic/queue in broker
+- [ ] DLQ entries have full error context: error_type, trace_id, attempt_count, tenant_id, failed_at
+- [ ] DLQ depth monitored (alert if >N entries in last hour)
+- [ ] Every message envelope includes `tenant_id`, `message_id`, `event_type`, `published_at`
+- [ ] Transactional outbox used wherever DB write + publish must be atomic
+- [ ] Acknowledgment occurs ONLY after successful processing AND dedup record insert
+- [ ] Queue vs Temporal decision documented for each async workflow
+- [ ] Payload size limit enforced (256KB) — large data stored externally with reference

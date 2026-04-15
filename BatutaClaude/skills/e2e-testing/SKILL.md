@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-26"
   scope: [pipeline]
   auto_invoke:
@@ -322,3 +322,51 @@ npx playwright install --with-deps
 > simpler tests miss, like a button that does not work or data leaking between customers.
 > We run them automatically every time code changes, but only for the most important
 > user journeys because they take longer than other types of tests.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "E2E is slow, we'll skip it" | E2E catches integration bugs that unit tests are blind to: broken auth flows, tenant data leaks, JS errors that break the UI, broken API contracts. Skipping E2E means shipping integration bugs to users. |
+| "Unit tests cover everything" | Unit tests prove your code works in isolation. They cannot prove the stack works together. A green unit test suite + broken login = users locked out. Pyramid Layer 3 exists for a reason. |
+| "CSS selectors are fine, they work" | CSS selectors break on every refactor, theme change, or framework upgrade. Maintenance cost is 5-10x role-based selectors. "It works" today means "I'll fix 50 tests next sprint" tomorrow. |
+| "We can use waitForTimeout(3000) to make it stable" | Arbitrary waits are the #1 source of flaky tests. A 3-second wait is too short on slow CI and wastes 2.5 seconds when the page loads in 500ms. Use `waitFor()` or `expect().toBeVisible()`. |
+| "One test per feature is enough" | Critical journeys need positive tests AND negative tests AND edge cases at the journey level (not unit). Tenant isolation alone needs ~5 E2E tests to prove. |
+| "We'll record all browser actions and it'll be fine" | Recorded tests use brittle selectors (XPath, CSS) and capture implementation details. Use `playwright codegen` as a starting point, then refactor to Page Objects with role-based selectors. |
+
+## Red Flags
+
+- CSS selectors (`.btn-primary`, `#submit`) or XPath (`//div[@class='task']`) anywhere in test code
+- `page.waitForTimeout(N)` with hardcoded milliseconds — flaky by design
+- Tests that share mutable state across runs (no cleanup, no tenant isolation)
+- Tests in a root-level `tests/` dump instead of `e2e/features/{feature}/`
+- One huge spec file containing all tests for an entire app
+- E2E tests for pure logic (math, formatting, validation) — these belong in unit tests
+- `.only()` left in tests that gets merged to main (no `forbidOnly: true` in CI)
+- No `data-testid` on dynamic containers — tests rely on translatable text
+- Tests that pass locally but fail in CI without explanation (timing-dependent)
+- No retry policy in CI (or `retries: 5` masking real flakiness)
+- No trace or screenshot captured on failure — debugging is impossible
+- E2E test suite runs > 30 minutes — too slow for fast feedback, indicates over-testing of edge cases
+- Multi-tenant apps with no tenant-isolation E2E test — data leak is just one bug away
+
+## Verification Checklist
+
+- [ ] All E2E tests use Page Objects to encapsulate selectors and interactions
+- [ ] All selectors use `getByRole()`, `getByLabel()`, `getByTestId()`, or `getByText()` — zero CSS/XPath
+- [ ] Test files placed in `e2e/features/{feature}/` — no root-level `tests/` dump
+- [ ] One spec file per feature, one user journey per test
+- [ ] Test data isolated per tenant — no shared mutable state between tests
+- [ ] All waits are explicit (`waitFor()`, `expect().toBeVisible()`) — zero `waitForTimeout()`
+- [ ] Each test covers a critical user journey, not a UI implementation detail
+- [ ] Multi-tenant apps include tenant-isolation tests (cannot see another tenant's data)
+- [ ] Auth handled via fixture or test-only login endpoint, not UI login on every test
+- [ ] `data-testid` attributes added to dynamic containers, lists, and complex components
+- [ ] `playwright.config.ts` has `forbidOnly: !!process.env.CI` to catch stray `.only()`
+- [ ] `playwright.config.ts` has `trace: 'on-first-retry'` and `screenshot: 'only-on-failure'`
+- [ ] CI runs E2E in headless mode with parallel sharding for speed
+- [ ] CI runs Chromium-only on PRs, multi-browser on main (cost optimization)
+- [ ] E2E tests run AFTER unit (L1) and integration (L2) tests pass — sequential gating
+- [ ] Test suite total runtime < 15 minutes for fast feedback
+- [ ] Edge cases and pure logic tested via unit tests, not E2E
+- [ ] Failure artifacts (trace, screenshot, video) captured and accessible in CI

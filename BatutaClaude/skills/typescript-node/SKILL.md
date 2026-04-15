@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-26"
   scope: [pipeline]
   auto_invoke:
@@ -404,3 +404,40 @@ npx vitest
 > who uses it, like an organized filing cabinet where everyone knows where to find things.
 > Together, these patterns mean fewer bugs, faster debugging, and code that new team
 > members can navigate confidently.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Strict mode is pedantic and slows me down -- I'll just disable `noUncheckedIndexedAccess`" | The flags you disable are exactly the ones that catch the bugs you cannot detect by reading code. `array[0]` returning `T \| undefined` is not pedantry; it is the truth. Disabling it means production crashes in the cases your tests did not happen to cover |
+| "I'll use `any` just temporarily until I figure out the right type" | "Temporary" `any`s become permanent the moment the code passes review. Each one is a hole in the type system that lets bugs propagate silently. Use `unknown` and narrow -- it costs five minutes and protects callers forever |
+| "The Result pattern is overkill -- exceptions are simpler" | Exceptions are simpler to write and harder to debug. A `throw` is invisible in the function signature; a `Result<T, E>` is part of the contract. The next developer who calls your function should not have to read its source to know what can go wrong |
+| "I'll skip env validation -- it's just `process.env.DATABASE_URL`, what could go wrong" | Without Zod, missing env vars surface as `undefined` deep in the call stack at 3 AM. Validating at startup means the app crashes loudly with a clear message instead of failing mysteriously after running for a week |
+| "Barrel files with `export *` save me typing" | They also leak internals, create circular dependency loops, and make refactoring a minefield because every name is implicitly part of your public API. Explicit named exports document intent and make breakage visible |
+
+## Red Flags
+
+- `strict: false` or any per-file `// @ts-strict-ignore` directive
+- Use of `any` outside generated code or third-party shim files
+- `as` type assertions in production code (test setup is acceptable)
+- `throw` for expected failures (not found, validation error, conflict)
+- Direct `process.env.X` access outside `core/config/env.ts`
+- Root-level `utils/`, `helpers/`, `lib/`, or `common/` directory
+- `export *` in barrel files
+- `console.log` for production logging instead of structured logger
+- `.ts` extension in import paths when using `NodeNext` resolution
+- Multi-tenant query without `tenantId` in the WHERE clause
+- Service that returns `void` or `T` for an operation that can fail (no `Result<T, E>`)
+
+## Verification Checklist
+
+- [ ] `tsconfig.json` has `strict: true`, `noUncheckedIndexedAccess: true`, `noImplicitReturns: true`
+- [ ] No occurrences of `: any` or `as ` in `src/` (excluding tests and generated code)
+- [ ] All service-layer functions that can fail return `Promise<Result<T, E>>` with named error variants
+- [ ] Environment variables are parsed and typed in `core/config/env.ts` via Zod schema; `process.env` is not accessed elsewhere
+- [ ] All barrel files (`index.ts`) use explicit named exports, never `export *`
+- [ ] File placement matches Scope Rule: `features/{name}/`, `features/shared/`, or `core/`
+- [ ] Multi-tenant queries include `tenantId` in WHERE clauses
+- [ ] Imports use `.js` extension under `NodeNext` module resolution
+- [ ] Production code uses a structured logger (pino, winston) instead of `console.log`
+- [ ] `npx tsc --noEmit` passes with zero errors before any test runs

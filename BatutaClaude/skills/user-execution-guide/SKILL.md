@@ -8,7 +8,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-03-30"
   scope: [pipeline]
   auto_invoke: "Generating SPO after task plan approval"
@@ -166,3 +166,36 @@ ARTIFACT: openspec/changes/{change-name}/SPO.md
 WAVES: {N}
 READY_MESSAGE: "SPO listo. Sigue la Wave 1 en SPO.md para iniciar la implementación."
 ```
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "SPO duplicates tasks.md — just give the operator tasks.md" | tasks.md is for the AGENT (technical breakdown). SPO is for the HUMAN OPERATOR (which session opens what, which gates to approve, what to verify). Different audiences, different documents. |
+| "Skip SPO for single-wave changes — operator can figure it out" | "Figure it out" creates ambiguity at gates. JNMZ wastes time deciding which command to paste, what gate response is expected. SPO removes the ambiguity. |
+| "PRD already has the implementation summary — SPO is redundant" | PRD is consumed by the agent in a fresh session. SPO is consumed by JNMZ across sessions. Combining them creates a document that fails both audiences. |
+| "Make the SPO comprehensive — include all the technical detail" | SPO must be ≤100 lines per wave. Comprehensive = unread. The operator needs WHAT TO DO, not WHY the implementation works. |
+| "I'll put the operator instructions inline in tasks.md" | Mixing operator-facing instructions with agent-facing tasks bloats both. Agent reads operator notes as instructions; operator gets lost in technical tasks. |
+
+## Red Flags
+
+- SPO written in English when the operator (JNMZ) speaks Spanish — must be in Spanish
+- Each wave > 100 lines — too detailed, operator will skip the verification steps
+- "Lo que verás primero" section missing for any wave — operator has no signal that the agent is on track
+- Gates table missing or generic ("approve when ready") — must specify the exact response ("dale", "proceed")
+- "Si algo falla" section missing — operator has no recovery path when the agent stalls
+- Wave 1 command doesn't reference PRD.md — the agent will start without the planning context
+- Verification checklist for a wave contains internal-state items ("agent understood the requirement") instead of observable items ("file X was created")
+- SPO generated without reading tasks.md first — sequencing is guessed not derived
+
+## Verification Checklist
+
+- [ ] SPO.md written to `openspec/changes/{change-name}/SPO.md`
+- [ ] Document is in Spanish (operator's primary language)
+- [ ] Each wave is ≤100 lines
+- [ ] Every wave has: session opening command, gates table, "lo que verás primero" preview, verification checklist
+- [ ] Gates table specifies exact approval responses ("dale", "proceed", "apruebo")
+- [ ] "Si algo falla" section present with at least 2 failure scenarios and recovery commands
+- [ ] Wave 1 opening command references PRD.md so the agent has planning context
+- [ ] Verification items are observable (file created, output produced) not internal (agent understood)
+- [ ] Pipeline-agent received envelope with `STATUS: success`, `ARTIFACT: <path>`, `WAVES: <N>`, `READY_MESSAGE: <text>`

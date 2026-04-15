@@ -9,7 +9,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-26"
   scope: [infra]
   auto_invoke:
@@ -298,3 +298,33 @@ The envelope always includes `executive_summary` (1-2 sentences, non-technical) 
 > the inspector finds it and brings it in automatically. Think of it as the librarian
 > who catalogs new books, fixes shelving mistakes, and finds books from other branches
 > when you need them.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Classification is extra work — I'll skip it for this skill" | Skipping classify mode is a CLAUDE.md Rules violation. Without it, hardcoded paths and Batuta-specific patterns propagate to all projects on next sync. |
+| "Skip the lifecycle check — the user just reported a tiny issue" | Even tiny issues get logged and verified. Dismissing creates a pattern: future violations also get dismissed. Three dismissals = a systemic blind spot. |
+| "The user reported a rule violation but they're probably wrong" | The protocol is verify FIRST, then respond. Assuming the user is wrong without checking the rule is itself a violation. |
+| "This skill has hardcoded paths but it's still 'generic enough'" | "Needs-generalization" exists for exactly this case. Marking it generic anyway breaks all projects that pull the skill. |
+| "Auto-provision without updating .provisions.json — it's just a manifest" | Future sessions read .provisions.json to know what was auto-installed. Skipping the manifest causes duplicate provisions and silent skill drift. |
+
+## Red Flags
+
+- Responding to a violation report with "I already knew that" or "the skill is overkill" — both are banned rationalizations
+- Classifying a skill as "generic" without scanning for hardcoded tenant IDs, file paths, or Batuta-stack references
+- Auto-copying a skill from `~/.claude/skills/` without updating `.provisions.json`
+- Skipping Step 4b (Content Validation) because frontmatter passed Step 4
+- Returning `status: success` from provision mode while a HIGH gap remains unresolved
+- Self-heal mode acknowledging the violation but not proposing a concrete fix
+- Classification result not logged anywhere — silent classification is the same as no classification
+
+## Verification Checklist
+
+- [ ] After ecosystem-creator: classify mode was invoked and returned a structured envelope (`classification`, `propagation`, `frontmatter_issues`)
+- [ ] If user reported a violation: rule text was quoted from CLAUDE.md/SKILL.md before responding (no responding from memory)
+- [ ] If violation confirmed: a concrete fix was proposed (not just acknowledgment) and applied or queued
+- [ ] If provision mode found a HIGH gap: progress was BLOCKED and options were presented to the user
+- [ ] If skill auto-copied: `.provisions.json` manifest was updated with skill name, source, ISO date, and reason
+- [ ] If skill classified as "needs-generalization": flagged for future ecosystem review (not silently propagated)
+- [ ] Envelope returned with `status`, `executive_summary`, and `next_recommended` populated

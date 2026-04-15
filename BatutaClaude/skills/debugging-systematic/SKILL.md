@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-26"
   scope: [pipeline]
   auto_invoke:
@@ -253,3 +253,38 @@ diff <(env | sort) <(ssh staging 'env | sort')
 > If three attempts fail, we stop and redesign instead of patching endlessly. This
 > approach solves problems in 15-30 minutes instead of 2-3 hours, and fixes stick
 > because we address the root cause, not the symptom.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Let me just try changing this — it might fix it" | "Let me just try" is the most expensive sentence in debugging. Random changes create new bugs and obscure the cause. Phase 1 first, always. |
+| "Quick fix first, real fix later" | Quick fixes become permanent. Once the symptom is gone, urgency evaporates and the root cause stays buried until it resurfaces in production. |
+| "I don't need to reproduce it — the error message is clear" | Error messages describe symptoms, not causes. Without reproduction, you cannot verify the fix actually works. |
+| "I'll skip writing a failing test — I know what the bug is" | Without a regression test, the bug WILL come back. Future changes have no signal that this code path matters. |
+| "Three failed attempts is fine, the fourth will work" | Three strikes means the problem is architectural. The fourth attempt is dangerous — you're now patching symptoms while the root issue compounds. |
+| "It's probably a dependency bug, not my code" | 95% of bugs are in your code. Blaming dependencies first wastes hours. Check your code first, verify with the dependency's tests second. |
+
+## Red Flags
+
+- Editing code before completing Phase 1 (Investigate) — gathering evidence first is non-negotiable
+- "It works on my machine" said out loud — environment differences are bugs, not excuses
+- Wrapping the failing line in try/except to suppress the error — hides the cause until production
+- Multiple unrelated changes in the same fix commit — impossible to know which one fixed it
+- Removing assertions, validations, or error handling to "make tests pass" — silencing alarms
+- Hypothesis stated as "I think it might be something with X" without specific cause-and-effect
+- Three failed fixes in a row with no new investigation between them — escalate to SDD
+- Bug fix commit with no test added — regression guaranteed
+
+## Verification Checklist
+
+- [ ] Bug was reproduced consistently before any code change (exact steps documented)
+- [ ] Phase 1 (Investigate) produced a clear problem statement: "X happens when Y, but Z was expected"
+- [ ] Hypothesis was stated explicitly ("I think the cause is X because Y") before testing it
+- [ ] Only ONE change per hypothesis test — no batched changes
+- [ ] Failing test reproducing the bug was added BEFORE the fix (integrates with tdd-workflow)
+- [ ] Fix addresses root cause, not symptom (verified by tracing data flow back to source)
+- [ ] All existing tests still pass after the fix
+- [ ] Code comment with `# BUG FIX:` or `# WORKAROUND:` prefix explains WHY this code looks unusual
+- [ ] If three fix attempts failed: escalated to SDD pipeline (sdd-explore), did NOT attempt a fourth
+- [ ] If multi-tenant: tenant isolation (RLS, context propagation, feature flags) verified before assuming global issue

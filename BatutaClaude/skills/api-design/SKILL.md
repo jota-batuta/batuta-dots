@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-26"
   scope: [pipeline]
   auto_invoke:
@@ -231,3 +231,39 @@ http GET localhost:8000/api/v1/products cursor==abc limit==20 "Authorization: Be
 ## What This Means (Simply)
 
 > **For non-technical readers**: This skill ensures that every API we build "speaks the same language." When something goes wrong, every endpoint reports errors in the same standard format (like a standardized incident report). When a client asks for a list of items, pagination always works the same way. When we have multiple customers (tenants), each one can only see their own data. Think of it as a style guide for how our software talks to other software -- consistency means fewer bugs, faster integrations, and happier developers.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "REST conventions don't matter for internal APIs -- only the team will use them" | Internal APIs become external APIs the moment a second service or BFF is added. Inconsistency forces every new consumer to learn a one-off contract; the rewrite cost dwarfs what consistency would have cost upfront |
+| "Returning HTTP 200 with `{ok: false}` is fine, the body tells the story" | Status codes are part of the contract. Monitoring, retries, circuit breakers, log dashboards, and HTTP middleware key off the status. A 200 with an error body silently breaks alerting and confuses every observability tool downstream |
+| "Putting tenant_id in the URL path is convenient and explicit" | URL-based tenant IDs are user-controlled input. They invite enumeration attacks (`/tenants/1`, `/tenants/2`...) and force defensive checks at every endpoint. Verified JWT claims are tamper-proof and centralize the trust boundary |
+| "Versioning can wait until we have v2 -- right now we have one client" | The first breaking change without a version is a multi-day coordinated deploy across every consumer. Adding `/v1/` from day one costs nothing and buys you the option to ship `/v2/` in parallel later |
+| "Cursor pagination is overkill, offset works for our small dataset" | Offset breaks the moment data changes between requests (skipped or duplicated rows during scroll). It also degrades quadratically on deep pages. Cursor pagination is the same amount of code and avoids both problems forever |
+
+## Red Flags
+
+- An endpoint that returns 200 with `{"error": "..."}` in the body
+- Tenant ID extracted from URL path or unvalidated header
+- Custom error format that does not match RFC 9457 / `application/problem+json`
+- POST that returns the resource without a `Location` header or 201 status
+- DELETE that returns a body or 200 status (should be 204 No Content)
+- Verbs in URL paths (`/api/getUsers`, `/api/createOrder`)
+- Resources nested 3+ levels deep (`/orgs/{a}/teams/{b}/users/{c}/settings`)
+- Pagination response without `has_more` or `next_cursor`
+- Public endpoint without rate limit headers (`X-RateLimit-*`)
+- Breaking change shipped without a version bump in the URL path
+
+## Verification Checklist
+
+- [ ] All error responses use `application/problem+json` (RFC 9457) with `type`, `title`, `status`, `detail` fields
+- [ ] Tenant context is extracted from a verified JWT claim or middleware-validated header, never from URL path
+- [ ] Public list endpoints use cursor-based pagination with `next_cursor` and `has_more` fields
+- [ ] POST resource creation returns 201 + `Location` header pointing to the new resource
+- [ ] DELETE returns 204 with empty body on success
+- [ ] URL paths use nouns (resources), not verbs -- HTTP methods carry the action
+- [ ] Resource nesting is at most 2 levels deep
+- [ ] Breaking changes ship under a new URL version (`/api/v2/`); additive changes do not bump versions
+- [ ] Rate limit headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`) are present on public endpoints
+- [ ] OpenAPI spec is generated from the framework (FastAPI, etc.) and validated with Spectral or similar linter

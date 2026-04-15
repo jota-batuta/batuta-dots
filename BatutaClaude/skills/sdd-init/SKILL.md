@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2025-01-01"
   scope: [pipeline]
   auto_invoke: "Starting SDD workflow, /sdd-init"
@@ -482,3 +482,38 @@ Ready for /sdd-explore <topic> or /sdd-new <change-name>.
 - Documentation strategy MUST be set based on project_type detection, not hardcoded
 - When documenting for non-technical stakeholders, use plain language and avoid jargon in summaries
 - Return a structured envelope with: `status`, `executive_summary`, `detailed_report` (optional), `artifacts`, `next_recommended`, and `risks`
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "My project is too simple for SDD" | Simple projects become complex projects faster than expected. The cost of `openspec/` is one directory; the cost of NOT having it shows up the first time you need to coordinate a change. |
+| "I'll add SDD when the project grows" | Retrofitting SDD onto a sprawling codebase is 10x harder than bootstrapping it now. Init takes minutes; back-filling takes weeks. |
+| "Tech detection is unreliable, I'll skip it" | The detection heuristics are documented and explicit. If detection is wrong, override the result — but skipping it produces a `config.yaml` with no project context, breaking downstream skills. |
+| "Skip provisioning, all skills work globally" | Global skills produce context noise (33+ skills). Provisioning trims to ~12-16 relevant skills, making the agent's decisions sharper. |
+| "Hooks are optional, I'll set them up later" | Without hooks, session continuity depends on Claude "remembering" — which is non-deterministic. Init is the right moment to make context injection automatic. |
+
+## Red Flags
+
+- `openspec/` directory missing after sdd-init claimed success
+- `config.yaml` present but `context` field empty or filled with placeholder text
+- `project_type` set to `webapp` for a project with no frontend (heuristics ignored)
+- `.claude/skills/.provisions.json` missing despite Phase 4 completing
+- `.mcp.json` missing despite MCP rules matching the detected stack
+- `.claude/agents/` directory empty despite agent provisioning Phase 1+2
+- Empty project case: tech stack guessed instead of asking the user
+- `~/.claude/skills/` is empty AND `.provisions.json` was written anyway (locks the project to empty local dir)
+- Documentation strategy hardcoded instead of derived from project_type table
+
+## Verification Checklist
+
+- [ ] `openspec/` directory created with `config.yaml`, `specs/`, `changes/`, `changes/archive/`
+- [ ] `config.yaml` `project_type` matches detected signals (or user-confirmed for empty projects)
+- [ ] `config.yaml` `context` field documents real tech stack (not placeholder)
+- [ ] Documentation strategy and audiences match the project_type table
+- [ ] `.claude/settings.local.json` includes SessionStart + Stop hooks (merged if pre-existing)
+- [ ] `.claude/skills/` populated with provisioned skills + `.provisions.json` manifest
+- [ ] `.mcp.json` generated with always-on MCPs + tech-detected MCPs
+- [ ] `.claude/agents/` populated with always_agents + tech-detected agents
+- [ ] Pre-check verified `~/.claude/skills/` is populated before writing `.provisions.json`
+- [ ] Summary returned to orchestrator includes detected stack + provisioned skills + MCP table

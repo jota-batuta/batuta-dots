@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-04-07"
   scope: [capability]
   auto_invoke: "When working with Supabase from Python"
@@ -133,3 +133,39 @@ Call from Python: `supabase.rpc("buscar_similares", {"query_embedding": [...], "
 5. **Connection hangs on exit** — Auth token refresh timer doesn't stop. Call `client.auth.sign_out()` in scripts.
 6. **pgvector requires SQL function + rpc()** — PostgREST doesn't support vector operators directly.
 7. **API requests are unlimited** on free tier — no rate limiting concern for 7 groups.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "The anon key is fine for the backend -- I'll add RLS policies later" | Anon key + no RLS = silent empty results on every read (Issue #845). The query does not error; it just returns `[]`. You will spend hours debugging "why is my data missing" before realizing the key never had access in the first place. Use `service_role` from day one |
+| "RLS is extra work -- the backend already validates user identity" | Backend validation breaks the moment a script connects directly with the wrong key, an admin tool runs without scoping, or a future endpoint forgets a check. RLS is a database-level guardrail that catches every one of those. It is not extra work; it is the work that prevents data leaks |
+| "I'll keep the connection alive between calls -- the SDK is async" | The Supabase async client has a known background timer (auth refresh) that prevents process exit. In scripts and serverless contexts you must call `client.auth.sign_out()` or the process hangs. Long-running services need explicit lifespan management |
+| "PostgREST handles vector queries -- I can use `.eq()` on embeddings" | PostgREST does not expose vector operators. You must wrap the query in a SQL function (`buscar_similares`) and call it via `.rpc()`. Trying to filter `embedding` directly returns an error or silently returns nothing |
+| "Free tier is fine forever -- 500MB is a lot" | 500MB is ~6-12 months of conversation history for a small workload. Plan rotation, archival, or a paid tier upgrade BEFORE you hit the wall, not after the project is paused |
+
+## Red Flags
+
+- `SUPABASE_ANON_KEY` used in any backend code (only `SUPABASE_SERVICE_ROLE_KEY` belongs there)
+- Table created without an RLS policy (`ALTER TABLE ... ENABLE ROW LEVEL SECURITY` + at least one policy)
+- Async script that exits with a hanging process (forgot to call `client.auth.sign_out()`)
+- Direct `.eq("embedding", ...)` filter on a vector column (must use SQL function + `.rpc()`)
+- Connection created inside a request handler instead of a singleton in lifespan
+- `ClientOptions` instead of `AsyncClientOptions` when using the async client (v2.24.0 bug)
+- Service deployed without monitoring storage growth toward the 500MB free-tier cap
+- Migration applied via SQL Editor without being committed to the repo (`supabase/migrations/`)
+- Project that has been idle for 6+ days without a keep-alive ping (auto-pauses at 7 days)
+- Production code reading directly from `supabase` global without dependency injection (untestable)
+
+## Verification Checklist
+
+- [ ] Backend uses `SUPABASE_SERVICE_ROLE_KEY` only; the anon key is reserved for browser code
+- [ ] Every table has RLS enabled AND at least one policy that explicitly defines who can read/write
+- [ ] Async clients are managed in FastAPI lifespan and reused across requests (not created per-call)
+- [ ] Async scripts call `await client.auth.sign_out()` before exit to release the auth refresh timer
+- [ ] Vector similarity queries go through SQL functions invoked via `.rpc()`, never direct `.eq()` on vector columns
+- [ ] All migration SQL is committed under `supabase/migrations/` with a timestamp prefix
+- [ ] A keep-alive job pings the project at least every 5 days to prevent auto-pause on free tier
+- [ ] Storage usage is monitored and approaching 500MB triggers a rotation/archival job (or upgrade)
+- [ ] Async client uses `AsyncClientOptions` (NOT `ClientOptions`) per the v2.24.0+ API
+- [ ] Database access is wrapped in a repository or service layer for testability (no `from supabase_client import supabase` scattered throughout the codebase)

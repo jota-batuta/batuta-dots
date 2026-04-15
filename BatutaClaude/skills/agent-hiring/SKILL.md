@@ -6,7 +6,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-04-13"
   scope: [infra]
   auto_invoke:
@@ -146,3 +146,38 @@ On approval, edit the `.md` file. Never modify without user consent.
 ## Integration with Team Orchestrator
 
 For Level 3 (Agent Team) tasks, the hiring protocol applies to EACH teammate. Lead hires teammates via this protocol, each gets its own file, file ownership is defined per teammate (no overlap). The team-orchestrator skill handles coordination after hiring.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Create the agent inline for speed" | Inline agents disappear after the session. The next session re-discovers the same need and re-creates the same agent — losing all accumulated context. File first, always. |
+| "Don't need user approval for an obvious agent" | The user is the board of directors. Skipping PROPUESTA DE CONTRATACION removes the human checkpoint that catches model misuse and skill mismatches. |
+| "Generic name like `data-agent` is fine" | Generic names produce generic behavior. `icg-data-explorer` carries domain context; `data-agent` could mean anything. The name IS the contract. |
+| "Skip skills, the agent will figure it out" | The main agent has NO skills loaded. If the spawned agent has no skills either, it's just a fresh Claude with no project context — slower and less accurate than just doing the work. |
+| "Use opus for everything, it's the smartest" | Opus on a CRUD task is wasted tokens. The model field exists because cost matters: haiku for fast, sonnet for default, opus for critical only. |
+| "Update the agent silently — small change" | Even small updates need user approval. Silent edits to agent files break the contract metaphor and erode trust. |
+
+## Red Flags
+
+- An agent was used during a session but no `.md` file exists in `.claude/agents/` or `~/.claude/agents/`
+- PROPUESTA DE CONTRATACION skipped — agent created without explicit user approval
+- Agent name is generic (`data-agent`, `helper`, `worker`) instead of domain-specific
+- Agent file missing required frontmatter fields (name, description, tools, model, skills, maxTurns)
+- Agent invoked with no `file_ownership` list in the prompt
+- Multiple agents in same wave with overlapping `file_ownership` paths
+- Existing agent edited without ACTUALIZACION DE CONTRATO approval flow
+- Main agent loaded skills directly instead of delegating to a hired agent
+
+## Verification Checklist
+
+- [ ] `.claude/agents/{agent-name}.md` file exists with required frontmatter
+- [ ] User approval explicitly recorded for the PROPUESTA DE CONTRATACION
+- [ ] Agent name is specific (domain or technology), not generic
+- [ ] Skills list in frontmatter matches the proposed contract
+- [ ] Model selection justified (haiku/sonnet/opus) and matches task complexity
+- [ ] Tools list scoped to what the agent actually needs (no tool sprawl)
+- [ ] Agent contract includes Rol, Expertise table, Deliverable Contract, File Ownership, Acceptance Criteria
+- [ ] When invoking, prompt contains explicit `file_ownership` list with no overlap
+- [ ] For Level 3 teams: each teammate has its own approved `.md` file
+- [ ] Agent updates flow through ACTUALIZACION DE CONTRATO (no silent edits)

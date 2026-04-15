@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-04-07"
   scope: [capability]
   auto_invoke: "When building or modifying Google ADK agents"
@@ -257,3 +257,43 @@ This prevents check results from contaminating conversational history.
 12. **Multimodal API rate limits are stricter than text-only** — image + audio + video requests count against a separate quota. Plan for retries with exponential backoff in production.
 13. **`gemini-embedding-2-preview` is NOT in genai SDK** — it's only accessible via `google-cloud-aiplatform` (Vertex AI). Setup requires a GCP service account with `roles/aiplatform.user`. The model is in PUBLIC PREVIEW (since 2026-03-10) — pin a version constant in your wrapper module and monitor the changelog for breaking API changes.
 14. **`google.genai.types.Content` requires a `role`** — passing `parts=[]` without `role` raises a confusing TypeError downstream. Always set `role="user"` for incoming messages.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "InMemorySession is fine for the MVP -- I'll switch to DB later" | "Later" usually means after the first production restart that wipes every conversation. If the agent has any kind of session-scoped memory (store_code, user preferences, in-progress task), users will notice the regression immediately. Either commit to ephemeral sessions deliberately or use a persistent service from day one |
+| "I'll modify session.state directly -- ToolContext is just a wrapper" | Direct mutation bypasses ADK's event tracking. State changes do not appear in the runner's event stream, which breaks observability, replay, and any downstream consumer of run events. Always go through `ToolContext.state` -- it is the contract |
+| "state_delta is reliable -- I can compute the next state from it" | state_delta is a hint, not a guarantee. ADK may collapse, reorder, or drop deltas depending on the runner mode. Treat session.state as the source of truth and reread it after each tool returns; do not reconstruct state from deltas |
+| "I'll put `tool_context` in the docstring -- the LLM should know about it" | The LLM reads the docstring as the tool contract. If `tool_context` appears there, the model will try to pass a value for it, and the call will fail with a schema mismatch. ADK injects `tool_context` automatically -- it must be invisible to the LLM |
+| "I'll use `web=True` in get_fast_api_app -- it gives me a nice UI for free" | `web=True` mounts static files at `/`, which silently overrides every custom endpoint defined after it (Issue #51). Webhooks stop working. Either use `adk web` separately for development, or build a minimal FastAPI without `web=True` for production |
+
+## Red Flags
+
+- `tool_context: ToolContext` mentioned in a tool's docstring (LLM will try to pass it)
+- `*args` or `**kwargs` in a `@FunctionTool` signature (invisible to LLM schema)
+- Direct mutation of `session.state` outside a `ToolContext.state` accessor
+- `get_fast_api_app(web=True)` combined with custom endpoints
+- New `Runner` instantiated per request instead of a singleton at startup
+- Conversational session_id reused for proactive/scheduled checks (history contamination)
+- `gemini-flash-lite-latest` used for structured outputs (known text corruption bug)
+- Model string with a hard-pinned version (deprecates without warning quarterly) instead of `-latest` alias
+- Multimodal `Part` constructed with raw base64 string instead of `b64decode`'d bytes
+- `Content` constructed with `parts=[...]` but no `role=` set
+- Production deployed with `InMemorySessionService` and no documented data-loss tolerance
+- ADK Web smoke test passes but `from src.bato.X import Y` is used inside the package (will fail under `adk web src`)
+
+## Verification Checklist
+
+- [ ] All `@FunctionTool` functions have `tool_context: ToolContext` as a parameter but it is NOT mentioned in the docstring
+- [ ] No tool uses `*args` or `**kwargs`; every parameter is named with a type hint
+- [ ] State mutations go through `tool_context.state[...]`, never `session.state[...]` directly
+- [ ] FastAPI app does NOT use `get_fast_api_app(web=True)` if custom endpoints are defined
+- [ ] `Runner` is instantiated once at application startup and reused across all requests
+- [ ] Proactive flows use ephemeral session IDs (`check-{store}-{timestamp}`); reactive sessions use stable IDs (group_jid)
+- [ ] Model string uses `-latest` alias (e.g., `gemini-flash-latest`) -- not `-lite-` variants and not pinned versions
+- [ ] Multimodal `inline_data=Blob(mime_type=..., data=raw_bytes)` -- bytes are NOT base64-encoded
+- [ ] All `Content` objects have an explicit `role="user"` (or `role="model"`)
+- [ ] Session persistence strategy is documented and matches production tolerance for data loss
+- [ ] Imports inside the agent package use `from bato.X import Y` (not `from src.bato.X import Y`)
+- [ ] `root_agent = agent` is exported at the bottom of the agent module so `adk web` can discover it

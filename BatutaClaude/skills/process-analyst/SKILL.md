@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-23"
   source: "CTO Layer skill 14"
   scope: [pipeline]
@@ -128,3 +128,40 @@ Checklist antes de handoff:
 - **sdd-design**: Arbol cerrado + taxonomias + actores + excepciones
 - **recursion-designer**: Catalogo taxonomias externas con volatilidad
 - **sdd-design (LLM)**: Arbol como contexto prompt + excepciones como golden set
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "3 case types = simple process — we don't need full variant mapping" | 3 visible case types is the warning sign, not the simplification. Each "simple" case has 2-5 hidden sub-variants (excepciones, casos sin regla, escalados). The happy path is 20% of the work; the other 80% lives in unmentioned variants. Skipping the full inventory means rebuilding mid-implementation. |
+| "Variants will be discovered during implementation" | Discovering variants during implementation = rework. Each new variant invalidates: data model, prompts, golden dataset, validation logic, UI flows. Variant inventory is the cheapest phase; deferring it makes every later phase more expensive. |
+| "Excepciones are edge cases — we'll handle them in v2" | Excepciones are the process. In Colombian operations (banking, ERP, payroll), excepciones are 30-60% of real volume. A system that handles only "normal" cases will route majority of work to humans, defeating the purpose of automation. |
+
+## Red Flags
+
+- Variant tree has fewer than 4 leaves — almost certainly missing variants.
+- No "CASO NO CLASIFICABLE" branch in the tree — system has nowhere to route unknowns.
+- Excepciones catalog has fewer entries than variants — under-specified failure modes.
+- Taxonomías externas listed without a "quien controla" column — no plan for when they change.
+- Variants without volumen estimado — cannot prioritize implementation order.
+- Process owner (cliente, equipo del proceso) has NOT reviewed the variant tree.
+- Tree leaves marked "TBD" or "no se" — gaps that will surface as production bugs.
+- No actor map per variant — unclear who decides when ambiguity arises.
+- Excepciones without manejo defined — silent drop or escalation chaos.
+- Single decision criterion at every bifurcación — usually means real criteria are hidden.
+
+## Verification Checklist
+
+- [ ] Fase 1 inventory ran all 10 universal questions, captured contradictions
+- [ ] Variant tree has ≥4 leaves AND every leaf has manejo defined
+- [ ] Every bifurcación in the tree has an explicit criterio de decisión
+- [ ] "CASO NO CLASIFICABLE" branch exists with definición + frecuencia + manejo
+- [ ] Taxonomías externas catalog complete: tipo, quien controla, version, frecuencia cambio, quien detecta
+- [ ] Recursion-designer invoked if any external taxonomy exists
+- [ ] Actor map exists for every variant: ejecutor, fuente dato, decisor
+- [ ] Excepciones catalog includes: variante afectada, frecuencia, trigger, evidencia, manejo, tiempo resolución
+- [ ] Excepciones classified by nivel: simple / medio / complejo / bloqueante
+- [ ] Volumen estimado per variant (% of total) — drives implementation priority
+- [ ] Equipo del proceso (cliente operations team) reviewed and signed off on the tree
+- [ ] No "TBD" or "pendiente" leaves remain — gaps explicitly documented as risks
+- [ ] Output handoff to sdd-design includes tree + taxonomías + actores + excepciones
