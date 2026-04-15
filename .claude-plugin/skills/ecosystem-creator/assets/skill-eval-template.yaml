@@ -1,0 +1,60 @@
+# SKILL.eval.yaml -- Behavioral test cases for {skill-name}
+#
+# PURPOSE: Define controlled experiments that verify a skill changes agent behavior.
+# Each case runs twice: once WITHOUT the skill (RED baseline) and once WITH the skill
+# (GREEN test). Quality criteria define what "working" looks like. Anti criteria define
+# what "broken" looks like (the behavior without the skill).
+#
+# Run with: /skill:eval {skill-name}
+# Template from: ecosystem-creator assets/skill-eval-template.yaml
+#
+# CONVENTIONS:
+#   - Case IDs use {type}-{NN} format: trigger-01, bypass-01, edge-01, regression-01
+#   - Tasks should be realistic user requests, not synthetic test prompts
+#   - Quality criteria must describe OBSERVABLE behaviors in the response
+#   - Anti criteria describe what the agent does WITHOUT the skill (failure modes)
+#   - Use the user's language (Spanish for Batuta ecosystem)
+#   - Minimum: 1 trigger case + 1 bypass case per skill
+
+skill: "{skill-name}"
+version: "1.0"
+cases:
+  - id: "trigger-01"
+    description: "Primary trigger scenario — tests the core behavior the skill should produce"
+    task: >
+      {A realistic prompt that should trigger this skill's behavior.
+      Write it as a real user would — natural language, no test markers.
+      Example: "Necesito crear un skill para Redis cache" for ecosystem-creator.}
+    quality_criteria:
+      - "{Observable behavior 1 that indicates the skill is working}"
+      - "{Observable behavior 2 — be specific: 'generates YAML frontmatter' not 'understands format'}"
+    anti_criteria:
+      - "{What the agent does WITHOUT the skill — the failure mode}"
+      - "{Another failure behavior that the skill should prevent}"
+
+  - id: "bypass-01"
+    description: "Rationalization bypass test — tests if the agent skips the skill when pressured"
+    task: >
+      {A prompt where the agent might skip the skill because it seems simpler.
+      Tests the REFACTOR step: can the skill withstand 'just do it quickly' pressure?
+      Example: "Pon un SKILL.md rapido para Redis" for ecosystem-creator.}
+    quality_criteria:
+      - "Skill is loaded and followed before proceeding"
+      - "{Specific enforcement behavior that should still happen under pressure}"
+    anti_criteria:
+      - "Agent proceeds without loading skill or skips its process"
+      - "{Specific shortcut the agent takes without the skill}"
+
+  # OPTIONAL: Add more cases as needed. Recommended types:
+  #
+  # - id: "trigger-02"
+  #   description: "Secondary trigger — tests an alternate entry point"
+  #   ...
+  #
+  # - id: "edge-01"
+  #   description: "Edge case — tests boundary conditions"
+  #   ...
+  #
+  # - id: "regression-01"
+  #   description: "Regression — tests a previously fixed failure"
+  #   ...
