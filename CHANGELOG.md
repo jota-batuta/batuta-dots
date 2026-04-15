@@ -3,6 +3,52 @@
 All notable changes to the Batuta ecosystem are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## v15.3.0 — 2026-04-15 — Plugin Install Fixes (SSH auth + curated subset)
+
+### Critical Fixes
+
+**Fix 1: SSH authentication failure**
+- `.claude-plugin/marketplace.json` now uses `source: url` with explicit HTTPS URL
+- Previous: `{"source": "github", "repo": "jota-batuta/batuta-dots"}` → Claude Code attempted SSH clone → failed without SSH keys
+- Now: `{"source": "url", "url": "https://github.com/jota-batuta/batuta-dots.git"}` → uses HTTPS (works with any git credential helper)
+- Repo made public (was private) — required for plugin system to clone without auth
+
+**Fix 2: Plugin was installing ALL 46 skills (wrong)**
+The plugin.json previously pointed at `BatutaClaude/skills/` which contains all 46 skills. On install, Claude Code would load all 46 skill metadata entries, exceeding the ~450 token budget and making ~33% invisible.
+
+- Created `.claude-plugin/skills/` with ONLY the 17 essential skills (5 always + 8 SDD core + 4 v15.1 meta)
+- Created `.claude-plugin/agents/` with 8 agents (5 workers + 3 reviewers)
+- Created `.claude-plugin/commands/` with 12 slash commands
+- Updated plugin.json to point at these curated directories (`./skills/`, `./agents/`, `./commands/`)
+- Domain-specific skills (icg-erp, evolution-api, compliance-colombia, google-adk, etc.) now correctly stay in BatutaClaude/skills/ only — project-provisioned via /batuta-init when relevant tech is detected
+
+### New Infrastructure
+- **infra/sync-plugin.sh** — Syncs BatutaClaude/skills|agents|commands → .claude-plugin/ subset
+- Run after modifying any essential skill/agent to keep plugin in sync
+- Essential skills list hardcoded in script (must match setup.sh `global_skills` array)
+
+### Result
+
+Plugin install now gives user:
+- 17 essential skills (not 46) — fits within metadata budget
+- 8 agents (5 workers + 3 reviewers)
+- 12 slash commands
+
+Bash installer unchanged — still provisions per-project based on tech detection.
+
+### Installation (updated)
+
+```bash
+# Via plugin (recommended)
+/plugin marketplace add jota-batuta/batuta-dots
+/plugin install batuta-dots
+
+# Or via bash (provisioning-aware)
+install-batutadots
+```
+
+VERSION: 15.2.0 → 15.3.0
+
 ## v15.2.0 — 2026-04-15 — Skill Standardization + Plugin Foundation + Provisioning Fixes
 
 ### Skill Standardization (43 skills)

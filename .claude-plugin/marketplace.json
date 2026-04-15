@@ -9,11 +9,12 @@
     {
       "name": "batuta-dots",
       "source": {
-        "source": "github",
-        "repo": "jota-batuta/batuta-dots"
+        "source": "url",
+        "url": "https://github.com/jota-batuta/batuta-dots.git",
+        "ref": "master"
       },
-      "description": "Complete Batuta ecosystem: 46 skills, 8 agents (5 workers + 3 reviewers), SDD pipeline (SPRINT/COMPLETO), contract-based agent hiring, and references checklists.",
-      "version": "15.2.0",
+      "description": "Batuta core ecosystem: 17 essential skills + 8 agents (5 workers + 3 reviewers), SDD pipeline (SPRINT/COMPLETO), contract-based agent hiring. Domain skills (ICG, ADK, compliance, etc.) are project-provisioned via /batuta-init and /batuta-sync.",
+      "version": "15.3.0",
       "keywords": ["sdd", "agents", "contract-based", "colombian-business"]
     }
   ]
