@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-20"
   scope: [infra]
   auto_invoke: "Creating files, deciding file locations"
@@ -222,3 +222,36 @@ Think of your project like a building:
 
 The Scope Rule simply asks: "Is this a personal item (feature), a shared amenity (shared),
 or building infrastructure (core)?" That answer determines exactly where the file goes.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "utils/ at root is fine for now" | "For now" becomes "forever". Root-level `utils/` is the #1 cause of dumping-ground folders. The Decision Tree takes 10 seconds — running it now beats refactoring 50 files later. |
+| "I'll organize the structure later" | Later = never. By the time "later" arrives, every feature imports from the dump folder and untangling the imports is a multi-day refactor. |
+| "It might be reused, so put it in shared/" | Preemptive promotion to shared is forbidden. The rule is: start feature-scoped, promote ONLY when a second consumer appears. Speculative shared/ becomes a bigger dumping ground than utils/. |
+| "core/ for utility functions is fine" | core/ is for true singletons (auth, database, app config). formatDate() is not a singleton — it belongs in `features/shared/utils/`. If you can imagine TWO of them, it's NOT core. |
+| "components/ at root keeps things flat" | Flat structure with 50 components is unnavigable. Per-feature `features/{name}/components/` makes ownership obvious and refactoring safe. |
+| "Backend doesn't need scope rules" | The Scope Rule is universal — Python, Node, Go all benefit. Backend `core/` for true singletons; `features/{name}/` for domain logic; `features/shared/` for cross-feature helpers. |
+
+## Red Flags
+
+- New file created without running the "Who will use this?" decision
+- Root-level `utils/`, `helpers/`, `lib/`, `components/`, or `shared/` directory exists
+- File placed in `features/shared/` with only ONE consumer (premature promotion)
+- File placed in `core/` that is NOT an app-wide singleton
+- Circular imports between sibling features (Feature A imports from Feature B directly)
+- Feature folder contains code unrelated to that feature's domain
+- Promotion to `features/shared/` performed without updating ALL import paths
+- Promoted file lacks the "Promoted from features/{origin}/" comment
+
+## Verification Checklist
+
+- [ ] No root-level `utils/`, `helpers/`, `lib/`, or `components/` directories exist
+- [ ] Every new file's location matches the Decision Tree result
+- [ ] `features/shared/` contains only files with 2+ consumers
+- [ ] `core/` contains only true app-wide singletons (auth, database, config, logging)
+- [ ] No circular imports between sibling features
+- [ ] When a file was promoted to shared/, ALL imports were updated and a promotion comment added
+- [ ] Backend code follows the same `core/` + `features/{name}/` + `features/shared/` pattern
+- [ ] Type subfolders (components, hooks, services, utils, etc.) used consistently within each scope

@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-03-09"
   scope: [pipeline]
   auto_invoke: "Writing or reviewing documentation, READMEs, API references, or tutorials"
@@ -201,3 +201,36 @@ grep -rn '"""' src/ | wc -l         # approximate docstring count
 ## What This Means (Simply)
 
 > **For non-technical readers**: This skill ensures that every piece of software comes with clear, tested instructions that anyone can follow. Think of it like a recipe book — if the recipe says "bake for 30 minutes" but the correct time is 45, people will fail. This skill makes sure all our "recipes" are accurate, organized by skill level (beginner tutorials vs expert references), and kept up-to-date as the software changes. Documentation is not optional — it is part of the product.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Code is self-documenting — good code doesn't need comments" | Code shows WHAT, not WHY. The business rule, the workaround for an external bug, the reason this branch exists — those live in comments. Self-documenting code is a myth used to avoid writing docs. |
+| "Docs are always stale — better to skip them" | Stale docs are a process failure (no version alignment), not a docs failure. The fix is to version docs alongside code, not to abandon documentation. |
+| "I'll write the README later — let me ship the feature first" | Features without docs ship as private features. Internal users can't find them, external users can't onboard. "Later" means never. |
+| "The code example in the README is close enough — users will figure it out" | Untested examples are bugs. They fail in users' clean environments and destroy trust on first contact. Every snippet must be verified to run. |
+| "I'll write a long tutorial that also serves as reference" | Mixed-purpose docs fail at both. Newcomers get lost in detail; experts can't scan for facts. Use the Divio system: separate by purpose. |
+
+## Red Flags
+
+- README opens with a feature list before explaining what the project IS and WHY it exists
+- Code snippet in docs has not been copy-pasted into a clean environment to verify
+- Section mixes tutorial steps with reference tables (e.g., "Now let's look at all the API options")
+- Passive voice throughout ("the function is called", "the configuration is loaded") — unclear who acts
+- Breaking change shipped without a migration guide written first
+- Public API without a reference entry — incomplete regardless of code quality
+- Docs version (v1) does not match code version (v3) — version drift unflagged
+- "As described above" or "see the previous section" in a standalone reference page
+
+## Verification Checklist
+
+- [ ] README passes the 5-second test: WHAT (one sentence), WHY (the pain), HOW (quick start)
+- [ ] Every code snippet was executed in a clean environment and the output matches what's documented
+- [ ] Documentation type is explicit per section: Tutorial, How-to, Reference, or Explanation (no mixing)
+- [ ] Voice is second person ("you"), tense is present, voice is active
+- [ ] Every breaking change has a migration guide published BEFORE the release
+- [ ] Every public API has at least one reference entry with a working code example
+- [ ] Internal links verified (no broken `[text](path.md)` references)
+- [ ] Version of docs matches version of code being documented
+- [ ] If sdd-verify Step 5: completeness gap report generated for missing references

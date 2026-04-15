@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-26"
   scope: [infra]
   auto_invoke:
@@ -381,3 +381,56 @@ curl -s -H "Authorization: Bearer $COOLIFY_TOKEN" \
 > checks pass can the code go to a test environment, and only after a human approves the
 > test environment does it go live for real users. Think of it as a factory quality
 > inspection line where each station must approve before the product moves forward.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "CI is too slow, we'll skip it for this PR" | The CI minutes saved by skipping are dwarfed by the engineer-hours spent debugging the issue CI would have caught. Optimize CI speed (caching, parallelization) — never bypass it. |
+| "Manual deploys are fine for now" | Manual deploys lead to: forgotten steps, untested rollbacks, no audit trail, single-person knowledge silos, and 3am incidents nobody can fix. Automate from project day 1. |
+| "Skip tests for hotfixes, it's urgent" | Hotfixes deployed without CI cause new outages 30-50% of the time (industry data). The hotfix-without-tests cycle is how outages compound. Run CI even on hotfixes — optimize the speed if it's blocking. |
+| "We don't need staging, prod is the test" | Staging catches: env-var typos, missing DB migrations, broken integrations, performance regressions. Without staging, every deploy is a production experiment. The first user to hit a bug shouldn't be a paying customer. |
+| "Type checking is optional, it slows us down" | Type checking catches entire categories of bugs (null deref, wrong arg types, missing fields) at the cost of seconds. Skipping it means catching them at runtime in front of users. Keep `tsc --noEmit` in L1. |
+| "Coolify just works, no need for monitoring" | Coolify health checks tell you the container is alive — not whether the app is functioning. Add app-level health endpoints, log aggregation, and uptime monitoring. "It deployed" != "it works." |
+
+## Red Flags
+
+- Workflow files using `npm install` instead of `npm ci` (non-deterministic builds)
+- Pipeline stages running in parallel when they should be sequential (E2E before unit tests)
+- Secrets hardcoded in workflow YAML instead of GitHub Secrets
+- Production environment without manual approval reviewers (anyone with merge access can deploy)
+- No `concurrency: cancel-in-progress` (old PR runs waste minutes when new commits arrive)
+- Docker images > 500MB (no multi-stage build, dev dependencies shipped to production)
+- Containers running as root (`USER root` or no `USER` directive in Dockerfile)
+- Type checking removed or disabled to "speed up" CI
+- E2E tests running on every PR for all browsers (use Chromium-only on PR, multi-browser on main)
+- No staging environment, or staging deploys to same DB as production
+- No rollback strategy documented or tested (only forward deploys)
+- Workflow files copy-pasted across repos with no shared template
+- `actions/checkout@v2` or other outdated action versions (security and feature risk)
+- No dependency caching configured (`cache: npm`, `cache: pip`) — wastes 30-60s per run
+- `workflow_run` triggers without `if: ${{ github.event.workflow_run.conclusion == 'success' }}` (deploys broken builds)
+
+## Verification Checklist
+
+- [ ] CI workflow enforces AI Validation Pyramid order: L1 (lint+types) → L2 (unit) → L3 (E2E)
+- [ ] Each layer uses `needs:` to gate the next — no parallel independent layers
+- [ ] `npm ci` / `pip install -r requirements.txt` (locked) used in CI, not `npm install` / loose `pip install`
+- [ ] Lockfile committed to repo (package-lock.json, poetry.lock, go.sum, Cargo.lock)
+- [ ] Type checking (`tsc --noEmit`, `mypy --strict`) runs in L1 — no exceptions
+- [ ] `concurrency: cancel-in-progress` set on PR workflows
+- [ ] Dependency caching configured (`cache: npm`, `cache: pip`, `cache: go-build`)
+- [ ] All secrets stored in GitHub Secrets — zero hardcoded credentials in workflow YAML
+- [ ] Production environment has manual approval reviewers configured
+- [ ] Staging deploys automatically on merge to main; production requires manual gate
+- [ ] Docker build is multi-stage (deps → build → runner) — production image < 200MB
+- [ ] Dockerfile runs as non-root user in production stage
+- [ ] Coolify webhook integration uses bearer token auth, not unauthenticated URLs
+- [ ] Deploy workflow guarded with `if: ${{ github.event.workflow_run.conclusion == 'success' }}`
+- [ ] E2E tests run Chromium-only on PR, multi-browser on main (cost optimization)
+- [ ] Playwright config has `forbidOnly: !!process.env.CI` and `retries: process.env.CI ? 2 : 0`
+- [ ] CI uses real services (`services: postgres`) for integration tests, not mocks
+- [ ] All third-party actions pinned to specific versions (no `@main` or `@latest`)
+- [ ] Action versions updated regularly (Dependabot or Renovate enabled)
+- [ ] Rollback procedure documented: how to redeploy a previous image tag from Coolify UI
+- [ ] CI total runtime < 15 minutes for fast feedback on PRs

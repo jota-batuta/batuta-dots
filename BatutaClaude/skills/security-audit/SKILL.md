@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-22"
   scope: [infra, pipeline]
   auto_invoke:
@@ -394,3 +394,43 @@ After Pyramid Layers 1-3 pass:
 ### Overall Security Score
 {PASS (0 critical, 0 high) / CONDITIONAL (0 critical, N high) / FAIL (N critical)}
 ```
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "It's internal, no auth needed" | Internal tools get exposed via VPN misconfig, employee compromise, or perimeter breach. Internal = "discovered later." Authenticate everything. |
+| "OWASP Top 10 is overkill for this" | OWASP exists because these are the bugs that actually ship to production. "Overkill" = "I don't want to spend the hour." The hour costs less than the breach. |
+| "We trust our users" | Users get phished, accounts get compromised, insider threats exist. Trust is not a security control. Authorize every action regardless of who's authenticated. |
+| "Secrets in .env aren't committed, we're fine" | .env files leak via backups, container images, log dumps, error pages, and accidental commits. Use a real secret manager (Vault, AWS Secrets Manager, Doppler). |
+| "Dependency CVEs are theoretical" | Equifax, log4shell, and event-stream were all "theoretical" until they weren't. Patch HIGH/CRITICAL within 7 days, document any exceptions in the threat model. |
+
+## Red Flags
+
+- "We'll add auth later" — auth retrofitted onto an existing system always has gaps. Build it from day 1.
+- Any string concatenation feeding into SQL, shell, or HTML rendering — assume injection until proven otherwise.
+- `Access-Control-Allow-Origin: *` combined with cookies or auth headers — credential theft waiting to happen.
+- JWT with `alg: none` accepted, or signature not verified server-side.
+- `.env`, `*.key`, or `*.pem` not in `.gitignore`.
+- LLM system prompt concatenated with user input instead of using structured message types.
+- "Just for testing" debug endpoints (`/debug`, `/admin/test`, `?debug=1`) reachable in production.
+- No rate limiting on auth, registration, or password reset endpoints.
+- Dependency lockfile missing, or `npm install` (not `npm ci`) used in CI.
+
+## Verification Checklist
+
+- [ ] All 10 AI-First Checklist items run, each marked PASS / FAIL / N-A with evidence
+- [ ] Threat Model exists for the change (free-form for <3 components, STRIDE for multi-component features)
+- [ ] Secrets scan clean: grep patterns for API keys, tokens, private keys, passwords return zero hits in tracked files
+- [ ] `.gitignore` includes `.env`, `.env.*`, `*.key`, `*.pem`, `*.p12`, `*.pfx`
+- [ ] Git history scanned for historical secret commits (`git log --diff-filter=A --name-only -- '*.env' '*.key'`)
+- [ ] Dependency audit run (`npm audit`, `pip audit`, `govulncheck`, or `cargo audit`); HIGH/CRITICAL CVEs patched or documented as residual risk
+- [ ] Lockfile present and committed (`package-lock.json`, `poetry.lock`, `go.sum`, `Cargo.lock`)
+- [ ] Authentication: signature verification on all tokens, expiration checked, algorithm pinned (not "none"), constant-time comparison for API keys
+- [ ] Authorization checks present on every protected route — no gaps in middleware coverage
+- [ ] CORS configured with explicit allowlist (no `*` with credentials)
+- [ ] User input never concatenated into SQL, shell commands, or HTML rendering
+- [ ] LLM applications: system prompt isolated from user input, output validated before tool execution, max_tokens set
+- [ ] Severity scored consistently: CRITICAL blocks deploy, HIGH fixed before deploy, MEDIUM tracked, LOW documented
+- [ ] Verification report delivered with evidence for each finding
+

@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-04-07"
   scope: [capability]
   auto_invoke: "When deploying services to Coolify"
@@ -124,3 +124,52 @@ BATO needs a public URL for Evolution API webhooks:
 5. Supabase (cloud) → paste SQL in SQL Editor
 6. WhatsApp groups → GET /group/fetchAllGroups → map to .env
 ```
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Ports in compose work fine on my machine" | They DO work locally and even pass initial Coolify deploys — then break silently when Traefik tries to route. Coolify uses Traefik for routing; `ports:` causes conflicts. Use `expose:` for documentation only. |
+| "Coolify is just Docker Compose with a UI" | Coolify adds Traefik routing, network management, environment variable injection, magic variables, SSL via Let's Encrypt, and webhook deploys. Compose patterns that work locally often don't translate (e.g. the predefined network checkbox bug #5597). |
+| "The 'Connect to Predefined Network' checkbox should work" | It has a documented bug with Docker Compose stacks (#5597). Use the external network method in compose explicitly. Trust the gotchas list, not the UI. |
+| "Health check failures are a code problem" | Coolify health check failures cause Traefik to STOP ROUTING traffic — even when the app is healthy. If your health check is unreliable, disable it in Coolify UI rather than letting it false-fail your deploy. |
+| "I'll just SSH in to fix env vars quickly" | Coolify env vars are injected at container start. SSH-edited values are lost on next deploy. Use Developer View in Coolify UI to paste full `.env` blocks. |
+| "Services and Applications are basically the same" | Services have NO CI/CD (manual update only) and NO custom build. Applications have full CI/CD via webhooks but require Docker/Dockerfile. Pick based on update strategy, not familiarity. |
+
+## Red Flags
+
+- `ports:` directive in docker-compose.yml deployed to Coolify (use `expose:` instead)
+- Reliance on the "Connect to Predefined Network" checkbox for cross-stack networking (broken — bug #5597)
+- Using Coolify UI volumes instead of named volumes in compose (persistent storage bug #5099)
+- Compose filename mismatch (`compose.yml` instead of `docker-compose.yml`) — silent fail
+- Prefect deployed with public domain and no auth (UI is publicly accessible by default)
+- Building on 2GB RAM VPS without swap enabled — OOM kills builds silently
+- Treating "Failed" deploy status as authoritative without checking if container is actually healthy
+- One-click services treated as auto-updating (they require manual "Update" click)
+- Hardcoded container IPs in env vars instead of container names (IPs change on redeploy)
+- Webhook URLs (Evolution API, Stripe, etc.) configured before assigning a public domain
+- Domain assigned without `https://` prefix (Let's Encrypt won't auto-provision SSL)
+- Multiple compose stacks attempting to bind the same host port via `ports:` (Traefik conflict)
+- Langfuse deployed without manually adding Traefik label fix (bug #5702)
+- No backup strategy for the persistent Coolify host (compose is reproducible but DB data is not)
+
+## Verification Checklist
+
+- [ ] No `ports:` directives in docker-compose.yml — all internal ports declared via `expose:`
+- [ ] Compose filename is exactly `docker-compose.yml` or `docker-compose.yaml` (matching Coolify config)
+- [ ] Cross-stack networking uses external `coolify` network in compose, not the UI checkbox
+- [ ] Other services referenced by container name (visible in Coolify UI), not by IP
+- [ ] Domain assigned with `https://` prefix → Let's Encrypt SSL provisioned automatically
+- [ ] Environment variables loaded via Developer View (full `.env` block paste)
+- [ ] Magic variables used where applicable (`SERVICE_PASSWORD_POSTGRES`, `SERVICE_FQDN_*`)
+- [ ] Persistent data in named volumes inside compose, not Coolify UI volumes (avoid bug #5099)
+- [ ] Health check: enabled with reliable endpoint, OR disabled if unreliable (no false-fails)
+- [ ] Prefect protected: no public domain, OR Traefik BasicAuth labels, OR Cloudflare Access
+- [ ] Langfuse: Traefik label fix applied manually after domain edit (bug #5702 workaround)
+- [ ] Small VPS (<= 4GB RAM): swap enabled (recommend 6GB swap)
+- [ ] Service vs Application chosen correctly: Service for one-click templates without custom build, Application for Git-based with CI/CD
+- [ ] Webhook URLs configured AFTER assigning public domain
+- [ ] Deploy order respected for stacks with dependencies (Langfuse + Prefect → BATO → integrations)
+- [ ] If a deploy shows "Failed" but container is healthy: redeploy to clear false status
+- [ ] Container backup strategy for stateful services (DB dumps to S3 or similar)
+- [ ] Coolify webhook tokens stored in GitHub Secrets, not in workflow YAML

@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-23"
   source: "CTO Layer skill 04"
   scope: [pipeline]
@@ -94,3 +94,42 @@ Internet → Cloudflare → Hetzner VPS → Coolify
 - **sdd-apply**: Scaffold como primer paso de implementacion
 - **sdd-verify**: Health check + monitoring como criterios
 - **llm-pipeline-design**: Worker con capa LLM
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "No idempotency key needed — Temporal handles it" | Temporal handles workflow-level retry, but ACTIVITIES can still have side effects (sending emails, charging cards, calling external APIs). Without an idempotency key on the activity, a retry produces duplicate side effects. |
+| "Retries can be infinite — Temporal will eventually succeed" | Activities calling external services with permanent failures (404, validation errors) will retry forever, burning CPU and money. Configure `maximum_attempts` and use non-retryable error types for permanent failures. |
+| "We don't need claim-check for large payloads — Temporal can handle it" | Temporal events have a 2MB hard limit per event and 50MB per workflow history. Large payloads silently corrupt workflows. Always claim-check anything >256KB to S3/DB and pass the reference. |
+
+## Red Flags
+
+- Activity with side effects (HTTP POST, email, DB write) without an idempotency key.
+- Workflow uses `asyncio.as_completed`, `set()` iteration, `random`, or `datetime.now()` — non-deterministic, breaks replay.
+- No explicit `start_to_close_timeout` on activities — defaults are usually wrong.
+- Heartbeat missing on activities >30 seconds — Temporal cannot detect stuck activities.
+- `maximum_attempts=None` (infinite retry) without circuit breaker for permanent failures.
+- Payload >256KB passed through workflow events instead of claim-check pattern.
+- Worker container missing `/health` endpoint — Coolify cannot detect degraded workers.
+- Secrets baked into Docker image (`.env` copied) instead of injected at runtime.
+- `tenant_id` not the first argument of every activity — multi-tenant routing/observability broken.
+- Single Temporal task queue used for all domains — noisy neighbor problems at scale.
+
+## Verification Checklist
+
+- [ ] Worker scaffold follows directory convention: `worker-{domain}-{function}/` with `src/workflows/`, `src/activities/`, `src/models/`
+- [ ] `tenant_id` is the FIRST argument on every activity signature
+- [ ] Every activity has explicit `start_to_close_timeout` AND `retry_policy` (max_attempts, backoff)
+- [ ] Activities >30s emit heartbeats via `activity.heartbeat()`
+- [ ] Payloads >256KB use claim-check pattern (S3/DB reference, not inline)
+- [ ] Workflows are deterministic: no `asyncio.as_completed`, no `random`, no `datetime.now()`, no `set()` iteration
+- [ ] Idempotency key passed into every side-effecting activity
+- [ ] Permanent failures raised as non-retryable error types (Temporal does not retry these)
+- [ ] Task queue named `{domain}-{function}-queue` (one per worker domain)
+- [ ] Search attributes registered: `tenant_id`, `domain`, `solution_type` (Keyword type)
+- [ ] Multi-tenant rate limits configured: max 5 activities/sec per tenant, max 50 concurrent
+- [ ] Dockerfile uses `python:3.12-slim`, has health check at 30s interval, NO `.env` files copied
+- [ ] Secrets injected via Coolify environment variables, never in image
+- [ ] Container restart triggers an alert; error rate >5% triggers an alert
+- [ ] Service deployed behind Tailscale or Cloudflare; Temporal :7233 reachable only via Tailscale

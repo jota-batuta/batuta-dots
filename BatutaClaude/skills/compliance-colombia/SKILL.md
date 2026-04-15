@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-23"
   source: "CTO Layer skill 06"
   scope: [pipeline]
@@ -106,3 +106,41 @@ Fase 3 (Mes 12-18): ISO 42001 (30-40% mas rapido con ISO 27001)
 - **sdd-design**: Compliance integrado en threat model + data flow
 - **sdd-verify**: Checklist de compliance como validacion cruzada
 - **security-audit**: Implementacion tecnica de medidas
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Compliance comes later, primero el MVP" | Habeas data y consentimiento se disenan en el modelo de datos. Retrofittear compliance cuesta 10x mas y suele requerir re-onboarding de usuarios. Compliance es un requisito de arquitectura, no un wrapper. |
+| "Ley 1581 es opcional para empresas pequenas" | Aplica a TODO responsable que trate datos personales en territorio colombiano. La SIC sanciona PYMES — multas hasta 2,000 SMLMV (~COP $2,600M). El tamano de la empresa no exime del cumplimiento. |
+| "Usar APIs de USA no es transferencia internacional" | Anthropic, OpenAI, Google estan en US. Cada llamada con datos personales = transferencia internacional. US no es pais adecuado segun SIC. Requiere contrato + mitigacion (PII stripping + ZDR). |
+| "Si el dato esta anonimizado no aplica habeas data" | "Anonimizado" en sentido estricto requiere irreversibilidad demostrable. Hashing, pseudonimizacion, y data mascarada NO son anonimizacion — siguen siendo datos personales bajo Ley 1581. |
+| "El test de proporcionalidad es opcional" | Circular SIC 002/2024 lo hace obligatorio para todo tratamiento con IA sobre datos personales. Sin documentacion del test, el tratamiento es ilegal aunque tecnicamente funcione. |
+
+## Red Flags
+
+- Procesar datos personales sin politica de privacidad publicada y aceptada por el titular
+- Llamadas a APIs LLM (Anthropic/OpenAI/Google) con datos personales sin contrato de transmision firmado
+- No tener canal documentado para solicitudes de habeas data (rectificacion, eliminacion, acceso)
+- Eliminar registros transaccionales antes de los 5 anos del Art. 632 ET
+- Modificar registros transaccionales para "cumplir" habeas data (debe ser tombstoning, no UPDATE)
+- Brechas no notificadas a SIC en plazo de 15 dias habiles
+- Tratamiento con IA sin test de proporcionalidad documentado (las 4 partes)
+- Logs de produccion conteniendo PII sin politica de retencion definida
+- Compartir datos con terceros sin contrato de transmision o sin clausula de confidencialidad
+- Asumir que ISO 27001 == cumplimiento Ley 1581 (son complementarios, no equivalentes)
+
+## Verification Checklist
+
+- [ ] Existe politica de privacidad publicada, accesible, y aceptada por el titular antes del tratamiento
+- [ ] Se documenta finalidad especifica para cada tratamiento de datos personales (no "uso general")
+- [ ] Hay canal de habeas data funcional: solicitudes de acceso, rectificacion, eliminacion procesadas
+- [ ] Si se usa IA sobre datos personales: test de proporcionalidad completo (4 partes documentadas)
+- [ ] Si se transfiere datos a terceros internacionales: contrato firmado + mitigacion (PII stripping, ZDR, encriptacion)
+- [ ] Tombstoning implementado: separar datos de acceso/marketing (eliminables) de transaccionales (retenidos 5 anos)
+- [ ] Crypto shredding configurado para datos eliminados (KEK destruido)
+- [ ] Procedimiento de notificacion de brechas documentado con plazo de 15 dias habiles
+- [ ] Roadmap de certificaciones definido (SOC 2 → ISO 27001 → ISO 42001) con responsable y fecha
+- [ ] Logs de produccion no contienen PII sin polincia de retencion explicita
+- [ ] Compliance Officer (interno o externo) revisa cambios que tocan datos personales
+- [ ] Output files generados: compliance-assessment, test-proporcionalidad, transfer-assessment (si aplica)

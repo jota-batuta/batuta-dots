@@ -6,7 +6,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-03-09"
   scope: [infra]
   auto_invoke: "Testing skills, evaluating skill effectiveness, benchmarking skills"
@@ -611,3 +611,34 @@ task: >
 - **Templates**: See `BatutaClaude/skills/ecosystem-creator/assets/skill-eval-template.yaml` for the eval case template
 - **Integration**: ecosystem-creator Step 5.5 invokes this skill when SKILL.eval.yaml exists
 - **Benchmark reports**: Generated at `docs/qa/benchmark-{date}.md`
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Evaluating skills is overhead — the skill obviously works" | "Obvious" is a feeling. Eval mode is empirical evidence. Skills that "obviously work" are the most likely to silently fail when the agent rationalizes around them. |
+| "Skills work until they don't — I'll write evals when I see a problem" | By the time you see a problem in production, the skill has been silently failing for weeks. RED-GREEN baseline catches drift before it ships. |
+| "Running eval on every skill change is too expensive" | Eval cost is one-time; debugging a skill that silently regresses is recurring. Cost-benefit favors eval-on-change for any skill with `bypass-NN` cases. |
+| "I'll skip the RED baseline — I already know what the agent does without the skill" | Without RED, you cannot attribute behavior to the skill. The comparison is the point. Skipping RED reduces eval to "did GREEN respond" — useless. |
+| "Auto-apply the improve-mode suggestions — they look reasonable" | Untested edits can break passing cases. Improve mode proposes; the user (and the next eval run) verifies. |
+
+## Red Flags
+
+- Eval verdict is PASS but no `bypass-NN` cases exist — you tested only happy paths, not rationalization resistance
+- RED and GREEN responses look identical — either the skill is being ignored or the task is too trivial to expose differences
+- Eval criteria contain "understands", "considers", "is aware of" — these are not observable, the eval is meaningless
+- Improve mode proposes edits that touch 5+ sections at once — too broad, will likely break other cases
+- Benchmark report shows 100% pass rate across all skills — either the skills are flawless (unlikely) or the eval cases are too easy
+- Running eval against an SKILL.eval.yaml whose `skill:` field doesn't match the skill name — wrong file
+- Eval task written in English when the project's users speak Spanish — the skill won't trigger in real use
+
+## Verification Checklist
+
+- [ ] Every eval case has at least one `quality_criterion` AND one `anti_criterion` (both arrays non-empty)
+- [ ] Criteria describe observable behaviors in the response text (not internal states like "understands")
+- [ ] At least one `bypass-NN` case exists per skill (tests rationalization resistance, not just trigger)
+- [ ] Tasks are realistic user requests in the project's primary language (Spanish for Batuta)
+- [ ] RED run was executed and recorded BEFORE the GREEN run for each case
+- [ ] PASS verdict requires: all quality_criteria met AND zero anti_criteria matched
+- [ ] Improve mode proposals were reviewed by the user before application; eval was re-run after edits
+- [ ] Envelope returned with `status`, `executive_summary`, and `eval_data` (or `improvement_data`/`benchmark_data`)

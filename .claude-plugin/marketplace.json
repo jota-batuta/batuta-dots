@@ -1,0 +1,20 @@
+{
+  "name": "batuta-ecosystem",
+  "description": "Batuta AI marketplace — contract-based delegation, SDD pipeline, and Colombian business expertise for Claude Code.",
+  "owner": {
+    "name": "Batuta AI",
+    "url": "https://github.com/jota-batuta"
+  },
+  "plugins": [
+    {
+      "name": "batuta-dots",
+      "source": {
+        "source": "github",
+        "repo": "jota-batuta/batuta-dots"
+      },
+      "description": "Complete Batuta ecosystem: 46 skills, 8 agents (5 workers + 3 reviewers), SDD pipeline (SPRINT/COMPLETO), contract-based agent hiring, and references checklists.",
+      "version": "15.2.0",
+      "keywords": ["sdd", "agents", "contract-based", "colombian-business"]
+    }
+  ]
+}

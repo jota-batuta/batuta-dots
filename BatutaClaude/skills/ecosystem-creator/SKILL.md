@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.1"
+  version: "1.2"
   created: "2026-02-20"
   updated: "2026-04-15"
   scope: [infra]
@@ -857,3 +857,32 @@ If `ecosystem-lifecycle` is not available (e.g., non-Batuta project without the 
   - [workflow-template.md](assets/workflow-template.md) -- Workflow definition template
 - **Registration**: Skills are auto-discovered by Claude Code via their `description` field
 - **Planned roadmap**: CLAUDE.md under "Project Skills" section
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "This skill doesn't need the v15.1 template — it's simple" | Every skill needs the 7 sections so the agent can rationalization-check itself. "Simple" skills are the most likely to get bypassed without Red Flags. |
+| "Frontmatter is optional, the description is enough" | Frontmatter is parsed by `session-start.sh` and `skill-provisions.yaml` for auto-discovery. Missing fields drop the skill silently from inventory. |
+| "I'll skip the registration step — Claude auto-discovers it anyway" | Auto-discovery only works if the skill lives in a known directory AND has valid frontmatter. The Registration Checklist is the contract that guarantees both. |
+| "Classification (ecosystem-lifecycle Step 8) is overhead — the skill is obviously project-specific" | Without classification, hardcoded paths and Batuta-specific patterns leak into the hub on next sync. Classification is the firewall. |
+
+## Red Flags
+
+- Creating a skill named `utils-X`, `helpers-X`, or `lib-X` — these violate Scope Rule and signal you should be extending an existing skill instead
+- Skill body grows past 800 lines without being split into assets/ — the agent will not load the full content reliably
+- `description` field summarizes the workflow ("This skill does X, Y, Z") instead of pure activation triggers ("Use when...")
+- Skipping Step 8 (Invoke Classification) after creation — most common cause of "skill exists but agent ignores it" reports
+- `metadata.scope` set to a single value when the skill generates files (must include `infra`)
+- Creating a third skill that overlaps with two existing ones instead of consolidating — fragmentation makes the agent guess which to load
+- Using web URLs in `references/` — references must point to local files; web URLs are for `WebFetch` calls inside the skill body
+
+## Verification Checklist
+
+- [ ] Frontmatter has all required fields: `name`, `description` (starts with "Use when"), `license`, `metadata.author`, `metadata.version`, `metadata.created`, `metadata.scope`, `metadata.auto_invoke`, `metadata.platforms`, `allowed-tools` (space-delimited)
+- [ ] Skill body contains all 7 v15.1 sections: Overview, When to Use, When NOT to Use, Critical Patterns / Core, Common Rationalizations, Red Flags, Verification Checklist
+- [ ] Step 8 (Invoke Classification via ecosystem-lifecycle) was executed and the classification result was logged
+- [ ] If tech-specific: entry added to `sdd-init/assets/skill-provisions.yaml` under `tech_rules`
+- [ ] If code-generation skill: `infra` is in `metadata.scope`
+- [ ] If `metadata.owner_agent` set: the named agent file exists in `BatutaClaude/agents/`
+- [ ] No web URLs in `references/` (local paths only)

@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-23"
   source: "CTO Layer skill 02"
   scope: [pipeline]
@@ -117,3 +117,34 @@ CREATE POLICY tenant_isolation ON {domain}_{entity}
 - **sdd-verify**: Data quality rules como criterios de verificacion
 - **compliance-colombia**: Datos personales en pipeline → assessment requerido
 - **recursion-designer**: Si el pipeline procesa categorias externas (conceptos bancarios, cuentas contables)
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Quality checks slow the pipeline — we'll add them later" | Bad data discovered in production costs 100x more to fix than at ingestion. Quality checks ARE the pipeline; without them you have a transport layer, not a pipeline. |
+| "Skip idempotency keys for now — we can add them in v2" | The first failed re-run will corrupt data. Adding idempotency after the fact requires backfilling every existing record and is far more expensive than including it from day one. |
+| "The source data is clean enough — we can skip validation" | Data is never clean. ERPs change field semantics silently, manual entry produces typos, source bugs leak nulls. Validation is the contract that protects downstream consumers. |
+
+## Red Flags
+
+- Pipeline writes to production tables without a `batch_id` or `source` column — impossible to trace which extraction produced which row.
+- No quality_score field on output rows — downstream consumers cannot distinguish trusted from suspect data.
+- Retry logic that re-processes the entire batch instead of failed records — exponential cost growth on partial failures.
+- Schema lacks `tenant_id` + RLS — multi-tenant data leakage waiting to happen.
+- "We'll handle duplicates in the dashboard" — wrong layer; duplicates must die at ingestion.
+- No DLQ for records that fail validation — failed rows disappear silently.
+- Hardcoded credentials or connection strings in pipeline code instead of secrets manager.
+
+## Verification Checklist
+
+- [ ] Source assessment table completed for every data source (type, auth, frequency, volume, quality, stability, rate limits)
+- [ ] Quality checks defined per field (completeness, format, range, uniqueness, referential, freshness) with WARN/BLOCK/FAIL actions
+- [ ] Schema includes mandatory columns: `id`, `tenant_id`, `created_at`, `updated_at`, `source`, `batch_id`, `quality_score`
+- [ ] Row-Level Security policy enabled on every table with `tenant_id`
+- [ ] Idempotency key defined and enforced (natural key or generated `batch_id` + position)
+- [ ] DLQ table created for records that fail validation, with error context
+- [ ] Retry strategy uses exponential backoff with jitter (never immediate retry)
+- [ ] Secrets stored in environment or secrets manager — never in code or git
+- [ ] Pipeline emits structured logs with `tenant_id`, `batch_id`, and trace context
+- [ ] Re-running the pipeline on the same input produces identical output (idempotency verified)

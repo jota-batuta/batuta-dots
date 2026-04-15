@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-26"
   scope: [observability]
   auto_invoke:
@@ -242,3 +242,39 @@ docker run -p 16686:16686 jaegertracing/all-in-one:latest
 ## What This Means (Simply)
 
 > **For non-technical readers**: Observability is like having security cameras, smoke detectors, and a dashboard for your software. Structured logging is the security camera footage -- organized and searchable. Tracing is the ability to follow a single customer request across all the systems it touches, like tracking a package through every sorting facility. Metrics are the dashboard gauges (how many requests per second, how fast are responses). Alerting is the smoke detector -- it notifies the team when something is wrong before customers notice. O.R.T.A. is our framework that ensures every service has all four of these in place, so nothing runs "blind."
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Logs are enough — we don't need tracing" | Logs tell you what happened in ONE service. When a request crosses 5 services, logs alone cannot reconstruct the path. Without tracing, "the API is slow" debugging takes hours instead of minutes. |
+| "Tracing is too expensive — we'll skip it in production" | OpenTelemetry sampling at 10% costs <1% CPU and saves hundreds of engineering hours per incident. The expensive thing is debugging blind at 2 AM with no trace context. |
+| "We'll add metrics when we need them" | The metrics you need most are the ones you didn't add. By the time you "need" them, the incident is already happening and you have no historical baseline to compare against. |
+
+## Red Flags
+
+- `print()` statements in production code instead of structured logging.
+- Plain-text logs (no JSON) — cannot be parsed, filtered, or queried efficiently.
+- No `trace_id` / `span_id` in log entries — cannot correlate logs to traces.
+- PII (cedulas, emails, tokens) appearing in logs or Sentry events.
+- `except: pass` or `except Exception: pass` without logging — silent failures.
+- Per-request Sentry alerts — alert fatigue guaranteed within a week.
+- No `/health` endpoint — Coolify and Grafana cannot detect service degradation.
+- Missing `tenant_id` in log context — cannot debug per-tenant issues.
+- Langfuse missing on LLM pipelines — cost and quality untracked.
+- `traces_sample_rate=1.0` in production — telemetry storage cost explosion.
+
+## Verification Checklist
+
+- [ ] All services use structured JSON logging (structlog or equivalent)
+- [ ] OpenTelemetry trace_id and span_id injected into every log entry
+- [ ] PII scrubbing function configured in Sentry `before_send`
+- [ ] `/health` endpoint exists in every service and aggregates dependency status
+- [ ] Langfuse instrumented on all LLM calls (tenant_id, model, cost, latency)
+- [ ] `tenant_id` bound into log context via `structlog.contextvars`
+- [ ] `traces_sample_rate` set to 0.1-0.3 in production, 1.0 in dev
+- [ ] Sentry alerting on error rate thresholds (e.g., >5% over 5 min), not individual errors
+- [ ] No `print()` statements in production code (verified via lint rule)
+- [ ] No `except: pass` patterns (verified via lint rule or grep)
+- [ ] OpenTelemetry collector deployed and reachable from all services
+- [ ] Grafana dashboards exist for: request rate, error rate, p95 latency, queue depth

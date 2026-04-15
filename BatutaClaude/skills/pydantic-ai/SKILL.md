@@ -1,5 +1,6 @@
 ---
 name: pydantic-ai
+version: "1.1"
 description: Use when building AI agents with Pydantic AI (pydantic-ai) — Python framework by the Pydantic team for structured agents with typed dependencies, function tools, and dynamic instructions. Trigger — "Pydantic AI", "pydantic-ai", "Agent() constructor", "@agent.tool", "RunContext[Deps]", "AGUIAdapter", "agent.to_ag_ui", "ag-ui protocol", "GoogleModel gemini", "expose agent web ui". Covers Agent definition, typed dependencies, tool decorators, dynamic instructions, Gemini/Google provider, and AG-UI web exposure (equivalent to ADK Web for Pydantic AI agents).
 ---
 
@@ -230,3 +231,39 @@ Pydantic AI releases frequently. Any pattern older than 3 months may be wrong. W
 - https://pydantic.dev/docs/ai/integrations/providers/google/ — Gemini provider
 - https://pydantic.dev/docs/ai/integrations/ui/ag-ui/ — AG-UI integration
 - https://github.com/pydantic/pydantic-ai — source
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "My training data is current enough -- I'll skip the WebFetch" | Pydantic AI ships breaking API changes monthly. Patterns from 3 months ago may still compile but produce wrong tool schemas, broken streams, or silent state corruption. The cost of one WebFetch is 30 seconds; the cost of debugging a stale API pattern is hours |
+| "I'll verify the docs later -- let me get the agent working first" | "Working" without verification means it produced text without crashing. That is not the same as correct. Tool schemas, dep injection, and AG-UI dispatch all have subtle behaviors (deps not frozen, tool_context invisible to LLM, role required on Content) that are easy to get wrong and hard to detect from the output |
+| "I can copy the ADK tool signature -- they look similar" | They are not. ADK injects `tool_context: ToolContext`; Pydantic AI uses `ctx: RunContext[Deps]`. Copying the ADK signature leaks `tool_context` into the LLM-facing schema, and the model will try to pass it as an argument. Wrap, don't copy |
+| "I'll use `@agent.system_prompt` -- it's what the old tutorial showed" | The new pattern is `@agent.instructions`. The old `system_prompt(dynamic=True)` still works but is being deprecated in upcoming releases. New code should use `@agent.instructions` |
+| "Sync tool is fine even though the underlying call is async -- I'll just use `asyncio.run()`" | `asyncio.run()` inside an async event loop raises `RuntimeError: cannot be called from a running event loop`. Pydantic AI's runner is async; sync tools that wrap async calls without `await` either crash or block the loop. Make the tool `async def` |
+
+## Red Flags
+
+- Code written without a recent (within 2 weeks) WebFetch of https://pydantic.dev/docs/ai/
+- `@agent.tool` function with first parameter named `tool_context` (ADK pattern leaking into Pydantic AI)
+- Missing docstring on a `@agent.tool` (the LLM reads the docstring as the tool description)
+- `*args` or `**kwargs` in a tool signature (invisible to the LLM schema, will not be called correctly)
+- `asyncio.run()` called inside an async tool body
+- `Agent()` without `deps_type=` declared, then `ctx.deps` accessed inside tools
+- AG-UI endpoint that does not pass `deps=` per request (every request shares the same deps instance)
+- Reusing the same `deps` instance across `agent.run()` calls when fresh state is needed per run
+- Model string typo (`gemini-flash-lite-latest` instead of `gemini-flash-latest` -- the lite has known text corruption bugs)
+- Missing `GOOGLE_API_KEY` env var when using `google-gla:` provider prefix
+
+## Verification Checklist (Rationalization-Focused)
+
+- [ ] Latest `pydantic.dev/docs/ai/` content was fetched within the past 2 weeks before writing agent code
+- [ ] Every `@agent.tool` has `ctx: RunContext[Deps]` as the first parameter; every `@agent.tool_plain` does NOT
+- [ ] No tool function uses `tool_context` as a parameter name (that is ADK -- if porting, wrap with a shim)
+- [ ] Every tool has a non-empty docstring written for the LLM (not for humans)
+- [ ] Async tools are declared `async def` AND await any async calls inside
+- [ ] `deps_type=` is declared on `Agent()` if any tool reads `ctx.deps`
+- [ ] AG-UI endpoints construct fresh `deps` per request and pass them via `dispatch_request(..., deps=...)`
+- [ ] Model string uses a stable alias (`gemini-flash-latest`) -- avoid `-lite-` variants known to corrupt structured output
+- [ ] `GOOGLE_API_KEY` env var is present and validated at startup
+- [ ] Dynamic instructions use `@agent.instructions` (current API), not `@agent.system_prompt(dynamic=True)` (legacy)

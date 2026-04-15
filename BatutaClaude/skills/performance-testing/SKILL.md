@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-03-09"
   scope: [pipeline]
   auto_invoke: "Performance testing, load testing, benchmarking, Core Web Vitals optimization"
@@ -223,3 +223,49 @@ grep -c "SELECT" app.log | sort -rn | head -5
 ## What This Means (Simply)
 
 > **For non-technical readers**: This skill makes sure our software is fast enough for real users, not just on a developer's powerful computer. Think of it like load-testing a bridge before opening it to traffic — you need to know it can handle rush hour, not just one car. We measure how fast pages load, how many users the system can handle before slowing down, and we set automatic alarms that go off if a code change makes things slower. A slow application loses users — studies show that every extra second of load time reduces conversions by 7%.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Performance metrics are vanity numbers" | Every 100ms of latency reduces conversions ~1% (Amazon study). Every 1s of LCP delay drops bounce rate ~32% (Google). Metrics are vanity only when ignored — the user-facing impact is measurable revenue. |
+| "Averages are fine, p99 is overkill" | An average response of 200ms can hide a p99 of 5,000ms — meaning 1% of requests (millions per day at scale) are unusable. Averages hide tail latency where users actually leave. Always report p50/p95/p99. |
+| "Load test in production, it's the real environment" | Production load tests can crash real customers. Stress test in a production-like staging environment. Run synthetic monitoring in production for ongoing measurement, not load tests. |
+| "It's fast on my dev machine" | Dev machines have SSDs, fast CPUs, no contention, no network latency, and empty databases. Production has noisy neighbors, cold caches, network hops, and millions of rows. Test under production-like conditions. |
+| "We'll add monitoring after launch" | Without baseline metrics from day 1, you cannot detect regressions. The first time you check is the first time you discover three months of accumulated slowness. Set budgets and CI gates from the start. |
+| "Bundle size doesn't matter on broadband" | Mobile users on 3G/4G are 50%+ of traffic in many markets. A 2MB JS bundle takes 8+ seconds to download and 4+ seconds to parse on a mid-tier phone. Code split, tree shake, lazy load. |
+
+## Red Flags
+
+- Performance reported only as "average response time" — no percentile breakdown
+- Load testing from the same machine as the server (network latency = 0, results are fiction)
+- Empty database during load test (no realistic data, no cache pressure, no index contention)
+- Single-endpoint hammering instead of realistic mixed-endpoint user scenarios
+- No performance budget in CI — regressions accumulate silently between releases
+- LCP > 4s, INP > 500ms, or CLS > 0.25 reported as acceptable for production
+- "We'll optimize later" without a baseline measurement to prove improvement
+- N+1 queries in API endpoints (repeated SELECT statements in logs for a single request)
+- JS bundle > 500KB uncompressed without code splitting
+- No `EXPLAIN ANALYZE` on slow queries, no index strategy documented
+- Endurance/soak test never run — memory leaks and connection pool exhaustion only visible after hours
+- Performance "improvements" claimed without statistical significance (single-run anecdotes)
+
+## Verification Checklist
+
+- [ ] Baseline measured BEFORE optimization: date, environment, data volume, concurrent users, p50/p95/p99
+- [ ] Load test scenarios reflect realistic user behavior (mixed endpoints, realistic think times)
+- [ ] Test data volume comparable to production (anonymized production data, not seed data)
+- [ ] Tests executed from a separate machine from the application server
+- [ ] Multiple iterations run for statistical significance (not single-shot results)
+- [ ] Percentiles reported (p50, p95, p99) — averages alone are insufficient
+- [ ] Core Web Vitals: LCP < 2.5s, INP < 200ms, CLS < 0.1 — verified for 75th percentile of real users
+- [ ] TTFB < 800ms for server-rendered content
+- [ ] Performance budget defined and enforced in CI (Lighthouse CI or k6 thresholds)
+- [ ] Build fails when budget is exceeded — regressions blocked at PR time
+- [ ] Bundle analysis run (`next build --analyze` or webpack-bundle-analyzer); no surprise large dependencies
+- [ ] Database queries profiled with `EXPLAIN ANALYZE`; no sequential scans on large tables, indexes used
+- [ ] N+1 queries detected and resolved (eager loading or DataLoader pattern)
+- [ ] Endurance/soak test run for 2-8 hours under constant load — no memory leaks, no connection pool exhaustion
+- [ ] Stress test identifies the breaking point (concurrent users where error rate exceeds threshold)
+- [ ] Test conditions documented alongside results (date, environment, data, concurrent users, version)
+- [ ] Production monitoring in place (Real User Monitoring, synthetic checks, p95/p99 alerts)

@@ -6,7 +6,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "2.0"
+  version: "2.1"
   created: "2026-02-22"
   scope: [infra]
   auto_invoke:
@@ -393,3 +393,38 @@ At team CLOSE, the lead updates .batuta/session.md with:
 ## Platform Note
 
 Windows (Git Bash) only supports `in-process` mode. macOS supports split panes via tmux/iTerm2.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Teams are overkill for this — solo is faster" | "Solo is faster" is true ONLY when the decision tree returns Level 1. For 4+ files across multiple scopes, solo is slower because the agent context becomes the bottleneck. |
+| "I'll spawn a subagent instead — same thing, less ceremony" | Subagents are fire-and-forget. They cannot communicate. If two parts of the work need shared decisions, you need Level 3, not Level 2. |
+| "Skip the contract definition — the teammates will figure it out" | Without contracts, file conflicts are guaranteed. Two teammates editing the same file = lost work. The contract is the firewall. |
+| "Cross-review is bureaucracy — the implementer knows what they did" | The interface bug between Frontend and Backend is invisible to either side individually. Cross-review is the only mechanism that catches it before integration. |
+| "The handoff template is too verbose — I'll just message the teammate" | Context loss is the #1 cause of multi-agent failure. Verbose handoffs prevent re-exploration. The template overhead pays back 10x in saved tokens. |
+| "QA Rejection skipped — the issue is small, just fix it inline" | Inline fixes by the reviewer hide the problem from the implementer. They will reproduce it next time. The rejection is the teaching mechanism. |
+
+## Red Flags
+
+- Spawning a team for a 1-3 file change — should be solo or subagent
+- File ownership table missing or has overlap (two teammates own the same file)
+- Teammate spawn prompt missing the OWN/DO-NOT-TOUCH constraints
+- Lead modifying teammate-owned files instead of routing back via QA Rejection
+- Skipping cross-review because "the spec was clear"
+- Using "Standard Handoff" template when spec violations were found (should be QA Rejection)
+- Fourth retry attempt on a task that failed three times — must escalate, not retry
+- Contract Diff skipped — output approved without comparing against the output contract
+- Team active but no entry in `.batuta/team-history.md` after teammate completion (SubagentStop hook bypassed)
+
+## Verification Checklist
+
+- [ ] Decision tree was applied: file count, scope count, communication need answered before spawning
+- [ ] Each teammate has a defined contract: input format, output format, file ownership (OWN + DO NOT TOUCH)
+- [ ] No file appears in more than one teammate's OWN list
+- [ ] Spawn prompts include the explicit OWN/DO-NOT-TOUCH constraints
+- [ ] Cross-review was scheduled between layers (frontend ↔ backend, security review across all)
+- [ ] Standard Handoff template used for normal completions; QA Rejection template used when spec violations found
+- [ ] Three-strikes escalation respected: failed task moved to Escalation Handoff, did NOT retry a 4th time
+- [ ] Contract Diff was performed before approving teammate completion (output matches contract, file ownership respected)
+- [ ] `.batuta/session.md` updated at team close with composition, completed tasks, and patterns discovered

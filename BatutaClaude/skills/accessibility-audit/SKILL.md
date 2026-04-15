@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-03-09"
   scope: [pipeline]
   auto_invoke: "Auditing accessibility, WCAG compliance, screen reader testing, keyboard navigation"
@@ -195,3 +195,46 @@ npx contrast-ratio "#333333" "#FFFFFF"  # Should be >= 4.5:1 for normal text
 ## What This Means (Simply)
 
 > **For non-technical readers**: This skill makes sure our software works for everyone, including people who navigate with a keyboard instead of a mouse, people who use screen readers because they cannot see the screen, and people with low vision who need high contrast. Think of it like building a physical store — you would not build one without a wheelchair ramp. This skill is the digital equivalent: making sure no one is locked out of using our product because of how it was built. Automated tools catch some issues, but most require human testing to find.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Lighthouse score is green, we're accessible" | Lighthouse and axe-core catch ~30% of WCAG issues. Green score means "no automated violations" — keyboard traps, screen reader chaos, and cognitive issues all pass automated checks. Run the full 4-layer audit. |
+| "Screen reader users are rare" | ~25% of users have a disability that affects software use. Screen reader users alone are millions. "Rare" is also irrelevant — accessibility is a legal requirement (ADA in US, EAA in EU, Ley 1618 in Colombia), not a usage statistic. |
+| "We'll add a11y after launch" | A11y patches retrofitted onto a finished UI cost 10-100x more than building it correctly the first time. Semantic HTML, keyboard handling, and focus management are foundational, not cosmetic. |
+| "Just add aria-label everywhere to fix it" | ARIA can MAKE accessibility worse. First rule of ARIA: don't use it. Use semantic HTML (`<button>`, `<nav>`, `<h1>`) — it's accessible by default. ARIA is for cases semantic HTML cannot express. |
+| "Users can zoom if they need bigger text" | WCAG 1.4.4 requires content to remain functional at 200% zoom. Most layouts break at 200%. Zoom is a fallback, not a substitute for proper responsive design and semantic markup. |
+
+## Red Flags
+
+- `<div onclick>` instead of `<button>` — not focusable, not announced, not keyboard-accessible
+- `tabindex="5"` or any positive tabindex value — creates unpredictable tab order
+- No visible focus indicator (or `outline: none` without replacement) — keyboard users lost
+- Color used as the sole way to convey state (red = error, green = success) — colorblind users excluded
+- Auto-playing video or audio without user control — violates WCAG 1.4.2
+- Modal dialogs without focus trap, without Escape to close, without focus return to trigger
+- Form inputs without `<label>` or `aria-label` — completely unusable with screen readers
+- `aria-label` on non-interactive elements (most ARIA only works on interactive elements)
+- Missing `lang` attribute on `<html>` — affects screen reader pronunciation
+- `display: none` used to hide content meant to be screen-reader-accessible (use `.sr-only` instead)
+- Image carousels or sliders without keyboard navigation, pause control, or focus management
+- Custom dropdowns/comboboxes built from `<div>` without ARIA combobox pattern
+
+## Verification Checklist
+
+- [ ] Layer 1 (Automated) run: axe-core or Lighthouse, all violations documented with WCAG criterion
+- [ ] Layer 2 (Keyboard-only) run: every interactive element reachable, focus visible, no traps, Escape works on overlays
+- [ ] Layer 3 (Screen reader) run: NVDA or VoiceOver, reading order makes sense, dynamic updates announced
+- [ ] Layer 4 (Visual/cognitive) run: 200% and 400% zoom, prefers-reduced-motion, high contrast mode
+- [ ] All findings cite specific WCAG 2.2 criterion by number and name (e.g., 1.4.3 Contrast Minimum)
+- [ ] All findings include severity (CRITICAL / SERIOUS / MODERATE / MINOR), user impact, location, and remediation code
+- [ ] No keyboard traps anywhere — every component can be entered AND exited via keyboard
+- [ ] All form inputs have associated labels (`<label for>`, `aria-label`, or `aria-labelledby`)
+- [ ] Color contrast: text >= 4.5:1, large text >= 3:1, UI components >= 3:1
+- [ ] No information conveyed by color alone — every color cue has an icon, text, or pattern equivalent
+- [ ] Custom components (dropdowns, tabs, modals, carousels) follow WAI-ARIA Authoring Practices
+- [ ] `lang` attribute set on `<html>` element
+- [ ] Modal dialogs: focus trapped, Escape closes, focus returns to trigger, `aria-labelledby` and `aria-describedby` set
+- [ ] axe-core integrated into Playwright E2E tests for regression detection
+- [ ] CI pipeline runs `@axe-core/cli` or `pa11y` and fails on new violations

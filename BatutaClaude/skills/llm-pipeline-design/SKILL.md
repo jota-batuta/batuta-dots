@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-23"
   source: "CTO Layer skill 03"
   scope: [pipeline]
@@ -86,3 +86,35 @@ Langfuse obligatorio: tenant_id, model, prompt_version, confidence, cost, PII-re
 - **sdd-verify**: Golden datasets + confidence thresholds (Type B/C)
 - **data-pipeline-design**: Datos de entrada
 - **compliance-colombia**: Test proporcionalidad SIC 002/2024
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "LLMs are always better than ML — skip the baseline" | If a logistic regression hits F1 >0.85, it costs 1000x less per inference, has predictable latency, and never hallucinates. Skipping the baseline means paying LLM costs for problems that don't need an LLM. |
+| "Confidence scoring is extra complexity — we'll add it later" | Without confidence, you cannot route low-confidence cases to human review, cannot detect drift, and cannot prove the system works. "Later" usually means "after a production incident embarrassed us." |
+| "One prompt version is enough for now" | Prompts drift as data drifts. Without versioning (`PROMPT_ID + version`), you cannot A/B test, cannot roll back, and cannot tie quality regressions to a specific prompt change. |
+
+## Red Flags
+
+- LLM call without a corresponding ML baseline measurement — no proof the LLM is needed.
+- No confidence score on output — downstream consumers cannot distinguish high-trust from speculation.
+- Prompts hardcoded in code with no version field, no metadata, no provenance.
+- Single model used for all tasks (no routing by complexity) — paying Sonnet/Opus prices for Haiku-class work.
+- No Langfuse traces (or equivalent) — cannot measure cost per tenant, cannot audit decisions.
+- PII leaked into prompts or traces — compliance violation.
+- No drift detection — model performance silently degrades.
+- Self-consistency or LLM-as-judge skipped on critical decisions.
+
+## Verification Checklist
+
+- [ ] Phase 2 statistical analysis run BEFORE Phase 4 LLM (patterns identified deterministically)
+- [ ] Phase 3 ML baseline measured; LLM justified only if baseline F1 < 0.85
+- [ ] Model routing table defined: Haiku/mini for clear cases, Sonnet/4o for ambiguous, Opus for complex judgment
+- [ ] Every prompt has `PROMPT_ID: {domain}-{function}-{task}` and version `vX.Y.Z`
+- [ ] Confidence scoring implemented at appropriate level (structural validation minimum, LLM-judge for 10-20% of traces)
+- [ ] Self-consistency (3x sampling) on critical decisions
+- [ ] Drift detection configured: data drift, concept drift, model drift, prompt drift
+- [ ] Langfuse (or equivalent) traces every call with tenant_id, model, prompt_version, confidence, cost
+- [ ] PII redacted before prompt construction (Presidio or equivalent)
+- [ ] Golden dataset exists with confidence thresholds defined per output type

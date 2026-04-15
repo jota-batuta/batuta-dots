@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-04-07"
   scope: [capability]
   auto_invoke: "When integrating with WhatsApp via Evolution API"
@@ -246,3 +246,41 @@ async def send_to_all_groups(messages: list[tuple[str, str]]):
 15. **Max file size for inline media** — WhatsApp limits media to 16MB on the user side. Evolution API has its own buffer; for files >20MB use a chunked approach or skip the media.
 16. **Audio messages have `ptt: True` for voice notes** — this distinguishes voice notes from music files. Both are still in `audioMessage`.
 17. **Sticker messages have NO useful payload for BATOVF** — they appear as `stickerMessage` without text or caption. The text-only fallback in `parse_webhook` returns None for these.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "groupJid is the standard field name in WhatsApp APIs" | WRONG. Evolution API requires `"number"` for ALL messages (groups AND individuals). Using `"groupJid"` returns 400 Bad Request (Issue #1712). The field name is counterintuitive — but it is what the API requires. Verify before assuming. |
+| "Text is in `message.conversation` — that's the standard location" | Text lives in TWO different locations depending on message type: `message.conversation` for plain text, `message.extendedTextMessage.text` when the message has formatting, mentions, or quoted replies. Code that checks only one location silently drops half the messages. |
+| "We don't need to validate PDF bytes — Evolution API handles it" | Evolution API will accept and "send" corrupt PDF bytes silently. WhatsApp delivers the file, but the recipient sees "could not open document." Always validate with the `b"%PDF-"` magic header BEFORE sending. |
+
+## Red Flags
+
+- Code uses `"groupJid"` field instead of `"number"` — guaranteed 400 error.
+- Webhook parser only checks `message.conversation` — misses formatted/quoted/mention messages.
+- Evolution API version <2.3.4 — known timeout bug sending to groups (Issue #2039).
+- "Group interaction" disabled on the instance — all group sends fail with 400.
+- Same API key used for instance management and message sending — confused token security model.
+- No rate limiting between message sends to multiple groups — ban risk on WhatsApp side.
+- Trying to reconstruct media bytes from `mediaKey` — must call `/chat/getBase64FromMediaMessage` with second request.
+- `getBase64FromMediaMessage` payload as `{"id": message_id}` instead of `{"message": {"key": {"id": message_id}}}` — silent failure.
+- PDF sent without `b"%PDF-"` header validation — corrupt files arrive silently.
+- Webhook handler treats missing delivery as success — Evolution API has no guaranteed delivery.
+
+## Verification Checklist
+
+- [ ] All message payloads use `"number"` field (NEVER `"groupJid"`), even for groups
+- [ ] Webhook parser checks BOTH `message.conversation` AND `message.extendedTextMessage.text`
+- [ ] Webhook parser handles all media types: `imageMessage`, `audioMessage`, `videoMessage`, `documentMessage`
+- [ ] Media download uses `/chat/getBase64FromMediaMessage` with `{"message": {"key": {"id": ...}}}` payload structure
+- [ ] Response field fallback: try `base64` first, then `media` (varies by Evolution API version)
+- [ ] PDF bytes validated with `b"%PDF-"` magic header BEFORE sending
+- [ ] File size <16MB before attempting WhatsApp send (WhatsApp user-side limit)
+- [ ] Rate limiting between sends to multiple groups (3-8 second delay)
+- [ ] Max alerts per group per day enforced (recommend ≤3) to avoid ban
+- [ ] Evolution API version >=2.3.4 (verified, not assumed)
+- [ ] "Group interaction" enabled on the instance
+- [ ] Two API keys correctly separated: global key for instance management, instance token for sending
+- [ ] Webhook handler uses `key.participant` (phone JID) as primary sender ID, not `pushName`
+- [ ] `GROUPS_UPSERT` event NOT used for incoming messages (use `MESSAGES_UPSERT` only)

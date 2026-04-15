@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-04-07"
   scope: [capability]
   auto_invoke: "When writing queries against the KIOSCO database or working with ICG ERP data"
@@ -508,3 +508,42 @@ Then for each negative item, determine cause:
 - If STOCKREGUL = 0 and STOCK < 0 → "Counted zero, kept selling"
 - If STOCKREGUL > 0 and STOCK < 0 → "More exits than entries since last count"
 - If ENTRANSITO > 0 → "Product sent but not confirmed received"
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "NOLOCK is optional — most queries work fine without it" | KIOSCO is a write-hot operational database. POS terminals, sync processes, and queue workers hold locks constantly. A query without `WITH (NOLOCK)` will frequently block, time out, or return inconsistently. BATO will look "broken" even though the data is fine. NOLOCK is MANDATORY (G9), not optional. |
+| "Column names are consistent across tables — I can guess them" | ICG uses NON-OBVIOUS, inconsistent column names across tables. ALMACEN uses `NOMBREALMACEN` (not NOMBRE). ALBCOMPRACAB uses `NUMSERIE`/`NUMALBARAN`/`FECHAALBARAN` (not SERIE/NUMERO/FECHA). MOVIMENTS uses simple names. Guessing produces "Invalid column name" errors at runtime. ALWAYS query INFORMATION_SCHEMA.COLUMNS first. |
+| "VENTASACUMULADAS is the source of truth for sales totals" | WRONG. VENTASACUMULADAS only includes direct sales (ALBVENTALIN). It MISSES recipe consumption (ALBVENTACONSUMO). Verified March 2026: VENTASACUMULADAS reported 12,170 units when the real total was 30,116 — under-reporting by 60%. Always sum BOTH tables for accurate consumption. |
+
+## Red Flags
+
+- SQL query against KIOSCO without `WITH (NOLOCK)` on every table reference (G9 violation).
+- Code references `ALMACEN.NOMBRE`, `PROVEEDORES.NOMBRE`, or `ALBCOMPRACAB.SERIE`/`NUMERO`/`FECHA` — these columns DO NOT EXIST.
+- Stock count or inventory analysis using `STOCKS.FECHAREGUL` — this field is NOT reliable; use MOVIMENTS REG instead (G1).
+- Sales totals computed from `ALBVENTALIN` alone, ignoring `ALBVENTACONSUMO` (G5/G5b).
+- Filter by `ALBCOMPRACAB.FACTURADO` to determine inventory state — accounting is NOT in ICG (G3).
+- `WHERE NOT ANULADO` filter on ALBVENTALIN — anulaciones are in separate `ANUL_ALBVENTALIN` table (G5c).
+- Query returns empty result set — verify it's not a silent column-name failure before assuming "no data."
+- Hardcoded list of suppliers/products in code instead of querying ARTICULOS/PROVEEDORES.
+- Composite key joins missing the `N` column (multi-empresa flag) for ALBVENTACAB/ALBVENTALIN/ALBVENTACONSUMO.
+- Trying to detect "albarán without pedido" — schema does not support this direction (G10).
+- Setting `SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED` at session level — leaks across pooled pymssql connections.
+
+## Verification Checklist
+
+- [ ] EVERY table reference in EVERY query has `WITH (NOLOCK)` (including JOINs and subqueries) — G9 mandatory
+- [ ] Column names verified against `INFORMATION_SCHEMA.COLUMNS` before writing the query
+- [ ] Last count date queried from `MOVIMENTS WHERE TIPO='REG'`, NOT from `STOCKS.FECHAREGUL` (G1)
+- [ ] Sales/consumption queries sum BOTH `ALBVENTALIN.UNIDADESTOTAL` AND `ALBVENTACONSUMO.CONSUMO` (G5/G5b)
+- [ ] Composite key joins use full `(NUMSERIE, NUMALBARAN, N)` triple — `N` column included
+- [ ] No filter on `ALBCOMPRACAB.FACTURADO` for inventory queries (G3 — accounting is external)
+- [ ] No `WHERE NOT ANULADO` filter on ALBVENTALIN (G5c — anulaciones in separate table)
+- [ ] Product searches use `LIKE` and present multiple matches when ambiguous (G6)
+- [ ] Query tested against live KIOSCO database with real parameters BEFORE committing (G8)
+- [ ] Empty result sets verified as legitimate (no data) vs silent failure (wrong column)
+- [ ] Pedido↔Albarán cross queries go in the supported direction only: pedido → albarán (G10)
+- [ ] No `INVENTARIOSZONA` queries (only 6 rows, El Kiosco doesn't use it)
+- [ ] No `TEMP_INVENTARIO_*` queries (client-side scratch tables, schema is volatile)
+- [ ] All transfer status checks use `'T'`/`'F'` (NOT `'S'`/`'N'`) for RECIBIDO/ANULADO fields

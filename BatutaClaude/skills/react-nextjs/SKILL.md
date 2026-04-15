@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "1.0"
+  version: "1.1"
   created: "2026-02-26"
   scope: [pipeline]
   auto_invoke:
@@ -271,3 +271,39 @@ npx tsc --noEmit
 > in the user's browser. It also enforces that every component file lives in a predictable
 > place based on who uses it, and that each customer's data stays isolated from others.
 > Think of it as the blueprint for building consistent, secure web pages across the team.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "I'll just put `'use client'` everywhere -- the App Router is too complex otherwise" | Marking everything as client throws away the entire benefit of the App Router: zero JS for static UI, direct database access from components, automatic streaming. You end up shipping a Pages Router app with extra ceremony and a bloated bundle |
+| "useEffect for the initial fetch is the standard React pattern -- I learned it that way" | That pattern predates Server Components by a decade. In the App Router, `useEffect` for initial data means a loading spinner, a waterfall request, no SSR, and worse SEO. Fetch in a Server Component and pass as props |
+| "The form submission needs an API route, server actions are too magical" | Server actions ARE the API route -- typed, validated, with automatic cache revalidation. Writing a separate route handler duplicates the work and bypasses the integration with `revalidatePath`/`revalidateTag` |
+| "Putting tenant_id in the URL is fine -- the user is already authenticated" | Authentication does not equal authorization. A logged-in user can edit the URL to access another tenant's data. Tenant context belongs in the verified session, never in URL params |
+| "Shared component? I'll drop it in `/components` at the root for now" | "For now" becomes "forever," and the root `/components` directory becomes a dumping ground that nobody can navigate. Apply Scope Rule once at creation; refactoring a 200-component dump later is a multi-day project |
+
+## Red Flags
+
+- Top-level `'use client'` directive on layouts, pages, or components that only render data
+- `useEffect` + `fetch` for initial data loading on mount
+- `useState` for data that is fetched once and never mutated locally
+- Reading `tenantId`, `userId`, or `orgId` from `useParams()` or URL search params
+- Root-level `components/`, `hooks/`, `utils/`, or `lib/` directory
+- Business logic (DB calls, validation chains) inside `page.tsx`
+- Importing server-only modules (DB client, env secrets) into a Client Component
+- API route that wraps a single database query when a Server Action would suffice
+- Server Component that calls a Client Component which then re-fetches data the parent already has
+- Form without Zod validation in the server action
+
+## Verification Checklist
+
+- [ ] All components default to Server Components; `'use client'` appears only on leaves that need interactivity
+- [ ] Initial data fetching happens in Server Components (`async` function components), never in `useEffect`
+- [ ] Tenant/org/user context is read from server-side session (`getSession()`), never from URL params or client state
+- [ ] All form submissions and mutations use Server Actions with Zod validation, not API routes wrapping a single query
+- [ ] File placement follows Scope Rule: `features/{name}/components/`, `features/shared/components/`, or `core/components/`
+- [ ] No root-level `components/`, `hooks/`, `utils/`, or `lib/` directories exist
+- [ ] `page.tsx` files contain only routing + composition; business logic lives in feature services
+- [ ] Server-only modules are not imported into Client Components (verified by `next build` warnings)
+- [ ] `next.config.js` has `output: 'standalone'` for Docker deployments
+- [ ] Composition pattern is used when interactivity wraps content (Server Component passed as `children` to Client Component)

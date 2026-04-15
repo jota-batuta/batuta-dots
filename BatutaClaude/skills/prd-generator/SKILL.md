@@ -7,9 +7,9 @@ description: >
 license: MIT
 metadata:
   author: Batuta
-  version: "2.0"
+  version: "2.1"
   created: "2026-03-30"
-  updated: "2026-04-13"
+  updated: "2026-04-15"
   scope: [pipeline]
   platforms: [claude, antigravity]
 allowed-tools: Read Write Glob
@@ -129,3 +129,37 @@ CTO writes PRD in Notion → Code reads via MCP → Implements
     ↕ (discoveries go back to Notion KB constantly)
 If pivot: archive PRD as SUPERSEDED → CTO writes new PRD
 ```
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "Include code samples in the PRD for clarity" | The PRD is the CTO's WHAT, not the agent's HOW. Code in PRDs invites the CTO to design the implementation — which is the agent's job. The validation rule "PRD does NOT contain code or SQL" exists precisely because this rationalization is so common. |
+| "A longer PRD is more thorough" | The 1-2 page limit is a feature, not a constraint. PRDs that grow beyond 2 pages are usually trying to cover multiple changes — split them. |
+| "Skip 'Fuera de alcance' — it's obvious" | Scope creep happens because what's IN scope is documented but what's OUT is implicit. "Fuera de alcance" is mandatory to prevent the agent from gold-plating. |
+| "Success criteria can be subjective" | Criteria must be agent-verifiable. "User likes the result" is not a criterion; "Endpoint returns 200 with the expected JSON shape" is. |
+| "I'll add data sources later" | Without "Datos disponibles" the agent guesses about data shape and location, then writes code against assumptions. List the sources upfront. |
+
+## Red Flags
+
+- PRD contains SQL queries, function signatures, or pseudocode
+- PRD exceeds 2 pages
+- "Criterio de exito" missing or non-verifiable (subjective language like "good", "fast", "easy")
+- "Fuera de alcance" section missing or empty
+- "Problema" section describes a solution instead of a problem
+- "Solucion" section dictates implementation details (file paths, function names, exact algorithms)
+- PRD is created locally instead of in Notion when CTO Desktop is the source
+- Multiple changes bundled into one PRD
+- "Datos disponibles" section omitted despite the change requiring data access
+
+## Verification Checklist
+
+- [ ] PRD file exists in Notion (CTO source) OR `openspec/changes/{change-name}/PRD.md` (local fallback)
+- [ ] Length is 1-2 pages — no longer
+- [ ] All required sections present: Problema, Solucion, Criterio de exito, Datos disponibles, Constraints, Fuera de alcance
+- [ ] No SQL queries, function signatures, or pseudocode in any section
+- [ ] Every "Criterio de exito" entry is agent-verifiable (objective condition)
+- [ ] "Fuera de alcance" explicitly lists what is NOT being built
+- [ ] "Problema" describes a problem, not a solution
+- [ ] "Solucion" stays at architectural/technology level (not implementation level)
+- [ ] PRD covers exactly ONE change (not bundled)
