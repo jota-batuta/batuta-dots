@@ -41,6 +41,38 @@
 - Agentes reportan con: FINDINGS / FAILURES / DECISIONS / GOTCHAS.
 - Agentes pueden correr en paralelo. 5 agentes contratados = discovery/implementacion en minutos.
 
+### Skill-Driven Execution (NO NEGOCIABLE)
+- Si hay skill que aplica, el agente DEBE invocarla. No implementar directamente desde conocimiento general.
+- Pensamientos incorrectos a rechazar: "this is too small for a skill", "I can just quickly implement this", "I'll gather context first".
+- Correct behavior: SIEMPRE buscar skills aplicables primero, luego invocarlas via tool Skill.
+
+**Intent-to-Skill mapping (referencia rapida):**
+| Intent | Skills a invocar |
+|--------|-----------------|
+| Nueva feature / spec | prd-generator, sdd-design |
+| Desglose de tareas | sdd-design (incluye breakdown en v15) |
+| Bug / failure | debugging-systematic |
+| Code review | code-reviewer persona (contratada) |
+| Refactoring / cleanup | code-simplification |
+| API design | api-design |
+| UI work | react-nextjs, accessibility-audit |
+| Security review | security-audit + security-auditor persona |
+| Deprecation | deprecation-and-migration |
+| Git/commits | git-workflow-and-versioning |
+| Testing audit | test-engineer persona |
+
+### Review Layer (workers escriben, reviewers auditan)
+El ecosistema tiene 2 tipos de agents contratables:
+- **Workers (5)**: pipeline, backend, data, quality, infra — escriben codigo
+- **Reviewers (3)**: code-reviewer, test-engineer, security-auditor — auditan sin modificar
+
+**Flujo con reviewers:**
+- Post-sdd-apply → contratar code-reviewer para audit de PR antes de merge
+- Post-sdd-verify → contratar test-engineer para audit de coverage
+- Post-security-audit skill → contratar security-auditor para threat modeling
+
+Reviewers tienen tools read-only (Read, Grep, Glob). Si encuentran issues, REPORTAN — no modifican. Worker agent fixes con la recomendacion del reviewer.
+
 ### State (una fuente de verdad, actualizada constantemente)
 - **session.md** = UNICA fuente de verdad del estado del proyecto. Se actualiza en CADA INTERACCION. 80 lineas max. Answers: WHERE | WHY | HOW.
 - **CHECKPOINT.md** = seguro anti-compaction. Se escribe antes de 3+ tool calls y al cerrar. Captura: que hago AHORA, paso N de M, intentos, gotchas con evidencia. Archive: 10 versiones.

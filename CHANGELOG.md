@@ -3,6 +3,47 @@
 All notable changes to the Batuta ecosystem are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## v15.1.0 — 2026-04-15 — agent-skills Integration
+
+### New Skills (adapted from addyosmani/agent-skills, MIT License)
+- **code-simplification** — Chesterton's Fence, Rule of 500, language-specific refactor patterns. Preserves behavior while reducing complexity.
+- **deprecation-and-migration** — Code-as-liability mindset, zombie code removal, feature flag lifecycle, compulsory vs advisory deprecation.
+- **git-workflow-and-versioning** — Trunk-based development, atomic commits, commit-as-save-point pattern, Build Cop role.
+
+### New Agent Personas (read-only reviewers)
+Workers escriben codigo. Reviewers auditan. Nueva separacion:
+- **code-reviewer** — Senior Staff Engineer perspective. Evalua calidad, mantenibilidad, scope rule compliance.
+- **test-engineer** — QA Specialist. Audita coverage, test quality, pyramid balance.
+- **security-auditor** — Security Engineer. Threat modeling, OWASP, RLS validation. Model: opus (deep reasoning).
+
+Reviewers tienen tools read-only (Read, Grep, Glob) — no pueden modificar codigo. Reportan issues y handoff a workers.
+
+### New Infrastructure
+- **SIMPLIFY-IGNORE.md + hooks/simplify-ignore.sh** — Glob patterns que el code-simplification skill nunca toca (vendor/, migrations/, generated/, .batuta/, etc.)
+- **references/** folder — 4 deep checklists separados de skills:
+  - security-checklist.md (OWASP Top 10)
+  - performance-checklist.md (Core Web Vitals)
+  - accessibility-checklist.md (WCAG 2.1 AA)
+  - testing-patterns.md (pyramid, DAMP/DRY)
+
+### CLAUDE.md Updates (+32 lines → 137 total)
+- **Skill-Driven Execution section**: Si hay skill aplicable, el agente DEBE invocarla. Intent-to-Skill mapping table.
+- **Review Layer section**: Workers vs Reviewers distinction. Flow: sdd-apply → code-reviewer, sdd-verify → test-engineer, security-audit → security-auditor.
+
+### Installation Changes
+- **setup.sh --sync** ahora copia 17 skills globales (era 13). Adiciones: agent-hiring, code-simplification, deprecation-and-migration, git-workflow-and-versioning.
+- Reviewer personas se copian a ~/.claude/agents/ (8 agents globales, era 5).
+
+### Attribution
+Inspired by and adapted from:
+- https://github.com/addyosmani/agent-skills v0.5.0 (MIT License)
+
+Specific adaptations: 3 skills, 3 reviewer personas, 4 references, SIMPLIFY-IGNORE pattern, Skill-Driven Execution rule, Workers vs Reviewers separation.
+
+### Pending for v15.2
+- Standardize ALL 43 skills with 7-section format (Overview, When to Use, When NOT to Use, Core, Common Rationalizations, Red Flags, Verification Checklist). v15.1 only applies this format to the 3 new skills; the other 40 retain their v15 format and will be batch-updated iteratively.
+- Full reformulation of llm-pipeline-design, process-analyst, recursion-designer with concrete gates (flagged REFORMULATE in v15 audit).
+
 ## v15.0.0 — 2026-04-13 — Simplification Refactor
 
 ### Breaking Changes
