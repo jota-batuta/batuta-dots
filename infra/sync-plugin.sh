@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
-# sync-plugin.sh — Sync curated subset from BatutaClaude/ to .claude-plugin/
+# sync-plugin.sh — Sync curated subset from BatutaClaude/ to repo root
 #
-# Why: The Claude Code plugin system installs EVERYTHING in the pointed directory.
-# We want the plugin to only include the 17 essential skills + 8 agents + commands,
+# Why: The Claude Code plugin system auto-discovers skills/, agents/, commands/
+# from the PLUGIN ROOT (which is the repo root for this plugin). It installs
+# EVERYTHING it finds there. We want only 17 essential skills + 8 agents + commands,
 # NOT the 46 total skills in BatutaClaude/skills/.
 #
-# BatutaClaude/skills/ = source of truth (all 46 skills)
-# .claude-plugin/skills/ = plugin-installable subset (17 essentials)
+# BatutaClaude/skills/ = source of truth (all 46 skills, used by bash installer)
+# ./skills/ (repo root) = plugin-installable subset (17 essentials)
+# ./agents/ (repo root) = plugin agents (8: 5 workers + 3 reviewers)
+# ./commands/ (repo root) = plugin commands (12)
 #
 # Run this after modifying any essential skill or agent.
 # Usage: bash infra/sync-plugin.sh
@@ -21,7 +24,7 @@ NC='\033[0m'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-PLUGIN_DIR="$REPO_ROOT/.claude-plugin"
+PLUGIN_DIR="$REPO_ROOT"
 SOURCE_DIR="$REPO_ROOT/BatutaClaude"
 
 # WORKAROUND: Keep this list in sync with infra/setup.sh global_skills array.
@@ -37,7 +40,7 @@ ESSENTIAL_SKILLS=(
     agent-hiring code-simplification deprecation-and-migration git-workflow-and-versioning
 )
 
-echo -e "${CYAN}[INFO]${NC} Syncing plugin from BatutaClaude/ to .claude-plugin/"
+echo -e "${CYAN}[INFO]${NC} Syncing plugin subset from BatutaClaude/ to repo root"
 
 # Clean plugin subdirs before re-sync (safe — they're generated)
 rm -rf "$PLUGIN_DIR/skills" "$PLUGIN_DIR/agents" "$PLUGIN_DIR/commands"
@@ -72,5 +75,5 @@ for cmd in "$SOURCE_DIR"/commands/*.md; do
     command_count=$((command_count + 1))
 done
 
-echo -e "${GREEN}[OK]${NC} Synced $skill_count skills + $agent_count agents + $command_count commands to .claude-plugin/"
+echo -e "${GREEN}[OK]${NC} Synced $skill_count skills + $agent_count agents + $command_count commands to repo root (skills/, agents/, commands/)"
 echo -e "${CYAN}[INFO]${NC} Plugin is now ready for /plugin install"

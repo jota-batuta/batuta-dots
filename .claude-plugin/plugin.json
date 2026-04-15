@@ -1,7 +1,7 @@
 {
   "name": "batuta-dots",
   "description": "Batuta core: 17 essential skills + 8 agents (5 workers + 3 reviewers) + SDD pipeline. Domain skills (ICG, ADK, compliance) are project-provisioned via /batuta-init.",
-  "version": "15.3.0",
+  "version": "15.4.0",
   "author": {
     "name": "Batuta AI",
     "url": "https://github.com/jota-batuta"
@@ -16,8 +16,5 @@
     "contract-based-agents",
     "colombian-business",
     "multi-tenant"
-  ],
-  "skills": "./skills/",
-  "agents": "./agents/",
-  "commands": "./commands/"
+  ]
 }

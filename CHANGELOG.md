@@ -3,6 +3,63 @@
 All notable changes to the Batuta ecosystem are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## v15.4.0 — 2026-04-15 — Plugin Manifest Schema Fix
+
+### Critical Fix
+
+v15.3's plugin install failed with:
+```
+Validation errors: agents: Invalid input
+```
+
+### Root Cause
+
+Misread Claude Code's plugin schema. Per official docs:
+> **Common mistake**: Don't put `commands/`, `agents/`, `skills/`, or `hooks/` inside the `.claude-plugin/` directory. Only `plugin.json` goes inside `.claude-plugin/`. All other directories must be at the plugin root level.
+
+Also: `skills`, `agents`, `commands` fields in `plugin.json` are NOT valid. These directories are AUTO-DISCOVERED from standard locations at the plugin root.
+
+### Changes
+
+**Directory structure:**
+- `.claude-plugin/skills/` → moved to `./skills/` (repo root)
+- `.claude-plugin/agents/` → moved to `./agents/` (repo root)
+- `.claude-plugin/commands/` → moved to `./commands/` (repo root)
+- `.claude-plugin/` now only contains `plugin.json` + `marketplace.json` (as docs specify)
+
+**plugin.json:**
+- Removed invalid fields: `skills`, `agents`, `commands` (these were causing the validation error)
+- Now contains only: name, description, version, author, homepage, repository, license, keywords
+
+**sync-plugin.sh:**
+- Updated PLUGIN_DIR from `.claude-plugin` to repo root
+- Syncs BatutaClaude/{skills,agents,commands}/ → ./{skills,agents,commands}/ at repo root
+
+### Structure now
+
+```
+batuta-dots/                     ← plugin root
+├── .claude-plugin/
+│   ├── plugin.json              ← ONLY this
+│   └── marketplace.json
+├── skills/                      ← 17 essential (auto-discovered)
+├── agents/                      ← 8 (5 workers + 3 reviewers)
+├── commands/                    ← 12 slash commands
+├── BatutaClaude/                ← source of truth for bash installer (46 skills)
+└── infra/
+```
+
+### Install now works
+
+```
+/plugin marketplace add jota-batuta/batuta-dots
+/plugin install batuta-dots
+```
+
+Should clone via HTTPS (v15.3 fix) and install 17 skills + 8 agents + 12 commands cleanly with no validation errors.
+
+VERSION: 15.3.0 → 15.4.0
+
 ## v15.3.0 — 2026-04-15 — Plugin Install Fixes (SSH auth + curated subset)
 
 ### Critical Fixes
