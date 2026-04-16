@@ -3,6 +3,60 @@
 All notable changes to the Batuta ecosystem are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## v15.6.0 — 2026-04-15 — Plugin Rollback + Orphan Cleanup Fix
+
+### Decision: Rollback the plugin approach
+
+After 5 iterations trying to make the Claude Code plugin approach work (v15.2 through v15.5), we hit a fundamental mismatch: **plugins don't do project-level setup**. The batuta workflow needs CLAUDE.md + .batuta/ in each project, plus per-project skill provisioning — that's what `install-batutadots` does in one step. Adding plugin as a secondary path only created confusion.
+
+**Decision**: bash installer (`install-batutadots`) is the ONLY supported install method. Plugin support removed.
+
+### Removed (plugin rollback)
+
+- `.claude-plugin/plugin.json`
+- `.claude-plugin/marketplace.json`
+- `skills/` at repo root (17 curated)
+- `agents/` at repo root (8)
+- `commands/` at repo root (12)
+- `hooks/hooks.json`
+- `hooks/session-start-notice.sh`
+- `infra/sync-plugin.sh`
+
+`BatutaClaude/{skills,agents,commands}/` remains as the single source of truth for the bash installer.
+
+### Critical Fixes
+
+**Fix 1: Global skills cleanup bug (root cause of "46 skills installed globally")**
+
+Before v15.6, `setup.sh --sync` orphan cleanup checked if skills existed in `BatutaClaude/skills/`. But v15.0 changed the policy: only 17 essential skills should go to `~/.claude/skills/` globally — the other 29+ should be project-provisioned via `/batuta-init`. Since all 46 still exist in `BatutaClaude/skills/`, the orphan cleanup never removed the non-globals. Result: users with old installs had all 46 skills globally, exceeding Claude Code's 450-token metadata budget.
+
+Fixed by changing orphan logic from "is this skill in BatutaClaude/skills/?" to "is this skill in the global_skills array?". Now removes any skill in `~/.claude/skills/` that isn't in the essential 17.
+
+**Fix 2: Orphan cleanup for agents**
+
+Added orphan cleanup to `sync_agents()`. Removes agents from `~/.claude/agents/` that no longer exist in `BatutaClaude/agents/`. Fixes stale `batovf-*` (5 files) and `observability-agent` left over from pre-v15.0 installs.
+
+**Fix 3: Orphan cleanup for commands**
+
+Added orphan cleanup to commands sync inside `sync_claude()`. Removes `~/.claude/commands/*.md` that no longer exist in hub. Fixes stale `sdd-archive.md` from v14.x installs.
+
+### Result
+
+Running `install-batutadots` now correctly:
+- Removes 29+ stale non-global skills → keeps only 17 essentials
+- Removes 5 batovf-* + observability-agent → keeps only 8 current agents
+- Removes sdd-archive.md → keeps only 12 current commands
+
+Tested locally on a machine with accumulated v14 + v15.0 + v15.1 files. All stale files cleaned up.
+
+### Install
+
+```bash
+install-batutadots   # the only supported method
+```
+
+VERSION: 15.5.0 → 15.6.0
+
 ## v15.5.0 — 2026-04-15 — Plugin SessionStart Hook (Auto-Init Detection)
 
 ### Problem
