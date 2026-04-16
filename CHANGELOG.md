@@ -3,6 +3,67 @@
 All notable changes to the Batuta ecosystem are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## v15.7.0 — 2026-04-15 — Project .claude/ Directory + Clear Install Output
+
+### Problem
+
+User reported after running `install-batutadots` the project had:
+- ✓ CLAUDE.md
+- ✓ .batuta/
+- ✗ .claude/ (MISSING — expected this directory)
+
+User remembered previous installs creating more in the project directory.
+
+### Investigation (git history)
+
+Checked `setup_project()` in v13, v15.0, v15.1, v15.6 — always only created CLAUDE.md and .batuta/.
+
+The `.claude/` directory WAS being populated, but by `/sdd-init` inside Claude Code (which provisions tech-specific skills), not by the bash installer. Users ran both steps together and remembered "install created .claude/".
+
+### Fix: bash installer now creates project .claude/
+
+Added step 5 to `setup_project()`:
+- Creates `.claude/` directory in the project
+- Writes `.claude/settings.json` with project-scoped config:
+  - `outputStyle: "Batuta"`
+  - `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` env flag
+  - Permissions (deny .env/secrets, ask for git commits/push/rebase, etc.)
+- Project-level settings committed to git → team members share same config
+
+Hooks stay in `~/.claude/settings.json` (global) because hook scripts use `CLAUDE_PROJECT_DIR` to target the current project correctly.
+
+### Plus: clearer install output
+
+setup_project now shows at the end:
+- Project structure created (CLAUDE.md, .batuta/, .claude/settings.json, .gitignore)
+- Global state (~/.claude/): X skills, Y agents, Z commands available
+- Next step: `/sdd-init` to provision tech-specific skills to `.claude/skills/` of THIS project
+
+### Result
+
+`install-batutadots` now creates:
+```
+project-root/
+├── .batuta/         — session state (created by bash installer)
+├── .claude/
+│   └── settings.json — project-scoped config (created by bash installer)
+├── .git/
+├── .gitignore
+└── CLAUDE.md        — Batuta rules
+```
+
+Running `/sdd-init` in Claude Code then adds:
+```
+├── .claude/
+│   ├── settings.json
+│   ├── skills/      — tech-specific skills (e.g., fastapi, react-nextjs)
+│   ├── agents/      — project-specific agents (if needed)
+│   └── .provisions.json
+├── openspec/        — SDD artifacts directory
+```
+
+VERSION: 15.6.0 → 15.7.0
+
 ## v15.6.0 — 2026-04-15 — Plugin Rollback + Orphan Cleanup Fix
 
 ### Decision: Rollback the plugin approach

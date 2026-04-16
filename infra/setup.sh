@@ -278,13 +278,76 @@ IGNOREEOF
         log_success "Created .gitignore"
     fi
 
-    # 5. Install hooks + permissions to ~/.claude/settings.json
+    # 5. Create .claude/ directory with project-level settings.json
+    # WHY: Project-scoped settings (output style, permissions, env) committed to git
+    # so team members share the same config. Hooks stay in ~/.claude/ (global) because
+    # the hook scripts use CLAUDE_PROJECT_DIR to target the current project correctly.
+    local claude_project_dir="$target_dir/.claude"
+    mkdir -p "$claude_project_dir"
+
+    if [[ ! -f "$claude_project_dir/settings.json" ]]; then
+        cat > "$claude_project_dir/settings.json" << 'CLAUDEEOF'
+{
+  "outputStyle": "Batuta",
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "permissions": {
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/secrets/**)",
+      "Read(**/credentials.json)",
+      "Read(**/.ssh/**)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/*.p12)",
+      "Read(**/*.pfx)"
+    ],
+    "ask": [
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git push --force:*)",
+      "Bash(git rebase:*)",
+      "Bash(git reset --hard:*)"
+    ]
+  }
+}
+CLAUDEEOF
+        log_success "Created $claude_project_dir/settings.json (project-scoped permissions + output style)"
+    else
+        log_info ".claude/settings.json already exists, skipping"
+    fi
+
+    # 6. Install hooks + permissions to ~/.claude/settings.json (global)
     echo ""
     install_hooks
 
     echo ""
     log_success "Project setup complete at $target_dir"
-    log_info "Next: open Claude Code in $target_dir and run /sdd-init"
+    echo ""
+    log_info "Project structure created:"
+    log_info "  CLAUDE.md                    — Batuta rules + delegation (project root)"
+    log_info "  .batuta/                     — Session state, checkpoints, ecosystem.json"
+    log_info "  .claude/settings.json        — Project-scoped permissions + output style"
+    log_info "  .gitignore                   — Standard ignores (node_modules, .env, etc.)"
+    echo ""
+    log_info "Global state (~/.claude/, shared across projects):"
+    local global_skill_count
+    global_skill_count=$(ls "$HOME_DIR/.claude/skills" 2>/dev/null | wc -l)
+    local global_agent_count
+    global_agent_count=$(ls "$HOME_DIR/.claude/agents" 2>/dev/null | wc -l)
+    local global_cmd_count
+    global_cmd_count=$(ls "$HOME_DIR/.claude/commands" 2>/dev/null | wc -l)
+    log_info "  Skills: $global_skill_count available globally"
+    log_info "  Agents: $global_agent_count available globally"
+    log_info "  Commands: $global_cmd_count available globally"
+    echo ""
+    log_info "Next step: open Claude Code in $target_dir and run /sdd-init"
+    log_info "  /sdd-init will detect your tech stack and provision tech-specific skills"
+    log_info "  to .claude/skills/ of this project (e.g., fastapi, react-nextjs, icg-erp)"
 }
 
 # ============================================================================
