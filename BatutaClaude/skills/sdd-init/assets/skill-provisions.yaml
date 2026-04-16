@@ -297,13 +297,15 @@ mcp_rules:
       args: ["--streamableHttp", "YOUR_N8N_MCP_URL_HERE"]
 
 # --- Agents: Always provisioned ---
-# Scope agents (hub machinery) + quality-agent (universal)
-# These agents are copied to .claude/agents/ in every Batuta project.
+# Workers + reviewers available for contract-based hiring.
+# Copied to .claude/agents/ in every Batuta project by /sdd-init.
+# v16 fix: removed observability-agent (absorbed by pipeline-agent in v15.0).
 always_agents:
   - pipeline-agent
   - infra-agent
-  - observability-agent
   - quality-agent
+  - backend-agent
+  - data-agent
 
 # --- Agents: Technology-detected ---
 # Domain agents provisioned based on project tech stack.

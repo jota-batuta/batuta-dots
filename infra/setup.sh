@@ -325,12 +325,48 @@ CLAUDEEOF
     echo ""
     install_hooks
 
-    # 7. Auto-provision project skills based on lightweight tech detection
-    # WHY: Without this, .claude/skills/ stays empty until the user manually runs /sdd-init.
-    # This bash-level detection covers the most common file-based signals.
-    # /sdd-init does deeper AI-powered detection (content patterns, context mentions, MCP discovery).
+    # 7. Provision ESSENTIAL skills + agents to project .claude/
+    # WHY: The E2E test (NutriAndrea v1/v2) showed .claude/skills/ was EMPTY after install.
+    # The agent needs skills IN the project, not just globally. Global = descriptions only.
+    # Project = the agent can actually invoke them. Essentials MUST be there from day 1.
+    echo ""
+    provision_project_essentials "$target_dir"
+
+    # 8. Auto-provision TECH-SPECIFIC skills based on dependency file detection
+    # WHY: On top of essentials, detect the project's tech stack and add relevant skills.
+    # /sdd-init does deeper AI-powered detection (content patterns, context mentions, MCPs).
     echo ""
     provision_project_skills "$target_dir"
+
+    # 9. Create initial .batuta/sdd-state.json for enforcement hooks
+    # WHY: enforce-sdd-phase.sh checks this file before allowing Write/Edit.
+    # Setting phase=init so the agent can write config files during setup.
+    local sdd_state="$target_dir/.batuta/sdd-state.json"
+    if [[ ! -f "$sdd_state" ]]; then
+        cat > "$sdd_state" << 'SDDEOF'
+{
+  "phase": "init",
+  "started_at": null,
+  "design_completed": false,
+  "user_approved": false
+}
+SDDEOF
+        log_success "Created .batuta/sdd-state.json (enforcement hooks state)"
+    fi
+
+    # 10. Create initial .batuta/team.json for delegation tracking
+    local team_file="$target_dir/.batuta/team.json"
+    if [[ ! -f "$team_file" ]]; then
+        cat > "$team_file" << 'TEAMEOF'
+{
+  "sprint": 0,
+  "roster": [],
+  "active_contracts": [],
+  "history": []
+}
+TEAMEOF
+        log_success "Created .batuta/team.json (agent delegation tracking)"
+    fi
 
     echo ""
     log_success "Project setup complete at $target_dir"
@@ -338,14 +374,19 @@ CLAUDEEOF
     log_info "Project structure created:"
     log_info "  CLAUDE.md                    — Batuta rules + delegation (project root)"
     log_info "  .batuta/                     — Session state, checkpoints, ecosystem.json"
+    log_info "  .batuta/sdd-state.json       — SDD phase enforcement state"
+    log_info "  .batuta/team.json            — Agent roster + active contracts"
     log_info "  .claude/settings.json        — Project-scoped permissions + output style"
-    log_info "  .claude/skills/              — Tech-detected skills (auto-provisioned)"
+    log_info "  .claude/skills/              — Essential + tech-detected skills"
+    log_info "  .claude/agents/              — Agents available for hiring"
     log_info "  .gitignore                   — Standard ignores (node_modules, .env, etc.)"
     echo ""
     local project_skill_count
     project_skill_count=$(ls "$target_dir/.claude/skills" 2>/dev/null | wc -l)
-    log_info "Project skills: $project_skill_count provisioned by tech detection"
-    log_info "Run /sdd-init inside Claude Code for deeper detection (content patterns, MCPs, agents)"
+    local project_agent_count
+    project_agent_count=$(ls "$target_dir/.claude/agents" 2>/dev/null | wc -l)
+    log_info "Project: $project_skill_count skills + $project_agent_count agents provisioned"
+    log_info "Run /sdd-init inside Claude Code for deeper detection (content patterns, MCPs)"
 }
 
 # ============================================================================
@@ -622,6 +663,72 @@ check_mcp_prerequisites() {
     else
         log_info "MCPs with missing prerequisites will be unavailable until dependencies are installed"
     fi
+}
+
+# ============================================================================
+# Provision ESSENTIAL skills + agents to project .claude/
+# ============================================================================
+# WHY: The 22 lifecycle globals + 8 agents must live IN the project so the
+# agent can invoke them. Global (~/.claude/) only gives descriptions (metadata).
+# Project (.claude/) gives full SKILL.md content when invoked.
+#
+# This function is called by setup_project() BEFORE provision_project_skills()
+# which adds tech-specific skills on top.
+
+provision_project_essentials() {
+    local target_dir="$1"
+    local project_skills_dir="$target_dir/.claude/skills"
+    local project_agents_dir="$target_dir/.claude/agents"
+    local hub_skills="$REPO_ROOT/BatutaClaude/skills"
+    local hub_agents="$REPO_ROOT/BatutaClaude/agents"
+
+    mkdir -p "$project_skills_dir"
+    mkdir -p "$project_agents_dir"
+
+    log_info "Provisioning essential skills to project .claude/skills/ ..."
+
+    # Same 22 as global_skills in sync_claude() — keep in sync
+    local essential_skills=(
+        # DEFINE
+        sdd-init sdd-explore process-analyst prd-generator
+        # PLAN
+        sdd-design scope-rule
+        # BUILD
+        sdd-apply tdd-workflow source-driven-development debugging-systematic
+        # VERIFY
+        sdd-verify
+        # REVIEW
+        code-simplification security-audit performance-testing
+        # SHIP
+        git-workflow-and-versioning deprecation-and-migration technical-writer shipping-and-launch
+        # META
+        ecosystem-creator ecosystem-lifecycle team-orchestrator agent-hiring
+    )
+
+    local skill_count=0
+    for skill_name in "${essential_skills[@]}"; do
+        local skill_dir="$hub_skills/$skill_name"
+        if [[ -d "$skill_dir" && -f "$skill_dir/SKILL.md" ]]; then
+            mkdir -p "$project_skills_dir/$skill_name"
+            cp -f "$skill_dir/SKILL.md" "$project_skills_dir/$skill_name/"
+            # Copy assets/ if exists (templates, provisions.yaml, etc.)
+            if [[ -d "$skill_dir/assets" ]]; then
+                cp -rf "$skill_dir/assets" "$project_skills_dir/$skill_name/"
+            fi
+            skill_count=$((skill_count + 1))
+        fi
+    done
+    log_success "Provisioned $skill_count essential skills to .claude/skills/"
+
+    # Copy ALL agents to project (8 total — workers + reviewers)
+    log_info "Provisioning agents to project .claude/agents/ ..."
+    local agent_count=0
+    for agent_file in "$hub_agents"/*.md; do
+        [[ ! -f "$agent_file" ]] && continue
+        cp -f "$agent_file" "$project_agents_dir/"
+        agent_count=$((agent_count + 1))
+    done
+    log_success "Provisioned $agent_count agents to .claude/agents/"
 }
 
 # ============================================================================
