@@ -189,6 +189,20 @@ When a teammate completes a task and another teammate needs the results:
 - **Evidence required**: {what proof of completion looks like}
 ```
 
+### Goal Thread (mandatory in all handoffs)
+
+Every handoff — spawn, reassignment, escalation — must include:
+
+```markdown
+## Goal Thread
+- Original Goal: {from PRD or user request — the WHY}
+- Business Outcome: {what success looks like for the end user/client}
+- This Task's Role: {how this specific task serves the goal}
+- If Blocked: {what business risk exists if this task is deferred}
+```
+
+Sub-agents that know WHY they're building something make better implementation decisions. Goal Thread prevents the "implement the spec literally but miss the intent" failure mode.
+
 ### QA Rejection Handoff (reviewer → implementer)
 
 When verification or review finds issues that need fixing:

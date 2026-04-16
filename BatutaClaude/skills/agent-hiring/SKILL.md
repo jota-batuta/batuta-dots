@@ -96,6 +96,11 @@ Only modify files explicitly assigned. Never touch files outside ownership.
 
 ## Acceptance Criteria
 {From the hiring proposal}
+
+## Goal Thread
+- Original Goal: {from PRD or user request — the WHY}
+- Business Outcome: {what success looks like for the end user/client}
+- This Task's Role: {how this task serves the goal}
 ```
 
 ### Step 5: Invoke

@@ -241,7 +241,7 @@ called "Purpose" in older skills — v15.1 renames to "Overview" for clarity.}
 | Field | Required | Description |
 |-------|----------|-------------|
 | `name` | Yes | Skill identifier (lowercase, hyphens) |
-| `description` | Yes | Trigger-only (Superpowers convention). MUST start with "Use when..." and contain ONLY activation conditions. Never summarize the workflow — Claude will read the full skill body. Max 500 chars. |
+| `description` | Yes | Trigger-only (Superpowers convention). MUST start with "Use when..." and contain ONLY activation conditions. Never summarize the workflow — Claude will read the full skill body. ≤45 chars (~15 tokens). Must fit Claude Code's ~450 token metadata budget. |
 | `license` | Yes | `MIT` for Batuta ecosystem |
 | `metadata.author` | Yes | `Batuta` |
 | `metadata.version` | Yes | Semantic version as string (e.g., `"1.0"`) |
@@ -880,9 +880,11 @@ If `ecosystem-lifecycle` is not available (e.g., non-Batuta project without the 
 ## Verification Checklist
 
 - [ ] Frontmatter has all required fields: `name`, `description` (starts with "Use when"), `license`, `metadata.author`, `metadata.version`, `metadata.created`, `metadata.bucket`, `metadata.auto_invoke`, `metadata.platforms`, `allowed-tools` (space-delimited)
+- [ ] `description` field is ≤45 chars (~15 tokens) — trigger-only, no workflow summary, fits the ~450 token metadata budget
 - [ ] Skill body contains all 7 v15.1 sections: Overview, When to Use, When NOT to Use, Critical Patterns / Core, Common Rationalizations, Red Flags, Verification Checklist
+- [ ] `## Common Rationalizations` section exists as a `| Rationalization | Counter |` table (not just Anti-Patterns, which is a different section)
+- [ ] `metadata.bucket` is present and matches one of the 7 valid values: `define`, `plan`, `build`, `verify`, `review`, `ship`, `meta` — verified against Bucket Decision Tree
 - [ ] Step 8 (Invoke Classification via ecosystem-lifecycle) was executed and the classification result was logged
 - [ ] If tech-specific: entry added to `sdd-init/assets/skill-provisions.yaml` under `tech_rules`
-- [ ] `metadata.bucket` matches the Bucket Decision Tree for the skill's primary lifecycle phase
 - [ ] If `metadata.owner_agent` set: the named agent file exists in `BatutaClaude/agents/`
 - [ ] No web URLs in `references/` (local paths only)

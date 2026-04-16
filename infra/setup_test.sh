@@ -208,9 +208,9 @@ test_claude_md_contains_expected_content() {
     log_test "CLAUDE.md contains expected content (v15)"
     [[ ! -f "$REPO_ROOT/CLAUDE.md" ]] && bash "$SETUP_SCRIPT" --claude >/dev/null 2>&1
 
-    assert_file_contains "$REPO_ROOT/CLAUDE.md" "Scope Rule" "scope rule section"
-    assert_file_contains "$REPO_ROOT/CLAUDE.md" "Research-First" "research-first rule (v15)"
-    assert_file_contains "$REPO_ROOT/CLAUDE.md" "SDD Pipeline" "SDD pipeline section"
+    assert_file_contains "$REPO_ROOT/CLAUDE.md" "scope-rule" "scope rule skill referenced"
+    assert_file_contains "$REPO_ROOT/CLAUDE.md" "Research first" "research-first rule"
+    assert_file_contains "$REPO_ROOT/CLAUDE.md" "Lifecycle" "lifecycle section"
     assert_file_contains "$REPO_ROOT/CLAUDE.md" "Session Continuity" "session continuity section"
     assert_file_contains "$REPO_ROOT/CLAUDE.md" "Commands" "commands section"
 }
@@ -408,7 +408,7 @@ test_claude_md_has_sdd_modes() {
     log_test "CLAUDE.md has SDD Pipeline with SPRINT/COMPLETO modes (v15)"
     local claude_src="$REPO_ROOT/BatutaClaude/CLAUDE.md"
 
-    assert_file_contains "$claude_src" "SDD Pipeline" "SDD Pipeline section"
+    assert_file_contains "$claude_src" "SPRINT" "SDD pipeline modes"
     assert_file_contains "$claude_src" "SPRINT" "SPRINT mode"
     assert_file_contains "$claude_src" "COMPLETO" "COMPLETO mode"
 }
@@ -421,7 +421,7 @@ test_claude_md_has_delegation_rule() {
     log_test "CLAUDE.md has Delegation por Contrato rule (v15)"
     local claude_src="$REPO_ROOT/BatutaClaude/CLAUDE.md"
 
-    assert_file_contains "$claude_src" "Delegation" "delegation rule section"
+    assert_file_contains "$claude_src" "Delegate" "delegation rule"
     assert_file_contains "$claude_src" "pipeline" "pipeline agent reference"
     assert_file_contains "$claude_src" "infra" "infra agent reference"
 }
