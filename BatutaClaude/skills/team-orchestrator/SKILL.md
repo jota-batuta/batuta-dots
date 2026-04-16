@@ -1,8 +1,7 @@
 ---
 name: team-orchestrator
 description: >
-  Use when evaluating task complexity, spawning teams, or coordinating multi-agent work.
-  Provides team coordination rules and composition patterns for the Batuta ecosystem.
+  Decide solo vs subagent vs team.
 license: MIT
 metadata:
   author: Batuta

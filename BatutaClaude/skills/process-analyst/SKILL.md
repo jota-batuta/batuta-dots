@@ -1,7 +1,7 @@
 ---
 name: process-analyst
 description: >
-  Use when a process has 3+ case types requiring different handling.
+  Map process variants and exceptions.
 license: MIT
 metadata:
   author: Batuta

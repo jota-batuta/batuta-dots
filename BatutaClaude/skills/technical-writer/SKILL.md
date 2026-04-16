@@ -1,9 +1,7 @@
 ---
 name: technical-writer
 description: >
-  Use when writing documentation, README, API reference, tutorial, migration guide, docs-as-code.
-  Trigger: "write docs", "README", "API documentation", "tutorial", "migration guide",
-  "documentation audit", "docs-as-code", "Docusaurus", "MkDocs".
+  Write README, API docs, ADRs.
 license: MIT
 metadata:
   author: Batuta

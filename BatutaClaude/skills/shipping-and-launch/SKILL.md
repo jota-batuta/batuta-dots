@@ -1,9 +1,7 @@
 ---
 name: shipping-and-launch
 description: >
-  Use when deploying to production, preparing pre-launch checklists, staging rollouts,
-  or developing rollback strategies. Trigger: "deploy", "launch", "go live", "rollout",
-  "pre-launch", "feature flag", "rollback", "staged release", "production release".
+  Pre-launch, staged rollout, rollback.
 license: MIT
 metadata:
   author: Batuta

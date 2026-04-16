@@ -1,7 +1,7 @@
 ---
 name: sdd-init
 description: >
-  Use when starting SDD in a new project, bootstrapping openspec/. /sdd-init
+  Detect stack, bootstrap openspec/.
 license: MIT
 metadata:
   author: Batuta

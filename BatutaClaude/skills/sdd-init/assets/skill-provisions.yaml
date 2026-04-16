@@ -13,33 +13,33 @@
 # 22 global skills close the complete lifecycle with no phase gaps.
 # See BatutaClaude/CLAUDE.md "Lifecycle Buckets" for rationale.
 global:
-  # DEFINE — Entender qué construir
-  - sdd-init                    # Bootstrap proyecto, detecta stack, provisiona skills
-  - sdd-explore                 # Investigación + skill/agent/MCP gap detection
-  - process-analyst             # Debanar procesos del cliente — variantes, actores, excepciones
+  # DEFINE — Understand what to build
+  - sdd-init                    # Bootstrap project, detect stack, provision skills
+  - sdd-explore                 # Research + skill/agent/MCP gap detection
+  - process-analyst             # Unravel client processes — variants, actors, exceptions
   - prd-generator               # PRD single planning artifact
-  # PLAN — Diseñar la solución
-  - sdd-design                  # Arquitectura + threat model + task breakdown
-  - scope-rule                  # Dónde van los archivos (uso determina ubicación)
-  # BUILD — Implementar
-  - sdd-apply                   # Implementación con domain agents + parallel waves
+  # PLAN — Design the solution
+  - sdd-design                  # Architecture + threat model + task breakdown
+  - scope-rule                  # Where files go (usage determines location)
+  # BUILD — Implement
+  - sdd-apply                   # Implementation with domain agents + parallel waves
   - tdd-workflow                # Red-Green-Refactor + test pyramid
   - source-driven-development   # DETECT→FETCH→IMPLEMENT→CITE (v16, agent-skills MIT)
   - debugging-systematic        # 4-phase hypothesis-driven debugging
-  # VERIFY — Probar que funciona
+  # VERIFY — Prove it works
   - sdd-verify                  # AI Validation Pyramid (L1→L2→L3→L4→L5)
-  # REVIEW — Gates de calidad
+  # REVIEW — Quality gates
   - code-simplification         # Chesterton's Fence, Rule of 500
   - security-audit              # STRIDE, AI-First 10-point checklist
   - performance-testing         # Baselines, budgets, k6, Lighthouse
-  # SHIP — Llevar a producción
+  # SHIP — Get to production
   - git-workflow-and-versioning  # Trunk-based, atomic commits, Save Point Pattern
   - deprecation-and-migration   # Code-as-liability, migration patterns
   - technical-writer            # 5-sec test, Divio system, ADRs
   - shipping-and-launch         # Pre-launch → staged rollout → post-launch (v16, agent-skills MIT)
-  # META — Maquinaria de orquestación
-  - ecosystem-creator           # Crear skills/agents/workflows
-  - ecosystem-lifecycle         # Clasificar, propagar, self-heal
+  # META — Orchestration machinery
+  - ecosystem-creator           # Create skills/agents/workflows
+  - ecosystem-lifecycle         # Classify, propagate, self-heal
   - team-orchestrator           # Level 1/2/3 decision tree
   - agent-hiring                # Contract-based delegation protocol
 

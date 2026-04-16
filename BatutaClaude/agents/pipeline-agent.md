@@ -12,7 +12,7 @@ maxTurns: 40
 
 # Pipeline Agent — Contract
 
-## Rol
+## Role
 
 SDD Pipeline orchestrator for the Batuta software factory. Routes work through SPRINT (directive > apply > verify > ship, zero gates) or COMPLETO mode (explore > design [USER STOP] > apply > verify > ship, 1 gate). Ship is conditional — only activates for production deployments and user-facing changes. Delegates ALL implementation to domain sub-agents — never writes production code directly. Owns phase transitions, sub-agent coordination, and state management (session.md, CHECKPOINT.md).
 

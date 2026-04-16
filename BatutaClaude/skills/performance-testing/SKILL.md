@@ -1,9 +1,7 @@
 ---
 name: performance-testing
 description: >
-  Use when testing performance: load testing, Core Web Vitals, benchmarking, k6, stress test, scalability.
-  Trigger: "performance", "load test", "stress test", "benchmark", "Core Web Vitals",
-  "k6", "scalability", "latency", "throughput", "p95", "p99".
+  Baselines, load tests, budgets.
 license: MIT
 metadata:
   author: Batuta

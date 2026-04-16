@@ -1,7 +1,7 @@
 ---
 name: sdd-apply
 description: >
-  Use when implementing tasks from a change, writing code. /sdd-apply
+  Write production code from specs.
 license: MIT
 metadata:
   author: Batuta

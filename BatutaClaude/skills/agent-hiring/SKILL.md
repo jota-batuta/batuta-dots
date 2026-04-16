@@ -1,8 +1,7 @@
 ---
 name: agent-hiring
 description: >
-  Use when the main agent needs to delegate a task. Trigger: "hire agent",
-  "create agent", "specialist needed", "delegate task", "spawn agent".
+  Hire agents with persistent contracts.
 license: MIT
 metadata:
   author: Batuta

@@ -1,7 +1,7 @@
 ---
 name: sdd-explore
 description: >
-  Use when exploring codebase, investigating ideas, or clarifying requirements. /sdd-explore
+  Investigate ideas, detect skill gaps.
 license: MIT
 metadata:
   author: Batuta

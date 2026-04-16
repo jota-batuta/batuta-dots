@@ -1,9 +1,7 @@
 ---
 name: tdd-workflow
 description: >
-  Use when writing new features, fixing bugs, or refactoring code that needs tests.
-  Trigger: "write tests", "test first", "TDD", "red green refactor", "add tests for",
-  "test-driven", "failing test", "test coverage", "what should I test".
+  Write failing tests first, then code.
 license: MIT
 metadata:
   author: Batuta

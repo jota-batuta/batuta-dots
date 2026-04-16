@@ -485,7 +485,7 @@ test_scope_agents_exist() {
 test_research_first_is_non_negotiable() {
     log_test "Research-First is non-negotiable in CLAUDE.md (v15)"
     local claude_src="$REPO_ROOT/BatutaClaude/CLAUDE.md"
-    assert_file_contains "$claude_src" "NO NEGOCIABLE\|non-negotiable\|no negociable" "research-first defined as non-negotiable"
+    assert_file_contains "$claude_src" "NON-NEGOTIABLE" "research-first defined as non-negotiable"
 }
 
 # ============================================================================

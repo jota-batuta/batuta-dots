@@ -1,7 +1,7 @@
 ---
 name: sdd-design
 description: >
-  Use when creating architecture decisions and technical design. /sdd-ff
+  Architecture decisions, task breakdown.
 license: MIT
 metadata:
   author: Batuta

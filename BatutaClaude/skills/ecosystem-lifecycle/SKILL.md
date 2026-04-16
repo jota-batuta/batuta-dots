@@ -1,11 +1,7 @@
 ---
 name: ecosystem-lifecycle
 description: >
-  Use when classifying newly created skills/agents/workflows (post ecosystem-creator),
-  when a user reports a rule violation requiring self-heal, or when a technology
-  lacks a matching local skill during SDD phases (auto-provision).
-  Trigger: "after creating a skill", "classify skill", "propagate to hub",
-  "rule violation", "self-heal", "no skill for this tech", "provision skill".
+  Classify, self-heal, auto-provision.
 license: MIT
 metadata:
   author: Batuta

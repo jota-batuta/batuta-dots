@@ -1,10 +1,7 @@
 ---
 name: source-driven-development
 description: >
-  Use when implementing code that uses frameworks, libraries, or external APIs.
-  Grounds every implementation decision in official documentation, not training data.
-  Trigger: "verify API", "check docs", "official documentation", "current version",
-  "framework pattern", "deprecated API", "source-driven", "cite source".
+  Ground code in docs, not memory.
 license: MIT
 metadata:
   author: Batuta

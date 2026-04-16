@@ -1,7 +1,7 @@
 ---
 name: ecosystem-creator
 description: >
-  Use when creating new skills, agents, sub-agents, or workflows. /create <type> <name>
+  Create skills, agents, workflows.
 license: MIT
 metadata:
   author: Batuta

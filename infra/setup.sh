@@ -325,6 +325,13 @@ CLAUDEEOF
     echo ""
     install_hooks
 
+    # 7. Auto-provision project skills based on lightweight tech detection
+    # WHY: Without this, .claude/skills/ stays empty until the user manually runs /sdd-init.
+    # This bash-level detection covers the most common file-based signals.
+    # /sdd-init does deeper AI-powered detection (content patterns, context mentions, MCP discovery).
+    echo ""
+    provision_project_skills "$target_dir"
+
     echo ""
     log_success "Project setup complete at $target_dir"
     echo ""
@@ -332,22 +339,13 @@ CLAUDEEOF
     log_info "  CLAUDE.md                    — Batuta rules + delegation (project root)"
     log_info "  .batuta/                     — Session state, checkpoints, ecosystem.json"
     log_info "  .claude/settings.json        — Project-scoped permissions + output style"
+    log_info "  .claude/skills/              — Tech-detected skills (auto-provisioned)"
     log_info "  .gitignore                   — Standard ignores (node_modules, .env, etc.)"
     echo ""
-    log_info "Global state (~/.claude/, shared across projects):"
-    local global_skill_count
-    global_skill_count=$(ls "$HOME_DIR/.claude/skills" 2>/dev/null | wc -l)
-    local global_agent_count
-    global_agent_count=$(ls "$HOME_DIR/.claude/agents" 2>/dev/null | wc -l)
-    local global_cmd_count
-    global_cmd_count=$(ls "$HOME_DIR/.claude/commands" 2>/dev/null | wc -l)
-    log_info "  Skills: $global_skill_count available globally"
-    log_info "  Agents: $global_agent_count available globally"
-    log_info "  Commands: $global_cmd_count available globally"
-    echo ""
-    log_info "Next step: open Claude Code in $target_dir and run /sdd-init"
-    log_info "  /sdd-init will detect your tech stack and provision tech-specific skills"
-    log_info "  to .claude/skills/ of this project (e.g., fastapi, react-nextjs, icg-erp)"
+    local project_skill_count
+    project_skill_count=$(ls "$target_dir/.claude/skills" 2>/dev/null | wc -l)
+    log_info "Project skills: $project_skill_count provisioned by tech detection"
+    log_info "Run /sdd-init inside Claude Code for deeper detection (content patterns, MCPs, agents)"
 }
 
 # ============================================================================
@@ -629,6 +627,157 @@ check_mcp_prerequisites() {
 # ============================================================================
 # Sync Skills to ~/.claude/skills/
 # ============================================================================
+
+# ============================================================================
+# Provision Project Skills (lightweight tech detection)
+# ============================================================================
+# WHY: After setup_project creates .claude/, this function detects the project's
+# tech stack by checking for common dependency files and copies matching skills
+# from the hub (BatutaClaude/skills/) to the project (.claude/skills/).
+# This is a LIGHTWEIGHT version of sdd-init Step 3.8 — it only checks file existence,
+# not content patterns or context mentions. /sdd-init does the deep detection later.
+
+provision_project_skills() {
+    local target_dir="$1"
+    local project_skills_dir="$target_dir/.claude/skills"
+    local hub_skills="$REPO_ROOT/BatutaClaude/skills"
+
+    mkdir -p "$project_skills_dir"
+
+    log_info "Auto-provisioning project skills by tech detection ..."
+
+    # Dependency files to scan for content patterns
+    local dep_files=()
+    for f in requirements.txt pyproject.toml setup.py Pipfile package.json go.mod Cargo.toml Gemfile; do
+        [[ -f "$target_dir/$f" ]] && dep_files+=("$target_dir/$f")
+    done
+
+    local provisioned=()
+
+    # --- File-based detection rules ---
+    # Each rule: check file existence OR grep content patterns in dependency files
+
+    # Python + FastAPI → api-design
+    if grep -qlE "fastapi|FastAPI" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(api-design)
+    fi
+
+    # SQLAlchemy → sqlalchemy-models
+    if grep -qlE "sqlalchemy|SQLAlchemy|alembic" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(sqlalchemy-models)
+    fi
+
+    # Prefect → prefect-flows
+    if grep -qlE "prefect" "${dep_files[@]}" 2>/dev/null || [[ -f "$target_dir/prefect.yaml" ]]; then
+        provisioned+=(prefect-flows)
+    fi
+
+    # Pydantic AI → pydantic-ai
+    if grep -qlE "pydantic-ai|pydantic_ai" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(pydantic-ai)
+    fi
+
+    # LLM / AI Agents → llm-pipeline-design
+    if grep -qlE "langchain|langgraph|openai|anthropic|google-adk" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(llm-pipeline-design)
+    fi
+
+    # Temporal → worker-scaffold
+    if grep -qlE "temporalio|temporal" "${dep_files[@]}" 2>/dev/null || [[ -f "$target_dir/temporal.yaml" ]]; then
+        provisioned+=(worker-scaffold)
+    fi
+
+    # Playwright → e2e-testing
+    if [[ -f "$target_dir/playwright.config.ts" ]] || [[ -f "$target_dir/playwright.config.js" ]]; then
+        provisioned+=(e2e-testing)
+    fi
+
+    # React / Next.js → react-nextjs
+    if [[ -f "$target_dir/next.config.js" ]] || [[ -f "$target_dir/next.config.mjs" ]] || [[ -f "$target_dir/next.config.ts" ]]; then
+        provisioned+=(react-nextjs)
+    fi
+
+    # TypeScript → typescript-node
+    if [[ -f "$target_dir/tsconfig.json" ]]; then
+        provisioned+=(typescript-node)
+    fi
+
+    # CI/CD → ci-cd-pipeline
+    if [[ -d "$target_dir/.github/workflows" ]] || [[ -f "$target_dir/.gitlab-ci.yml" ]]; then
+        provisioned+=(ci-cd-pipeline)
+    fi
+
+    # PostgreSQL → sqlalchemy-models (if not already added)
+    if grep -qlE "postgres|postgresql|psycopg" "${dep_files[@]}" 2>/dev/null; then
+        # Only add if not already in the list
+        local has_sql=false
+        for s in "${provisioned[@]}"; do [[ "$s" == "sqlalchemy-models" ]] && has_sql=true; done
+        [[ "$has_sql" == "false" ]] && provisioned+=(sqlalchemy-models)
+    fi
+
+    # Claude Agent SDK → claude-agent-sdk
+    if grep -qlE "claude.agent.sdk|claude-agent-sdk|claude_agent_sdk" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(claude-agent-sdk)
+    fi
+
+    # Google ADK → google-adk
+    if grep -qlE "google-adk|google_adk|from google.adk" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(google-adk)
+    fi
+
+    # Data pipelines → data-pipeline-design
+    if grep -qlE "pandas|polars|dagster|airflow" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(data-pipeline-design)
+    fi
+
+    # Message queues → message-queues
+    if grep -qlE "pika|rabbitmq|celery|bullmq|kafkajs" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(message-queues)
+    fi
+
+    # Vector DB / RAG → vector-db-rag
+    if grep -qlE "pgvector|pinecone|chromadb|embeddings" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(vector-db-rag)
+    fi
+
+    # --- Copy matched skills to project ---
+    local copied=0
+    for skill in "${provisioned[@]}"; do
+        if [[ -d "$hub_skills/$skill" ]]; then
+            cp -r "$hub_skills/$skill" "$project_skills_dir/"
+            log_info "  -> Provisioned: $skill"
+            copied=$((copied + 1))
+        else
+            log_warning "  Skill not found in hub: $skill"
+        fi
+    done
+
+    # --- Write .provisions.json manifest ---
+    local tech_list=""
+    local skill_list=""
+    for s in "${provisioned[@]}"; do
+        [[ -n "$skill_list" ]] && skill_list="$skill_list, "
+        skill_list="$skill_list\"$s\""
+    done
+
+    cat > "$project_skills_dir/.provisions.json" << PROVEOF
+{
+  "schema_version": "1.0",
+  "provisioned_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "provisioned_by": "setup.sh/provision_project_skills",
+  "source": "$hub_skills",
+  "skills": [$skill_list],
+  "note": "Lightweight detection. Run /sdd-init for deep tech detection + MCP + agents."
+}
+PROVEOF
+
+    if [[ $copied -gt 0 ]]; then
+        log_success "Provisioned $copied tech-specific skills to .claude/skills/"
+    else
+        log_info "No tech-specific skills detected (project may be empty or use standard stack)"
+        log_info "Run /sdd-init inside Claude Code for deeper detection"
+    fi
+}
 
 sync_claude() {
     local claude_dir="$HOME_DIR/.claude/skills"

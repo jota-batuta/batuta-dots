@@ -1,7 +1,7 @@
 ---
 name: scope-rule
 description: >
-  Use when deciding where a new file or component should go.
+  Decide file location by usage scope.
 license: MIT
 metadata:
   author: Batuta

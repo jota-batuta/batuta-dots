@@ -1,7 +1,7 @@
 ---
 name: security-audit
 description: >
-  Use when performing security review: OWASP, secrets, threat modeling.
+  Threat model, OWASP, secrets scan.
 license: MIT
 metadata:
   author: Batuta

@@ -1,9 +1,7 @@
 ---
 name: debugging-systematic
 description: >
-  Use when investigating bugs, test failures, unexpected behavior, or production issues.
-  Trigger: "debug", "bug", "not working", "error", "failing test", "unexpected behavior",
-  "broken", "regression", "root cause", "why is this happening".
+  Hypothesis-driven bug investigation.
 license: MIT
 metadata:
   author: Batuta

@@ -1,7 +1,7 @@
 ---
 name: sdd-verify
 description: >
-  Use when validating implementation via the AI Validation Pyramid. /sdd-verify
+  Run AI Validation Pyramid checks.
 license: MIT
 metadata:
   author: Batuta
