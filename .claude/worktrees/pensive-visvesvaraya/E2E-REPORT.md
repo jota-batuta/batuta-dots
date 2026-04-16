@@ -149,21 +149,54 @@
 | Agents hired during project | 2 (backend + infra, only in Phase 2 after user insisted) |
 | SDD phases completed | 5/6 (DEFINE, PLAN, BUILD done; VERIFY, REVIEW, SHIP not run) |
 
-## Final Comparison
+## Final Comparison (both projects at completion)
 
-| Dimension | batuta-dots (NutriAndrea) | agent-skills (NutriAndrea) |
+agent-skills installed as REAL PLUGIN (`claude plugin install agent-skills@addy-agent-skills`) with `--dangerously-skip-permissions`. Fair comparison.
+
+| Dimension | batuta-dots | agent-skills |
 |---|---|---|
-| **Turns to first code** | 8 | Still no code at Turn 5 |
-| **Total code files** | 46 | 0 |
-| **Artifacts** | config.yaml, explore.md, PRD.md, design.md, staging skill | SPEC.md, plan.md, todo.md |
-| **Tests** | 0 | 0 (hasn't reached BUILD) |
-| **Skills created** | 1 (broken frontmatter) | 0 |
-| **Agents used** | 2 (after insistence) | 0 (no agent system) |
-| **Gates respected** | 1/3 | 3/3 |
-| **Questions answered** | After 5 asks | All on first ask |
-| **Colombia research** | Wompi, Ley 1581, COP | Stripe→Wompi (after correction) |
-| **Hallucinations** | None in code | Claimed tasks done that weren't |
-| **Plan quality** | 5 phases, no deps | 11 tasks, DAG, 5 checkpoints |
+| **TS files** | 46 | 44 |
+| **Test files** | 0 | 2 |
+| **Test cases** | 0 | 12 (11 plan-engine + 1 smoke) |
+| **API routes** | 7 | Server Actions (no API routes) |
+| **DB** | Raw SQL + RLS | Prisma + 8 models + 6 enums |
+| **Auth** | Supabase Auth | Clerk + webhook |
+| **Payments** | Wompi (SHA256 verification) | Wompi (pending keys) |
+| **Scrapers** | 3 (D1/Jumbo/Éxito) | Not yet (deferred to Phase 2 by design) |
+| **Seed data** | 3 plans only | 15 Colombian recipes + 3 plans |
+| **Skills created** | 1 (broken frontmatter) | 0 (not its model) |
+| **Agents used** | 2 (after user insisted) | 0 (no agent system) |
+| **Turns to code** | 8 | 6 |
+| **Gates respected** | 1/3 | 6/6 |
+| **User Qs answered** | 1/5 | All on first ask |
+| **DEFINE thoroughness** | 1 question | 4 questions + 5 variations |
+| **Colombia research** | Wompi, Ley 1581, COP from Turn 2 | Stripe first, Wompi after correction |
+| **Planning artifacts** | explore.md, PRD.md, design.md | one-pager, SPEC.md, plan.md, todo.md |
+| **Hallucinations** | None in code | Claimed tasks done that weren't (Turn 5) |
+| **TDD** | Completely ignored | Tests from T0, critical business logic tested |
+| **Build verified** | Not verified | `npm run build` clean, 12/12 tests pass |
+
+## The Verdict
+
+**agent-skills produces higher-quality output with better process discipline.**
+
+Both frameworks generated ~44-46 TypeScript files for the same app. But:
+
+1. **agent-skills wrote 12 tests including critical business logic** (allergy filtering, plan sizes). batuta-dots wrote 0.
+2. **agent-skills respected every gate** (idea-refine → spec → plan → build, each with user approval). batuta-dots skipped 2/3 gates.
+3. **agent-skills answered every user question on first ask**. batuta-dots ignored the same question 4 times.
+4. **agent-skills deferred the scraper** to Phase 2 (smart risk management). batuta-dots implemented all 5 phases in one shot.
+5. **agent-skills verified the build** (`npm run build` clean + tests). batuta-dots never ran verification.
+
+**batuta-dots' unique strengths that agent-skills lacks:**
+- Colombia-specific research from Turn 2 (Wompi, Ley 1581, COP)
+- Multi-agent delegation (when forced by user)
+- Skill creation (even if broken)
+- More complete feature set (scrapers, all 5 phases implemented)
+- RLS database security (vs Prisma without RLS)
+
+**The core problem is not batuta-dots' architecture — it's rule compliance.**
+The infrastructure (skills, agents, gates, provisioning) is superior to agent-skills. But the agent IGNORES it. agent-skills with 60 lines of CLAUDE.md gets higher compliance than batuta-dots with 95 lines + 22 skills + 8 agents.
 
 ## Root Cause Analysis
 
