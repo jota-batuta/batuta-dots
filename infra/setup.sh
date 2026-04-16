@@ -580,18 +580,6 @@ sync_claude() {
 
     mkdir -p "$claude_dir"
 
-    # WHY: Remove skills that no longer exist in hub (orphan cleanup).
-    # Prevents stale skills from polluting the global library after removal.
-    for target_skill in "$claude_dir"/*/; do
-        [[ ! -d "$target_skill" ]] && continue
-        local target_name
-        target_name=$(basename "$target_skill")
-        if [[ ! -d "$skills_src/$target_name" ]]; then
-            rm -rf "$target_skill"
-            log_info "  Removed orphan skill: $target_name"
-        fi
-    done
-
     # WORKAROUND: v15 change — only sync GLOBAL skills (always + sdd) to ~/.claude/skills/.
     # Project-specific skills are provisioned by /batuta-init and /batuta-sync.
     # Reason: Claude Code has a ~450-token budget for skill metadata. Loading 48+ skills
@@ -606,6 +594,28 @@ sync_claude() {
         # v15.1 additions (adapted from addyosmani/agent-skills, MIT)
         agent-hiring code-simplification deprecation-and-migration git-workflow-and-versioning
     )
+
+    # WHY: Remove skills from ~/.claude/skills/ that are NOT in the global_skills list.
+    # Before v15.0, setup.sh copied ALL ~46 skills globally. After v15, only 17 essentials go
+    # global; the rest are project-provisioned. This cleanup removes the stale 29+ from old installs.
+    # v15.6 fix: previous cleanup only removed skills missing from BatutaClaude/skills/, but
+    # all 46 exist there — so it never removed the non-global ones.
+    for target_skill in "$claude_dir"/*/; do
+        [[ ! -d "$target_skill" ]] && continue
+        local target_name
+        target_name=$(basename "$target_skill")
+        local is_global=false
+        for gs in "${global_skills[@]}"; do
+            if [[ "$gs" == "$target_name" ]]; then
+                is_global=true
+                break
+            fi
+        done
+        if [[ "$is_global" == "false" ]]; then
+            rm -rf "$target_skill"
+            log_info "  Removed non-global skill: $target_name"
+        fi
+    done
 
     local count=0
     for skill_name in "${global_skills[@]}"; do
@@ -643,6 +653,19 @@ sync_claude() {
 
     if [[ -d "$commands_src" ]]; then
         mkdir -p "$commands_dir"
+
+        # WHY: Remove commands that no longer exist in hub (orphan cleanup).
+        # Fixes stale commands like sdd-archive.md (removed in v15.0).
+        for target_file in "$commands_dir"/*.md; do
+            [[ ! -f "$target_file" ]] && continue
+            local target_name
+            target_name=$(basename "$target_file")
+            if [[ ! -f "$commands_src/$target_name" ]]; then
+                rm -f "$target_file"
+                log_info "  Removed orphan command: $target_name"
+            fi
+        done
+
         local cmd_count=0
         for cmd_file in "$commands_src"/*.md; do
             [[ ! -f "$cmd_file" ]] && continue
@@ -673,6 +696,21 @@ sync_agents() {
     fi
 
     mkdir -p "$agents_dir"
+
+    # WHY: Remove agents that no longer exist in hub (orphan cleanup).
+    # Fixes stale agents like batovf-*, observability-agent (removed in v15.0)
+    # and any agent removed in future versions.
+    if [[ -d "$agents_dir" ]]; then
+        for target_file in "$agents_dir"/*.md; do
+            [[ ! -f "$target_file" ]] && continue
+            local target_name
+            target_name=$(basename "$target_file")
+            if [[ ! -f "$agents_src/$target_name" ]]; then
+                rm -f "$target_file"
+                log_info "  Removed orphan agent: $target_name"
+            fi
+        done
+    fi
 
     local agent_count=0
     for agent_file in "$agents_src"/*.md; do
