@@ -8,33 +8,40 @@
 #   tech_rules — Conditionally provisioned based on detected technologies
 #   mcp_rules  — MCP servers provisioned based on detected technologies
 
-# --- Skills: Always provisioned ---
-always:
-  - scope-rule
-  - ecosystem-creator
-  - security-audit
-  - team-orchestrator
-  - ecosystem-lifecycle
-
-# --- Skills: SDD pipeline (always in Batuta projects) ---
-# v15: SDD simplified to 4 phases (explore, design, apply, verify)
-# propose/spec/tasks/archive are no longer separate phases
-sdd:
-  - sdd-explore
-  - sdd-design
-  - sdd-apply
-  - sdd-verify
-  - prd-generator
-  - tdd-workflow
-  - debugging-systematic
-
-# --- Skills: v15.1 meta additions (adapted from addyosmani/agent-skills, MIT) ---
-# Provisioned in EVERY project — quality guardrails applicable cross-domain
-v15_1_meta:
-  - agent-hiring              # Contract-based agent delegation protocol
-  - code-simplification       # Chesterton's Fence, Rule of 500
-  - deprecation-and-migration # Code-as-liability, feature flag lifecycle
-  - git-workflow-and-versioning # Trunk-based commits, Build Cop role
+# --- Skills: Global (always provisioned) ---
+# v16: Organized by lifecycle bucket (DEFINE → PLAN → BUILD → VERIFY → REVIEW → SHIP → META)
+# 22 global skills close the complete lifecycle with no phase gaps.
+# See BatutaClaude/CLAUDE.md "Lifecycle Buckets" for rationale.
+global:
+  # DEFINE — Understand what to build
+  - sdd-init                    # Bootstrap project, detect stack, provision skills
+  - sdd-explore                 # Research + skill/agent/MCP gap detection
+  - process-analyst             # Unravel client processes — variants, actors, exceptions
+  - prd-generator               # PRD single planning artifact
+  # PLAN — Design the solution
+  - sdd-design                  # Architecture + threat model + task breakdown
+  - scope-rule                  # Where files go (usage determines location)
+  # BUILD — Implement
+  - sdd-apply                   # Implementation with domain agents + parallel waves
+  - tdd-workflow                # Red-Green-Refactor + test pyramid
+  - source-driven-development   # DETECT→FETCH→IMPLEMENT→CITE (v16, agent-skills MIT)
+  - debugging-systematic        # 4-phase hypothesis-driven debugging
+  # VERIFY — Prove it works
+  - sdd-verify                  # AI Validation Pyramid (L1→L2→L3→L4→L5)
+  # REVIEW — Quality gates
+  - code-simplification         # Chesterton's Fence, Rule of 500
+  - security-audit              # STRIDE, AI-First 10-point checklist
+  - performance-testing         # Baselines, budgets, k6, Lighthouse
+  # SHIP — Get to production
+  - git-workflow-and-versioning  # Trunk-based, atomic commits, Save Point Pattern
+  - deprecation-and-migration   # Code-as-liability, migration patterns
+  - technical-writer            # 5-sec test, Divio system, ADRs
+  - shipping-and-launch         # Pre-launch → staged rollout → post-launch (v16, agent-skills MIT)
+  # META — Orchestration machinery
+  - ecosystem-creator           # Create skills/agents/workflows
+  - ecosystem-lifecycle         # Classify, propagate, self-heal
+  - team-orchestrator           # Level 1/2/3 decision tree
+  - agent-hiring                # Contract-based delegation protocol
 
 # --- Skills: Technology-detected ---
 # Each rule has: detect (signals) + skills (to provision)
@@ -290,13 +297,15 @@ mcp_rules:
       args: ["--streamableHttp", "YOUR_N8N_MCP_URL_HERE"]
 
 # --- Agents: Always provisioned ---
-# Scope agents (hub machinery) + quality-agent (universal)
-# These agents are copied to .claude/agents/ in every Batuta project.
+# Workers + reviewers available for contract-based hiring.
+# Copied to .claude/agents/ in every Batuta project by /sdd-init.
+# v16 fix: removed observability-agent (absorbed by pipeline-agent in v15.0).
 always_agents:
   - pipeline-agent
   - infra-agent
-  - observability-agent
   - quality-agent
+  - backend-agent
+  - data-agent
 
 # --- Agents: Technology-detected ---
 # Domain agents provisioned based on project tech stack.

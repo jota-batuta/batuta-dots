@@ -1,15 +1,13 @@
 ---
 name: debugging-systematic
 description: >
-  Use when investigating bugs, test failures, unexpected behavior, or production issues.
-  Trigger: "debug", "bug", "not working", "error", "failing test", "unexpected behavior",
-  "broken", "regression", "root cause", "why is this happening".
+  Hypothesis-driven bug investigation.
 license: MIT
 metadata:
   author: Batuta
   version: "1.1"
   created: "2026-02-26"
-  scope: [pipeline]
+  bucket: build
   auto_invoke:
     - Investigating a bug or unexpected behavior
     - Test failures with unclear cause
@@ -86,6 +84,18 @@ Fix 3 fails → FULL STOP. Do NOT attempt a fourth fix.
               Escalate from Direct Fix to SDD Pipeline (sdd-explore).
               The bug is a SYMPTOM of a deeper design issue.
 ```
+
+### Loop Detection (Circuit Breaker)
+
+If the same error persists after 3 different fix attempts:
+
+1. STOP all fix attempts immediately
+2. Log the loop pattern: "Error: {X}, Attempts: [{fix1} → {result1}, {fix2} → {result2}, {fix3} → {result3}]"
+3. Classify the root cause:
+   - **Wrong assumption**: The mental model of the code is incorrect → re-read the source
+   - **Missing context**: The error depends on state/data not visible → ask for more info
+   - **Design flaw**: The architecture doesn't support what we're trying to do → escalate to design
+4. Report to orchestrator with classification + evidence. Do NOT try a 4th approach without new information.
 
 ### Pattern 3: Error Classification
 

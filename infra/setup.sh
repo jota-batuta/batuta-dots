@@ -278,13 +278,115 @@ IGNOREEOF
         log_success "Created .gitignore"
     fi
 
-    # 5. Install hooks + permissions to ~/.claude/settings.json
+    # 5. Create .claude/ directory with project-level settings.json
+    # WHY: Project-scoped settings (output style, permissions, env) committed to git
+    # so team members share the same config. Hooks stay in ~/.claude/ (global) because
+    # the hook scripts use CLAUDE_PROJECT_DIR to target the current project correctly.
+    local claude_project_dir="$target_dir/.claude"
+    mkdir -p "$claude_project_dir"
+
+    if [[ ! -f "$claude_project_dir/settings.json" ]]; then
+        cat > "$claude_project_dir/settings.json" << 'CLAUDEEOF'
+{
+  "outputStyle": "Batuta",
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "permissions": {
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/secrets/**)",
+      "Read(**/credentials.json)",
+      "Read(**/.ssh/**)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/*.p12)",
+      "Read(**/*.pfx)"
+    ],
+    "ask": [
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git push --force:*)",
+      "Bash(git rebase:*)",
+      "Bash(git reset --hard:*)"
+    ]
+  }
+}
+CLAUDEEOF
+        log_success "Created $claude_project_dir/settings.json (project-scoped permissions + output style)"
+    else
+        log_info ".claude/settings.json already exists, skipping"
+    fi
+
+    # 6. Install hooks + permissions to ~/.claude/settings.json (global)
     echo ""
     install_hooks
 
+    # 7. Provision ESSENTIAL skills + agents to project .claude/
+    # WHY: The E2E test (NutriAndrea v1/v2) showed .claude/skills/ was EMPTY after install.
+    # The agent needs skills IN the project, not just globally. Global = descriptions only.
+    # Project = the agent can actually invoke them. Essentials MUST be there from day 1.
+    echo ""
+    provision_project_essentials "$target_dir"
+
+    # 8. Auto-provision TECH-SPECIFIC skills based on dependency file detection
+    # WHY: On top of essentials, detect the project's tech stack and add relevant skills.
+    # /sdd-init does deeper AI-powered detection (content patterns, context mentions, MCPs).
+    echo ""
+    provision_project_skills "$target_dir"
+
+    # 9. Create initial .batuta/sdd-state.json for enforcement hooks
+    # WHY: enforce-sdd-phase.sh checks this file before allowing Write/Edit.
+    # Setting phase=init so the agent can write config files during setup.
+    local sdd_state="$target_dir/.batuta/sdd-state.json"
+    if [[ ! -f "$sdd_state" ]]; then
+        cat > "$sdd_state" << 'SDDEOF'
+{
+  "phase": "init",
+  "started_at": null,
+  "design_completed": false,
+  "user_approved": false
+}
+SDDEOF
+        log_success "Created .batuta/sdd-state.json (enforcement hooks state)"
+    fi
+
+    # 10. Create initial .batuta/team.json for delegation tracking
+    local team_file="$target_dir/.batuta/team.json"
+    if [[ ! -f "$team_file" ]]; then
+        cat > "$team_file" << 'TEAMEOF'
+{
+  "sprint": 0,
+  "roster": [],
+  "active_contracts": [],
+  "history": []
+}
+TEAMEOF
+        log_success "Created .batuta/team.json (agent delegation tracking)"
+    fi
+
     echo ""
     log_success "Project setup complete at $target_dir"
-    log_info "Next: open Claude Code in $target_dir and run /sdd-init"
+    echo ""
+    log_info "Project structure created:"
+    log_info "  CLAUDE.md                    — Batuta rules + delegation (project root)"
+    log_info "  .batuta/                     — Session state, checkpoints, ecosystem.json"
+    log_info "  .batuta/sdd-state.json       — SDD phase enforcement state"
+    log_info "  .batuta/team.json            — Agent roster + active contracts"
+    log_info "  .claude/settings.json        — Project-scoped permissions + output style"
+    log_info "  .claude/skills/              — Essential + tech-detected skills"
+    log_info "  .claude/agents/              — Agents available for hiring"
+    log_info "  .gitignore                   — Standard ignores (node_modules, .env, etc.)"
+    echo ""
+    local project_skill_count
+    project_skill_count=$(ls "$target_dir/.claude/skills" 2>/dev/null | wc -l)
+    local project_agent_count
+    project_agent_count=$(ls "$target_dir/.claude/agents" 2>/dev/null | wc -l)
+    log_info "Project: $project_skill_count skills + $project_agent_count agents provisioned"
+    log_info "Run /sdd-init inside Claude Code for deeper detection (content patterns, MCPs)"
 }
 
 # ============================================================================
@@ -564,8 +666,225 @@ check_mcp_prerequisites() {
 }
 
 # ============================================================================
+# Provision ESSENTIAL skills + agents to project .claude/
+# ============================================================================
+# WHY: The 22 lifecycle globals + 8 agents must live IN the project so the
+# agent can invoke them. Global (~/.claude/) only gives descriptions (metadata).
+# Project (.claude/) gives full SKILL.md content when invoked.
+#
+# This function is called by setup_project() BEFORE provision_project_skills()
+# which adds tech-specific skills on top.
+
+provision_project_essentials() {
+    local target_dir="$1"
+    local project_skills_dir="$target_dir/.claude/skills"
+    local project_agents_dir="$target_dir/.claude/agents"
+    local hub_skills="$REPO_ROOT/BatutaClaude/skills"
+    local hub_agents="$REPO_ROOT/BatutaClaude/agents"
+
+    mkdir -p "$project_skills_dir"
+    mkdir -p "$project_agents_dir"
+
+    log_info "Provisioning essential skills to project .claude/skills/ ..."
+
+    # Same 22 as global_skills in sync_claude() — keep in sync
+    local essential_skills=(
+        # DEFINE
+        sdd-init sdd-explore process-analyst prd-generator
+        # PLAN
+        sdd-design scope-rule
+        # BUILD
+        sdd-apply tdd-workflow source-driven-development debugging-systematic
+        # VERIFY
+        sdd-verify
+        # REVIEW
+        code-simplification security-audit performance-testing
+        # SHIP
+        git-workflow-and-versioning deprecation-and-migration technical-writer shipping-and-launch
+        # META
+        ecosystem-creator ecosystem-lifecycle team-orchestrator agent-hiring
+    )
+
+    local skill_count=0
+    for skill_name in "${essential_skills[@]}"; do
+        local skill_dir="$hub_skills/$skill_name"
+        if [[ -d "$skill_dir" && -f "$skill_dir/SKILL.md" ]]; then
+            mkdir -p "$project_skills_dir/$skill_name"
+            cp -f "$skill_dir/SKILL.md" "$project_skills_dir/$skill_name/"
+            # Copy assets/ if exists (templates, provisions.yaml, etc.)
+            if [[ -d "$skill_dir/assets" ]]; then
+                cp -rf "$skill_dir/assets" "$project_skills_dir/$skill_name/"
+            fi
+            skill_count=$((skill_count + 1))
+        fi
+    done
+    log_success "Provisioned $skill_count essential skills to .claude/skills/"
+
+    # Copy ALL agents to project (8 total — workers + reviewers)
+    log_info "Provisioning agents to project .claude/agents/ ..."
+    local agent_count=0
+    for agent_file in "$hub_agents"/*.md; do
+        [[ ! -f "$agent_file" ]] && continue
+        cp -f "$agent_file" "$project_agents_dir/"
+        agent_count=$((agent_count + 1))
+    done
+    log_success "Provisioned $agent_count agents to .claude/agents/"
+}
+
+# ============================================================================
 # Sync Skills to ~/.claude/skills/
 # ============================================================================
+
+# ============================================================================
+# Provision Project Skills (lightweight tech detection)
+# ============================================================================
+# WHY: After setup_project creates .claude/, this function detects the project's
+# tech stack by checking for common dependency files and copies matching skills
+# from the hub (BatutaClaude/skills/) to the project (.claude/skills/).
+# This is a LIGHTWEIGHT version of sdd-init Step 3.8 — it only checks file existence,
+# not content patterns or context mentions. /sdd-init does the deep detection later.
+
+provision_project_skills() {
+    local target_dir="$1"
+    local project_skills_dir="$target_dir/.claude/skills"
+    local hub_skills="$REPO_ROOT/BatutaClaude/skills"
+
+    mkdir -p "$project_skills_dir"
+
+    log_info "Auto-provisioning project skills by tech detection ..."
+
+    # Dependency files to scan for content patterns
+    local dep_files=()
+    for f in requirements.txt pyproject.toml setup.py Pipfile package.json go.mod Cargo.toml Gemfile; do
+        [[ -f "$target_dir/$f" ]] && dep_files+=("$target_dir/$f")
+    done
+
+    local provisioned=()
+
+    # --- File-based detection rules ---
+    # Each rule: check file existence OR grep content patterns in dependency files
+
+    # Python + FastAPI → api-design
+    if grep -qlE "fastapi|FastAPI" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(api-design)
+    fi
+
+    # SQLAlchemy → sqlalchemy-models
+    if grep -qlE "sqlalchemy|SQLAlchemy|alembic" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(sqlalchemy-models)
+    fi
+
+    # Prefect → prefect-flows
+    if grep -qlE "prefect" "${dep_files[@]}" 2>/dev/null || [[ -f "$target_dir/prefect.yaml" ]]; then
+        provisioned+=(prefect-flows)
+    fi
+
+    # Pydantic AI → pydantic-ai
+    if grep -qlE "pydantic-ai|pydantic_ai" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(pydantic-ai)
+    fi
+
+    # LLM / AI Agents → llm-pipeline-design
+    if grep -qlE "langchain|langgraph|openai|anthropic|google-adk" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(llm-pipeline-design)
+    fi
+
+    # Temporal → worker-scaffold
+    if grep -qlE "temporalio|temporal" "${dep_files[@]}" 2>/dev/null || [[ -f "$target_dir/temporal.yaml" ]]; then
+        provisioned+=(worker-scaffold)
+    fi
+
+    # Playwright → e2e-testing
+    if [[ -f "$target_dir/playwright.config.ts" ]] || [[ -f "$target_dir/playwright.config.js" ]]; then
+        provisioned+=(e2e-testing)
+    fi
+
+    # React / Next.js → react-nextjs
+    if [[ -f "$target_dir/next.config.js" ]] || [[ -f "$target_dir/next.config.mjs" ]] || [[ -f "$target_dir/next.config.ts" ]]; then
+        provisioned+=(react-nextjs)
+    fi
+
+    # TypeScript → typescript-node
+    if [[ -f "$target_dir/tsconfig.json" ]]; then
+        provisioned+=(typescript-node)
+    fi
+
+    # CI/CD → ci-cd-pipeline
+    if [[ -d "$target_dir/.github/workflows" ]] || [[ -f "$target_dir/.gitlab-ci.yml" ]]; then
+        provisioned+=(ci-cd-pipeline)
+    fi
+
+    # PostgreSQL → sqlalchemy-models (if not already added)
+    if grep -qlE "postgres|postgresql|psycopg" "${dep_files[@]}" 2>/dev/null; then
+        # Only add if not already in the list
+        local has_sql=false
+        for s in "${provisioned[@]}"; do [[ "$s" == "sqlalchemy-models" ]] && has_sql=true; done
+        [[ "$has_sql" == "false" ]] && provisioned+=(sqlalchemy-models)
+    fi
+
+    # Claude Agent SDK → claude-agent-sdk
+    if grep -qlE "claude.agent.sdk|claude-agent-sdk|claude_agent_sdk" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(claude-agent-sdk)
+    fi
+
+    # Google ADK → google-adk
+    if grep -qlE "google-adk|google_adk|from google.adk" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(google-adk)
+    fi
+
+    # Data pipelines → data-pipeline-design
+    if grep -qlE "pandas|polars|dagster|airflow" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(data-pipeline-design)
+    fi
+
+    # Message queues → message-queues
+    if grep -qlE "pika|rabbitmq|celery|bullmq|kafkajs" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(message-queues)
+    fi
+
+    # Vector DB / RAG → vector-db-rag
+    if grep -qlE "pgvector|pinecone|chromadb|embeddings" "${dep_files[@]}" 2>/dev/null; then
+        provisioned+=(vector-db-rag)
+    fi
+
+    # --- Copy matched skills to project ---
+    local copied=0
+    for skill in "${provisioned[@]}"; do
+        if [[ -d "$hub_skills/$skill" ]]; then
+            cp -r "$hub_skills/$skill" "$project_skills_dir/"
+            log_info "  -> Provisioned: $skill"
+            copied=$((copied + 1))
+        else
+            log_warning "  Skill not found in hub: $skill"
+        fi
+    done
+
+    # --- Write .provisions.json manifest ---
+    local tech_list=""
+    local skill_list=""
+    for s in "${provisioned[@]}"; do
+        [[ -n "$skill_list" ]] && skill_list="$skill_list, "
+        skill_list="$skill_list\"$s\""
+    done
+
+    cat > "$project_skills_dir/.provisions.json" << PROVEOF
+{
+  "schema_version": "1.0",
+  "provisioned_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "provisioned_by": "setup.sh/provision_project_skills",
+  "source": "$hub_skills",
+  "skills": [$skill_list],
+  "note": "Lightweight detection. Run /sdd-init for deep tech detection + MCP + agents."
+}
+PROVEOF
+
+    if [[ $copied -gt 0 ]]; then
+        log_success "Provisioned $copied tech-specific skills to .claude/skills/"
+    else
+        log_info "No tech-specific skills detected (project may be empty or use standard stack)"
+        log_info "Run /sdd-init inside Claude Code for deeper detection"
+    fi
+}
 
 sync_claude() {
     local claude_dir="$HOME_DIR/.claude/skills"
@@ -580,24 +899,35 @@ sync_claude() {
 
     mkdir -p "$claude_dir"
 
-    # WORKAROUND: v15 change — only sync GLOBAL skills (always + sdd) to ~/.claude/skills/.
+    # WORKAROUND: v15 change — only sync GLOBAL skills to ~/.claude/skills/.
     # Project-specific skills are provisioned by /batuta-init and /batuta-sync.
     # Reason: Claude Code has a ~450-token budget for skill metadata. Loading 48+ skills
     # globally makes 33% of them INVISIBLE. Only universal skills go to global.
     # The hub (BatutaClaude/skills/) keeps ALL skills as the source library.
+    #
+    # v16: Organized by lifecycle bucket (DEFINE → PLAN → BUILD → VERIFY → REVIEW → SHIP → META).
+    # 22 global skills close the complete lifecycle with no phase gaps.
+    # Mirrors skill-provisions.yaml global: section. Keep both in sync.
     local global_skills=(
-        # always (from skill-provisions.yaml)
-        scope-rule ecosystem-creator security-audit team-orchestrator ecosystem-lifecycle
-        # sdd (core pipeline)
-        sdd-explore sdd-design sdd-apply sdd-verify prd-generator
-        tdd-workflow debugging-systematic sdd-init
-        # v15.1 additions (adapted from addyosmani/agent-skills, MIT)
-        agent-hiring code-simplification deprecation-and-migration git-workflow-and-versioning
+        # DEFINE — Entender qué construir
+        sdd-init sdd-explore process-analyst prd-generator
+        # PLAN — Diseñar la solución
+        sdd-design scope-rule
+        # BUILD — Implementar
+        sdd-apply tdd-workflow source-driven-development debugging-systematic
+        # VERIFY — Probar que funciona
+        sdd-verify
+        # REVIEW — Gates de calidad
+        code-simplification security-audit performance-testing
+        # SHIP — Llevar a producción
+        git-workflow-and-versioning deprecation-and-migration technical-writer shipping-and-launch
+        # META — Maquinaria de orquestación
+        ecosystem-creator ecosystem-lifecycle team-orchestrator agent-hiring
     )
 
     # WHY: Remove skills from ~/.claude/skills/ that are NOT in the global_skills list.
-    # Before v15.0, setup.sh copied ALL ~46 skills globally. After v15, only 17 essentials go
-    # global; the rest are project-provisioned. This cleanup removes the stale 29+ from old installs.
+    # Before v15.0, setup.sh copied ALL ~46 skills globally. After v16, only 22 essentials go
+    # global; the rest are project-provisioned. This cleanup removes stale skills from old installs.
     # v15.6 fix: previous cleanup only removed skills missing from BatutaClaude/skills/, but
     # all 46 exist there — so it never removed the non-global ones.
     for target_skill in "$claude_dir"/*/; do

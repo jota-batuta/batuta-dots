@@ -2,6 +2,13 @@
 name: pydantic-ai
 version: "1.1"
 description: Use when building AI agents with Pydantic AI (pydantic-ai) — Python framework by the Pydantic team for structured agents with typed dependencies, function tools, and dynamic instructions. Trigger — "Pydantic AI", "pydantic-ai", "Agent() constructor", "@agent.tool", "RunContext[Deps]", "AGUIAdapter", "agent.to_ag_ui", "ag-ui protocol", "GoogleModel gemini", "expose agent web ui". Covers Agent definition, typed dependencies, tool decorators, dynamic instructions, Gemini/Google provider, and AG-UI web exposure (equivalent to ADK Web for Pydantic AI agents).
+license: MIT
+metadata:
+  author: Batuta
+  bucket: build
+  auto_invoke: "Building AI agents with Pydantic AI framework"
+  platforms: [claude, antigravity]
+allowed-tools: Read Edit Write Glob Grep Bash WebFetch WebSearch
 ---
 
 # Pydantic AI Skill

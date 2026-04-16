@@ -10,7 +10,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-03-30"
-  scope: [pipeline]
+  bucket: meta
   auto_invoke: "Generating SPO after task plan approval"
   platforms: [claude, antigravity]
 allowed-tools: Read Write Glob

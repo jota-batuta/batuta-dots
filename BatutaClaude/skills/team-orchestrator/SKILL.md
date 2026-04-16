@@ -1,14 +1,13 @@
 ---
 name: team-orchestrator
 description: >
-  Use when evaluating task complexity, spawning teams, or coordinating multi-agent work.
-  Provides team coordination rules and composition patterns for the Batuta ecosystem.
+  Decide solo vs subagent vs team.
 license: MIT
 metadata:
   author: Batuta
   version: "2.1"
   created: "2026-02-22"
-  scope: [infra]
+  bucket: meta
   auto_invoke:
     - "Evaluating whether to use subagents or Agent Teams"
     - "Spawning a team for complex tasks"
@@ -49,6 +48,25 @@ Execution Gate fires →
 | 1 — Solo | Single session | Bug fix, 1-file edit, question | 1x | None |
 | 2 — Subagent | Task tool | Research, verify, single SDD phase | 1.2-1.5x | Fire-and-forget |
 | 3 — Team | Agent Teams | Multi-module feature, full SDD pipeline, debug with hypotheses | 3-5x | Bidirectional, shared task list |
+
+### Task Sizing Language
+
+Use consistent sizing to communicate scope across agents:
+
+| Size | Lines Changed | Files | Typical Duration | Level |
+|---|---|---|---|---|
+| **S** | < 50 | 1-2 | Minutes | Level 1 (solo) |
+| **M** | 50-200 | 2-4 | Hour | Level 2 (subagent) |
+| **L** | 200-500 | 4-8 | Hours | Level 2-3 |
+| **XL** | 500+ | 8+ | Session | Level 3 (team) |
+
+### Parallelization Safety
+
+| Category | Example | Approach |
+|---|---|---|
+| **Safe parallel** | Independent features, different file sets | Parallel subagents |
+| **Requires sequencing** | DB migrations, schema changes | Sequential subagents |
+| **Needs coordination** | Shared API contracts, cross-cutting concerns | Agent Team with contracts |
 
 ### Anti-patterns (do NOT create a team for)
 
@@ -170,6 +188,20 @@ When a teammate completes a task and another teammate needs the results:
 - **Must pass**: {specific quality criteria}
 - **Evidence required**: {what proof of completion looks like}
 ```
+
+### Goal Thread (mandatory in all handoffs)
+
+Every handoff — spawn, reassignment, escalation — must include:
+
+```markdown
+## Goal Thread
+- Original Goal: {from PRD or user request — the WHY}
+- Business Outcome: {what success looks like for the end user/client}
+- This Task's Role: {how this specific task serves the goal}
+- If Blocked: {what business risk exists if this task is deferred}
+```
+
+Sub-agents that know WHY they're building something make better implementation decisions. Goal Thread prevents the "implement the spec literally but miss the intent" failure mode.
 
 ### QA Rejection Handoff (reviewer → implementer)
 

@@ -114,6 +114,22 @@ REVIEWERS DO NOT WRITE OR EDIT CODE. Tools are read-only: `Read`, `Grep`, `Glob`
 - Sync operations that should be async?
 - Missing pagination on list endpoints?
 
+## Severity Labels for Feedback
+
+Classify every finding to prevent treating all feedback as equally urgent:
+
+| Label | Meaning | Blocks Merge? |
+|---|---|---|
+| **Critical** | Correctness bug, security vulnerability, data loss risk | Yes |
+| **Required** | Must fix before merge (no label prefix needed) | Yes |
+| **Optional** | Suggested improvement, not required | No |
+| **Nit** | Minor style or naming preference | No |
+| **FYI** | Informational, no action needed | No |
+
+## Change Sizing Guidance
+
+Target ~100 lines per review unit. 300 lines is acceptable. 1000+ lines should be split — large reviews produce superficial feedback. Quantify problems: "N+1 query adds ~50ms per item at 100 items" is more actionable than "this might be slow."
+
 ## Common Rationalizations
 
 | Rationalization | Reality |

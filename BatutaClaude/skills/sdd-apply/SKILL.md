@@ -1,13 +1,13 @@
 ---
 name: sdd-apply
 description: >
-  Use when implementing tasks from a change, writing code. /sdd-apply
+  Write production code from specs.
 license: MIT
 metadata:
   author: Batuta
   version: "1.1"
   created: 2025-06-01
-  scope: [pipeline, infra]
+  bucket: build
   auto_invoke: "Implementing task batches, /sdd-apply"
   platforms: [claude, antigravity]
 allowed-tools: Read Edit Write Glob Grep Bash
@@ -227,6 +227,16 @@ FOR EACH WAVE:
 - No two agents in the same wave may share a file
 - If a task's files overlap with another task's files → force sequential (same wave, different waves)
 
+### File Ownership Enforcement (Non-Negotiable)
+
+Before writing ANY file, verify it's in your OWNS list from the spawn prompt:
+
+- If the file IS in your OWNS list → proceed
+- If the file is NOT in your OWNS list → STOP, report to lead: "Need to modify {file} but it's not in my ownership. Requesting reassignment."
+- If no OWNS list was provided → treat ALL files as owned (solo mode)
+
+This is a behavioral rule, not a suggestion. Violating file ownership in parallel execution corrupts other agents' work.
+
 **Log parallelization decisions** in Implementation Progress:
 ```
 ### Parallel Execution Plan
@@ -247,6 +257,15 @@ Before writing ANY code:
 3. Read existing code in affected files — understand current patterns
 4. Check the project's coding conventions from `config.yaml`
 5. Identify which stack technologies are involved and load relevant skills
+
+### Step 1.1: Keep System Compilable (Non-Negotiable)
+
+Every increment leaves the system in a working, testable state. This rule is critical when sub-agents implement in parallel — each wave must produce compilable code before the next starts.
+
+- **Feature flags for incomplete work**: If a feature spans multiple tasks, deploy behind a flag so partial implementation never breaks the build.
+- **Each increment independently revertable**: A failed task can be reverted without unwinding other tasks.
+- **Contract-first for parallel work**: When multiple agents implement APIs, define interface contracts BEFORE implementation. The contract is the source of truth for the interface shape.
+- **Build breaks = immediate blocker**: If the build fails between slices, fix it before starting the next slice. Do not accumulate broken state.
 
 ### Step 1.5: MCP Documentation Check (Verify Before You Code)
 
@@ -331,6 +350,18 @@ FOR EACH TASK:
 ├── Write a brief "Implementation Note" explaining WHY this approach was chosen
 └── Note any issues or deviations
 ```
+
+### Circuit Breaker Protocol
+
+Every 3 turns during implementation, check for hallucination loops:
+
+| Signal | What to check | Action |
+|---|---|---|
+| Repeating errors | Same error message after 3+ different fix attempts | HALT — log loop signature, escalate to lead |
+| Reverting changes | Wrote X, reverted X, wrote X again | HALT — design assumption is wrong |
+| Confidence drop | Each attempt is less likely to work than the last | HALT — task may need human input or redesign |
+
+On HALT: stop implementation, report loop pattern with evidence (error messages, file diffs), escalate to orchestrator. Do NOT burn remaining turns on the same approach.
 
 ### Step 3: Mark Tasks Complete
 
@@ -422,6 +453,17 @@ risks:
   - "Design assumption X may not hold under Y condition"
   - "No coding skill for Z — implementation used general best practices"
 ```
+
+### Output Report Self-Check
+
+Before submitting the final report, verify completeness:
+
+- [ ] FINDINGS section is non-empty (at least 1 fact with evidence)
+- [ ] FAILURES section present — if nothing failed, state "No failures encountered"
+- [ ] DECISIONS section lists at least 1 decision with alternatives considered
+- [ ] GOTCHAS section present — if no gotchas, state "No gotchas discovered"
+
+An empty section without explanation is a contract violation. "None" is valid; blank is not.
 
 ## Rules
 

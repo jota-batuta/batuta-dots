@@ -1,14 +1,13 @@
 ---
 name: agent-hiring
 description: >
-  Use when the main agent needs to delegate a task. Trigger: "hire agent",
-  "create agent", "specialist needed", "delegate task", "spawn agent".
+  Hire agents with persistent contracts.
 license: MIT
 metadata:
   author: Batuta
   version: "1.1"
   created: "2026-04-13"
-  scope: [infra]
+  bucket: meta
   auto_invoke:
     - "Delegating a task to a specialist agent"
     - "Creating a new agent contract"
@@ -97,6 +96,11 @@ Only modify files explicitly assigned. Never touch files outside ownership.
 
 ## Acceptance Criteria
 {From the hiring proposal}
+
+## Goal Thread
+- Original Goal: {from PRD or user request — the WHY}
+- Business Outcome: {what success looks like for the end user/client}
+- This Task's Role: {how this task serves the goal}
 ```
 
 ### Step 5: Invoke

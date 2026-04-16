@@ -9,7 +9,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-02-26"
-  scope: [pipeline]
+  bucket: build
   auto_invoke:
     - "Implementing message queue or event-driven architecture"
     - "Choosing between RabbitMQ, Redis Streams, or Kafka"

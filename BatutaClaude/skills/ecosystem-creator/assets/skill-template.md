@@ -1,15 +1,15 @@
 ---
 name: {skill-name}
 description: >
-  {One-line description of what this skill does}.
-  Trigger: {When the AI should load this skill -- include natural language triggers
-  such as "working with {technology}", "setting up {component}", "{action} {target}"}.
+  Use when {trigger conditions — max ≤45 chars (~15 tokens) TOTAL for the description
+  field; must fit Claude Code's ~450 token metadata budget. Start with "Use when..." and
+  contain ONLY activation conditions. Never summarize the workflow.}
 license: MIT
 metadata:
   author: Batuta
   version: "1.0"
   created: "{YYYY-MM-DD}"
-  scope: [{category}]
+  bucket: {category}  # Valid values: define | plan | build | verify | review | ship | meta
   auto_invoke: "{human-readable trigger for when this skill should be loaded}"
   platforms: [claude, antigravity]
   category: "{workflow | capability}"  # workflow = orchestrates multi-step processes; capability = domain expertise (default)
@@ -27,6 +27,12 @@ Non-technical readers should understand the skill's role from this alone.}
 - {Condition when this skill should be loaded}
 - {Another trigger condition}
 - {Technology or pattern this covers}
+
+## When NOT to Use
+
+- {Cases where this skill is the wrong tool — redirect to the correct one}
+- {Out-of-scope situations to prevent false-positive activation}
+- {Overlap with another skill, with guidance on which to prefer}
 
 ## Critical Patterns
 
@@ -60,6 +66,28 @@ specific to the Batuta ecosystem.}
 | Anti-Pattern | Why It Is Wrong | Do This Instead |
 |--------------|-----------------|-----------------|
 | {Anti-pattern 1} | {Reason} | {Correct approach} |
+
+## Common Rationalizations
+
+| Rationalization | Counter |
+|-----------------|---------|
+| "{Excuse the agent might make to skip this skill's rules}" | {Why that excuse is wrong and what to do instead} |
+| "{Another plausible-sounding shortcut}" | {The real cost/risk and the correct path} |
+| "{Edge-case argument for bypassing a hard rule}" | {Why the rule exists and how to handle the edge case correctly} |
+
+## Red Flags
+
+- {Observable sign that the agent is drifting away from this skill's guidance}
+- {Concrete phrase or behavior that indicates a violation is about to happen}
+- {Code or output shape that always warrants a second look}
+- {Structural pattern that signals the wrong approach is being taken}
+
+## Verification Checklist
+
+- [ ] {Measurable check a reviewer can run to confirm the skill was followed — binary pass/fail}
+- [ ] {Covers a load-bearing guarantee of this skill}
+- [ ] {Each item is specific enough to be unambiguous}
+- [ ] {No subjective checks — if it requires judgment, rewrite as an observable fact}
 
 ## Stack Integration
 

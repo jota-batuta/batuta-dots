@@ -1,13 +1,13 @@
 ---
 name: sdd-init
 description: >
-  Use when starting SDD in a new project, bootstrapping openspec/. /sdd-init
+  Detect stack, bootstrap openspec/.
 license: MIT
 metadata:
   author: Batuta
   version: "1.1"
   created: "2025-01-01"
-  scope: [pipeline]
+  bucket: define
   auto_invoke: "Starting SDD workflow, /sdd-init"
   platforms: [claude, antigravity]
 allowed-tools: Read Edit Write Glob Grep Bash

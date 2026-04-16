@@ -1,16 +1,14 @@
 ---
 name: prd-generator
 description: >
-  Use when creating or reading a PRD — the single planning artifact for any change.
-  CTO Desktop writes PRDs to Notion. Claude Code reads them via MCP and executes.
-  Trigger: "PRD", "generate PRD", "write PRD", "crear PRD", "directiva".
+  Create or read the PRD artifact.
 license: MIT
 metadata:
   author: Batuta
   version: "2.1"
   created: "2026-03-30"
   updated: "2026-04-15"
-  scope: [pipeline]
+  bucket: define
   platforms: [claude, antigravity]
 allowed-tools: Read Write Glob
 ---

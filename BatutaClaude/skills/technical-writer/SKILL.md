@@ -1,15 +1,13 @@
 ---
 name: technical-writer
 description: >
-  Use when writing documentation, README, API reference, tutorial, migration guide, docs-as-code.
-  Trigger: "write docs", "README", "API documentation", "tutorial", "migration guide",
-  "documentation audit", "docs-as-code", "Docusaurus", "MkDocs".
+  Write README, API docs, ADRs.
 license: MIT
 metadata:
   author: Batuta
   version: "1.1"
   created: "2026-03-09"
-  scope: [pipeline]
+  bucket: ship
   auto_invoke: "Writing or reviewing documentation, READMEs, API references, or tutorials"
   platforms: [claude, antigravity]
 allowed-tools: Read Edit Write Glob Grep Bash WebSearch
@@ -93,6 +91,35 @@ This skill enforces the same standard for standalone documentation:
 - Every doc answers WHY, not just HOW
 - Every breaking change has a migration guide BEFORE the release
 - Every public API has a reference entry with at least one code example
+
+### Pattern: Architecture Decision Records (ADRs)
+
+ADRs document significant technical choices — framework selection, data models, authentication strategies. A 10-minute ADR prevents a 2-hour debate about the same decision six months later.
+
+**Template**:
+```markdown
+# ADR-{number}: {Title}
+
+## Status
+Accepted | Superseded by ADR-{N} | Deprecated
+
+## Context
+What problem led to this decision?
+
+## Decision
+What did we choose and why?
+
+## Alternatives Considered
+What did we reject and why?
+
+## Consequences
+What are the tradeoffs? What becomes easier or harder?
+```
+
+**Rules**:
+- Don't delete old ADRs — they capture historical context even when superseded
+- Store in `docs/adr/` or `openspec/decisions/`
+- Reference in code: `// See ADR-003 for why we chose cursor pagination`
 
 ## Decision Trees
 

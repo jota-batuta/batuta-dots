@@ -1,14 +1,14 @@
 ---
 name: process-analyst
 description: >
-  Use when a process has 3+ case types requiring different handling.
+  Map process variants and exceptions.
 license: MIT
 metadata:
   author: Batuta
   version: "1.1"
   created: "2026-02-23"
   source: "CTO Layer skill 14"
-  scope: [pipeline]
+  bucket: define
   auto_invoke: false
   platforms: [claude, antigravity]
 allowed-tools: Read Glob Grep WebSearch

@@ -9,7 +9,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-02-26"
-  scope: [infra]
+  bucket: build
   auto_invoke:
     - Creating or modifying GitHub Actions workflows
     - Setting up automated testing pipelines
@@ -30,6 +30,12 @@ The CI pipeline is the automated enforcement layer of the AI Validation Pyramid.
 base layers (type checking, unit tests, E2E) fail in CI, no human review is needed --
 the code is not ready. This saves reviewer time and catches issues before they reach
 staging.
+
+## Core Principle: Shift Left
+
+> "A bug caught in linting costs minutes. The same bug caught in production costs hours."
+
+Move testing and quality gates as early as possible in the pipeline. The AI Validation Pyramid enforces this: Layer 1 (static analysis) runs first, Layer 2 (unit tests) second, Layer 3 (E2E) third. Each layer gates the next — failures stop the pipeline BEFORE expensive operations run. Smaller batches and more frequent releases reduce risk, not increase it.
 
 ## When to Use
 

@@ -1,12 +1,12 @@
 ---
 name: deprecation-and-migration
-description: Manages deprecation and migration. Use when removing old systems, APIs, or features. Use when migrating users from one implementation to another. Use when deciding whether to maintain or sunset existing code.
+description: Plan safe code removal, migrations.
 license: MIT
 metadata:
   author: Batuta
   version: "1.0"
   created: "2026-04-15"
-  scope: [infra]
+  bucket: ship
   platforms: [claude, antigravity]
   inspired_by: "addyosmani/agent-skills v0.5.0 (MIT)"
 allowed-tools: Read Edit Write Glob Grep Bash

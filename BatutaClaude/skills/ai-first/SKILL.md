@@ -11,7 +11,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-03-30"
-  scope: [pipeline]
+  bucket: define
   auto_invoke: "Evaluating AI vs deterministic approach in sdd-design"
   platforms: [claude, antigravity]
 allowed-tools: Read Glob WebSearch

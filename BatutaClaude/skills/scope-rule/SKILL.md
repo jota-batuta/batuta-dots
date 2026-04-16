@@ -1,13 +1,13 @@
 ---
 name: scope-rule
 description: >
-  Use when deciding where a new file or component should go.
+  Decide file location by usage scope.
 license: MIT
 metadata:
   author: Batuta
   version: "1.1"
   created: "2026-02-20"
-  scope: [infra]
+  bucket: plan
   auto_invoke: "Creating files, deciding file locations"
   platforms: [claude, antigravity]
 allowed-tools: Read Glob Grep

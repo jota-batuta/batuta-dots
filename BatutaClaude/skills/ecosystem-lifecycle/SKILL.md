@@ -1,17 +1,13 @@
 ---
 name: ecosystem-lifecycle
 description: >
-  Use when classifying newly created skills/agents/workflows (post ecosystem-creator),
-  when a user reports a rule violation requiring self-heal, or when a technology
-  lacks a matching local skill during SDD phases (auto-provision).
-  Trigger: "after creating a skill", "classify skill", "propagate to hub",
-  "rule violation", "self-heal", "no skill for this tech", "provision skill".
+  Classify, self-heal, auto-provision.
 license: MIT
 metadata:
   author: Batuta
   version: "1.1"
   created: "2026-02-26"
-  scope: [infra]
+  bucket: meta
   auto_invoke:
     - After ecosystem-creator completes (classification)
     - When user reports rule violation (self-heal)
@@ -47,7 +43,7 @@ Invoked automatically after ecosystem-creator Step 8. Input: path to newly creat
 ### Step 1: Read Component
 
 - Parse the SKILL.md (or agent/workflow definition) frontmatter
-- Extract: `name`, `description`, `metadata.scope`, `metadata.platforms`, `metadata.auto_invoke`
+- Extract: `name`, `description`, `metadata.bucket`, `metadata.platforms`, `metadata.auto_invoke`
 - Identify technologies and patterns referenced in the content
 
 ### Step 2: Classification Decision Tree
@@ -92,7 +88,7 @@ Check these required fields — flag any missing:
 |-------|----------|-------|
 | `name` | Yes | Lowercase, hyphens, max 64 chars, must match directory name (agentskills.io) |
 | `description` | Yes | Starts with "Use when", max 1024 chars (agentskills.io) |
-| `metadata.scope` | Yes | Valid scope: pipeline, infra, observability |
+| `metadata.bucket` | Yes | Valid bucket: define, plan, build, verify, review, ship, meta |
 | `metadata.auto_invoke` | Yes | Human-readable trigger |
 | `allowed-tools` | Yes | Space-delimited (agentskills.io standard), non-empty |
 | `metadata.platforms` | Yes | `[claude]` or `[claude, antigravity]` (under metadata per agentskills.io) |
@@ -109,7 +105,7 @@ Beyond frontmatter fields, verify these content requirements:
 | Check | What to Verify | If Missing |
 |-------|---------------|------------|
 | `## Purpose` section | Exists after frontmatter, before `## When to Use` | Flag: "Missing `## Purpose`. Every skill needs a business context paragraph." |
-| Scope coherence | If skill body contains code generation patterns (generate, scaffold, create files), `infra` must be in scope | Flag: "Scope may be incorrect. Code-generation skills need `infra` in scope." |
+| Bucket coherence | Bucket matches skill's lifecycle phase (define/plan/build/verify/review/ship/meta) | Flag: "Bucket may be incorrect. Verify skill matches lifecycle phase." |
 | Owner agent consistency | If `metadata.owner_agent` is set, verify agent file exists in `BatutaClaude/agents/` | Flag: "Owner agent `{name}` not found in agents directory." |
 
 These are **flags** (warnings), not blocks. Only frontmatter completeness blocks classification.

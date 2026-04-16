@@ -1,12 +1,12 @@
 ---
 name: code-simplification
-description: Simplifies code for clarity. Use when refactoring code for clarity without changing behavior. Use when code works but is harder to read, maintain, or extend than it should be. Use when reviewing code that has accumulated unnecessary complexity.
+description: Reduce complexity, keep behavior.
 license: MIT
 metadata:
   author: Batuta
   version: "1.0"
   created: "2026-04-15"
-  scope: [tech]
+  bucket: review
   platforms: [claude, antigravity]
   inspired_by: "addyosmani/agent-skills v0.5.0 (MIT)"
 allowed-tools: Read Edit Write Glob Grep Bash
@@ -113,9 +113,13 @@ Default to simplifying recently modified code. Avoid drive-by refactors of unrel
 
 ## The Simplification Process
 
-### Step 1: Understand Before Touching (Chesterton's Fence)
+### Step 1: Understand Before Touching — Chesterton's Fence
 
-Before changing or removing anything, understand why it exists. This is Chesterton's Fence: if you see a fence across a road and don't understand why it's there, don't tear it down. First understand the reason, then decide if the reason still applies.
+### Chesterton's Fence
+
+> "Don't ever take a fence down until you know the reason it was put up." — G.K. Chesterton
+
+Before removing ANY code, understand WHY it exists. The agent's instinct is to delete "unnecessary" code — but code that looks unnecessary may be a workaround for a non-obvious edge case, a regulatory requirement, or a fix for a production incident. If you cannot explain why the code exists, you cannot safely remove it.
 
 ```
 BEFORE SIMPLIFYING, ANSWER:

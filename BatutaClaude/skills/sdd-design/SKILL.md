@@ -1,13 +1,13 @@
 ---
 name: sdd-design
 description: >
-  Use when creating architecture decisions and technical design. /sdd-ff
+  Architecture decisions, task breakdown.
 license: MIT
 metadata:
   author: Batuta
   version: "1.1"
   created: "2026-02-20"
-  scope: [pipeline]
+  bucket: plan
   auto_invoke: "Technical design documents"
   platforms: [claude, antigravity]
 allowed-tools: Read Edit Write Glob Grep

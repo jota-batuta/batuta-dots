@@ -9,7 +9,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-02-26"
-  scope: [observability]
+  bucket: verify
   auto_invoke:
     - "Setting up structured logging or log levels"
     - "Implementing distributed tracing with OpenTelemetry"

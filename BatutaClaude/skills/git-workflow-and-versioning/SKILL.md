@@ -1,12 +1,12 @@
 ---
 name: git-workflow-and-versioning
-description: Structures git workflow practices. Use when making any code change. Use when committing, branching, resolving conflicts, or when you need to organize work across multiple parallel streams.
+description: Trunk-based commits, atomic changes.
 license: MIT
 metadata:
   author: Batuta
   version: "1.0"
   created: "2026-04-15"
-  scope: [infra]
+  bucket: ship
   platforms: [claude, antigravity]
   inspired_by: "addyosmani/agent-skills v0.5.0 (MIT)"
 allowed-tools: Read Edit Write Glob Grep Bash
@@ -155,6 +155,10 @@ refactor/<short-description>  → refactor/auth-module
 
 ## Working with Worktrees
 
+### Pattern: Git Worktrees for Parallel Agent Work
+
+When multiple agents need to work simultaneously on different features:
+
 For parallel AI agent work, use git worktrees to run multiple branches simultaneously:
 
 ```bash
@@ -178,6 +182,10 @@ Benefits:
 - No branch switching needed (each directory has its own branch)
 - If one experiment fails, delete the worktree — nothing is lost
 - Changes are isolated until explicitly merged
+
+### Pattern: Save Point (Commit-as-Checkpoint)
+
+Each commit is a save point the agent can revert to if a subsequent change breaks things. Commit early, commit often — atomic commits are checkpoints, not just history.
 
 ## The Save Point Pattern
 
