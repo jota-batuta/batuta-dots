@@ -10,7 +10,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-03-09"
-  scope: [infra]
+  bucket: build
   auto_invoke: "Building applications with Claude Agent SDK or deploying batuta agents programmatically"
   platforms: [claude, antigravity]
   category: capability

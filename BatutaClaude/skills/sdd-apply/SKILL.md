@@ -7,7 +7,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: 2025-06-01
-  scope: [pipeline, infra]
+  bucket: build
   auto_invoke: "Implementing task batches, /sdd-apply"
   platforms: [claude, antigravity]
 allowed-tools: Read Edit Write Glob Grep Bash
@@ -247,6 +247,15 @@ Before writing ANY code:
 3. Read existing code in affected files — understand current patterns
 4. Check the project's coding conventions from `config.yaml`
 5. Identify which stack technologies are involved and load relevant skills
+
+### Step 1.1: Keep System Compilable (Non-Negotiable)
+
+Every increment leaves the system in a working, testable state. This rule is critical when sub-agents implement in parallel — each wave must produce compilable code before the next starts.
+
+- **Feature flags for incomplete work**: If a feature spans multiple tasks, deploy behind a flag so partial implementation never breaks the build.
+- **Each increment independently revertable**: A failed task can be reverted without unwinding other tasks.
+- **Contract-first for parallel work**: When multiple agents implement APIs, define interface contracts BEFORE implementation. The contract is the source of truth for the interface shape.
+- **Build breaks = immediate blocker**: If the build fails between slices, fix it before starting the next slice. Do not accumulate broken state.
 
 ### Step 1.5: MCP Documentation Check (Verify Before You Code)
 

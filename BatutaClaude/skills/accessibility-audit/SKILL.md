@@ -9,7 +9,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-03-09"
-  scope: [pipeline]
+  bucket: verify
   auto_invoke: "Auditing accessibility, WCAG compliance, screen reader testing, keyboard navigation"
   platforms: [claude, antigravity]
 allowed-tools: Read Glob Grep Bash WebSearch

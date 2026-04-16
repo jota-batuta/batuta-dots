@@ -9,7 +9,7 @@ metadata:
   author: Batuta
   version: "1.0"
   created: "{YYYY-MM-DD}"
-  scope: [{category}]
+  bucket: {category}
   auto_invoke: "{human-readable trigger for when this skill should be loaded}"
   platforms: [claude, antigravity]
   category: "{workflow | capability}"  # workflow = orchestrates multi-step processes; capability = domain expertise (default)

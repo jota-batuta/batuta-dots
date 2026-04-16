@@ -9,7 +9,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-04-07"
-  scope: [capability]
+  bucket: review
   auto_invoke: "When writing queries against the KIOSCO database or working with ICG ERP data"
   platforms: [claude]
   category: "capability"

@@ -27,7 +27,7 @@
 #   - "just do it → PROCEED" removed
 #   - 5 contract-based agents (v15: observability-agent removed)
 #   - (v11.1: prompt-tracker removed)
-#   - All skills have scope, auto_invoke, allowed-tools
+#   - All skills have bucket, auto_invoke, allowed-tools
 #   - Agents sync via setup.sh
 #   - (v11.1: skill-sync removed)
 #   - (v11.1: AUTO-GENERATED delimiters removed)
@@ -489,27 +489,27 @@ test_research_first_is_non_negotiable() {
 }
 
 # ============================================================================
-# 18. All skills have scope (v5 frontmatter)
+# 18. All skills have bucket (v16 lifecycle phase)
 # ============================================================================
 
-test_all_skills_have_scope() {
-    log_test "All SKILL.md files have metadata.scope (v5)"
+test_all_skills_have_bucket() {
+    log_test "All SKILL.md files have metadata.bucket (v16)"
     local skills_dir="$REPO_ROOT/BatutaClaude/skills"
-    local total=0 with_scope=0
+    local total=0 with_bucket=0
 
     for skill_file in "$skills_dir"/*/SKILL.md; do
         [[ ! -f "$skill_file" ]] && continue
         total=$((total + 1))
         local skill_name=$(basename "$(dirname "$skill_file")")
-        if grep -q "scope:" "$skill_file" 2>/dev/null; then
-            with_scope=$((with_scope + 1))
+        if grep -q "bucket:" "$skill_file" 2>/dev/null; then
+            with_bucket=$((with_bucket + 1))
         else
-            log_fail "$skill_name/SKILL.md: missing 'scope'"
+            log_fail "$skill_name/SKILL.md: missing 'bucket'"
         fi
     done
 
     [[ $total -eq 0 ]] && log_fail "No SKILL.md files found"
-    [[ $with_scope -eq $total && $total -gt 0 ]] && log_pass "All $total skills have scope field"
+    [[ $with_bucket -eq $total && $total -gt 0 ]] && log_pass "All $total skills have bucket field"
 }
 
 # ============================================================================
@@ -726,12 +726,12 @@ test_version_file_exists() {
 # ============================================================================
 
 test_team_orchestrator_skill_exists() {
-    log_test "team-orchestrator SKILL.md exists with infra scope (v7)"
+    log_test "team-orchestrator SKILL.md exists with meta bucket (v16)"
     local skill_file="$REPO_ROOT/BatutaClaude/skills/team-orchestrator/SKILL.md"
 
     assert_file_exists "$skill_file"
     assert_file_not_empty "$skill_file"
-    assert_file_contains "$skill_file" "scope:.*infra" "scope includes infra"
+    assert_file_contains "$skill_file" "bucket: meta" "bucket is meta"
     assert_file_contains "$skill_file" "auto_invoke" "has auto_invoke field"
 }
 
@@ -836,13 +836,12 @@ test_no_prompt_tracker_remnants() {
 # ============================================================================
 
 test_security_audit_skill_exists() {
-    log_test "security-audit SKILL.md exists with infra+pipeline scope (v9)"
+    log_test "security-audit SKILL.md exists with review bucket (v16)"
     local skill_file="$REPO_ROOT/BatutaClaude/skills/security-audit/SKILL.md"
 
     assert_file_exists "$skill_file"
     assert_file_not_empty "$skill_file"
-    assert_file_contains "$skill_file" "scope:.*infra" "scope includes infra"
-    assert_file_contains "$skill_file" "scope:.*pipeline" "scope includes pipeline"
+    assert_file_contains "$skill_file" "bucket: review" "bucket is review"
     assert_file_contains "$skill_file" "OWASP\|owasp" "references OWASP"
     assert_file_contains "$skill_file" "Threat Model\|threat.model" "has Threat Model"
 }
@@ -1057,7 +1056,7 @@ test_new_skills_have_valid_frontmatter() {
         local skill_file="$skills_dir/$skill/SKILL.md"
         assert_file_exists "$skill_file"
         assert_file_contains "$skill_file" "^name:" "frontmatter name field in $skill"
-        assert_file_contains "$skill_file" "scope:" "frontmatter scope field in $skill"
+        assert_file_contains "$skill_file" "bucket:" "frontmatter bucket field in $skill"
         assert_file_contains "$skill_file" "auto_invoke:" "frontmatter auto_invoke field in $skill"
         assert_file_contains "$skill_file" "allowed-tools:" "frontmatter allowed-tools field in $skill"
     done
@@ -1482,7 +1481,7 @@ test_claude_md_no_follow_questions
 test_claude_md_no_just_do_it_proceed
 test_scope_agents_exist
 test_research_first_is_non_negotiable
-test_all_skills_have_scope
+test_all_skills_have_bucket
 test_all_skills_have_auto_invoke
 test_all_skills_have_allowed_tools
 test_agents_sync_correctly

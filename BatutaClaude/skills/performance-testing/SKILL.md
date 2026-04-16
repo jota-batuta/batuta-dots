@@ -9,7 +9,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-03-09"
-  scope: [pipeline]
+  bucket: review
   auto_invoke: "Performance testing, load testing, benchmarking, Core Web Vitals optimization"
   platforms: [claude, antigravity]
 allowed-tools: Read Glob Grep Bash WebSearch
@@ -20,6 +20,14 @@ allowed-tools: Read Glob Grep Bash WebSearch
 ## Purpose
 
 Performance validation for APIs and web applications. Covers load testing (k6, Artillery), Core Web Vitals optimization (LCP, FID, CLS), stress testing, benchmarking, and performance budgets in CI/CD. Produces baseline metrics and regression detection reports.
+
+## Core Principle: Measure First, Optimize Second
+
+> "Performance work without measurement is guessing — and guessing leads to premature optimization."
+
+Never optimize without measuring first. Every performance improvement starts with a baseline. Common bottlenecks fall into two categories:
+- **Frontend**: LCP delays, layout shifts, main thread blocking, oversized bundles
+- **Backend**: N+1 queries, missing indexes, unbounded fetching, absent caching
 
 ## When to Use
 

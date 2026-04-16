@@ -9,7 +9,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-04-07"
-  scope: [capability]
+  bucket: build
   auto_invoke: "When integrating with WhatsApp via Evolution API"
   platforms: [claude]
   category: "capability"

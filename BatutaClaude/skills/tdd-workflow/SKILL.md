@@ -9,7 +9,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-02-26"
-  scope: [pipeline]
+  bucket: build
   auto_invoke:
     - Writing new feature code that needs tests
     - Fixing a bug (write failing test first)
@@ -61,6 +61,27 @@ STEP 3 — REFACTOR (Clean up, tests stay green)
 ├── Run ALL tests after each refactor step
 └── If any test goes red → undo the refactor, try a smaller step
 ```
+
+### Pattern: Test Pyramid Distribution
+
+Aim for this distribution across your test suite:
+
+| Layer | Percentage | Speed Target | What It Tests |
+|---|---|---|---|
+| Unit tests | ~80% | < 50ms each | Single function/module in isolation |
+| Integration tests | ~15% | < 500ms each | Two modules working together |
+| E2E tests | ~5% | < 5s each | Full user workflow end-to-end |
+
+This ratio optimizes for speed (most tests run instantly) while catching real bugs at boundaries.
+
+### Pattern: DAMP Over DRY in Tests
+
+Test code prioritizes readability over reuse (**D**escriptive **A**nd **M**eaningful **P**hrases).
+
+- Each test should tell a complete story without tracing through shared helpers
+- Duplicated setup is acceptable if it improves clarity
+- Avoid shared `beforeEach` blocks that make individual tests hard to understand
+- This is the INVERSE of production code, where DRY is paramount
 
 ### Pattern 2: Test-First Bug Fixes
 

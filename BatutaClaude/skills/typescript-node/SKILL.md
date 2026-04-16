@@ -9,7 +9,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-02-26"
-  scope: [pipeline]
+  bucket: build
   auto_invoke:
     - Creating or modifying TypeScript backend code
     - Setting up a new Node.js project with TypeScript

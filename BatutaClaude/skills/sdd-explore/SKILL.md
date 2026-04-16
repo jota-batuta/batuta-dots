@@ -7,7 +7,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-02-20"
-  scope: [pipeline]
+  bucket: define
   auto_invoke: "Exploring codebase for changes, /sdd-explore"
   platforms: [claude, antigravity]
 allowed-tools: Read Glob Grep WebFetch WebSearch

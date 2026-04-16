@@ -7,7 +7,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-02-22"
-  scope: [infra, pipeline]
+  bucket: review
   auto_invoke:
     - "Security review or audit of code"
     - "Checking for vulnerabilities in implementation"
@@ -30,6 +30,14 @@ Provide a systematic security review process optimized for AI-generated code. AI
 - **During sdd-verify**: Run as cross-layer security check after Pyramid Layers 1-3 pass
 - **On demand**: When the user asks for a security review, audit, or hardening
 - **Before deploy**: Final security gate before production deployment
+
+## Three-Tier Security Decision
+
+| Tier | When | Action |
+|---|---|---|
+| **Always Do** | Input validation, parameterized queries, secrets in env vars, HTTPS | Apply without asking. These are non-negotiable. |
+| **Ask First** | New auth flows, changing encryption schemes, modifying CORS, adding third-party integrations | Propose to user with tradeoffs before implementing. |
+| **Never Do** | Hardcode credentials, disable security headers, log sensitive data, trust client input | Block immediately. No rationalizations accepted. |
 
 ## AI-First Security Checklist
 

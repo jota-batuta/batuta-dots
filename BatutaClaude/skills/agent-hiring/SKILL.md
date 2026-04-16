@@ -8,7 +8,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-04-13"
-  scope: [infra]
+  bucket: meta
   auto_invoke:
     - "Delegating a task to a specialist agent"
     - "Creating a new agent contract"

@@ -9,7 +9,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-04-07"
-  scope: [capability]
+  bucket: build
   auto_invoke: "When working with Supabase from Python"
   platforms: [claude]
   category: "capability"

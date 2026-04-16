@@ -8,7 +8,7 @@ metadata:
   version: "1.1"
   created: "2026-02-23"
   source: "CTO Layer skill 06"
-  scope: [pipeline]
+  bucket: review
   auto_invoke: false
   platforms: [claude, antigravity]
 allowed-tools: Read Glob Grep WebSearch

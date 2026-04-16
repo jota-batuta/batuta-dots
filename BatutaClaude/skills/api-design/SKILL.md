@@ -9,7 +9,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-02-26"
-  scope: [pipeline]
+  bucket: build
   auto_invoke:
     - "Designing REST API endpoints or resources"
     - "Choosing pagination, versioning, or error format strategy"
@@ -116,6 +116,33 @@ async def get_tenant(x_tenant_id: str = Header(...),
             title="Tenant Mismatch", status=403,
             detail="Header tenant does not match authenticated tenant.")
     return x_tenant_id
+```
+
+### Principle: Hyrum's Law
+
+> "With a sufficient number of users of an API, it does not matter what you promise in the contract — all observable behaviors will be depended on by somebody."
+
+This means treating every public behavior — including undocumented quirks — as a de facto commitment. Design for extension, not modification. Additive changes are safe; breaking changes require versioning.
+
+### Pattern: Type-Level Safety
+
+Use type system features to prevent bugs at compile time:
+
+```typescript
+// Discriminated unions clarify variant types
+type Result =
+  | { type: "success"; data: User }
+  | { type: "error"; code: string; message: string };
+// NOT: { data: User | null; error: string | null }  // ambiguous
+
+// Input/output separation prevents ID confusion
+type CreateUserInput = { name: string; email: string };  // No ID (server generates)
+type UserOutput = { id: UUID; name: string; email: string };  // Server ID in response
+
+// Branded types prevent ID mix-ups across entities
+type UserId = string & { readonly __brand: "UserId" };
+type OrderId = string & { readonly __brand: "OrderId" };
+// Compiler catches: getUser(orderId)  // Type error!
 ```
 
 ## Decision Trees

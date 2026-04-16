@@ -6,7 +6,7 @@ metadata:
   author: Batuta
   version: "1.0"
   created: "2026-04-15"
-  scope: [infra]
+  bucket: ship
   platforms: [claude, antigravity]
   inspired_by: "addyosmani/agent-skills v0.5.0 (MIT)"
 allowed-tools: Read Edit Write Glob Grep Bash

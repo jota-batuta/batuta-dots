@@ -91,10 +91,24 @@ Reviewers tienen tools read-only (Read, Grep, Glob). Si encuentran issues, REPOR
 - No root-level `utils/`, `helpers/`, `lib/`, `components/`.
 
 ### SDD Pipeline (2 modos — research-first aplica en AMBOS)
-- **SPRINT** (default): Research → Apply (subagentes implementan con skills verificados) → Verify. Sin gates formales, pero research es obligatorio.
-- **COMPLETO** (CTO lo pide via PRD): Research → Explore (subagentes en paralelo) → Design (USER STOP) → Apply → Verify.
+- **SPRINT** (default): Research → Apply → Verify → Ship (conditional). Sin gates formales, pero research es obligatorio.
+- **COMPLETO** (CTO lo pide via PRD): Research → Explore → Design (USER STOP) → Apply → Verify → Ship (conditional).
+- Ship activates only for production deployments and user-facing changes. Skip for internal tools, dev-only, or docs-only.
 - PRD es el artefacto unico de planificacion. CTO lo escribe en Notion. Code lo lee via MCP.
 - NEVER auto-advance past a design approval without explicit user consent.
+
+### Lifecycle Buckets (v16)
+22 global skills organized by lifecycle phase. Each bucket has ≥1 skill. No phase gaps.
+
+| Phase | Skills | Purpose |
+|-------|--------|---------|
+| **DEFINE** | sdd-init, sdd-explore, process-analyst, prd-generator | Understand what to build |
+| **PLAN** | sdd-design, scope-rule | Design the solution |
+| **BUILD** | sdd-apply, tdd-workflow, source-driven-development, debugging-systematic | Implement |
+| **VERIFY** | sdd-verify | Prove it works (AI Pyramid) |
+| **REVIEW** | code-simplification, security-audit, performance-testing | Quality gates |
+| **SHIP** | git-workflow-and-versioning, deprecation-and-migration, technical-writer, shipping-and-launch | Get to production |
+| **META** | ecosystem-creator, ecosystem-lifecycle, team-orchestrator, agent-hiring | Orchestration machinery |
 
 ---
 
@@ -106,6 +120,7 @@ Reviewers tienen tools read-only (Read, Grep, Glob). Si encuentran issues, REPOR
 | `/sdd-new <name>` | Explore + Design |
 | `/sdd-apply [name]` | Implement from PRD/design |
 | `/sdd-verify [name]` | Verify implementation |
+| `/sdd-ship [name]` | Pre-launch checklist + rollout plan (conditional) |
 | `/sdd-continue` | Resume from session.md |
 | `/create <type> <name>` | Create skill/agent/workflow |
 | `/batuta-sync` | Sync skills: subir al hub, traer del hub, o ambos |

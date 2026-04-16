@@ -9,7 +9,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-02-26"
-  scope: [pipeline]
+  bucket: build
   auto_invoke:
     - "Implementing retrieval augmented generation (RAG)"
     - "Choosing embedding model or vector store"

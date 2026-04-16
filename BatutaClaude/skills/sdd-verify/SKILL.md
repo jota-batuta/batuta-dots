@@ -7,7 +7,7 @@ metadata:
   author: Batuta
   version: "2.1"
   created: "2026-02-20"
-  scope: [pipeline]
+  bucket: verify
   auto_invoke: "Verifying implementation, /sdd-verify"
   platforms: [claude, antigravity]
 allowed-tools: Read Glob Grep Bash

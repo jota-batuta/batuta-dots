@@ -9,7 +9,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-02-26"
-  scope: [pipeline]
+  bucket: verify
   auto_invoke:
     - Writing or modifying Playwright E2E tests
     - Implementing AI Validation Pyramid Layer 3

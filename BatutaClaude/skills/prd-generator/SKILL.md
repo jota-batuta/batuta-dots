@@ -10,7 +10,7 @@ metadata:
   version: "2.1"
   created: "2026-03-30"
   updated: "2026-04-15"
-  scope: [pipeline]
+  bucket: define
   platforms: [claude, antigravity]
 allowed-tools: Read Write Glob
 ---

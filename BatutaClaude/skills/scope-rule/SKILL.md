@@ -7,7 +7,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-02-20"
-  scope: [infra]
+  bucket: plan
   auto_invoke: "Creating files, deciding file locations"
   platforms: [claude, antigravity]
 allowed-tools: Read Glob Grep

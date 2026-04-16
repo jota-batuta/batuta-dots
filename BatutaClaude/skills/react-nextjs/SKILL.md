@@ -9,7 +9,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-02-26"
-  scope: [pipeline]
+  bucket: build
   auto_invoke:
     - Working with React components or Next.js pages
     - Creating or modifying App Router routes
@@ -199,6 +199,18 @@ export async function createTask(formData: FormData) {
 | Passing `tenantId` from URL params | Security: users can modify URLs | Extract `tenantId` from authenticated session |
 | Business logic in `page.tsx` files | Pages should be thin route entries | Delegate to feature services and components |
 | Wrapping Server Components inside Client Components | Server Component becomes client-rendered | Use composition: pass Server Components as `children` |
+
+### Anti-Pattern: "AI Aesthetic" Detection
+
+LLMs tend to generate UI with recognizable patterns. Watch for and correct:
+- **Purple/indigo everything**: Default AI color palette. Use the project's actual design system colors.
+- **Excessive gradients**: Gradient backgrounds on every section. Use solid colors unless the design system specifies gradients.
+- **Rounded-full on everything**: `rounded-full` on buttons, cards, containers. Use the design system's border radius scale.
+- **Generic hero sections**: Large centered text with gradient background. Match the project's actual layout patterns.
+
+### Rule: Component Size Limit
+
+Components exceeding **200 lines** are candidates for splitting. If a component cannot fit on screen with reasonable scrolling, it is doing too much. Extract child components, separate data fetching logic, or pull out custom hooks.
 
 ## Stack Integration
 

@@ -8,7 +8,7 @@ metadata:
   version: "1.2"
   created: "2026-02-20"
   updated: "2026-04-15"
-  scope: [infra]
+  bucket: meta
   auto_invoke: "Creating skills, agents, workflows"
   platforms: [claude, antigravity]
 allowed-tools: Read Edit Write Glob Grep Bash WebFetch WebSearch Task
@@ -178,7 +178,6 @@ metadata:
   version: "1.0"
   created: "{YYYY-MM-DD}"
   updated: "{YYYY-MM-DD}"
-  scope: [{category}]
   auto_invoke: "{human-readable trigger}"
   platforms: [claude, antigravity]
 allowed-tools: Read Edit Write Glob Grep Bash
@@ -247,7 +246,7 @@ called "Purpose" in older skills — v15.1 renames to "Overview" for clarity.}
 | `metadata.author` | Yes | `Batuta` |
 | `metadata.version` | Yes | Semantic version as string (e.g., `"1.0"`) |
 | `metadata.created` | Yes | ISO date string (e.g., `"2026-02-20"`) |
-| `metadata.scope` | Yes | Scope category array (e.g., `[pipeline]`, `[infra]`, `[observability]`). Used for dynamic skill discovery grouping. |
+| `metadata.bucket` | Yes | Lifecycle bucket (e.g., `build`, `plan`, `meta`). Used for dynamic skill discovery grouping. |
 | `metadata.auto_invoke` | Yes | Human-readable trigger string or YAML list. When the AI should load this skill. |
 | `metadata.mcp_validated` | No | `true/false` — whether patterns were verified against live docs (MCP or web). Added by Step 4.5. |
 | `metadata.mcp_source` | No | `"Context7"` / `"WebFetch"` / `"WebSearch"` / `"none"` — validation source. |
@@ -257,23 +256,24 @@ called "Purpose" in older skills — v15.1 renames to "Overview" for clarity.}
 | `metadata.owner_agent` | No | Agent that maintains this skill (e.g., `backend-agent`, `quality-agent`). Enables team routing. If not set, ownership is inferred from agent `skills:` lists. |
 | `allowed-tools` | Yes | Space-delimited tool list (agentskills.io standard). Defines which tools the skill can use. Example: `Read Edit Write Glob Grep Bash`. |
 
-### Scope Decision Tree (Mandatory)
+### Bucket Decision Tree (Mandatory)
 
-Before assigning `metadata.scope`, determine the correct value:
+Before assigning `metadata.bucket`, determine the correct lifecycle phase:
 
-| What does the skill DO? | Scope | Examples |
-|------------------------|-------|---------|
-| Orchestrates SDD phases, manages pipeline artifacts | `[pipeline]` | sdd-explore, sdd-propose, sdd-verify |
-| Provides domain patterns used during implementation | `[pipeline]` | api-design, tdd-workflow, react-nextjs |
-| Creates/organizes files, manages ecosystem components | `[infra]` | ecosystem-creator, scope-rule, ci-cd-pipeline |
-| Manages sessions, monitoring, context restoration | `[observability]` | observability |
-| Generates/scaffolds code AND is invoked during sdd-apply | `[pipeline, infra]` | sdd-apply, fastapi-crud, jwt-auth, sqlalchemy-models |
-| Audits code as part of verification pipeline | `[infra, pipeline]` | security-audit |
+| What does the skill DO? | Bucket | Examples |
+|---|---|---|
+| Explores problems, analyzes processes, generates PRDs | `define` | sdd-explore, process-analyst, prd-generator |
+| Designs architecture, decides file placement | `plan` | sdd-design, scope-rule |
+| Implements code, writes tests, debugs, verifies sources | `build` | sdd-apply, tdd-workflow, source-driven-development |
+| Validates correctness via automated testing layers | `verify` | sdd-verify, e2e-testing |
+| Reviews code quality, security, performance | `review` | code-simplification, security-audit |
+| Prepares for production: git, docs, CI/CD, launch | `ship` | git-workflow-and-versioning, shipping-and-launch |
+| Manages ecosystem: creates skills, coordinates agents | `meta` | ecosystem-creator, team-orchestrator |
 
 **Rules:**
-- Skills that GENERATE files (code scaffolding, model generation) MUST include `infra`
-- SDD phase sub-agents always have `pipeline` as primary scope
-- Multiple scopes are valid when a skill genuinely spans domains
+- Tech-specific skills (react-nextjs, sqlalchemy-models) are typically `build`
+- Testing/QA skills are typically `verify` or `review`
+- Skills that manage the ecosystem itself are `meta`
 - When in doubt, check existing skills with similar behavior for precedent
 
 ### Skill Content Guidelines
@@ -504,9 +504,9 @@ After creating ANY component, you MUST register it. This is the most commonly fo
 | **Batuta repo** | `BatutaClaude/skills/{skill-name}/SKILL.md` | Developing the ecosystem itself |
 
 - [ ] Skill directory created at the correct destination (see table above)
-- [ ] SKILL.md has complete frontmatter (name, description with triggers, license, metadata including **scope** and **auto_invoke**, **allowed-tools**)
+- [ ] SKILL.md has complete frontmatter (name, description with triggers, license, metadata including **bucket** and **auto_invoke**, **allowed-tools**)
 - [ ] `## Purpose` section exists with business context paragraph
-- [ ] `metadata.scope` follows Scope Decision Tree (code-generation skills MUST include `infra`)
+- [ ] `metadata.bucket` follows Bucket Decision Tree (see section above)
 - [ ] For **project-local** skills: No sync needed — Claude Code discovers `.claude/skills/` automatically
 - [ ] For **global** or **batuta-repo** skills: Claude Code discovers skills by their `description` field — no manual routing table updates needed
 - [ ] If the skill was in the project roadmap, update tracking accordingly
@@ -534,7 +534,7 @@ After creating ANY component, you MUST register it. This is the most commonly fo
 ### Sub-Agent Registration Checklist
 
 - [ ] Sub-agent skill file created: `BatutaClaude/skills/{sub-agent-name}/SKILL.md`
-- [ ] SKILL.md has complete frontmatter with triggers, **scope**, **auto_invoke**, **allowed-tools**
+- [ ] SKILL.md has complete frontmatter with triggers, **bucket**, **auto_invoke**, **allowed-tools**
 - [ ] Output contract section is present and follows the envelope format
 - [ ] Verify the sub-agent's `description` field enables auto-discovery by Claude Code
 - [ ] If it extends the SDD pipeline, update the pipeline-agent.md Phase Routing table
@@ -873,16 +873,16 @@ If `ecosystem-lifecycle` is not available (e.g., non-Batuta project without the 
 - Skill body grows past 800 lines without being split into assets/ — the agent will not load the full content reliably
 - `description` field summarizes the workflow ("This skill does X, Y, Z") instead of pure activation triggers ("Use when...")
 - Skipping Step 8 (Invoke Classification) after creation — most common cause of "skill exists but agent ignores it" reports
-- `metadata.scope` set to a single value when the skill generates files (must include `infra`)
+- `metadata.bucket` set to `build` but the skill manages ecosystem components — should be `meta`
 - Creating a third skill that overlaps with two existing ones instead of consolidating — fragmentation makes the agent guess which to load
 - Using web URLs in `references/` — references must point to local files; web URLs are for `WebFetch` calls inside the skill body
 
 ## Verification Checklist
 
-- [ ] Frontmatter has all required fields: `name`, `description` (starts with "Use when"), `license`, `metadata.author`, `metadata.version`, `metadata.created`, `metadata.scope`, `metadata.auto_invoke`, `metadata.platforms`, `allowed-tools` (space-delimited)
+- [ ] Frontmatter has all required fields: `name`, `description` (starts with "Use when"), `license`, `metadata.author`, `metadata.version`, `metadata.created`, `metadata.bucket`, `metadata.auto_invoke`, `metadata.platforms`, `allowed-tools` (space-delimited)
 - [ ] Skill body contains all 7 v15.1 sections: Overview, When to Use, When NOT to Use, Critical Patterns / Core, Common Rationalizations, Red Flags, Verification Checklist
 - [ ] Step 8 (Invoke Classification via ecosystem-lifecycle) was executed and the classification result was logged
 - [ ] If tech-specific: entry added to `sdd-init/assets/skill-provisions.yaml` under `tech_rules`
-- [ ] If code-generation skill: `infra` is in `metadata.scope`
+- [ ] `metadata.bucket` matches the Bucket Decision Tree for the skill's primary lifecycle phase
 - [ ] If `metadata.owner_agent` set: the named agent file exists in `BatutaClaude/agents/`
 - [ ] No web URLs in `references/` (local paths only)

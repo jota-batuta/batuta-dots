@@ -7,7 +7,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2025-01-01"
-  scope: [pipeline]
+  bucket: define
   auto_invoke: "Starting SDD workflow, /sdd-init"
   platforms: [claude, antigravity]
 allowed-tools: Read Edit Write Glob Grep Bash

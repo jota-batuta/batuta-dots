@@ -8,7 +8,7 @@ metadata:
   author: Batuta
   version: "1.1"
   created: "2026-03-09"
-  scope: [infra]
+  bucket: meta
   auto_invoke: "Testing skills, evaluating skill effectiveness, benchmarking skills"
   platforms: [claude, antigravity]
   category: capability

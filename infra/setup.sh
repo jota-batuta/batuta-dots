@@ -643,24 +643,35 @@ sync_claude() {
 
     mkdir -p "$claude_dir"
 
-    # WORKAROUND: v15 change — only sync GLOBAL skills (always + sdd) to ~/.claude/skills/.
+    # WORKAROUND: v15 change — only sync GLOBAL skills to ~/.claude/skills/.
     # Project-specific skills are provisioned by /batuta-init and /batuta-sync.
     # Reason: Claude Code has a ~450-token budget for skill metadata. Loading 48+ skills
     # globally makes 33% of them INVISIBLE. Only universal skills go to global.
     # The hub (BatutaClaude/skills/) keeps ALL skills as the source library.
+    #
+    # v16: Organized by lifecycle bucket (DEFINE → PLAN → BUILD → VERIFY → REVIEW → SHIP → META).
+    # 22 global skills close the complete lifecycle with no phase gaps.
+    # Mirrors skill-provisions.yaml global: section. Keep both in sync.
     local global_skills=(
-        # always (from skill-provisions.yaml)
-        scope-rule ecosystem-creator security-audit team-orchestrator ecosystem-lifecycle
-        # sdd (core pipeline)
-        sdd-explore sdd-design sdd-apply sdd-verify prd-generator
-        tdd-workflow debugging-systematic sdd-init
-        # v15.1 additions (adapted from addyosmani/agent-skills, MIT)
-        agent-hiring code-simplification deprecation-and-migration git-workflow-and-versioning
+        # DEFINE — Entender qué construir
+        sdd-init sdd-explore process-analyst prd-generator
+        # PLAN — Diseñar la solución
+        sdd-design scope-rule
+        # BUILD — Implementar
+        sdd-apply tdd-workflow source-driven-development debugging-systematic
+        # VERIFY — Probar que funciona
+        sdd-verify
+        # REVIEW — Gates de calidad
+        code-simplification security-audit performance-testing
+        # SHIP — Llevar a producción
+        git-workflow-and-versioning deprecation-and-migration technical-writer shipping-and-launch
+        # META — Maquinaria de orquestación
+        ecosystem-creator ecosystem-lifecycle team-orchestrator agent-hiring
     )
 
     # WHY: Remove skills from ~/.claude/skills/ that are NOT in the global_skills list.
-    # Before v15.0, setup.sh copied ALL ~46 skills globally. After v15, only 17 essentials go
-    # global; the rest are project-provisioned. This cleanup removes the stale 29+ from old installs.
+    # Before v15.0, setup.sh copied ALL ~46 skills globally. After v16, only 22 essentials go
+    # global; the rest are project-provisioned. This cleanup removes stale skills from old installs.
     # v15.6 fix: previous cleanup only removed skills missing from BatutaClaude/skills/, but
     # all 46 exist there — so it never removed the non-global ones.
     for target_skill in "$claude_dir"/*/; do
