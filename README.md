@@ -4,6 +4,14 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+> **Status (2026-04-16): v16 is the final feature release. This repository is now maintenance-only.**
+>
+> Successor: [`jota-batuta/batuta-agent-skills`](https://github.com/jota-batuta/batuta-agent-skills) — a minimal fork of [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills) that layers 4 Batuta skills on top (research-first-dev, notion-kb-workflow, batuta-skill-authoring, batuta-agent-authoring) without custom hooks or persistent state.
+>
+> The successor was chosen after an end-to-end comparative experiment ([REPORT](../e2e-comparison/REPORT.md) if you have the sibling directory) showed `batuta-dots v16` costing 2–3× more per project than plain `agent-skills` with a broken memory subsystem (`CHECKPOINT.md` and `session.md` never updated). The fork path inherits a battle-tested engineering skill base, eliminates the hook breakage, and adds only the behaviors that actually differentiate Batuta workflows.
+>
+> **New projects: use the fork.** Existing projects on v16 will continue to work; no active development, only security and critical-bug fixes.
+
 ---
 
 ## What is Batuta?
